@@ -1823,7 +1823,7 @@ static bool _rtl8821ae_phy_bb8821a_config_parafile(struct ieee80211_hw *hw)
 		RT_TRACE(COMP_ERR, DBG_EMERG, ("AGC Table Fail\n"));
 		return false;
 	}
-	rtlphy->bcck_high_power = (bool) (rtl_get_bbreg(hw,
+	rtlphy->cck_high_power = (bool) (rtl_get_bbreg(hw,
 			RFPGA0_XA_HSSIPARAMETER2, 0x200));
 	return true;
 }
@@ -6230,7 +6230,7 @@ void rtl8812ae_reset_iqk_result(struct ieee80211_hw *hw)
 				rtlphy->iqk_matrix_regsetting[i].value[0][5] =
 				rtlphy->iqk_matrix_regsetting[i].value[0][7] = 0x0;
 
-			rtlphy->iqk_matrix_regsetting[i].b_iqk_done = false;
+			rtlphy->iqk_matrix_regsetting[i].iqk_done = false;
 
 		}
 	}
@@ -6289,7 +6289,7 @@ void rtl8821ae_reset_iqk_result(struct ieee80211_hw *hw)
 				rtlphy->iqk_matrix_regsetting[i].value[0][5] =
 				rtlphy->iqk_matrix_regsetting[i].value[0][7] = 0x0;
 
-			rtlphy->iqk_matrix_regsetting[i].b_iqk_done = false;
+			rtlphy->iqk_matrix_regsetting[i].iqk_done = false;
 
 		}
 	}
@@ -6316,7 +6316,7 @@ void rtl8821ae_phy_ap_calibrate(struct ieee80211_hw *hw, char delta)
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_phy *rtlphy = &(rtlpriv->phy);
 
-	if (rtlphy->b_apk_done)
+	if (rtlphy->apk_done)
 		return;
 
 	return;

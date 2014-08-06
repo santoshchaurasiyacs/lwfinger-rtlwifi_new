@@ -1038,7 +1038,7 @@ static bool _rtl92s_phy_bb_config_parafile(struct ieee80211_hw *hw)
 
 	/* Check if the CCK HighPower is turned ON. */
 	/* This is used to calculate PWDB. */
-	rtlphy->bcck_high_power = (bool)(rtl92s_phy_query_bb_reg(hw,
+	rtlphy->cck_high_power = (bool)(rtl92s_phy_query_bb_reg(hw,
 			RFPGA0_XA_HSSIPARAMETER2, 0x200));
 
 phy_BB8190_Config_ParaFile_Fail:
@@ -1291,7 +1291,7 @@ void rtl92s_phy_set_txpower(struct ieee80211_hw *hw, u8	channel)
 	/* [0]:RF-A, [1]:RF-B */
 	u8 cckpowerlevel[2], ofdmpowerLevel[2];
 
-	if (rtlefuse->b_txpwr_fromeprom == false)
+	if (rtlefuse->txpwr_fromeprom == false)
 		return;
 
 	/* Mainly we use RF-A Tx Power to write the Tx Power registers,
@@ -1430,7 +1430,7 @@ static void _rtl92s_phy_set_fwcmd_io(struct ieee80211_hw *hw)
 		break;
 	case FW_CMD_HIGH_PWR_ENABLE:
 		if ((rtlpriv->dm.dm_flag & HAL_DM_HIPWR_DISABLE) ||
-			(rtlpriv->dm.bdynamic_txpower_enable == true))
+			(rtlpriv->dm.dynamic_txpower_enable == true))
 			break;
 
 		/* CCA threshold */
@@ -1628,7 +1628,7 @@ bool rtl92s_phy_set_fw_cmd(struct ieee80211_hw *hw, enum fwcmd_iotype fw_cmdio)
 				fw_cmdmap &= ~FW_DIG_ENABLE_CTL;
 
 			if ((rtlpriv->dm.dm_flag & HAL_DM_HIPWR_DISABLE) ||
-				(rtlpriv->dm.bdynamic_txpower_enable == true))
+				(rtlpriv->dm.dynamic_txpower_enable == true))
 				fw_cmdmap &= ~FW_HIGH_PWR_ENABLE_CTL;
 
 			if ((digtable.dig_ext_port_stage ==
@@ -1654,7 +1654,7 @@ bool rtl92s_phy_set_fw_cmd(struct ieee80211_hw *hw, enum fwcmd_iotype fw_cmdio)
 			break;
 		case FW_CMD_HIGH_PWR_ENABLE:
 			if (!(rtlpriv->dm.dm_flag & HAL_DM_HIPWR_DISABLE) &&
-				(rtlpriv->dm.bdynamic_txpower_enable !=
+				(rtlpriv->dm.dynamic_txpower_enable !=
 					true)) {
 				fw_cmdmap |=
 					(FW_HIGH_PWR_ENABLE_CTL | FW_SS_CTL);
@@ -1741,7 +1741,7 @@ void rtl92s_phy_switch_ephy_parameter(struct ieee80211_hw *hw)
 	_rtl92s_phy_check_ephy_switchready(hw);
 
 	/* Delay L1 enter time */
-	if (ppsc->b_support_aspm && !ppsc->b_support_backdoor)
+	if (ppsc->support_aspm && !ppsc->support_backdoor)
 		rtl_write_byte(rtlpriv, 0x560, 0x40);
 	else
 		rtl_write_byte(rtlpriv, 0x560, 0x00);

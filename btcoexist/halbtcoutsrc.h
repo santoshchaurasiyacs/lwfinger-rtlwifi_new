@@ -421,7 +421,7 @@ struct btc_bt_info {
 	u8 agg_buf_size;
 	bool limited_dig;
 	bool reject_agg_pkt;
-	bool b_bt_ctrl_buf_size;
+	bool bt_ctrl_buf_size;
 	bool increase_scan_dev_num;
 	u16 bt_hci_ver;
 	u16 bt_real_fw_ver;

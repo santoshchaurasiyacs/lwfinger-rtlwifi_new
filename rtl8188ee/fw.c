@@ -289,12 +289,12 @@ static void _rtl88e_fill_h2c_command(struct ieee80211_hw *hw,
 
 	while (true) {
 		spin_lock_irqsave(&rtlpriv->locks.h2c_lock, flag);
-		if (rtlhal->b_h2c_setinprogress) {
+		if (rtlhal->h2c_setinprogress) {
 			RT_TRACE(COMP_CMD, DBG_LOUD,
 				 ("H2C set in progress! Wait to set.."
 				  "element_id(%d).\n", element_id));
 
-			while (rtlhal->b_h2c_setinprogress) {
+			while (rtlhal->h2c_setinprogress) {
 				spin_unlock_irqrestore(&rtlpriv->locks.h2c_lock,
 						       flag);
 				h2c_waitcounter++;
@@ -310,7 +310,7 @@ static void _rtl88e_fill_h2c_command(struct ieee80211_hw *hw,
 			}
 			spin_unlock_irqrestore(&rtlpriv->locks.h2c_lock, flag);
 		} else {
-			rtlhal->b_h2c_setinprogress = true;
+			rtlhal->h2c_setinprogress = true;
 			spin_unlock_irqrestore(&rtlpriv->locks.h2c_lock, flag);
 			break;
 		}
@@ -434,7 +434,7 @@ static void _rtl88e_fill_h2c_command(struct ieee80211_hw *hw,
 	}
 
 	spin_lock_irqsave(&rtlpriv->locks.h2c_lock, flag);
-	rtlhal->b_h2c_setinprogress = false;
+	rtlhal->h2c_setinprogress = false;
 	spin_unlock_irqrestore(&rtlpriv->locks.h2c_lock, flag);
 
 	RT_TRACE(COMP_CMD, DBG_LOUD, ("go out\n"));
@@ -446,7 +446,7 @@ void rtl88e_fill_h2c_cmd(struct ieee80211_hw *hw,
 	struct rtl_hal *rtlhal = rtl_hal(rtl_priv(hw));
 	u32 tmp_cmdbuf[2];
 
-	if (rtlhal->bfw_ready == false) {
+	if (rtlhal->fw_ready == false) {
 		RT_ASSERT(false, ("return H2C cmd because of Fw "
 				  "download fail!!!\n"));
 		return;
@@ -519,7 +519,7 @@ void rtl88e_set_fw_ap_off_load_cmd(struct ieee80211_hw *hw,
 	u8 u1_apoffload_parm[H2C_88E_AP_OFFLOAD_LENGTH] = { 0 };
 
 	SET_H2CCMD_AP_OFFLOAD_ON(u1_apoffload_parm, ap_offload_enable);
-	SET_H2CCMD_AP_OFFLOAD_HIDDEN(u1_apoffload_parm, mac->bhiddenssid);
+	SET_H2CCMD_AP_OFFLOAD_HIDDEN(u1_apoffload_parm, mac->hiddenssid);
 	SET_H2CCMD_AP_OFFLOAD_DENYANY(u1_apoffload_parm, 0);
 
 	rtl88e_fill_h2c_cmd(hw, H2C_88E_AP_OFFLOAD,

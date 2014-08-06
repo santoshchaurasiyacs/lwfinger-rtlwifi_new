@@ -36,7 +36,7 @@ static void _rtl92ee_init_led(struct ieee80211_hw *hw,
 {
 	pled->hw = hw;
 	pled->ledpin = ledpin;
-	pled->b_ledon = false;
+	pled->ledon = false;
 }
 
 void rtl92ee_sw_led_on(struct ieee80211_hw *hw, struct rtl_led *pled)
@@ -69,7 +69,7 @@ void rtl92ee_sw_led_on(struct ieee80211_hw *hw, struct rtl_led *pled)
 			 ("switch case not process\n"));
 		break;
 	}
-	pled->b_ledon = true;
+	pled->ledon = true;
 }
 
 void rtl92ee_sw_led_off(struct ieee80211_hw *hw, struct rtl_led *pled)
@@ -99,7 +99,7 @@ void rtl92ee_sw_led_off(struct ieee80211_hw *hw, struct rtl_led *pled)
 			 ("switch case not process\n"));
 		break;
 	}
-	pled->b_ledon = false;
+	pled->ledon = false;
 }
 
 void rtl92ee_init_sw_leds(struct ieee80211_hw *hw)

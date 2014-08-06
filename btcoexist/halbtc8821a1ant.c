@@ -2466,7 +2466,7 @@ ex_halbtc8821a1ant_display_coex_info(
 	CL_SPRINTF(cli_buf, BT_TMP_BUF_SIZE,
 		"\r\n %-35s = %s/ %s/ %d ", "DelBA/ BtCtrlAgg/ AggSize",
 		(btcoexist->bt_info.reject_agg_pkt ? "Yes":"No"),
-		(btcoexist->bt_info.b_bt_ctrl_buf_size ? "Yes":"No"),
+		(btcoexist->bt_info.bt_ctrl_buf_size ? "Yes":"No"),
 		btcoexist->bt_info.agg_buf_size);
 	CL_PRINTF(cli_buf);
 	CL_SPRINTF(cli_buf, BT_TMP_BUF_SIZE, "\r\n %-35s = 0x%x ", "Rate Mask",

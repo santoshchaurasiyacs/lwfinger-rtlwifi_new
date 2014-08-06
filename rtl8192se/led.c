@@ -34,7 +34,7 @@ static void _rtl92se_init_led(struct ieee80211_hw *hw,
 {
 	pled->hw = hw;
 	pled->ledpin = ledpin;
-	pled->b_ledon = false;
+	pled->ledon = false;
 }
 
 void rtl92se_init_sw_leds(struct ieee80211_hw *hw)
@@ -68,7 +68,7 @@ void rtl92se_sw_led_on(struct ieee80211_hw *hw, struct rtl_led *pled)
 			 ("switch case not process\n"));
 		break;
 	}
-	pled->b_ledon = true;
+	pled->ledon = true;
 }
 
 void rtl92se_sw_led_off(struct ieee80211_hw *hw, struct rtl_led *pled)
@@ -87,7 +87,7 @@ void rtl92se_sw_led_off(struct ieee80211_hw *hw, struct rtl_led *pled)
 		break;
 	case LED_PIN_LED0:
 		ledcfg &= 0xf0;
-		if (pcipriv->ledctl.bled_opendrain == true)
+		if (pcipriv->ledctl.led_opendrain == true)
 			rtl_write_byte(rtlpriv, LEDCFG, (ledcfg | BIT(1)));
 		else
 			rtl_write_byte(rtlpriv, LEDCFG, (ledcfg | BIT(3)));
@@ -101,7 +101,7 @@ void rtl92se_sw_led_off(struct ieee80211_hw *hw, struct rtl_led *pled)
 			 ("switch case not process\n"));
 		break;
 	}
-	pled->b_ledon = false;
+	pled->ledon = false;
 }
 
 static void _rtl92se_sw_led_control(struct ieee80211_hw *hw,

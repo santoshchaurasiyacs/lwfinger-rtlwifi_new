@@ -252,7 +252,7 @@ static void rtl8723be_dm_diginit(struct ieee80211_hw *hw)
 	dm_digtable.dig_dynamic_min_1 = DM_DIG_MIN;
 	dm_digtable.b_media_connect_0 = false;
 	dm_digtable.b_media_connect_1 = false;
-	rtlpriv->dm.b_dm_initialgain_enable = true;
+	rtlpriv->dm.dm_initialgain_enable = true;
 	dm_digtable.bt30_cur_igi = 0x32;
 }
 
@@ -260,7 +260,7 @@ static void rtl8723be_dm_init_dynamic_txpower(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 
-	rtlpriv->dm.bdynamic_txpower_enable = false;
+	rtlpriv->dm.dynamic_txpower_enable = false;
 
 	rtlpriv->dm.last_dtp_lvl = TXHIGHPWRLEVEL_NORMAL;
 	rtlpriv->dm.dynamic_txhighpower_lvl = TXHIGHPWRLEVEL_NORMAL;
@@ -271,8 +271,8 @@ void rtl8723be_dm_init_edca_turbo(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	rtlpriv->dm.bcurrent_turbo_edca = false;
-	rtlpriv->dm.bis_any_nonbepkts = false;
-	rtlpriv->dm.bis_cur_rdlstate = false;
+	rtlpriv->dm.is_any_nonbepkts = false;
+	rtlpriv->dm.is_cur_rdlstate = false;
 }
 
 
@@ -285,9 +285,9 @@ void rtl8723be_dm_init_rate_adaptive_mask(struct ieee80211_hw *hw)
 	p_ra->pre_ratr_state = DM_RATR_STA_INIT;
 
 	if (rtlpriv->dm.dm_type == DM_TYPE_BYDRIVER)
-		rtlpriv->dm.b_useramask = true;
+		rtlpriv->dm.useramask = true;
 	else
-		rtlpriv->dm.b_useramask = false;
+		rtlpriv->dm.useramask = false;
 
 	p_ra->high_rssi_thresh_for_ra = 50;
 	p_ra->low_rssi_thresh_for_ra = 20;
@@ -298,7 +298,7 @@ static void rtl8723be_dm_init_txpower_tracking(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 
-	rtlpriv->dm.btxpower_tracking = true;
+	rtlpriv->dm.txpower_tracking = true;
 	rtlpriv->dm.txpower_track_control = true;
 	rtlpriv->dm.thermalvalue = 0;
 
@@ -314,8 +314,8 @@ static void rtl8723be_dm_init_txpower_tracking(struct ieee80211_hw *hw)
 	rtlpriv->dm.power_index_offset[RF90_PATH_A] = 0;
 
 	RT_TRACE(COMP_POWER_TRACKING, DBG_LOUD,
-		 ("  rtlpriv->dm.btxpower_tracking = %d\n",
-		  rtlpriv->dm.btxpower_tracking));
+		 ("  rtlpriv->dm.txpower_tracking = %d\n",
+		  rtlpriv->dm.txpower_tracking));
 }
 
 
@@ -433,7 +433,7 @@ static void rtl8723be_dm_check_rssi_monitor(struct ieee80211_hw *hw)
 		rtlpriv->dm.entry_min_undecoratedsmoothed_pwdb = 0;
 	}
 	/* Indicate Rx signal strength to FW. */
-	if (rtlpriv->dm.b_useramask) {
+	if (rtlpriv->dm.useramask) {
 		h2c_parameter[2] =
 			(u8) (rtlpriv->dm.undecorated_smoothed_pwdb & 0xFF);
 		h2c_parameter[1] = 0x20;
@@ -499,7 +499,7 @@ static void rtl8723be_dm_dig(struct ieee80211_hw *hw)
 				dm_digtable.rssi_val_min + 10;
 
 
-		if (rtlpriv->dm.b_one_entry_only) {
+		if (rtlpriv->dm.one_entry_only) {
 			offset = 12;
 			if (dm_digtable.rssi_val_min - offset < dm_dig_min)
 				dig_dynamic_min = dm_dig_min;
@@ -774,7 +774,7 @@ static void rtl8723be_dm_tx_power_track_set_power(struct ieee80211_hw *hw,
 		/*else if (rtldm->bb_swing_idx_cck < 0)
 			rtldm->bb_swing_idx_cck = 0;*/
 
-		if (!rtldm->b_cck_inch14) {
+		if (!rtldm->cck_inch14) {
 			rtl_write_byte(rtlpriv, 0xa22,
 			    cckswing_table_ch1ch13[rtldm->bb_swing_idx_cck][0]);
 			rtl_write_byte(rtlpriv, 0xa23,
@@ -861,7 +861,7 @@ static void rtl8723be_dm_txpower_tracking_callback_thermalmeter(
 		9, 10, 10, 11, 12, 13, 14, 15};
 
 	/*Initilization ( 7 steps in total )*/
-	rtlpriv->dm.btxpower_trackinginit = true;
+	rtlpriv->dm.txpower_trackinginit = true;
 	RT_TRACE(COMP_POWER_TRACKING, DBG_LOUD,
 		 ("rtl8723be_dm_txpower_tracking"
 		  "_callback_thermalmeter\n"));
@@ -977,7 +977,7 @@ static void rtl8723be_dm_txpower_tracking_callback_thermalmeter(
 
 	if ((rtldm->power_index_offset[RF90_PATH_A] != 0) &&
 	    (rtldm->txpower_track_control)) {
-		rtldm->bdone_txpower = true;
+		rtldm->done_txpower = true;
 		if (thermalvalue > rtlefuse->eeprom_thermalmeter)
 			rtl8723be_dm_tx_power_track_set_power(hw, BBSWING, 0,
 							     index_for_channel);
@@ -1008,7 +1008,7 @@ void rtl8723be_dm_check_txpower_tracking(struct ieee80211_hw *hw)
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	static u8 tm_trigger;
 
-	if (!rtlpriv->dm.btxpower_tracking)
+	if (!rtlpriv->dm.txpower_tracking)
 		return;
 
 	if (!tm_trigger) {
@@ -1043,7 +1043,7 @@ void rtl8723be_dm_refresh_rate_adaptive_mask(struct ieee80211_hw *hw)
 		return;
 	}
 
-	if (!rtlpriv->dm.b_useramask) {
+	if (!rtlpriv->dm.useramask) {
 		RT_TRACE(COMP_RATE, DBG_LOUD,
 			 ("driver does not control rate adaptive mask\n"));
 		return;
@@ -1124,7 +1124,7 @@ static void rtl8723be_dm_check_edca_turbo(struct ieee80211_hw *hw)
 	bool b_bias_on_rx = false;
 	bool b_edca_turbo_on = false;
 
-	b_last_is_cur_rdlstate = rtlpriv->dm.bis_cur_rdlstate;
+	b_last_is_cur_rdlstate = rtlpriv->dm.is_cur_rdlstate;
 
 	cur_txok_cnt = rtlpriv->stats.txbytesunicast - last_txok_cnt;
 	cur_rxok_cnt = rtlpriv->stats.rxbytesunicast - last_rxok_cnt;
@@ -1132,8 +1132,8 @@ static void rtl8723be_dm_check_edca_turbo(struct ieee80211_hw *hw)
 	iot_peer = rtlpriv->mac80211.vendor;
 	b_bias_on_rx = (iot_peer == PEER_RAL || iot_peer == PEER_ATH) ?
 		       true : false;
-	b_edca_turbo_on = ((!rtlpriv->dm.bis_any_nonbepkts) &&
-			   (!rtlpriv->dm.b_disable_framebursting)) ?
+	b_edca_turbo_on = ((!rtlpriv->dm.is_any_nonbepkts) &&
+			   (!rtlpriv->dm.disable_framebursting)) ?
 			   true : false;
 
 	if ((iot_peer == PEER_CISCO) &&
@@ -1154,7 +1154,7 @@ static void rtl8723be_dm_check_edca_turbo(struct ieee80211_hw *hw)
 
 		edca_be = (b_is_cur_rdlstate) ? edca_be_dl : edca_be_ul;
 		rtl_write_dword(rtlpriv, REG_EDCA_BE_PARAM, edca_be);
-		rtlpriv->dm.bis_cur_rdlstate = b_is_cur_rdlstate;
+		rtlpriv->dm.is_cur_rdlstate = b_is_cur_rdlstate;
 		rtlpriv->dm.bcurrent_turbo_edca = true;
 	} else {
 		if (rtlpriv->dm.bcurrent_turbo_edca) {
@@ -1166,7 +1166,7 @@ static void rtl8723be_dm_check_edca_turbo(struct ieee80211_hw *hw)
 	}
 
 dm_CheckEdcaTurbo_EXIT:
-	rtlpriv->dm.bis_any_nonbepkts = false;
+	rtlpriv->dm.is_any_nonbepkts = false;
 	last_txok_cnt = rtlpriv->stats.txbytesunicast;
 	last_rxok_cnt = rtlpriv->stats.rxbytesunicast;
 }
@@ -1210,23 +1210,23 @@ void rtl8723be_dm_dynamic_edcca(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	u8 reg_c50, reg_c58;
-	bool b_fw_current_in_ps_mode = false;
+	bool fw_current_in_ps_mode = false;
 
 	rtlpriv->cfg->ops->get_hw_reg(hw, HW_VAR_FW_PSMODE_STATUS,
-				      (u8 *)(&b_fw_current_in_ps_mode));
-	if (b_fw_current_in_ps_mode)
+				      (u8 *)(&fw_current_in_ps_mode));
+	if (fw_current_in_ps_mode)
 		return;
 
 	reg_c50 = rtl_get_bbreg(hw, ROFDM0_XAAGCCORE1, MASKBYTE0);
 	reg_c58 = rtl_get_bbreg(hw, ROFDM0_XBAGCCORE1, MASKBYTE0);
 
 	if (reg_c50 > 0x28 && reg_c58 > 0x28) {
-		if (!rtlpriv->rtlhal.b_pre_edcca_enable) {
+		if (!rtlpriv->rtlhal.pre_edcca_enable) {
 			rtl_write_byte(rtlpriv, ROFDM0_ECCATHRESHOLD, 0x03);
 			rtl_write_byte(rtlpriv, ROFDM0_ECCATHRESHOLD + 2, 0x00);
 		}
 	} else if (reg_c50 < 0x25 && reg_c58 < 0x25) {
-		if (rtlpriv->rtlhal.b_pre_edcca_enable) {
+		if (rtlpriv->rtlhal.pre_edcca_enable) {
 			rtl_write_byte(rtlpriv, ROFDM0_ECCATHRESHOLD, 0x7f);
 			rtl_write_byte(rtlpriv, ROFDM0_ECCATHRESHOLD + 2, 0x7f);
 		}
@@ -1343,11 +1343,11 @@ static void rtl8723be_dm_common_info_self_update(struct ieee80211_hw *hw)
 	u8 cnt = 0;
 	struct rtl_sta_info *drv_priv;
 
-	rtlpriv->dm.b_one_entry_only = false;
+	rtlpriv->dm.one_entry_only = false;
 
 	if (rtlpriv->mac80211.opmode == NL80211_IFTYPE_STATION &&
 		rtlpriv->mac80211.link_state >= MAC80211_LINKED) {
-		rtlpriv->dm.b_one_entry_only = true;
+		rtlpriv->dm.one_entry_only = true;
 		return;
 	}
 
@@ -1361,7 +1361,7 @@ static void rtl8723be_dm_common_info_self_update(struct ieee80211_hw *hw)
 		spin_unlock_bh(&rtlpriv->locks.entry_list_lock);
 
 		if (cnt == 1)
-			rtlpriv->dm.b_one_entry_only = true;
+			rtlpriv->dm.one_entry_only = true;
 	}
 }
 
@@ -1369,20 +1369,20 @@ void rtl8723be_dm_watchdog(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_ps_ctl *ppsc = rtl_psc(rtl_priv(hw));
-	bool b_fw_current_inpsmode = false;
-	bool b_fw_ps_awake = true;
+	bool fw_current_inpsmode = false;
+	bool fw_ps_awake = true;
 
 	rtlpriv->cfg->ops->get_hw_reg(hw, HW_VAR_FW_PSMODE_STATUS,
-				      (u8 *) (&b_fw_current_inpsmode));
+				      (u8 *) (&fw_current_inpsmode));
 
 	rtlpriv->cfg->ops->get_hw_reg(hw, HW_VAR_FWLPS_RF_ON,
-				      (u8 *) (&b_fw_ps_awake));
+				      (u8 *) (&fw_ps_awake));
 
 	if (ppsc->p2p_ps_info.p2p_ps_mode)
-		b_fw_ps_awake = false;
+		fw_ps_awake = false;
 
 	if ((ppsc->rfpwr_state == ERFON) &&
-		((!b_fw_current_inpsmode) && b_fw_ps_awake) &&
+		((!fw_current_inpsmode) && fw_ps_awake) &&
 		(!ppsc->rfchange_inprogress)) {
 		rtl8723be_dm_common_info_self_update(hw);
 		rtl8723be_dm_false_alarm_counter_statistics(hw);

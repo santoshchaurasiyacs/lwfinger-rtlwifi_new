@@ -80,7 +80,7 @@ static void _rtl_pci_update_default_setting(struct ieee80211_hw *hw)
 	u8 init_aspm;
 
 	ppsc->reg_rfps_level = 0;
-	ppsc->b_support_aspm = 0;
+	ppsc->support_aspm = 0;
 
 	/*Update PCI ASPM setting */
 	ppsc->const_amdpci_aspm = rtlpci->const_amdpci_aspm;
@@ -145,29 +145,29 @@ static void _rtl_pci_update_default_setting(struct ieee80211_hw *hw)
 	switch (rtlpci->const_support_pciaspm) {
 	case 0:{
 			/*Not support ASPM. */
-			bool b_support_aspm = false;
-			ppsc->b_support_aspm = b_support_aspm;
+			bool support_aspm = false;
+			ppsc->support_aspm = support_aspm;
 			break;
 		}
 	case 1:{
 			/*Support ASPM. */
-			bool b_support_aspm = true;
-			bool b_support_backdoor = true;
-			ppsc->b_support_aspm = b_support_aspm;
+			bool support_aspm = true;
+			bool support_backdoor = true;
+			ppsc->support_aspm = support_aspm;
 
 			/*if (priv->oem_id == RT_CID_TOSHIBA &&
 			   !priv->ndis_adapter.amd_l1_patch)
-			   b_support_backdoor = false; */
+			   support_backdoor = false; */
 
-			ppsc->b_support_backdoor = b_support_backdoor;
+			ppsc->support_backdoor = support_backdoor;
 
 			break;
 		}
 	case 2:
 		/*ASPM value set by chipset. */
 		if (pcibridge_vendor == PCI_BRIDGE_VENDOR_INTEL) {
-			bool b_support_aspm = true;
-			ppsc->b_support_aspm = b_support_aspm;
+			bool support_aspm = true;
+			ppsc->support_aspm = support_aspm;
 		}
 		break;
 	default:
@@ -181,7 +181,7 @@ static void _rtl_pci_update_default_setting(struct ieee80211_hw *hw)
 	pci_read_config_byte(rtlpci->pdev, 0x80, &init_aspm);
 	if (rtlpriv->rtlhal.hw_type == HARDWARE_TYPE_RTL8192SE &&
 		init_aspm == 0x43)
-		ppsc->b_support_aspm = false;
+		ppsc->support_aspm = false;
 }
 
 static bool _rtl_pci_platform_switch_device_pci_aspm(struct ieee80211_hw *hw,
@@ -231,7 +231,7 @@ static void rtl_pci_disable_aspm(struct ieee80211_hw *hw)
 				pcibridge_linkctrlreg;
 	u16 aspmlevel = 0;
 
-	if (!ppsc->b_support_aspm)
+	if (!ppsc->support_aspm)
 		return;
 
 	if (pcibridge_vendor == PCI_BRIDGE_VENDOR_UNKNOWN) {
@@ -288,7 +288,7 @@ static void rtl_pci_enable_aspm(struct ieee80211_hw *hw)
 	u8 u_pcibridge_aspmsetting;
 	u8 u_device_aspmsetting;
 
-	if (!ppsc->b_support_aspm)
+	if (!ppsc->support_aspm)
 		return;
 
 	if (pcibridge_vendor == PCI_BRIDGE_VENDOR_UNKNOWN) {
@@ -536,12 +536,12 @@ static void _rtl_pci_tx_chk_waitq(struct ieee80211_hw *hw)
 	struct ieee80211_tx_info *info = NULL;
 	int tid; /* should be int */
 
-	if (!rtlpriv->rtlhal.b_earlymode_enable)
+	if (!rtlpriv->rtlhal.earlymode_enable)
 		return;
 	if (rtlpriv->dm.supp_phymode_switch &&
-		(rtlpriv->easy_concurrent_ctl.bswitch_in_process ||
+		(rtlpriv->easy_concurrent_ctl.switch_in_process ||
 		(rtlpriv->buddy_priv &&
-		 rtlpriv->buddy_priv->easy_concurrent_ctl.bswitch_in_process)))
+		 rtlpriv->buddy_priv->easy_concurrent_ctl.switch_in_process)))
 		return;
 	/* we juse use em for BE/BK/VI/VO */
 	for (tid = 7; tid >= 0; tid--) {
@@ -612,7 +612,7 @@ static void _rtl_pci_tx_isr(struct ieee80211_hw *hw, int prio)
 				 skb->len, PCI_DMA_TODEVICE);
 
 		/* remove early mode header */
-		if (rtlpriv->rtlhal.b_earlymode_enable)
+		if (rtlpriv->rtlhal.earlymode_enable)
 			skb_pull(skb, EM_HDR_LEN);
 
 		RT_TRACE((COMP_INTR | COMP_SEND), DBG_TRACE,
@@ -885,7 +885,7 @@ static void _rtl_pci_rx_interrupt(struct ieee80211_hw *hw)
 		hdr = rtl_get_hdr(skb);
 		fc = rtl_get_fc(skb);
 
-		if (!status.b_crc && !status.b_hwerror) {
+		if (!status.crc && !status.hwerror) {
 			memcpy(IEEE80211_SKB_RXCB(skb), &rx_status,
 			       sizeof(rx_status));
 
@@ -1100,7 +1100,7 @@ static irqreturn_t _rtl_pci_interrupt(int irq, void *dev_id)
 	}
 
 
-	if (rtlpriv->rtlhal.b_earlymode_enable)
+	if (rtlpriv->rtlhal.earlymode_enable)
 		tasklet_schedule(&rtlpriv->works.irq_tasklet);
 
 done:
@@ -1592,7 +1592,7 @@ static bool rtl_pci_tx_chk_waitq_insert(struct ieee80211_hw *hw,
 		return false;
 	sta_entry = (struct rtl_sta_info *)sta->drv_priv;
 
-	if (!rtlpriv->rtlhal.b_earlymode_enable)
+	if (!rtlpriv->rtlhal.earlymode_enable)
 		return false;
 	if (ieee80211_is_nullfunc(fc))
 		return false;

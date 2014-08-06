@@ -80,7 +80,7 @@ static void rtl_op_stop(struct ieee80211_hw *hw)
 	mutex_lock(&rtlpriv->locks.conf_mutex);
 	/* if wowlan supported, DON'T clear connected info */
 	if (!(b_support_remote_wakeup &&
-	      rtlhal->b_enter_pnp_sleep)) {
+	      rtlhal->enter_pnp_sleep)) {
 		mac->link_state = MAC80211_NOLINK;
 		memset(mac->bssid, 0, 6);
 		mac->vendor = PEER_UNKNOWN;
@@ -466,7 +466,7 @@ static int rtl_op_suspend(struct ieee80211_hw *hw,
 		_rtl_add_wowlan_patterns(hw, wow);
 
 	rtlhal->driver_is_goingto_unload = true;
-	rtlhal->b_enter_pnp_sleep = true;
+	rtlhal->enter_pnp_sleep = true;
 
 	rtl_lps_leave(hw);
 	rtl_op_stop(hw);
@@ -485,8 +485,8 @@ static int rtl_op_resume(struct ieee80211_hw *hw)
 
 	RT_TRACE(COMP_POWER, DBG_DMESG, ("\n"));
 	rtlhal->driver_is_goingto_unload = false;
-	rtlhal->b_enter_pnp_sleep = false;
-	rtlhal->b_wake_from_pnp_sleep = true;
+	rtlhal->enter_pnp_sleep = false;
+	rtlhal->wake_from_pnp_sleep = true;
 
 	/* to resovle s4 can not wake up*/
 	do_gettimeofday(&ts);
@@ -498,7 +498,7 @@ static int rtl_op_resume(struct ieee80211_hw *hw)
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 1, 0))
 	ieee80211_resume_disconnect(mac->vif);
 #endif
-	rtlhal->b_wake_from_pnp_sleep = false;
+	rtlhal->wake_from_pnp_sleep = false;
 	return 0;
 }
 #endif
@@ -1338,7 +1338,7 @@ static void rtl_op_sw_scan_start(struct ieee80211_hw *hw)
 
 	RT_TRACE(COMP_MAC80211, DBG_LOUD, ("\n"));
 	mac->act_scanning = true;
-	if (rtlpriv->link_info.b_higher_busytraffic) {
+	if (rtlpriv->link_info.higher_busytraffic) {
 		mac->skip_scan = true;
 		return;
 	}
@@ -1359,7 +1359,7 @@ static void rtl_op_sw_scan_start(struct ieee80211_hw *hw)
 	}
 
 	/* Dul mac */
-	rtlpriv->rtlhal.b_load_imrandiqk_setting_for2g = false;
+	rtlpriv->rtlhal.load_imrandiqk_setting_for2g = false;
 
 	rtlpriv->cfg->ops->led_control(hw, LED_CTL_SITE_SURVEY);
 	rtlpriv->cfg->ops->scan_operation_backup(hw, SCAN_OPT_BACKUP_BAND0);
@@ -1373,7 +1373,7 @@ static void rtl_op_sw_scan_complete(struct ieee80211_hw *hw)
 	RT_TRACE(COMP_MAC80211, DBG_LOUD, ("\n"));
 	mac->act_scanning = false;
 	mac->skip_scan = false;
-	if (rtlpriv->link_info.b_higher_busytraffic)
+	if (rtlpriv->link_info.higher_busytraffic)
 		return;
 
 	/* p2p will use 1/6/11 to scan */
@@ -1383,7 +1383,7 @@ static void rtl_op_sw_scan_complete(struct ieee80211_hw *hw)
 		mac->p2p_in_use = false;
 	mac->n_channels = 0;
 	/* Dul mac */
-	rtlpriv->rtlhal.b_load_imrandiqk_setting_for2g = false;
+	rtlpriv->rtlhal.load_imrandiqk_setting_for2g = false;
 
 	if (mac->link_state == MAC80211_LINKED_SCANNING) {
 		mac->link_state = MAC80211_LINKED;

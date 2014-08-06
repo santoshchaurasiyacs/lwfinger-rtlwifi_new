@@ -247,7 +247,7 @@ int rtl92d_download_fw(struct ieee80211_hw *hw)
 	enum version_8192d version = rtlhal->version;
 	u8 value;
 	u32 count;
-	bool b_fw_downloaded = false, b_fwdl_in_process = false;
+	bool fw_downloaded = false, b_fwdl_in_process = false;
 	unsigned long flags;
 
 	if (!rtlhal->pfirmware)
@@ -270,12 +270,12 @@ int rtl92d_download_fw(struct ieee80211_hw *hw)
 	}
 
 	spin_lock_irqsave(&globalmutex_for_fwdownload, flags);
-	b_fw_downloaded = _rtl92d_is_fw_downloaded(rtlpriv);
+	fw_downloaded = _rtl92d_is_fw_downloaded(rtlpriv);
 	if ((rtl_read_byte(rtlpriv, 0x1f) & BIT(5)) == BIT(5))
 		b_fwdl_in_process = true;
 	else
 		b_fwdl_in_process = false;
-	if (b_fw_downloaded) {
+	if (fw_downloaded) {
 		spin_unlock_irqrestore(&globalmutex_for_fwdownload, flags);
 		goto exit;
 	} else if (b_fwdl_in_process) {
@@ -283,13 +283,13 @@ int rtl92d_download_fw(struct ieee80211_hw *hw)
 		for (count = 0; count < 5000; count++) {
 			udelay(500);
 			spin_lock_irqsave(&globalmutex_for_fwdownload, flags);
-			b_fw_downloaded = _rtl92d_is_fw_downloaded(rtlpriv);
+			fw_downloaded = _rtl92d_is_fw_downloaded(rtlpriv);
 			if ((rtl_read_byte(rtlpriv, 0x1f) & BIT(5)) == BIT(5))
 				b_fwdl_in_process = true;
 			else
 				b_fwdl_in_process = false;
 			spin_unlock_irqrestore(&globalmutex_for_fwdownload, flags);
-			if (b_fw_downloaded)
+			if (fw_downloaded)
 				goto exit;
 			else if (!b_fwdl_in_process)
 				break;
@@ -378,12 +378,12 @@ void _rtl92d_fill_h2c_command(struct ieee80211_hw *hw,
 	RT_TRACE(COMP_CMD, DBG_LOUD, ("come in\n"));
 	while (true) {
 		spin_lock_irqsave(&rtlpriv->locks.h2c_lock, flag);
-		if (rtlhal->b_h2c_setinprogress) {
+		if (rtlhal->h2c_setinprogress) {
 			RT_TRACE(COMP_CMD, DBG_LOUD,
 				 ("H2C set in progress! Wait to set.."
 				  "element_id(%d).\n", element_id));
 
-			while (rtlhal->b_h2c_setinprogress) {
+			while (rtlhal->h2c_setinprogress) {
 				spin_unlock_irqrestore(&rtlpriv->locks.h2c_lock, flag);
 				h2c_waitcounter++;
 				RT_TRACE(COMP_CMD, DBG_LOUD,
@@ -398,7 +398,7 @@ void _rtl92d_fill_h2c_command(struct ieee80211_hw *hw,
 			}
 			spin_unlock_irqrestore(&rtlpriv->locks.h2c_lock, flag);
 		} else {
-			rtlhal->b_h2c_setinprogress = true;
+			rtlhal->h2c_setinprogress = true;
 			spin_unlock_irqrestore(&rtlpriv->locks.h2c_lock, flag);
 			break;
 		}
@@ -527,7 +527,7 @@ void _rtl92d_fill_h2c_command(struct ieee80211_hw *hw,
 			  rtlhal->last_hmeboxnum));
 	}
 	spin_lock_irqsave(&rtlpriv->locks.h2c_lock, flag);
-	rtlhal->b_h2c_setinprogress = false;
+	rtlhal->h2c_setinprogress = false;
 	spin_unlock_irqrestore(&rtlpriv->locks.h2c_lock, flag);
 	RT_TRACE(COMP_CMD, DBG_LOUD, ("go out\n"));
 }
@@ -538,7 +538,7 @@ void rtl92d_fill_h2c_cmd(struct ieee80211_hw *hw,
 	struct rtl_hal *rtlhal = rtl_hal(rtl_priv(hw));
 	u32 tmp_cmdbuf[2];
 
-	if (rtlhal->bfw_ready == false) {
+	if (rtlhal->fw_ready == false) {
 		RT_ASSERT(false, ("return H2C cmd because of Fw "
 				  "download fail!!!\n"));
 		return;

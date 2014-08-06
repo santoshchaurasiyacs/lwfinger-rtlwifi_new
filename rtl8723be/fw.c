@@ -292,12 +292,12 @@ static void _rtl8723be_fill_h2c_command(struct ieee80211_hw *hw, u8 element_id,
 
 	while (true) {
 		spin_lock_irqsave(&rtlpriv->locks.h2c_lock, flag);
-		if (rtlhal->b_h2c_setinprogress) {
+		if (rtlhal->h2c_setinprogress) {
 			RT_TRACE(COMP_CMD, DBG_LOUD,
 				 ("H2C set in progress! Wait to set.."
 				  "element_id(%d).\n", element_id));
 
-			while (rtlhal->b_h2c_setinprogress) {
+			while (rtlhal->h2c_setinprogress) {
 				spin_unlock_irqrestore(&rtlpriv->locks.h2c_lock,
 						       flag);
 				h2c_waitcounter++;
@@ -313,7 +313,7 @@ static void _rtl8723be_fill_h2c_command(struct ieee80211_hw *hw, u8 element_id,
 			}
 			spin_unlock_irqrestore(&rtlpriv->locks.h2c_lock, flag);
 		} else {
-			rtlhal->b_h2c_setinprogress = true;
+			rtlhal->h2c_setinprogress = true;
 			spin_unlock_irqrestore(&rtlpriv->locks.h2c_lock, flag);
 			break;
 		}
@@ -438,7 +438,7 @@ static void _rtl8723be_fill_h2c_command(struct ieee80211_hw *hw, u8 element_id,
 	}
 
 	spin_lock_irqsave(&rtlpriv->locks.h2c_lock, flag);
-	rtlhal->b_h2c_setinprogress = false;
+	rtlhal->h2c_setinprogress = false;
 	spin_unlock_irqrestore(&rtlpriv->locks.h2c_lock, flag);
 
 	RT_TRACE(COMP_CMD, DBG_LOUD, ("go out\n"));
@@ -450,7 +450,7 @@ void rtl8723be_fill_h2c_cmd(struct ieee80211_hw *hw, u8 element_id,
 	struct rtl_hal *rtlhal = rtl_hal(rtl_priv(hw));
 	u32 tmp_cmdbuf[2];
 
-	if (rtlhal->bfw_ready == false) {
+	if (rtlhal->fw_ready == false) {
 		RT_ASSERT(false, ("return H2C cmd because of Fw "
 				  "download fail!!!\n"));
 		return;

@@ -377,10 +377,10 @@ void halbtc8723b1ant_limited_tx(struct btc_coexist *btcoexist,
 
 void halbtc8723b1ant_limited_rx(struct btc_coexist *btcoexist,
 				bool force_exec, bool rej_ap_agg_pkt,
-				bool b_bt_ctrl_agg_buf_size, u8 agg_buf_size)
+				bool bt_ctrl_agg_buf_size, u8 agg_buf_size)
 {
 	bool reject_rx_agg = rej_ap_agg_pkt;
-	bool bt_ctrl_rx_agg_size = b_bt_ctrl_agg_buf_size;
+	bool bt_ctrl_rx_agg_size = bt_ctrl_agg_buf_size;
 	u8 rxAggSize = agg_buf_size;
 
 	/**********************************************
@@ -2344,7 +2344,7 @@ void halbtc8723b1ant_run_coexist_mechanism(struct btc_coexist *btcoexist)
 	struct btc_bt_link_info *bt_link_info = &btcoexist->bt_link_info;
 	bool wifi_connected = false, bt_hs_on = false;
 	bool increase_scan_dev_num = false;
-	bool b_bt_ctrl_agg_buf_size = false;
+	bool bt_ctrl_agg_buf_size = false;
 	u8 agg_buf_size = 5;
 	u8 wifi_rssi_state = BTC_RSSI_STATE_HIGH;
 	u32 wifi_link_status = 0;
@@ -2391,7 +2391,7 @@ void halbtc8723b1ant_run_coexist_mechanism(struct btc_coexist *btcoexist)
 	if (num_of_wifi_link >= 2) {
 		halbtc8723b1ant_limited_tx(btcoexist, NORMAL_EXEC, 0, 0, 0, 0);
 		halbtc8723b1ant_limited_rx(btcoexist, NORMAL_EXEC, false,
-					   b_bt_ctrl_agg_buf_size,
+					   bt_ctrl_agg_buf_size,
 					   agg_buf_size);
 		halbtc8723b1ant_action_wifi_multiport(btcoexist);
 		return;
@@ -2421,17 +2421,17 @@ void halbtc8723b1ant_run_coexist_mechanism(struct btc_coexist *btcoexist)
 	}
 
 	if (bt_link_info->sco_exist) {
-		b_bt_ctrl_agg_buf_size = true;
+		bt_ctrl_agg_buf_size = true;
 		agg_buf_size = 0x3;
 	} else if (bt_link_info->hid_exist) {
-		b_bt_ctrl_agg_buf_size = true;
+		bt_ctrl_agg_buf_size = true;
 		agg_buf_size = 0x5;
 	} else if (bt_link_info->a2dp_exist || bt_link_info->pan_exist) {
-		b_bt_ctrl_agg_buf_size = true;
+		bt_ctrl_agg_buf_size = true;
 		agg_buf_size = 0x8;
 	}
 	halbtc8723b1ant_limited_rx(btcoexist, NORMAL_EXEC, false,
-				   b_bt_ctrl_agg_buf_size, agg_buf_size);
+				   bt_ctrl_agg_buf_size, agg_buf_size);
 
 	halbtc8723b1ant_run_sw_coexist_mechanism(btcoexist);
 
@@ -2763,7 +2763,7 @@ void ex_halbtc8723b1ant_display_coex_info(struct btc_coexist *btcoexist)
 		CL_SPRINTF(cli_buf, BT_TMP_BUF_SIZE, "\r\n %-35s = %s/ %s/ %d ",
 			   "DelBA/ BtCtrlAgg/ AggSize",
 			   (btcoexist->bt_info.reject_agg_pkt ? "Yes":"No"),
-			   (btcoexist->bt_info.b_bt_ctrl_buf_size ? "Yes":"No"),
+			   (btcoexist->bt_info.bt_ctrl_buf_size ? "Yes":"No"),
 			   btcoexist->bt_info.agg_buf_size);
 		CL_PRINTF(cli_buf);
 

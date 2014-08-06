@@ -87,22 +87,22 @@ static void _rtl92s_dm_check_edca_turbo(struct ieee80211_hw *hw)
 		goto dm_checkedcaturbo_exit;
 	}
 
-	if ((!rtlpriv->dm.bis_any_nonbepkts) &&
-	    (!rtlpriv->dm.b_disable_framebursting)) {
+	if ((!rtlpriv->dm.is_any_nonbepkts) &&
+	    (!rtlpriv->dm.disable_framebursting)) {
 		cur_txok_cnt = rtlpriv->stats.txbytesunicast - last_txok_cnt;
 		cur_rxok_cnt = rtlpriv->stats.rxbytesunicast - last_rxok_cnt;
 
 		if (rtlpriv->phy.rf_type == RF_1T2R) {
 			/* Uplink TP is present. */
 			if (cur_txok_cnt > 4 * cur_rxok_cnt) {
-				if (rtlpriv->dm.bis_cur_rdlstate ||
+				if (rtlpriv->dm.is_cur_rdlstate ||
 					!rtlpriv->dm.bcurrent_turbo_edca) {
 					rtl_write_dword(rtlpriv, EDCAPARA_BE,
 						edca_be_ul);
-					rtlpriv->dm.bis_cur_rdlstate = false;
+					rtlpriv->dm.is_cur_rdlstate = false;
 				}
 			} else {/* Balance TP is present. */
-				if (!rtlpriv->dm.bis_cur_rdlstate ||
+				if (!rtlpriv->dm.is_cur_rdlstate ||
 					!rtlpriv->dm.bcurrent_turbo_edca) {
 					if (mac->mode == WIRELESS_MODE_G ||
 						mac->mode == WIRELESS_MODE_B)
@@ -111,13 +111,13 @@ static void _rtl92s_dm_check_edca_turbo(struct ieee80211_hw *hw)
 					else
 						rtl_write_dword(rtlpriv,
 							EDCAPARA_BE, edca_be_dl);
-					rtlpriv->dm.bis_cur_rdlstate = true;
+					rtlpriv->dm.is_cur_rdlstate = true;
 				}
 			}
 			rtlpriv->dm.bcurrent_turbo_edca = true;
 		} else {
 			if (cur_rxok_cnt > 4 * cur_txok_cnt) {
-				if (!rtlpriv->dm.bis_cur_rdlstate ||
+				if (!rtlpriv->dm.is_cur_rdlstate ||
 					!rtlpriv->dm.bcurrent_turbo_edca) {
 					if (mac->mode == WIRELESS_MODE_G ||
 						mac->mode == WIRELESS_MODE_B)
@@ -126,14 +126,14 @@ static void _rtl92s_dm_check_edca_turbo(struct ieee80211_hw *hw)
 					else
 						rtl_write_dword(rtlpriv,
 							EDCAPARA_BE, edca_be_dl);
-					rtlpriv->dm.bis_cur_rdlstate = true;
+					rtlpriv->dm.is_cur_rdlstate = true;
 				}
 			} else {
-				if (rtlpriv->dm.bis_cur_rdlstate ||
+				if (rtlpriv->dm.is_cur_rdlstate ||
 					!rtlpriv->dm.bcurrent_turbo_edca) {
 					rtl_write_dword(rtlpriv,
 						EDCAPARA_BE, edca_be_ul);
-					rtlpriv->dm.bis_cur_rdlstate = false;
+					rtlpriv->dm.is_cur_rdlstate = false;
 				}
 			}
 			rtlpriv->dm.bcurrent_turbo_edca = true;
@@ -148,7 +148,7 @@ static void _rtl92s_dm_check_edca_turbo(struct ieee80211_hw *hw)
 	}
 
 dm_checkedcaturbo_exit:
-	rtlpriv->dm.bis_any_nonbepkts = false;
+	rtlpriv->dm.is_any_nonbepkts = false;
 	last_txok_cnt = rtlpriv->stats.txbytesunicast;
 	last_rxok_cnt = rtlpriv->stats.rxbytesunicast;
 }
@@ -161,7 +161,7 @@ static void _rtl92s_dm_txpowertracking_callback_thermalmeter(
 	u8 thermalvalue = 0;
 	u32 fw_cmd = 0;
 
-	rtlpriv->dm.btxpower_trackinginit = true;
+	rtlpriv->dm.txpower_trackinginit = true;
 
 	thermalvalue = (u8)rtl_get_rfreg(hw, RF90_PATH_A, RF_T_METER, 0x1f);
 
@@ -203,7 +203,7 @@ static void _rtl92s_dm_check_txpowertracking_thermalmeter(
 	if (rtlphy->rf_type == RF_2T2R)
 		return;
 
-	if (!rtlpriv->dm.btxpower_tracking)
+	if (!rtlpriv->dm.txpower_tracking)
 		return;
 
 	if (rtlpriv->dm.txpowercount <= tx_power_checkcnt) {
@@ -237,13 +237,13 @@ static void _rtl92s_dm_refresh_rateadaptive_mask(struct ieee80211_hw *hw)
 	if (is_hal_stop(rtlhal))
 		return;
 
-	if (!rtlpriv->dm.b_useramask)
+	if (!rtlpriv->dm.useramask)
 		return;
 
 	if (hal_get_firmwareverison(rtlpriv) >= 61 &&
-		!rtlpriv->dm.binform_fw_driverctrldm) {
+		!rtlpriv->dm.inform_fw_driverctrldm) {
 		rtl92s_phy_set_fw_cmd(hw, FW_CMD_CTRL_DM_BY_DRIVER);
-		rtlpriv->dm.binform_fw_driverctrldm = true;
+		rtlpriv->dm.inform_fw_driverctrldm = true;
 	}
 
 	if ((mac->link_state == MAC80211_LINKED) &&
@@ -375,8 +375,8 @@ void rtl92s_dm_init_edca_turbo(struct ieee80211_hw *hw)
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 
 	rtlpriv->dm.bcurrent_turbo_edca = false;
-	rtlpriv->dm.bis_any_nonbepkts = false;
-	rtlpriv->dm.bis_cur_rdlstate = false;
+	rtlpriv->dm.is_any_nonbepkts = false;
+	rtlpriv->dm.is_cur_rdlstate = false;
 }
 
 static void _rtl92s_dm_init_rate_adaptive_mask(struct ieee80211_hw *hw)
@@ -389,12 +389,12 @@ static void _rtl92s_dm_init_rate_adaptive_mask(struct ieee80211_hw *hw)
 
 	if (rtlpriv->dm.dm_type == DM_TYPE_BYDRIVER &&
 		hal_get_firmwareverison(rtlpriv) >= 60)
-		rtlpriv->dm.b_useramask = true;
+		rtlpriv->dm.useramask = true;
 	else
-		rtlpriv->dm.b_useramask = false;
+		rtlpriv->dm.useramask = false;
 
-	rtlpriv->dm.b_useramask = false;
-	rtlpriv->dm.binform_fw_driverctrldm = false;
+	rtlpriv->dm.useramask = false;
+	rtlpriv->dm.inform_fw_driverctrldm = false;
 }
 
 static void _rtl92s_dm_init_txpowertracking_thermalmeter(
@@ -402,9 +402,9 @@ static void _rtl92s_dm_init_txpowertracking_thermalmeter(
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 
-	rtlpriv->dm.btxpower_tracking = true;
+	rtlpriv->dm.txpower_tracking = true;
 	rtlpriv->dm.txpowercount = 0;
-	rtlpriv->dm.btxpower_trackinginit = false;
+	rtlpriv->dm.txpower_trackinginit = false;
 }
 
 static void _rtl92s_dm_false_alarm_counter_statistics(struct ieee80211_hw *hw)
@@ -561,7 +561,7 @@ static void	_rtl92s_dm_ctrl_initgain_byrssi(struct ieee80211_hw *hw)
 	if (rtlphy->rf_type == RF_2T2R)
 		return;
 
-	if (!rtlpriv->dm.b_dm_initialgain_enable)
+	if (!rtlpriv->dm.dm_initialgain_enable)
 		return;
 
 	if (digtable.dig_enable_flag == false)
@@ -582,7 +582,7 @@ static void _rtl92s_dm_dynamic_txpower(struct ieee80211_hw *hw)
 	if (rtlphy->rf_type == RF_2T2R)
 		return;
 
-	if (!rtlpriv->dm.bdynamic_txpower_enable ||
+	if (!rtlpriv->dm.dynamic_txpower_enable ||
 		rtlpriv->dm.dm_flag & HAL_DM_HIPWR_DISABLE) {
 		rtlpriv->dm.dynamic_txhighpower_lvl = TX_HIGHPWR_LEVEL_NORMAL;
 		return;
@@ -695,9 +695,9 @@ static void _rtl92s_dm_init_dynamic_txpower(struct ieee80211_hw *hw)
 
 	if (hal_get_firmwareverison(rtlpriv) >= 60 &&
 		rtlpriv->dm.dm_type == DM_TYPE_BYDRIVER) {
-		rtlpriv->dm.bdynamic_txpower_enable = true;
+		rtlpriv->dm.dynamic_txpower_enable = true;
 	} else {
-		rtlpriv->dm.bdynamic_txpower_enable = false;
+		rtlpriv->dm.dynamic_txpower_enable = false;
 	}
 
 	rtlpriv->dm.last_dtp_lvl = TX_HIGHPWR_LEVEL_NORMAL;

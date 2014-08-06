@@ -126,15 +126,15 @@ static void _rtl8723be_set_fw_clock_on(struct ieee80211_hw *hw, u8 rpwm_val,
 	rtlpriv->cfg->ops->get_hw_reg(hw, HAL_DEF_WOWLAN,
 				      (u8 *) (&b_support_remote_wake_up));
 
-	if (!rtlhal->bfw_ready)
+	if (!rtlhal->fw_ready)
 		return;
-	if (!rtlpriv->psc.b_fw_current_inpsmode)
+	if (!rtlpriv->psc.fw_current_inpsmode)
 		return;
 
 	while (1) {
 		spin_lock_bh(&rtlpriv->locks.fw_ps_lock);
-		if (rtlhal->bfw_clk_change_in_progress) {
-			while (rtlhal->bfw_clk_change_in_progress) {
+		if (rtlhal->fw_clk_change_in_progress) {
+			while (rtlhal->fw_clk_change_in_progress) {
 				spin_unlock_bh(&rtlpriv->locks.fw_ps_lock);
 				count++;
 				udelay(100);
@@ -144,7 +144,7 @@ static void _rtl8723be_set_fw_clock_on(struct ieee80211_hw *hw, u8 rpwm_val,
 			}
 			spin_unlock_bh(&rtlpriv->locks.fw_ps_lock);
 		} else {
-			rtlhal->bfw_clk_change_in_progress = false;
+			rtlhal->fw_clk_change_in_progress = false;
 			spin_unlock_bh(&rtlpriv->locks.fw_ps_lock);
 			break;
 		}
@@ -173,7 +173,7 @@ static void _rtl8723be_set_fw_clock_on(struct ieee80211_hw *hw, u8 rpwm_val,
 		}
 
 		spin_lock_bh(&rtlpriv->locks.fw_ps_lock);
-		rtlhal->bfw_clk_change_in_progress = false;
+		rtlhal->fw_clk_change_in_progress = false;
 		spin_unlock_bh(&rtlpriv->locks.fw_ps_lock);
 		if (b_schedule_timer)
 			mod_timer(&rtlpriv->works.fw_clockoff_timer,
@@ -182,7 +182,7 @@ static void _rtl8723be_set_fw_clock_on(struct ieee80211_hw *hw, u8 rpwm_val,
 
 	} else  {
 		spin_lock_bh(&rtlpriv->locks.fw_ps_lock);
-		rtlhal->bfw_clk_change_in_progress = false;
+		rtlhal->fw_clk_change_in_progress = false;
 		spin_unlock_bh(&rtlpriv->locks.fw_ps_lock);
 	}
 
@@ -199,11 +199,11 @@ static void _rtl8723be_set_fw_clock_off(struct ieee80211_hw *hw, u8 rpwm_val)
 	bool b_schedule_timer = false;
 	u8 queue;
 
-	if (!rtlhal->bfw_ready)
+	if (!rtlhal->fw_ready)
 		return;
-	if (!rtlpriv->psc.b_fw_current_inpsmode)
+	if (!rtlpriv->psc.fw_current_inpsmode)
 		return;
-	if (!rtlhal->ballow_sw_to_change_hwclc)
+	if (!rtlhal->allow_sw_to_change_hwclc)
 		return;
 	rtlpriv->cfg->ops->get_hw_reg(hw, HW_VAR_RF_STATE, (u8 *)(&rtstate));
 	if (rtstate == ERFOFF || rtlpriv->psc.inactive_pwrstate == ERFOFF)
@@ -225,15 +225,15 @@ static void _rtl8723be_set_fw_clock_off(struct ieee80211_hw *hw, u8 rpwm_val)
 
 	if (FW_PS_STATE(rtlhal->fw_ps_state) != FW_PS_STATE_RF_OFF_LOW_PWR) {
 		spin_lock_bh(&rtlpriv->locks.fw_ps_lock);
-		if (!rtlhal->bfw_clk_change_in_progress) {
-			rtlhal->bfw_clk_change_in_progress = true;
+		if (!rtlhal->fw_clk_change_in_progress) {
+			rtlhal->fw_clk_change_in_progress = true;
 			spin_unlock_bh(&rtlpriv->locks.fw_ps_lock);
 			rtlhal->fw_ps_state = FW_PS_STATE(rpwm_val);
 			rtl_write_word(rtlpriv, REG_HISR, 0x0100);
 			rtlpriv->cfg->ops->set_hw_reg(hw, HW_VAR_SET_RPWM,
 						      (u8 *) (&rpwm_val));
 			spin_lock_bh(&rtlpriv->locks.fw_ps_lock);
-			rtlhal->bfw_clk_change_in_progress = false;
+			rtlhal->fw_clk_change_in_progress = false;
 			spin_unlock_bh(&rtlpriv->locks.fw_ps_lock);
 		} else {
 			spin_unlock_bh(&rtlpriv->locks.fw_ps_lock);
@@ -256,17 +256,17 @@ static void _rtl8723be_fwlps_leave(struct ieee80211_hw *hw)
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_ps_ctl *ppsc = rtl_psc(rtl_priv(hw));
 	struct rtl_hal *rtlhal = rtl_hal(rtl_priv(hw));
-	bool b_fw_current_inps = false;
+	bool fw_current_inps = false;
 	u8 rpwm_val = 0, fw_pwrmode = FW_PS_ACTIVE_MODE;
 
-	if (ppsc->b_low_power_enable) {
+	if (ppsc->low_power_enable) {
 		rpwm_val = (FW_PS_STATE_ALL_ON | FW_PS_ACK);/* RF on */
 		_rtl8723be_set_fw_clock_on(hw, rpwm_val, false);
-		rtlhal->ballow_sw_to_change_hwclc = false;
+		rtlhal->allow_sw_to_change_hwclc = false;
 		rtlpriv->cfg->ops->set_hw_reg(hw, HW_VAR_H2C_FW_PWRMODE,
 					      (u8 *) (&fw_pwrmode));
 		rtlpriv->cfg->ops->set_hw_reg(hw, HW_VAR_FW_PSMODE_STATUS,
-					      (u8 *) (&b_fw_current_inps));
+					      (u8 *) (&fw_current_inps));
 	} else {
 		rpwm_val = FW_PS_STATE_ALL_ON;	/* RF on */
 		rtlpriv->cfg->ops->set_hw_reg(hw, HW_VAR_SET_RPWM,
@@ -274,7 +274,7 @@ static void _rtl8723be_fwlps_leave(struct ieee80211_hw *hw)
 		rtlpriv->cfg->ops->set_hw_reg(hw, HW_VAR_H2C_FW_PWRMODE,
 					      (u8 *) (&fw_pwrmode));
 		rtlpriv->cfg->ops->set_hw_reg(hw, HW_VAR_FW_PSMODE_STATUS,
-					      (u8 *) (&b_fw_current_inps));
+					      (u8 *) (&fw_current_inps));
 	}
 
 }
@@ -284,23 +284,23 @@ static void _rtl8723be_fwlps_enter(struct ieee80211_hw *hw)
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_ps_ctl *ppsc = rtl_psc(rtl_priv(hw));
 	struct rtl_hal *rtlhal = rtl_hal(rtl_priv(hw));
-	bool b_fw_current_inps = true;
+	bool fw_current_inps = true;
 	u8 rpwm_val;
 
-	if (ppsc->b_low_power_enable) {
+	if (ppsc->low_power_enable) {
 		rpwm_val = FW_PS_STATE_RF_OFF_LOW_PWR;	/* RF off */
 		rtlpriv->cfg->ops->set_hw_reg(hw, HW_VAR_FW_PSMODE_STATUS,
-					      (u8 *) (&b_fw_current_inps));
+					      (u8 *) (&fw_current_inps));
 		rtlpriv->cfg->ops->set_hw_reg(hw, HW_VAR_H2C_FW_PWRMODE,
 					      (u8 *) (&ppsc->fwctrl_psmode));
-		rtlhal->ballow_sw_to_change_hwclc = true;
+		rtlhal->allow_sw_to_change_hwclc = true;
 		_rtl8723be_set_fw_clock_off(hw, rpwm_val);
 
 
 	} else {
 		rpwm_val = FW_PS_STATE_RF_OFF;	/* RF off */
 		rtlpriv->cfg->ops->set_hw_reg(hw, HW_VAR_FW_PSMODE_STATUS,
-					      (u8 *) (&b_fw_current_inps));
+					      (u8 *) (&fw_current_inps));
 		rtlpriv->cfg->ops->set_hw_reg(hw, HW_VAR_H2C_FW_PWRMODE,
 					      (u8 *) (&ppsc->fwctrl_psmode));
 		rtlpriv->cfg->ops->set_hw_reg(hw, HW_VAR_SET_RPWM,
@@ -341,7 +341,7 @@ void rtl8723be_get_hw_reg(struct ieee80211_hw *hw, u8 variable, u8 *val)
 		}
 		break;
 	case HW_VAR_FW_PSMODE_STATUS:
-		*((bool *) (val)) = ppsc->b_fw_current_inpsmode;
+		*((bool *) (val)) = ppsc->fw_current_inpsmode;
 		break;
 	case HW_VAR_CORRECT_TSF:{
 		u64 tsf;
@@ -667,7 +667,7 @@ void rtl8723be_set_hw_reg(struct ieee80211_hw *hw, u8 variable, u8 *val)
 		rtl8723be_set_fw_pwrmode_cmd(hw, (*(u8 *) val));
 		break;
 	case HW_VAR_FW_PSMODE_STATUS:
-		ppsc->b_fw_current_inpsmode = *((bool *) val);
+		ppsc->fw_current_inpsmode = *((bool *) val);
 		break;
 	case HW_VAR_RESUME_CLK_ON:
 		_rtl8723be_set_fw_ps_rf_on(hw);
@@ -885,7 +885,7 @@ static bool _rtl8723be_init_mac(struct ieee80211_hw *hw)
 
 	rtl_write_word(rtlpriv, REG_CR, 0x2ff);
 
-	if (!rtlhal->b_mac_func_enable) {
+	if (!rtlhal->mac_func_enable) {
 		if (_rtl8723be_llt_table_init(hw) == false)
 			return false;
 	}
@@ -1183,7 +1183,7 @@ static void _rtl8723be_poweroff_adapter(struct ieee80211_hw *hw)
 	struct rtl_hal *rtlhal = rtl_hal(rtl_priv(hw));
 	u8 u1b_tmp;
 
-	rtlhal->b_mac_func_enable = false;
+	rtlhal->mac_func_enable = false;
 	/* Combo (PCIe + USB) Card and PCIe-MF Card */
 	/* 1. Run LPS WL RFOFF flow */
 	rtl_hal_pwrseqcmdparsing(rtlpriv, PWR_CUT_ALL_MSK, PWR_FAB_ALL_MSK,
@@ -1193,7 +1193,7 @@ static void _rtl8723be_poweroff_adapter(struct ieee80211_hw *hw)
 	/* turn off RF */
 	/* rtl_write_byte(rtlpriv, REG_RF_CTRL, 0x00); */
 	if ((rtl_read_byte(rtlpriv, REG_MCUFWDL) & BIT(7)) &&
-	    rtlhal->bfw_ready) {
+	    rtlhal->fw_ready) {
 		rtl8723be_firmware_selfreset(hw);
 	}
 
@@ -1357,20 +1357,20 @@ int rtl8723be_hw_init(struct ieee80211_hw *hw)
 
 	tmp_u1b = rtl_read_byte(rtlpriv, REG_CR);
 	if (tmp_u1b != 0 && tmp_u1b != 0xea) {
-		rtlhal->b_mac_func_enable = true;
+		rtlhal->mac_func_enable = true;
 	} else {
-		rtlhal->b_mac_func_enable = false;
+		rtlhal->mac_func_enable = false;
 		rtlhal->fw_ps_state = FW_PS_STATE_ALL_ON;
 	}
 
 	if (_rtl8723be_check_pcie_dma_hang(rtlpriv)) {
 		_rtl8723be_reset_pcie_interface_dma(rtlpriv,
-						    rtlhal->b_mac_func_enable);
-		rtlhal->b_mac_func_enable = false;
+						    rtlhal->mac_func_enable);
+		rtlhal->mac_func_enable = false;
 	}
-	if (rtlhal->b_mac_func_enable) {
+	if (rtlhal->mac_func_enable) {
 		_rtl8723be_poweroff_adapter(hw);
-		rtlhal->b_mac_func_enable = false;
+		rtlhal->mac_func_enable = false;
 	}
 	rtstatus = _rtl8723be_init_mac(hw);
 	if (rtstatus != true) {
@@ -1387,10 +1387,10 @@ int rtl8723be_hw_init(struct ieee80211_hw *hw)
 		RT_TRACE(COMP_ERR, DBG_WARNING,
 			 ("Failed to download FW. Init HW without FW now..\n"));
 		err = 1;
-		rtlhal->bfw_ready = false;
+		rtlhal->fw_ready = false;
 		return err;
 	} else {
-		rtlhal->bfw_ready = true;
+		rtlhal->fw_ready = true;
 	}
 
 	rtlhal->last_hmeboxnum = 0;
@@ -1414,7 +1414,7 @@ int rtl8723be_hw_init(struct ieee80211_hw *hw)
 	rtlphy->rfreg_chnlval[0] |= (BIT(10) | BIT(11));
 
 	_rtl8723be_hw_configure(hw);
-	rtlhal->b_mac_func_enable = true;
+	rtlhal->mac_func_enable = true;
 	rtl_cam_reset_all_entry(hw);
 	rtl8723be_enable_hw_security_config(hw);
 
@@ -2021,7 +2021,7 @@ static void _rtl8723be_read_txpower_info_from_hwpg(struct ieee80211_hw *hw,
 		rtlefuse->eeprom_thermalmeter = EEPROM_DEFAULT_THERMALMETER;
 
 	if (rtlefuse->eeprom_thermalmeter == 0xff || autoload_fail) {
-		rtlefuse->b_apk_thermalmeterignore = true;
+		rtlefuse->apk_thermalmeterignore = true;
 		rtlefuse->eeprom_thermalmeter = EEPROM_DEFAULT_THERMALMETER;
 	}
 
@@ -2118,7 +2118,7 @@ static void _rtl8723be_read_adapter_info(struct ieee80211_hw *hw,
 
 	rtlefuse->eeprom_channelplan = *(u8 *) &hwinfo[EEPROM_CHANNELPLAN];
 	rtlefuse->eeprom_version = *(u16 *) &hwinfo[EEPROM_VERSION];
-	rtlefuse->b_txpwr_fromeprom = true;
+	rtlefuse->txpwr_fromeprom = true;
 	rtlefuse->eeprom_oemid = *(u8 *) &hwinfo[EEPROM_CUSTOMER_ID];
 
 	RT_TRACE(COMP_INIT, DBG_LOUD,
@@ -2344,10 +2344,10 @@ static void _rtl8723be_hal_customized_behavior(struct ieee80211_hw *hw)
 	struct rtl_pci_priv *pcipriv = rtl_pcipriv(hw);
 	struct rtl_hal *rtlhal = rtl_hal(rtl_priv(hw));
 
-	pcipriv->ledctl.bled_opendrain = true;
+	pcipriv->ledctl.led_opendrain = true;
 	switch (rtlhal->oem_id) {
 	case RT_CID_819x_HP:
-		pcipriv->ledctl.bled_opendrain = true;
+		pcipriv->ledctl.led_opendrain = true;
 		break;
 	case RT_CID_819x_Lenovo:
 	case RT_CID_DEFAULT:
@@ -2372,10 +2372,10 @@ void rtl8723be_read_eeprom_info(struct ieee80211_hw *hw)
 
 	rtlhal->version = _rtl8723be_read_chip_version(hw);
 	if (get_rf_type(rtlphy) == RF_1T1R)
-		rtlpriv->dm.brfpath_rxenable[0] = true;
+		rtlpriv->dm.rfpath_rxenable[0] = true;
 	else
-		rtlpriv->dm.brfpath_rxenable[0] =
-		    rtlpriv->dm.brfpath_rxenable[1] = true;
+		rtlpriv->dm.rfpath_rxenable[0] =
+		    rtlpriv->dm.rfpath_rxenable[1] = true;
 	RT_TRACE(COMP_INIT, DBG_LOUD, ("VersionID = 0x%4x\n",
 						rtlhal->version));
 	tmp_u1b = rtl_read_byte(rtlpriv, REG_9346CR);
@@ -2576,7 +2576,7 @@ void rtl8723be_update_hal_rate_tbl(struct ieee80211_hw *hw,
 				   u8 rssi_level)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
-	if (rtlpriv->dm.b_useramask)
+	if (rtlpriv->dm.useramask)
 		rtl8723be_update_hal_rate_mask(hw, sta, rssi_level);
 }
 
@@ -2607,7 +2607,7 @@ bool rtl8723be_gpio_radio_on_off_checking(struct ieee80211_hw *hw, u8 *valid)
 	if (rtlpriv->rtlhal.being_init_adapter)
 		return false;
 
-	if (ppsc->b_swrf_processing)
+	if (ppsc->swrf_processing)
 		return false;
 
 	spin_lock(&rtlpriv->locks.rf_ps_lock);
@@ -2631,21 +2631,21 @@ bool rtl8723be_gpio_radio_on_off_checking(struct ieee80211_hw *hw, u8 *valid)
 	else
 		e_rfpowerstate_toset = (u1tmp & BIT(1)) ? ERFON : ERFOFF;
 
-	if ((ppsc->b_hwradiooff == true) &&
+	if ((ppsc->hwradiooff == true) &&
 	    (e_rfpowerstate_toset == ERFON)) {
 		RT_TRACE(COMP_RF, DBG_DMESG,
 			 ("GPIOChangeRF  - HW Radio ON, RF ON\n"));
 
 		e_rfpowerstate_toset = ERFON;
-		ppsc->b_hwradiooff = false;
+		ppsc->hwradiooff = false;
 		b_actuallyset = true;
-	} else if ((ppsc->b_hwradiooff == false) &&
+	} else if ((ppsc->hwradiooff == false) &&
 		   (e_rfpowerstate_toset == ERFOFF)) {
 		RT_TRACE(COMP_RF, DBG_DMESG,
 			 ("GPIOChangeRF  - HW Radio OFF, RF OFF\n"));
 
 		e_rfpowerstate_toset = ERFOFF;
-		ppsc->b_hwradiooff = true;
+		ppsc->hwradiooff = true;
 		b_actuallyset = true;
 	}
 
@@ -2663,7 +2663,7 @@ bool rtl8723be_gpio_radio_on_off_checking(struct ieee80211_hw *hw, u8 *valid)
 	}
 
 	*valid = 1;
-	return !ppsc->b_hwradiooff;
+	return !ppsc->hwradiooff;
 
 }
 
@@ -2825,11 +2825,11 @@ void rtl8723be_bt_reg_init(struct ieee80211_hw *hw)
 	struct rtl_pci_priv *rtlpcipriv = rtl_pcipriv(hw);
 
 	/* 0:Low, 1:High, 2:From Efuse. */
-	rtlpcipriv->btcoexist.b_reg_bt_iso = 2;
+	rtlpcipriv->btcoexist.reg_bt_iso = 2;
 	/* 0:Idle, 1:None-SCO, 2:SCO, 3:From Counter. */
-	rtlpcipriv->btcoexist.b_reg_bt_sco = 3;
+	rtlpcipriv->btcoexist.reg_bt_sco = 3;
 	/* 0:Disable BT control A-MPDU, 1:Enable BT control A-MPDU. */
-	rtlpcipriv->btcoexist.b_reg_bt_sco = 0;
+	rtlpcipriv->btcoexist.reg_bt_sco = 0;
 }
 
 

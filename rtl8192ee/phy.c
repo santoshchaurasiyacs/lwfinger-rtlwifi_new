@@ -663,7 +663,7 @@ static bool _rtl92ee_phy_bb8192ee_config_parafile(struct ieee80211_hw *hw)
 		RT_TRACE(COMP_ERR, DBG_EMERG, ("AGC Table Fail\n"));
 		return false;
 	}
-	rtlphy->bcck_high_power = (bool) (rtl_get_bbreg(hw,
+	rtlphy->cck_high_power = (bool) (rtl_get_bbreg(hw,
 						       RFPGA0_XA_HSSIPARAMETER2,
 						       0x200));
 
@@ -1698,7 +1698,7 @@ void rtl92ee_phy_set_txpower_level(struct ieee80211_hw *hw, u8 channel)
 	struct rtl_efuse *rtlefuse = rtl_efuse(rtl_priv(hw));
 	struct rtl_phy *rtlphy = &(rtl_priv(hw)->phy);
 	enum radio_path rfpath;
-	if (rtlefuse->b_txpwr_fromeprom == false)
+	if (rtlefuse->txpwr_fromeprom == false)
 		return;
 
 	for (rfpath = RF90_PATH_A; rfpath < rtlphy->num_total_rfpath; rfpath++) {
@@ -3042,7 +3042,7 @@ void rtl92ee_phy_iq_calibrate(struct ieee80211_hw *hw, bool b_recovery)
 			rtlphy->iqk_matrix_regsetting[idx].value[0][i] =
 													result[final_candidate][i];
 
-		rtlphy->iqk_matrix_regsetting[idx].b_iqk_done = true;
+		rtlphy->iqk_matrix_regsetting[idx].iqk_done = true;
 	}
 	_rtl92ee_phy_save_adda_registers(hw, iqk_bb_reg,
 					 rtlphy->iqk_bb_backup, 9);
@@ -3075,7 +3075,7 @@ void rtl92ee_phy_ap_calibrate(struct ieee80211_hw *hw, char delta)
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_phy *rtlphy = &(rtlpriv->phy);
 
-	if (rtlphy->b_apk_done)
+	if (rtlphy->apk_done)
 		return;
 
 	return;

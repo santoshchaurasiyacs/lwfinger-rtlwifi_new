@@ -34,8 +34,8 @@ void rtl92se_tx_fill_desc(struct ieee80211_hw *hw, struct ieee80211_hdr *hdr,
 			  struct sk_buff *skb, u8 hw_queue,
 			  struct rtl_tcb_desc *ptcb_desc);
 void rtl92se_tx_fill_cmddesc(struct ieee80211_hw *hw,
-			u8 *pdesc, bool b_firstseg,
-	bool b_lastseg, struct sk_buff *skb);
+			u8 *pdesc, bool firstseg,
+	bool lastseg, struct sk_buff *skb);
 bool rtl92se_rx_query_desc(struct ieee80211_hw *hw, struct rtl_stats *status,
 	struct ieee80211_rx_status *rx_status, u8 *pdesc, struct sk_buff *skb);
 void rtl92se_set_desc(struct ieee80211_hw *hw, u8 *pdesc,

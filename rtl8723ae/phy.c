@@ -401,7 +401,7 @@ static bool _rtl8723e_phy_bb8192c_config_parafile(struct ieee80211_hw *hw)
 		RT_TRACE(COMP_ERR, DBG_EMERG, ("AGC Table Fail\n"));
 		return false;
 	}
-	rtlphy->bcck_high_power = (bool) (rtl_get_bbreg(hw,
+	rtlphy->cck_high_power = (bool) (rtl_get_bbreg(hw,
 					RFPGA0_XA_HSSIPARAMETER2,
 					0x200));
 
@@ -935,7 +935,7 @@ void rtl8723e_phy_set_txpower_level(struct ieee80211_hw *hw, u8 channel)
 	struct rtl_efuse *rtlefuse = rtl_efuse(rtl_priv(hw));
 	u8 cckpowerlevel[2], ofdmpowerlevel[2];
 
-	if (rtlefuse->b_txpwr_fromeprom == false)
+	if (rtlefuse->txpwr_fromeprom == false)
 		return;
 	_rtl8723e_get_txpower_index(hw, channel,
 				  &cckpowerlevel[0], &ofdmpowerlevel[0]);
@@ -1689,12 +1689,12 @@ static void _rtl8723e_phy_iq_calibrate(struct ieee80211_hw *hw,
 	}
 	_rtl8723e_phy_path_adda_on(hw, adda_reg, true, is2t);
 	if (t == 0) {
-		rtlphy->b_rfpi_enable = (u8) rtl_get_bbreg(hw,
+		rtlphy->rfpi_enable = (u8) rtl_get_bbreg(hw,
 					RFPGA0_XA_HSSIPARAMETER1,
 					BIT(8));
 	}
 
-	if (!rtlphy->b_rfpi_enable)
+	if (!rtlphy->rfpi_enable)
 		_rtl8723e_phy_pi_mode_switch(hw, true);
 	if (t == 0) {
 		rtlphy->reg_c04 = rtl_get_bbreg(hw, 0xc04, MASKDWORD);
@@ -1776,7 +1776,7 @@ static void _rtl8723e_phy_iq_calibrate(struct ieee80211_hw *hw,
 	if (is2t)
 		rtl_set_bbreg(hw, 0x844, MASKDWORD, 0x00032ed3);
 	if (t != 0) {
-		if (!rtlphy->b_rfpi_enable)
+		if (!rtlphy->rfpi_enable)
 			_rtl8723e_phy_pi_mode_switch(hw, false);
 		_rtl8723e_phy_reload_adda_registers(hw, adda_reg,
 						  rtlphy->adda_backup, 16);
@@ -2067,7 +2067,7 @@ static void _rtl92c_phy_ap_calibrate(struct ieee80211_hw *hw,
 
 			tmpreg = apk_rf_init_value[path][index];
 
-			if (!rtlefuse->b_apk_thermalmeterignore) {
+			if (!rtlefuse->apk_thermalmeterignore) {
 				bb_offset = (tmpreg & 0xF0000) >> 16;
 
 				if (!(tmpreg & BIT(15)))
@@ -2190,7 +2190,7 @@ static void _rtl92c_phy_ap_calibrate(struct ieee80211_hw *hw,
 			       0x08));
 
 	}
-	rtlphy->b_apk_done = true;
+	rtlphy->apk_done = true;
 }
 #endif
 
@@ -2342,7 +2342,7 @@ void rtl92c_phy_ap_calibrate(struct ieee80211_hw *hw, char delta)
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_phy *rtlphy = &(rtlpriv->phy);
 
-	if (rtlphy->b_apk_done)
+	if (rtlphy->apk_done)
 		return;
 	_rtl92c_phy_ap_calibrate(hw, delta, false);
 }

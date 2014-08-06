@@ -233,14 +233,14 @@ int rtl8821ae_download_fw(struct ieee80211_hw *hw, bool buse_wake_on_wlan_fw)
 		_rtl8821ae_wait_for_h2c_cmd_finish(rtlpriv);
 
 	if (buse_wake_on_wlan_fw) {
-		if (!rtlhal->p_wowlan_firmware)
+		if (!rtlhal->wowlan_firmware)
 			return 1;
 
 		pfwheader =
-			(struct rtl8821a_firmware_header *)rtlhal->p_wowlan_firmware;
+			(struct rtl8821a_firmware_header *)rtlhal->wowlan_firmware;
 		rtlhal->fw_version = pfwheader->version;
 		rtlhal->fw_subversion = pfwheader->subversion;
-		pfwdata = (u8 *) rtlhal->p_wowlan_firmware;
+		pfwdata = (u8 *) rtlhal->wowlan_firmware;
 		fwsize = rtlhal->wowlan_fwsize;
 	} else {
 		if (!rtlhal->pfirmware)
@@ -268,7 +268,7 @@ int rtl8821ae_download_fw(struct ieee80211_hw *hw, bool buse_wake_on_wlan_fw)
 		fwsize = fwsize - sizeof(struct rtl8821a_firmware_header);
 	}
 
-	if (rtlhal->b_mac_func_enable) {
+	if (rtlhal->mac_func_enable) {
 		if (rtl_read_byte(rtlpriv, REG_MCUFWDL) & BIT(7)) {
 			rtl_write_byte(rtlpriv, REG_MCUFWDL, 0x00);
 			rtl8821ae_firmware_selfreset(hw);
@@ -301,19 +301,19 @@ void rtl8821ae_set_fw_related_for_wowlan(struct ieee80211_hw *hw,
 	if (rtl8821ae_download_fw(hw, used_wowlan_fw)) {
 		RT_TRACE(COMP_INIT, DBG_DMESG,
 			 ("Re-Download Firmware failed!!\n"));
-		rtlhal->bfw_ready = false;
+		rtlhal->fw_ready = false;
 		return;
 	} else {
 		RT_TRACE(COMP_INIT, DBG_DMESG,
 			 ("Re-Download Firmware Success !!\n"));
-		rtlhal->bfw_ready = true;
+		rtlhal->fw_ready = true;
 	}
 
 	/* 2. Re-Init the variables about Fw related setting. */
-	ppsc->b_fw_current_inpsmode = false;
+	ppsc->fw_current_inpsmode = false;
 	rtlhal->fw_ps_state = FW_PS_STATE_ALL_ON_8821AE;
-	rtlhal->bfw_clk_change_in_progress = false;
-	rtlhal->ballow_sw_to_change_hwclc = false;
+	rtlhal->fw_clk_change_in_progress = false;
+	rtlhal->allow_sw_to_change_hwclc = false;
 	rtlhal->last_hmeboxnum = 0;
 }
 #endif
@@ -352,12 +352,12 @@ static void _rtl8821ae_fill_h2c_command(struct ieee80211_hw *hw,
 
 	while (true) {
 		spin_lock_irqsave(&rtlpriv->locks.h2c_lock, flag);
-		if (rtlhal->b_h2c_setinprogress) {
+		if (rtlhal->h2c_setinprogress) {
 			RT_TRACE(COMP_CMD, DBG_LOUD,
 				 ("H2C set in progress! Wait to set.."
 				  "element_id(%d).\n", element_id));
 
-			while (rtlhal->b_h2c_setinprogress) {
+			while (rtlhal->h2c_setinprogress) {
 				spin_unlock_irqrestore(&rtlpriv->locks.h2c_lock,
 						       flag);
 				h2c_waitcounter++;
@@ -373,7 +373,7 @@ static void _rtl8821ae_fill_h2c_command(struct ieee80211_hw *hw,
 			}
 			spin_unlock_irqrestore(&rtlpriv->locks.h2c_lock, flag);
 		} else {
-			rtlhal->b_h2c_setinprogress = true;
+			rtlhal->h2c_setinprogress = true;
 			spin_unlock_irqrestore(&rtlpriv->locks.h2c_lock, flag);
 			break;
 		}
@@ -516,7 +516,7 @@ static void _rtl8821ae_fill_h2c_command(struct ieee80211_hw *hw,
 	}
 
 	spin_lock_irqsave(&rtlpriv->locks.h2c_lock, flag);
-	rtlhal->b_h2c_setinprogress = false;
+	rtlhal->h2c_setinprogress = false;
 	spin_unlock_irqrestore(&rtlpriv->locks.h2c_lock, flag);
 
 	RT_TRACE(COMP_CMD, DBG_LOUD, ("go out\n"));
@@ -528,7 +528,7 @@ void rtl8821ae_fill_h2c_cmd(struct ieee80211_hw *hw,
 	struct rtl_hal *rtlhal = rtl_hal(rtl_priv(hw));
 	u32 tmp_cmdbuf[2];
 
-	if (rtlhal->bfw_ready == false) {
+	if (rtlhal->fw_ready == false) {
 		RT_ASSERT(false, ("return H2C cmd because of Fw "
 				  "download fail!!!\n"));
 		return;
@@ -631,7 +631,7 @@ void rtl8821ae_set_fw_ap_off_load_cmd(struct ieee80211_hw *hw,
 	u8 u1_apoffload_parm[H2C_8821AE_AP_OFFLOAD_LENGTH] = { 0 };
 
 	SET_H2CCMD_AP_OFFLOAD_ON(u1_apoffload_parm, ap_offload_enable);
-	SET_H2CCMD_AP_OFFLOAD_HIDDEN(u1_apoffload_parm, mac->bhiddenssid);
+	SET_H2CCMD_AP_OFFLOAD_HIDDEN(u1_apoffload_parm, mac->hiddenssid);
 	SET_H2CCMD_AP_OFFLOAD_DENYANY(u1_apoffload_parm, 0);
 
 	rtl8821ae_fill_h2c_cmd(hw, H2C_8821AE_AP_OFFLOAD,

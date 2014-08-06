@@ -36,7 +36,7 @@ static void _rtl8723be_init_led(struct ieee80211_hw *hw,  struct rtl_led *pled,
 {
 	pled->hw = hw;
 	pled->ledpin = ledpin;
-	pled->b_ledon = false;
+	pled->ledon = false;
 }
 
 void rtl8723be_sw_led_on(struct ieee80211_hw *hw, struct rtl_led *pled)
@@ -63,7 +63,7 @@ void rtl8723be_sw_led_on(struct ieee80211_hw *hw, struct rtl_led *pled)
 		RT_TRACE(COMP_ERR, DBG_EMERG, ("switch case not process\n"));
 		break;
 	}
-	pled->b_ledon = true;
+	pled->ledon = true;
 }
 
 void rtl8723be_sw_led_off(struct ieee80211_hw *hw, struct rtl_led *pled)
@@ -82,7 +82,7 @@ void rtl8723be_sw_led_off(struct ieee80211_hw *hw, struct rtl_led *pled)
 		break;
 	case LED_PIN_LED0:
 		ledcfg &= 0xf0;
-		if (pcipriv->ledctl.bled_opendrain == true) {
+		if (pcipriv->ledctl.led_opendrain == true) {
 			ledcfg &= 0x90; /* Set to software control. */
 			rtl_write_byte(rtlpriv, REG_LEDCFG2, (ledcfg|BIT(3)));
 			ledcfg = rtl_read_byte(rtlpriv, REG_MAC_PINMUX_CFG);
@@ -104,7 +104,7 @@ void rtl8723be_sw_led_off(struct ieee80211_hw *hw, struct rtl_led *pled)
 		RT_TRACE(COMP_ERR, DBG_EMERG, ("switch case not process\n"));
 		break;
 	}
-	pled->b_ledon = false;
+	pled->ledon = false;
 }
 
 void rtl8723be_init_sw_leds(struct ieee80211_hw *hw)

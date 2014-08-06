@@ -56,7 +56,7 @@ void rtl92se_get_hw_reg(struct ieee80211_hw *hw, u8 variable, u8 *val)
 			break;
 		}
 	case HW_VAR_FW_PSMODE_STATUS: {
-			*((bool *) (val)) = ppsc->b_fw_current_inpsmode;
+			*((bool *) (val)) = ppsc->fw_current_inpsmode;
 			break;
 		}
 	case HW_VAR_CORRECT_TSF: {
@@ -72,7 +72,7 @@ void rtl92se_get_hw_reg(struct ieee80211_hw *hw, u8 variable, u8 *val)
 			break;
 		}
 	case HW_VAR_MRC: {
-			*((bool *)(val)) = rtlpriv->dm.bcurrent_mrc_switch;
+			*((bool *)(val)) = rtlpriv->dm.current_mrc_switch;
 			break;
 		}
 	default: {
@@ -362,7 +362,7 @@ void rtl92se_set_hw_reg(struct ieee80211_hw *hw, u8 variable, u8 *val)
 			break;
 		}
 	case HW_VAR_FW_PSMODE_STATUS: {
-			ppsc->b_fw_current_inpsmode = *((bool *) val);
+			ppsc->fw_current_inpsmode = *((bool *) val);
 			break;
 		}
 	case HW_VAR_H2C_FW_JOINBSSRPT:{
@@ -398,7 +398,7 @@ void rtl92se_set_hw_reg(struct ieee80211_hw *hw, u8 variable, u8 *val)
 						(u1bdata | 0x04));
 
 				/* Update current settings. */
-				rtlpriv->dm.bcurrent_mrc_switch = bmrc_toset;
+				rtlpriv->dm.current_mrc_switch = bmrc_toset;
 			} else {
 				rtl_set_bbreg(hw,
 					ROFDM0_TRXPATHENABLE,
@@ -419,7 +419,7 @@ void rtl92se_set_hw_reg(struct ieee80211_hw *hw, u8 variable, u8 *val)
 						(u1bdata & 0xfb));
 
 				/* Update current settings. */
-				rtlpriv->dm.bcurrent_mrc_switch = bmrc_toset;
+				rtlpriv->dm.current_mrc_switch = bmrc_toset;
 			}
 
 			break;
@@ -427,14 +427,14 @@ void rtl92se_set_hw_reg(struct ieee80211_hw *hw, u8 variable, u8 *val)
 	case HW_VAR_FW_LPS_ACTION:{
 			bool b_enter_fwlps = *((bool *) val);
 			u8 rpwm_val, fw_pwrmode;
-			bool b_fw_current_inps;
+			bool fw_current_inps;
 
 			if (b_enter_fwlps) {
 					rpwm_val = 0x02;	/* RF off */
-					b_fw_current_inps = true;
+					fw_current_inps = true;
 					rtlpriv->cfg->ops->set_hw_reg(hw,
 							HW_VAR_FW_PSMODE_STATUS,
-							(u8 *) (&b_fw_current_inps));
+							(u8 *) (&fw_current_inps));
 					rtlpriv->cfg->ops->set_hw_reg(hw,
 							HW_VAR_H2C_FW_PWRMODE,
 							(u8 *) (&ppsc->fwctrl_psmode));
@@ -445,7 +445,7 @@ void rtl92se_set_hw_reg(struct ieee80211_hw *hw, u8 variable, u8 *val)
 			} else {
 					rpwm_val = 0x0C;	/* RF on */
 					fw_pwrmode = FW_PS_ACTIVE_MODE;
-					b_fw_current_inps = false;
+					fw_current_inps = false;
 					rtlpriv->cfg->ops->set_hw_reg(hw, HW_VAR_SET_RPWM,
 							(u8 *) (&rpwm_val));
 					rtlpriv->cfg->ops->set_hw_reg(hw,
@@ -454,7 +454,7 @@ void rtl92se_set_hw_reg(struct ieee80211_hw *hw, u8 variable, u8 *val)
 
 					rtlpriv->cfg->ops->set_hw_reg(hw,
 							HW_VAR_FW_PSMODE_STATUS,
-							(u8 *) (&b_fw_current_inps));
+							(u8 *) (&fw_current_inps));
 			}
 			 break;
 		}
@@ -591,7 +591,7 @@ static void _rtl92se_macconfig_before_fwdownload(struct ieee80211_hw *hw)
 	u16 tmpu2b;
 	u8 pollingcnt = 20;
 
-	if (rtlpriv->rtlhal.bfirst_init) {
+	if (rtlpriv->rtlhal.first_init) {
 		/* Reset PCIE Digital */
 		tmpu1b = rtl_read_byte(rtlpriv, REG_SYS_FUNC_EN + 1);
 		tmpu1b &= 0xFE;
@@ -739,7 +739,7 @@ static void _rtl92se_macconfig_before_fwdownload(struct ieee80211_hw *hw)
 
 	rtl_write_byte(rtlpriv, 0x503, 0x22);
 
-	if (ppsc->b_support_aspm && !ppsc->b_support_backdoor)
+	if (ppsc->support_aspm && !ppsc->support_backdoor)
 		rtl_write_byte(rtlpriv, 0x560, 0x40);
 	else
 		rtl_write_byte(rtlpriv, 0x560, 0x00);
@@ -1010,9 +1010,9 @@ int rtl92se_hw_init(struct ieee80211_hw *hw)
 		RT_TRACE(COMP_ERR, DBG_WARNING, ("Failed to download FW. "
 				"Init HW without FW now.., Please copy FW into"
 				"/lib/firmware/rtlwifi\n"));
-		rtlhal->bfw_ready = false;
+		rtlhal->fw_ready = false;
 	} else {
-		rtlhal->bfw_ready = true;
+		rtlhal->fw_ready = true;
 	}
 
 	/* After FW download, we have to reset MAC register */
@@ -1062,7 +1062,7 @@ int rtl92se_hw_init(struct ieee80211_hw *hw)
 		rtl_ps_set_rf_state(hw, ERFOFF, rfoffreason, true);
 	} else {
 		/* gpio radio on/off is out of adapter start */
-		if (rtlpriv->psc.b_hwradiooff == false) {
+		if (rtlpriv->psc.hwradiooff == false) {
 			rtlpriv->psc.rfpwr_state = ERFON;
 			rtlpriv->psc.rfoff_reason = 0;
 		}
@@ -1996,7 +1996,7 @@ void _rtl92se_read_adapter_info(struct ieee80211_hw *hw)
 	/* Read IC Version && Channel Plan */
 	/* Version ID, Channel plan */
 	rtlefuse->eeprom_channelplan = *(u8 *)&hwinfo[EEPROM_CHANNELPLAN];
-	rtlefuse->b_txpwr_fromeprom = true;
+	rtlefuse->txpwr_fromeprom = true;
 	RTPRINT(rtlpriv, FINIT, INIT_TxPower, ("EEPROM ChannelPlan = 0x%4x\n",
 		rtlefuse->eeprom_channelplan));
 
@@ -2323,7 +2323,7 @@ void rtl92se_update_hal_rate_tbl(struct ieee80211_hw *hw,
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 
-	if (rtlpriv->dm.b_useramask)
+	if (rtlpriv->dm.useramask)
 		rtl92se_update_hal_rate_mask(hw, sta, rssi_level);
 	else
 		rtl92se_update_hal_rate_table(hw, sta);
@@ -2358,7 +2358,7 @@ bool rtl92se_gpio_radio_on_off_checking(struct ieee80211_hw *hw, u8 *valid)
 		(rtlpriv->rtlhal.being_init_adapter))
 		return false;
 
-	if (ppsc->b_swrf_processing)
+	if (ppsc->swrf_processing)
 		return false;
 
 	spin_lock(&rtlpriv->locks.rf_ps_lock);
@@ -2383,18 +2383,18 @@ bool rtl92se_gpio_radio_on_off_checking(struct ieee80211_hw *hw, u8 *valid)
 
 	rfpwr_toset = _rtl92se_rf_onoff_detect(hw);
 
-	if ((ppsc->b_hwradiooff == true) && (rfpwr_toset == ERFON)) {
+	if ((ppsc->hwradiooff == true) && (rfpwr_toset == ERFON)) {
 		RT_TRACE(COMP_RF, DBG_DMESG, ("RFKILL-HW Radio ON, RF ON\n"));
 
 		rfpwr_toset = ERFON;
-		ppsc->b_hwradiooff = false;
+		ppsc->hwradiooff = false;
 		b_actuallyset = true;
-	} else if ((ppsc->b_hwradiooff == false) && (rfpwr_toset == ERFOFF)) {
+	} else if ((ppsc->hwradiooff == false) && (rfpwr_toset == ERFOFF)) {
 		RT_TRACE(COMP_RF,
 			DBG_DMESG, ("RFKILL-HW Radio OFF, RF OFF\n"));
 
 		rfpwr_toset = ERFOFF;
-		ppsc->b_hwradiooff = true;
+		ppsc->hwradiooff = true;
 		b_actuallyset = true;
 	}
 
@@ -2423,7 +2423,7 @@ bool rtl92se_gpio_radio_on_off_checking(struct ieee80211_hw *hw, u8 *valid)
 	}
 
 	*valid = 1;
-	return !ppsc->b_hwradiooff;
+	return !ppsc->hwradiooff;
 
 }
 

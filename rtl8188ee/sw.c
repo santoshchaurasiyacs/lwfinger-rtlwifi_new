@@ -99,9 +99,9 @@ int rtl88e_init_sw_vars(struct ieee80211_hw *hw)
 	rtl8188ee_bt_reg_init(hw);
 	rtlpci->msi_support = true;
 
-	rtlpriv->dm.b_dm_initialgain_enable = 1;
+	rtlpriv->dm.dm_initialgain_enable = 1;
 	rtlpriv->dm.dm_flag = 0;
-	rtlpriv->dm.b_disable_framebursting = 0;
+	rtlpriv->dm.disable_framebursting = 0;
 	rtlpriv->dm.thermalvalue = 0;
 	rtlpci->transmit_config = CFENDFORM | BIT(15);
 
@@ -147,20 +147,20 @@ int rtl88e_init_sw_vars(struct ieee80211_hw *hw)
 				      HSIMR_RON_INT_EN	|
 				      0);
 	/* for LPS & IPS */
-	rtlpriv->psc.b_inactiveps = rtlpriv->cfg->mod_params->b_inactiveps;
-	rtlpriv->psc.b_swctrl_lps = rtlpriv->cfg->mod_params->b_swctrl_lps;
-	rtlpriv->psc.b_fwctrl_lps = rtlpriv->cfg->mod_params->b_fwctrl_lps;
-	rtlpriv->psc.b_reg_fwctrl_lps = 3;
+	rtlpriv->psc.inactiveps = rtlpriv->cfg->mod_params->inactiveps;
+	rtlpriv->psc.swctrl_lps = rtlpriv->cfg->mod_params->swctrl_lps;
+	rtlpriv->psc.fwctrl_lps = rtlpriv->cfg->mod_params->fwctrl_lps;
+	rtlpriv->psc.reg_fwctrl_lps = 3;
 	rtlpriv->psc.reg_max_lps_awakeintvl = 5;
 	/* for ASPM, you can close aspm through
 	 * set const_support_pciaspm = 0 */
 	rtl88e_init_aspm_vars(hw);
 
-	if (rtlpriv->psc.b_reg_fwctrl_lps == 1)
+	if (rtlpriv->psc.reg_fwctrl_lps == 1)
 		rtlpriv->psc.fwctrl_psmode = FW_PS_MIN_MODE;
-	else if (rtlpriv->psc.b_reg_fwctrl_lps == 2)
+	else if (rtlpriv->psc.reg_fwctrl_lps == 2)
 		rtlpriv->psc.fwctrl_psmode = FW_PS_MAX_MODE;
-	else if (rtlpriv->psc.b_reg_fwctrl_lps == 3)
+	else if (rtlpriv->psc.reg_fwctrl_lps == 3)
 		rtlpriv->psc.fwctrl_psmode = FW_PS_DTIM_MODE;
 
 	/* for firmware buf */
@@ -190,14 +190,14 @@ int rtl88e_init_sw_vars(struct ieee80211_hw *hw)
 	release_firmware(firmware);
 
 	/* for early mode */
-	rtlpriv->rtlhal.b_earlymode_enable = false;
+	rtlpriv->rtlhal.earlymode_enable = false;
 	rtlpriv->rtlhal.max_earlymode_num = 10;
 	for (tid = 0; tid < 8; tid++)
 		skb_queue_head_init(&rtlpriv->mac80211.skb_waitq[tid]);
 
 	/*low power */
-	rtlpriv->psc.b_low_power_enable = false;
-	if (rtlpriv->psc.b_low_power_enable) {
+	rtlpriv->psc.low_power_enable = false;
+	if (rtlpriv->psc.low_power_enable) {
 		init_timer(&rtlpriv->works.fw_clockoff_timer);
 		setup_timer(&rtlpriv->works.fw_clockoff_timer,
 			rtl88ee_fw_clk_off_timer_callback, (unsigned long)hw);
@@ -219,7 +219,7 @@ void rtl88e_deinit_sw_vars(struct ieee80211_hw *hw)
 		rtlpriv->rtlhal.pfirmware = NULL;
 	}
 
-	if (rtlpriv->psc.b_low_power_enable)
+	if (rtlpriv->psc.low_power_enable)
 		del_timer_sync(&rtlpriv->works.fw_clockoff_timer);
 
 	del_timer_sync(&rtlpriv->works.fast_antenna_trainning_timer);
@@ -282,9 +282,9 @@ struct rtl_hal_ops rtl8188ee_hal_ops = {
 
 struct rtl_mod_params rtl88ee_mod_params = {
 	.sw_crypto = false,
-	.b_inactiveps = false,
-	.b_swctrl_lps = false,
-	.b_fwctrl_lps = false,
+	.inactiveps = false,
+	.swctrl_lps = false,
+	.fwctrl_lps = false,
 };
 
 struct rtl_hal_cfg rtl88ee_hal_cfg = {
@@ -401,9 +401,9 @@ MODULE_DESCRIPTION("Realtek 8188E 802.11n PCI wireless");
 MODULE_FIRMWARE("rtlwifi/rtl8188efw.bin");
 
 module_param_named(swenc, rtl88ee_mod_params.sw_crypto, bool, 0444);
-module_param_named(ips, rtl88ee_mod_params.b_inactiveps, bool, 0444);
-module_param_named(swlps, rtl88ee_mod_params.b_swctrl_lps, bool, 0444);
-module_param_named(fwlps, rtl88ee_mod_params.b_fwctrl_lps, bool, 0444);
+module_param_named(ips, rtl88ee_mod_params.inactiveps, bool, 0444);
+module_param_named(swlps, rtl88ee_mod_params.swctrl_lps, bool, 0444);
+module_param_named(fwlps, rtl88ee_mod_params.fwctrl_lps, bool, 0444);
 MODULE_PARM_DESC(swenc, "using hardware crypto (default 0 [hardware])\n");
 MODULE_PARM_DESC(ips, "using no link power save (default 1 is open)\n");
 MODULE_PARM_DESC(fwlps, "using linked fw control power save (default 1 is open)\n");

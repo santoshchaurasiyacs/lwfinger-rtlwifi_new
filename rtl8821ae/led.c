@@ -37,7 +37,7 @@ static void _rtl8821ae_init_led(struct ieee80211_hw *hw,
 {
 	pled->hw = hw;
 	pled->ledpin = ledpin;
-	pled->b_ledon = false;
+	pled->ledon = false;
 }
 
 void rtl8821ae_sw_led_on(struct ieee80211_hw *hw, struct rtl_led *pled)
@@ -66,7 +66,7 @@ void rtl8821ae_sw_led_on(struct ieee80211_hw *hw, struct rtl_led *pled)
 			 ("switch case not process\n"));
 		break;
 	}
-	pled->b_ledon = true;
+	pled->ledon = true;
 }
 
 void rtl8812ae_sw_led_on(struct ieee80211_hw *hw, struct rtl_led *pled)
@@ -97,7 +97,7 @@ void rtl8812ae_sw_led_on(struct ieee80211_hw *hw, struct rtl_led *pled)
 	ledcfg &= ~(BIT(7) | BIT(6) | BIT(3) | BIT(2) | BIT(1) | BIT(0));
 		/*Clear 0x4c[23:22] and 0x4c[19:16]*/
 	rtl_write_byte(rtlpriv, ledreg, ledcfg); /*SW control led0 on.*/
-	pled->b_ledon = true;
+	pled->ledon = true;
 }
 
 void rtl8821ae_sw_led_off(struct ieee80211_hw *hw, struct rtl_led *pled)
@@ -116,7 +116,7 @@ void rtl8821ae_sw_led_off(struct ieee80211_hw *hw, struct rtl_led *pled)
 		break;
 	case LED_PIN_LED0:
 		ledcfg &= 0xf0;
-		if (pcipriv->ledctl.bled_opendrain == true) {
+		if (pcipriv->ledctl.led_opendrain == true) {
 			ledcfg &= 0x90; /* Set to software control. */
 			rtl_write_byte(rtlpriv, REG_LEDCFG2, (ledcfg|BIT(3)));
 			ledcfg = rtl_read_byte(rtlpriv, REG_MAC_PINMUX_CFG);
@@ -139,7 +139,7 @@ void rtl8821ae_sw_led_off(struct ieee80211_hw *hw, struct rtl_led *pled)
 			 ("switch case not process\n"));
 		break;
 	}
-	pled->b_ledon = false;
+	pled->ledon = false;
 }
 
 void rtl8812ae_sw_led_off(struct ieee80211_hw *hw, struct rtl_led *pled)
@@ -165,7 +165,7 @@ void rtl8812ae_sw_led_off(struct ieee80211_hw *hw, struct rtl_led *pled)
 	RT_TRACE(COMP_LED, DBG_LOUD, ("In SwLedOff,LedAddr:%X LEDPIN=%d\n",
 					ledreg, pled->ledpin));
 	/*Open-drain arrangement for controlling the LED*/
-	if (pcipriv->ledctl.bled_opendrain == true) {
+	if (pcipriv->ledctl.led_opendrain == true) {
 
 		u8 ledcfg = rtl_read_byte(rtlpriv,  ledreg);
 
@@ -180,7 +180,7 @@ void rtl8812ae_sw_led_off(struct ieee80211_hw *hw, struct rtl_led *pled)
 		rtl_write_byte(rtlpriv, ledreg, 0x28);
 	}
 
-	pled->b_ledon = false;
+	pled->ledon = false;
 }
 
 void rtl8821ae_init_sw_leds(struct ieee80211_hw *hw)

@@ -655,7 +655,7 @@ static void rtl8821ae_dm_diginit(struct ieee80211_hw *hw)
 	dm_digtable.dig_dynamic_min_1 = DM_DIG_MIN;
 	dm_digtable.b_media_connect_0 = false;
 	dm_digtable.b_media_connect_1 = false;
-	rtlpriv->dm.b_dm_initialgain_enable = true;
+	rtlpriv->dm.dm_initialgain_enable = true;
 	dm_digtable.bt30_cur_igi = 0x32;
 }
 #if 0
@@ -663,7 +663,7 @@ static void rtl8821ae_dm_init_dynamic_txpower(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 
-	rtlpriv->dm.bdynamic_txpower_enable = false;
+	rtlpriv->dm.dynamic_txpower_enable = false;
 
 	rtlpriv->dm.last_dtp_lvl = TXHIGHPWRLEVEL_NORMAL;
 	rtlpriv->dm.dynamic_txhighpower_lvl = TXHIGHPWRLEVEL_NORMAL;
@@ -674,8 +674,8 @@ void rtl8821ae_dm_init_edca_turbo(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	rtlpriv->dm.bcurrent_turbo_edca = false;
-	rtlpriv->dm.bis_any_nonbepkts = false;
-	rtlpriv->dm.bis_cur_rdlstate = false;
+	rtlpriv->dm.is_any_nonbepkts = false;
+	rtlpriv->dm.is_cur_rdlstate = false;
 }
 
 
@@ -689,9 +689,9 @@ void rtl8821ae_dm_init_rate_adaptive_mask(struct ieee80211_hw *hw)
 
 	rtlpriv->dm.dm_type = DM_TYPE_BYDRIVER;
 	if (rtlpriv->dm.dm_type == DM_TYPE_BYDRIVER)
-		rtlpriv->dm.b_useramask = true;
+		rtlpriv->dm.useramask = true;
 	else
-		rtlpriv->dm.b_useramask = false;
+		rtlpriv->dm.useramask = false;
 
 	p_ra->high_rssi_thresh_for_ra = 50;
 	p_ra->low_rssi_thresh_for_ra = 20;
@@ -702,8 +702,8 @@ static void rtl8821ae_dm_init_txpower_tracking(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 
-	rtlpriv->dm.btxpower_tracking = true;
-	rtlpriv->dm.btxpower_trackinginit = false;
+	rtlpriv->dm.txpower_tracking = true;
+	rtlpriv->dm.txpower_trackinginit = false;
 	rtlpriv->dm.txpowercount = 0;
 	rtlpriv->dm.txpower_track_control = true;
 	rtlpriv->dm.thermalvalue = 0;
@@ -721,8 +721,8 @@ static void rtl8821ae_dm_init_txpower_tracking(struct ieee80211_hw *hw)
 	rtlpriv->dm.power_index_offset[0] = 0;
 
 	RT_TRACE(COMP_POWER_TRACKING, DBG_LOUD,
-		 ("  rtlpriv->dm.btxpower_tracking = %d\n",
-		  rtlpriv->dm.btxpower_tracking));
+		 ("  rtlpriv->dm.txpower_tracking = %d\n",
+		  rtlpriv->dm.txpower_tracking));
 }
 #endif
 
@@ -748,9 +748,9 @@ void rtl8821ae_dm_common_info_self_init(struct ieee80211_hw *hw)
 	tmp = (u8) rtl_get_bbreg(hw, ODM_REG_BB_RX_PATH_11AC,
 				 ODM_BIT_BB_RX_PATH_11AC);
 	if (tmp & BIT(0))
-		rtlpriv->dm.brfpath_rxenable[0] = true;
+		rtlpriv->dm.rfpath_rxenable[0] = true;
 	if (tmp & BIT(1))
-		rtlpriv->dm.brfpath_rxenable[1] = true;
+		rtlpriv->dm.rfpath_rxenable[1] = true;
 }
 
 void rtl8821ae_dm_init(struct ieee80211_hw *hw)
@@ -912,7 +912,7 @@ static void rtl8821ae_dm_check_rssi_monitor(struct ieee80211_hw *hw)
 		}
 	}
 	/* Indicate Rx signal strength to FW. */
-	if (rtlpriv->dm.b_useramask) {
+	if (rtlpriv->dm.useramask) {
 		if (rtlhal->hw_type == HARDWARE_TYPE_RTL8812AE) {
 			if (mac->mode == WIRELESS_MODE_AC_24G ||
 			    mac->mode == WIRELESS_MODE_AC_5G ||
@@ -1031,7 +1031,7 @@ static void rtl8821ae_dm_dig(struct ieee80211_hw *hw)
 			"dm_digtable.rx_gain_range_max = 0x%x",
 			 dm_digtable.rssi_val_min,
 			 dm_digtable.rx_gain_range_max));
-		if (rtlpriv->dm.b_one_entry_only) {
+		if (rtlpriv->dm.one_entry_only) {
 			offset = 0;
 
 			if (dm_digtable.rssi_val_min - offset < dm_dig_min)
@@ -1199,11 +1199,11 @@ static void rtl8821ae_dm_common_info_self_update(struct ieee80211_hw *hw)
 
 	rtlpriv->dm.tx_rate = 0xff;
 
-	rtlpriv->dm.b_one_entry_only = false;
+	rtlpriv->dm.one_entry_only = false;
 
 	if (rtlpriv->mac80211.opmode == NL80211_IFTYPE_STATION &&
 		rtlpriv->mac80211.link_state >= MAC80211_LINKED) {
-		rtlpriv->dm.b_one_entry_only = true;
+		rtlpriv->dm.one_entry_only = true;
 		return;
 	}
 
@@ -1217,7 +1217,7 @@ static void rtl8821ae_dm_common_info_self_update(struct ieee80211_hw *hw)
 		spin_unlock_bh(&rtlpriv->locks.entry_list_lock);
 
 		if (cnt == 1)
-			rtlpriv->dm.b_one_entry_only = true;
+			rtlpriv->dm.one_entry_only = true;
 	}
 }
 
@@ -1386,7 +1386,7 @@ static void rtl8821ae_dm_tx_power_track_set_power(struct ieee80211_hw *hw,
 		else if (rtldm->bb_swing_idx_cck < 0)
 			rtldm->bb_swing_idx_cck = 0;
 
-		if (!rtldm->b_cck_inch14) {
+		if (!rtldm->cck_inch14) {
 			rtl_write_byte(rtlpriv, 0xa22, cckswing_table_ch1ch13[rtldm->bb_swing_idx_cck][0]);
 			rtl_write_byte(rtlpriv, 0xa23, cckswing_table_ch1ch13[rtldm->bb_swing_idx_cck][1]);
 			rtl_write_byte(rtlpriv, 0xa24, cckswing_table_ch1ch13[rtldm->bb_swing_idx_cck][2]);
@@ -2007,7 +2007,7 @@ void rtl8812ae_dm_txpower_tracking_callback_thermalmeter(
 		(u8 **)&delta_swing_table_idx_tup_b,
 		(u8 **)&delta_swing_table_idx_tdown_b);
 
-	rtldm->btxpower_trackinginit = true;
+	rtldm->txpower_trackinginit = true;
 
 	RT_TRACE(COMP_POWER_TRACKING, DBG_LOUD,
 		("pDM_Odm->BbSwingIdxCckBase: %d, "
@@ -2676,7 +2676,7 @@ void rtl8821ae_dm_txpower_tracking_callback_thermalmeter(
 					(u8 **)&delta_swing_table_idx_tup_b,
 					(u8 **)&delta_swing_table_idx_tdown_b);
 
-	rtldm->btxpower_trackinginit = true;
+	rtldm->txpower_trackinginit = true;
 
 	RT_TRACE(COMP_POWER_TRACKING, DBG_LOUD,
 		("===>rtl8812ae_dm_txpower_tracking_callback_thermalmeter,"
@@ -2995,7 +2995,7 @@ void rtl8821ae_dm_check_txpower_tracking_thermalmeter(struct ieee80211_hw *hw)
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	static u8 tm_trigger;
 
-	/* if (!rtlpriv->dm.btxpower_tracking) */
+	/* if (!rtlpriv->dm.txpower_tracking) */
 	/* return; */
 
 	if (!tm_trigger) {
@@ -3032,7 +3032,7 @@ void rtl8821ae_dm_refresh_rate_adaptive_mask(struct ieee80211_hw *hw)
 		return;
 	}
 
-	if (!rtlpriv->dm.b_useramask) {
+	if (!rtlpriv->dm.useramask) {
 		RT_TRACE(COMP_RATE, DBG_LOUD,
 			 ("driver does not control rate adaptive mask\n"));
 		return;
@@ -3183,14 +3183,14 @@ static void rtl8821ae_dm_check_edca_turbo(struct ieee80211_hw *hw)
 
 
 	if (rtlpriv->dm.dbginfo.num_non_be_pkt > 0x100)
-		rtlpriv->dm.bis_any_nonbepkts = true;
+		rtlpriv->dm.is_any_nonbepkts = true;
 	rtlpriv->dm.dbginfo.num_non_be_pkt = 0;
 
 	/*===============================
 	list paramter for different platform
 	===============================*/
-	b_last_is_cur_rdl_state = rtlpriv->dm.bis_cur_rdlstate;
-	pb_is_cur_rdl_state = &(rtlpriv->dm.bis_cur_rdlstate);
+	b_last_is_cur_rdl_state = rtlpriv->dm.is_cur_rdlstate;
+	pb_is_cur_rdl_state = &(rtlpriv->dm.is_cur_rdlstate);
 
 	cur_tx_ok_cnt = rtlpriv->stats.txbytesunicast - rtldm->last_tx_ok_cnt;
 	cur_rx_ok_cnt = rtlpriv->stats.rxbytesunicast - rtldm->last_rx_ok_cnt;
@@ -3200,8 +3200,8 @@ static void rtl8821ae_dm_check_edca_turbo(struct ieee80211_hw *hw)
 
 	iot_peer = rtlpriv->mac80211.vendor;
 	b_bias_on_rx = false;
-	b_edca_turbo_on = ((!rtlpriv->dm.bis_any_nonbepkts) &&
-			   (!rtlpriv->dm.b_disable_framebursting)) ?
+	b_edca_turbo_on = ((!rtlpriv->dm.is_any_nonbepkts) &&
+			   (!rtlpriv->dm.disable_framebursting)) ?
 			   true : false;
 
 	/*if (rtl8821ae_dm_is_edca_turbo_disable(hw))
@@ -3217,8 +3217,8 @@ static void rtl8821ae_dm_check_edca_turbo(struct ieee80211_hw *hw)
 
 	RT_TRACE(COMP_TURBO, DBG_LOUD,
 		("bIsAnyNonBEPkts : 0x%x  bDisableFrameBursting : 0x%x\n",
-		rtlpriv->dm.bis_any_nonbepkts,
-		rtlpriv->dm.b_disable_framebursting));
+		rtlpriv->dm.is_any_nonbepkts,
+		rtlpriv->dm.disable_framebursting));
 
 	RT_TRACE(COMP_TURBO, DBG_LOUD,
 			("bEdcaTurboOn : 0x%x bBiasOnRx : 0x%x\n",
@@ -3258,7 +3258,7 @@ static void rtl8821ae_dm_check_edca_turbo(struct ieee80211_hw *hw)
 		rtlpriv->dm.bcurrent_turbo_edca = false;
 	}
 
-	rtlpriv->dm.bis_any_nonbepkts = false;
+	rtlpriv->dm.is_any_nonbepkts = false;
 	rtldm->last_tx_ok_cnt = rtlpriv->stats.txbytesunicast;
 	rtldm->last_rx_ok_cnt = rtlpriv->stats.rxbytesunicast;
 }
@@ -3303,11 +3303,11 @@ static void rtl8821ae_dm_cck_packet_detection_thresh(struct ieee80211_hw *hw)
 void rtl8821ae_dm_dynamic_edcca(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
-	bool b_fw_current_in_ps_mode = false;
+	bool fw_current_in_ps_mode = false;
 
 	rtlpriv->cfg->ops->get_hw_reg(hw, HW_VAR_FW_PSMODE_STATUS,
-		(u8 *)(&b_fw_current_in_ps_mode));
-	if (b_fw_current_in_ps_mode)
+		(u8 *)(&fw_current_in_ps_mode));
+	if (fw_current_in_ps_mode)
 		return;
 }
 #if 0
@@ -3561,20 +3561,20 @@ void rtl8821ae_dm_watchdog(struct ieee80211_hw *hw)
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_ps_ctl *ppsc = rtl_psc(rtl_priv(hw));
 	struct rtl_hal *rtlhal = rtl_hal(rtl_priv(hw));
-	bool b_fw_current_inpsmode = false;
-	bool b_fw_ps_awake = true;
+	bool fw_current_inpsmode = false;
+	bool fw_ps_awake = true;
 
 	rtlpriv->cfg->ops->get_hw_reg(hw, HW_VAR_FW_PSMODE_STATUS,
-				      (u8 *) (&b_fw_current_inpsmode));
+				      (u8 *) (&fw_current_inpsmode));
 
 	rtlpriv->cfg->ops->get_hw_reg(hw, HW_VAR_FWLPS_RF_ON,
-				      (u8 *) (&b_fw_ps_awake));
+				      (u8 *) (&fw_ps_awake));
 
 	if (ppsc->p2p_ps_info.p2p_ps_mode)
-		b_fw_ps_awake = false;
+		fw_ps_awake = false;
 
 	if ((ppsc->rfpwr_state == ERFON) &&
-		((!b_fw_current_inpsmode) && b_fw_ps_awake) &&
+		((!fw_current_inpsmode) && fw_ps_awake) &&
 		(!ppsc->rfchange_inprogress)) {
 		rtl8821ae_dm_common_info_self_update(hw);
 		rtl8821ae_dm_false_alarm_counter_statistics(hw);

@@ -421,7 +421,7 @@ static bool _rtl88e_phy_bb8188e_config_parafile(struct ieee80211_hw *hw)
 		RT_TRACE(COMP_ERR, DBG_EMERG, ("AGC Table Fail\n"));
 		return false;
 	}
-	rtlphy->bcck_high_power = (bool) (rtl_get_bbreg(hw,
+	rtlphy->cck_high_power = (bool) (rtl_get_bbreg(hw,
 							RFPGA0_XA_HSSIPARAMETER2,
 							0x200));
 
@@ -1069,7 +1069,7 @@ void rtl88e_phy_set_txpower_level(struct ieee80211_hw *hw, u8 channel)
 	u8 cckpowerlevel[MAX_TX_COUNT]  = {0}, ofdmpowerlevel[MAX_TX_COUNT] = {0};
 	u8 bw20powerlevel[MAX_TX_COUNT] = {0}, bw40powerlevel[MAX_TX_COUNT] = {0};
 
-	if (rtlefuse->b_txpwr_fromeprom == false)
+	if (rtlefuse->txpwr_fromeprom == false)
 		return;
 	_rtl88e_get_txpower_index(hw, channel,
 				  &cckpowerlevel[0], &ofdmpowerlevel[0],
@@ -1791,12 +1791,12 @@ static void _rtl88e_phy_iq_calibrate(struct ieee80211_hw *hw,
 	}
 	_rtl88e_phy_path_adda_on(hw, adda_reg, true, is2t);
 	if (t == 0) {
-		rtlphy->b_rfpi_enable = (u8) rtl_get_bbreg(hw,
+		rtlphy->rfpi_enable = (u8) rtl_get_bbreg(hw,
 							   RFPGA0_XA_HSSIPARAMETER1,
 							   BIT(8));
 	}
 
-	if (!rtlphy->b_rfpi_enable)
+	if (!rtlphy->rfpi_enable)
 		_rtl88e_phy_pi_mode_switch(hw, true);
 	/*BB Setting*/
 	rtl_set_bbreg(hw, 0x800, BIT(24), 0x00);
@@ -1885,7 +1885,7 @@ static void _rtl88e_phy_iq_calibrate(struct ieee80211_hw *hw,
 	rtl_set_bbreg(hw, 0xe28, MASKDWORD, 0);
 
 	if (t != 0) {
-		if (!rtlphy->b_rfpi_enable)
+		if (!rtlphy->rfpi_enable)
 			_rtl88e_phy_pi_mode_switch(hw, false);
 		_rtl88e_phy_reload_adda_registers(hw, adda_reg,
 						  rtlphy->adda_backup, 16);
@@ -2113,7 +2113,7 @@ void rtl88e_phy_iq_calibrate(struct ieee80211_hw *hw, bool b_recovery)
 		for (i = 0; i < IQK_MATRIX_REG_NUM; i++)
 			rtlphy->iqk_matrix_regsetting[0].value[0][i] =
 				result[final_candidate][i];
-		rtlphy->iqk_matrix_regsetting[0].b_iqk_done = true;
+		rtlphy->iqk_matrix_regsetting[0].iqk_done = true;
 
 	}
 	_rtl88e_phy_save_adda_registers(hw, iqk_bb_reg,
@@ -2147,7 +2147,7 @@ void rtl92c_phy_ap_calibrate(struct ieee80211_hw *hw, char delta)
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_phy *rtlphy = &(rtlpriv->phy);
 
-	if (rtlphy->b_apk_done)
+	if (rtlphy->apk_done)
 		return;
 
 	return;

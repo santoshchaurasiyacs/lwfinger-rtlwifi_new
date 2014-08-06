@@ -190,7 +190,7 @@ bool _rtl92d_dualmac_getparameter_from_buddy(struct ieee80211_hw *hw)
 	if (buddy_priv == NULL)
 		return false;
 
-	if (rtlpriv->rtlhal.bslave_of_dmsp)
+	if (rtlpriv->rtlhal.slave_of_dmsp)
 		return false;
 
 	if ((buddy_priv->mac80211.link_state == MAC80211_LINKED) &&
@@ -376,7 +376,7 @@ void rtl92d_dm_find_minimum_rssi(struct ieee80211_hw *hw)
 	if (rtlpriv->dm.supp_phymode_switch) {
 		if (rtlpriv->rtlhal.macphymode == DUALMAC_SINGLEPHY) {
 			if (buddy_priv) {
-				if (rtlpriv->rtlhal.bslave_of_dmsp) {
+				if (rtlpriv->rtlhal.slave_of_dmsp) {
 					RT_TRACE(COMP_EASY_CONCURRENT, DBG_LOUD,
 						("Slave case of dmsp\n"));
 					buddy_priv->dmsp_ctl.rssivalmin_for_anothermacofdmsp =
@@ -462,7 +462,7 @@ void rtl92d_dm_cck_packet_detection_thresh_dmsp(struct ieee80211_hw *hw)
 	if (bgetvalue_from_buddy) {
 		RT_TRACE(COMP_EASY_CONCURRENT, DBG_LOUD,
 			("mac 1 connect,mac 0 disconnect case \n"));
-		if (rtlpriv->dmsp_ctl.bchangecckpdstate_for_anothermacofdmsp) {
+		if (rtlpriv->dmsp_ctl.changecckpdstate_for_anothermacofdmsp) {
 			RT_TRACE(COMP_EASY_CONCURRENT, DBG_EMERG,
 				("mac 0 set for mac1\n"));
 			if (rtlpriv->dmsp_ctl.curcckpdstate_for_anothermacofdmsp ==
@@ -475,7 +475,7 @@ void rtl92d_dm_cck_packet_detection_thresh_dmsp(struct ieee80211_hw *hw)
 				rtl_set_bbreg(hw, RCCK0_CCA, BMASKBYTE2, 0xcd);
 				rtl92d_release_cckandrw_pagea_ctl(hw, &flag);
 			}
-			rtlpriv->dmsp_ctl.bchangecckpdstate_for_anothermacofdmsp = false;
+			rtlpriv->dmsp_ctl.changecckpdstate_for_anothermacofdmsp = false;
 		}
 	}
 
@@ -484,7 +484,7 @@ void rtl92d_dm_cck_packet_detection_thresh_dmsp(struct ieee80211_hw *hw)
 		if (NULL == buddy_priv) {
 			RT_TRACE(COMP_EASY_CONCURRENT, DBG_LOUD,
 				("buddy == NULL case\n"));
-			if (rtlpriv->rtlhal.bslave_of_dmsp) {
+			if (rtlpriv->rtlhal.slave_of_dmsp) {
 				rtl_dm_dig->pre_cck_pd_state = rtl_dm_dig->cur_cck_pd_state;
 			} else {
 				if (rtl_dm_dig->cur_cck_pd_state == CCK_PD_STAGE_LOWRSSI) {
@@ -501,10 +501,10 @@ void rtl92d_dm_cck_packet_detection_thresh_dmsp(struct ieee80211_hw *hw)
 			return;
 		}
 
-		if (rtlpriv->rtlhal.bslave_of_dmsp) {
+		if (rtlpriv->rtlhal.slave_of_dmsp) {
 			RT_TRACE(COMP_EASY_CONCURRENT, DBG_LOUD,
 				("bslave case\n"));
-			buddy_priv->dmsp_ctl.bchangecckpdstate_for_anothermacofdmsp = true;
+			buddy_priv->dmsp_ctl.changecckpdstate_for_anothermacofdmsp = true;
 			buddy_priv->dmsp_ctl.curcckpdstate_for_anothermacofdmsp =
 				rtl_dm_dig->cur_cck_pd_state;
 		} else {
@@ -589,7 +589,7 @@ void rtl92d_dm_write_dig_dmsp(struct ieee80211_hw *hw)
 	if (buddy_priv == NULL) {
 		RT_TRACE(COMP_EASY_CONCURRENT, DBG_LOUD,
 			("not find buddy\n"));
-		if (rtlpriv->rtlhal.bmaster_of_dmsp) {
+		if (rtlpriv->rtlhal.master_of_dmsp) {
 			rtl_set_bbreg(hw, ROFDM0_XAAGCCORE1, 0x7f,
 				rtl_dm_dig->cur_igvalue);
 			rtl_set_bbreg(hw, ROFDM0_XBAGCCORE1, 0x7f,
@@ -607,10 +607,10 @@ void rtl92d_dm_write_dig_dmsp(struct ieee80211_hw *hw)
 	if (bgetvalue_from_othermac) {
 		RT_TRACE(COMP_EASY_CONCURRENT, DBG_LOUD,
 			("mac 0 set mac 1 value\n"));
-		if (rtlpriv->dmsp_ctl.bwritedig_for_anothermacofdmsp) {
+		if (rtlpriv->dmsp_ctl.writedig_for_anothermacofdmsp) {
 			RT_TRACE(COMP_EASY_CONCURRENT, DBG_EMERG,
 				("mac 0 set mac 1 value change value\n"));
-			rtlpriv->dmsp_ctl.bwritedig_for_anothermacofdmsp = false;
+			rtlpriv->dmsp_ctl.writedig_for_anothermacofdmsp = false;
 			rtl_set_bbreg(hw, ROFDM0_XAAGCCORE1, 0x7f,
 				rtlpriv->dmsp_ctl.curdigvalue_for_anothermacofdmsp);
 			rtl_set_bbreg(hw, ROFDM0_XBAGCCORE1, 0x7f,
@@ -625,10 +625,10 @@ void rtl92d_dm_write_dig_dmsp(struct ieee80211_hw *hw)
 		*/
 		RT_TRACE(COMP_EASY_CONCURRENT, DBG_LOUD,
 			("need to change initial gain\n"));
-		 if (rtlpriv->rtlhal.bslave_of_dmsp) {
+		 if (rtlpriv->rtlhal.slave_of_dmsp) {
 			RT_TRACE(COMP_EASY_CONCURRENT, DBG_LOUD,
 				("slave case\n"));
-			buddy_priv->dmsp_ctl.bwritedig_for_anothermacofdmsp = true;
+			buddy_priv->dmsp_ctl.writedig_for_anothermacofdmsp = true;
 			buddy_priv->dmsp_ctl.curdigvalue_for_anothermacofdmsp =
 				rtl_dm_dig->cur_igvalue;
 		} else {
@@ -684,7 +684,7 @@ void rtl92d_dm_dig(struct ieee80211_hw *hw)
 	struct false_alarm_statistics *falsealm_cnt = &(rtlpriv->falsealm_cnt);
 
 	RT_TRACE(COMP_DIG, DBG_LOUD, ("\n"));
-	if (rtlpriv->rtlhal.b_earlymode_enable) {
+	if (rtlpriv->rtlhal.earlymode_enable) {
 		if ((rtlpriv->mac80211.link_state >= MAC80211_LINKED) &&
 		    (rtlpriv->mac80211.vendor == PEER_CISCO)) {
 			RT_TRACE(COMP_DIG, DBG_LOUD, ("IOT_PEER = CISCO\n"));
@@ -704,7 +704,7 @@ void rtl92d_dm_dig(struct ieee80211_hw *hw)
 		rtl_dm_dig->last_min_undecorated_pwdb_for_dm =
 			rtl_dm_dig->min_undecorated_pwdb_for_dm;
 	}
-	if (rtlpriv->dm.b_dm_initialgain_enable == false)
+	if (rtlpriv->dm.dm_initialgain_enable == false)
 		return;
 
 	/* because we will send data pkt when scanning
@@ -803,7 +803,7 @@ void rtl92d_dm_init_dynamic_txpower(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 
-	rtlpriv->dm.bdynamic_txpower_enable = true;
+	rtlpriv->dm.dynamic_txpower_enable = true;
 	rtlpriv->dm.last_dtp_lvl = TXHIGHPWRLEVEL_NORMAL;
 	rtlpriv->dm.dynamic_txhighpower_lvl = TXHIGHPWRLEVEL_NORMAL;
 }
@@ -819,7 +819,7 @@ void rtl92d_dm_dynamic_txpower(struct ieee80211_hw *hw)
 	bool bgetvalue_from_buddy = _rtl92d_dualmac_getparameter_from_buddy(hw);
 	u8 highpowerlvl_backformac0 = TXHIGHPWRLEVEL_LEVEL1;
 
-	if ((!rtlpriv->dm.bdynamic_txpower_enable)
+	if ((!rtlpriv->dm.dynamic_txpower_enable)
 	    || rtlpriv->dm.dm_flag & HAL_DM_HIPWR_DISABLE) {
 		rtlpriv->dm.dynamic_txhighpower_lvl = TXHIGHPWRLEVEL_NORMAL;
 		return;
@@ -895,7 +895,7 @@ void rtl92d_dm_dynamic_txpower(struct ieee80211_hw *hw)
 	if (rtlpriv->dm.supp_phymode_switch && bgetvalue_from_buddy) {
 		RT_TRACE(COMP_POWER, DBG_LOUD,
 			("mac 0 for mac 1\n"));
-		if (rtlpriv->dmsp_ctl.bchangetxhighpowerlvl_for_anothermacofdmsp) {
+		if (rtlpriv->dmsp_ctl.changetxhighpowerlvl_for_anothermacofdmsp) {
 			RT_TRACE(COMP_POWER, DBG_EMERG,
 				("change value\n"));
 			highpowerlvl_backformac0 = rtlpriv->dm.dynamic_txhighpower_lvl;
@@ -903,7 +903,7 @@ void rtl92d_dm_dynamic_txpower(struct ieee80211_hw *hw)
 				rtlpriv->dmsp_ctl.curtxhighlvl_for_anothermacofdmsp;
 			rtl92d_phy_set_txpower_level(hw, buddy_priv->phy.current_channel);
 			rtlpriv->dm.dynamic_txhighpower_lvl = highpowerlvl_backformac0;
-			rtlpriv->dmsp_ctl.bchangetxhighpowerlvl_for_anothermacofdmsp =
+			rtlpriv->dmsp_ctl.changetxhighpowerlvl_for_anothermacofdmsp =
 					false;
 		}
 	}
@@ -914,17 +914,17 @@ void rtl92d_dm_dynamic_txpower(struct ieee80211_hw *hw)
 			if (NULL == buddy_priv) {
 				RT_TRACE(COMP_POWER, DBG_LOUD,
 					("Buddy == NULL case\n"));
-				if (!rtlpriv->rtlhal.bslave_of_dmsp)
+				if (!rtlpriv->rtlhal.slave_of_dmsp)
 					rtl92d_phy_set_txpower_level(hw, rtlphy->current_channel);
 			} else {
 				if (rtlpriv->rtlhal.macphymode == DUALMAC_SINGLEPHY) {
 					RT_TRACE(COMP_POWER, DBG_LOUD,
 						("Buddy != NULL DMSP\n"));
-					if (rtlpriv->rtlhal.bslave_of_dmsp) {
+					if (rtlpriv->rtlhal.slave_of_dmsp) {
 						RT_TRACE(COMP_POWER, DBG_LOUD,
 							("bslave case\n"));
 						buddy_priv->dmsp_ctl.
-							bchangetxhighpowerlvl_for_anothermacofdmsp = true;
+							changetxhighpowerlvl_for_anothermacofdmsp = true;
 						buddy_priv->dmsp_ctl.curtxhighlvl_for_anothermacofdmsp
 							= rtlpriv->dm.dynamic_txhighpower_lvl;
 					} else {
@@ -984,7 +984,7 @@ void rtl92d_dm_pwdb_monitor(struct ieee80211_hw *hw)
 	}
 
 	/* Indicate Rx signal strength to FW. */
-	if (rtlpriv->dm.b_useramask) {
+	if (rtlpriv->dm.useramask) {
 		u32 temp = 0;
 		temp = rtlpriv->dm.undecorated_smoothed_pwdb;
 		temp = temp << 16;
@@ -1002,8 +1002,8 @@ void rtl92d_dm_init_edca_turbo(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	rtlpriv->dm.bcurrent_turbo_edca = false;
-	rtlpriv->dm.bis_any_nonbepkts = false;
-	rtlpriv->dm.bis_cur_rdlstate = false;
+	rtlpriv->dm.is_any_nonbepkts = false;
+	rtlpriv->dm.is_cur_rdlstate = false;
 }
 
 void rtl92d_dm_interrupt_migration(struct ieee80211_hw *hw)
@@ -1025,11 +1025,11 @@ void rtl92d_dm_interrupt_migration(struct ieee80211_hw *hw)
 	 * instead of RxIntOK counts to prevent non-linear
 	 * Rx statistics when interrupt migration is set before.*/
 	if (mac->link_state >= MAC80211_LINKED &&
-	    rtlpriv->link_info.b_higher_busytraffic) {
+	    rtlpriv->link_info.higher_busytraffic) {
 		int_mt_to_set = true;
 
 		/* To check whether we should disable Tx interrupt or not. */
-		if (rtlpriv->link_info.b_higher_busyrxtraffic)
+		if (rtlpriv->link_info.higher_busyrxtraffic)
 			ac_int_to_set = true;
 	}
 	/* Update current settings. */
@@ -1063,7 +1063,7 @@ void rtl92d_dm_check_edca_turbo(struct ieee80211_hw *hw)
 #if 0
 	/* Enable BEQ TxOP limit configuration in wireless G-mode. */
 	/* To check whether we shall force turn on TXOP configuration. */
-	if ((!rtlpriv->dm.b_disable_framebursting) &&
+	if ((!rtlpriv->dm.disable_framebursting) &&
 		(rtlpriv->sec.pairwise_enc_algorithm == WEP40_ENCRYPTION ||
 		rtlpriv->sec.pairwise_enc_algorithm == WEP104_ENCRYPTION ||
 		rtlpriv->sec.pairwise_enc_algorithm == TKIP_ENCRYPTION)) {
@@ -1075,21 +1075,21 @@ void rtl92d_dm_check_edca_turbo(struct ieee80211_hw *hw)
 			edca_be_dl |= 0x005e0000;
 	}
 #endif
-	if ((!rtlpriv->dm.bis_any_nonbepkts) &&
-	    (!rtlpriv->dm.b_disable_framebursting)) {
+	if ((!rtlpriv->dm.is_any_nonbepkts) &&
+	    (!rtlpriv->dm.disable_framebursting)) {
 		cur_txok_cnt = rtlpriv->stats.txbytesunicast - last_txok_cnt;
 		cur_rxok_cnt = rtlpriv->stats.rxbytesunicast - last_rxok_cnt;
 		if (cur_rxok_cnt > 4 * cur_txok_cnt) {
-			if (!rtlpriv->dm.bis_cur_rdlstate ||
+			if (!rtlpriv->dm.is_cur_rdlstate ||
 			    !rtlpriv->dm.bcurrent_turbo_edca) {
 				rtl_write_dword(rtlpriv, REG_EDCA_BE_PARAM,	edca_be_dl);
-				rtlpriv->dm.bis_cur_rdlstate = true;
+				rtlpriv->dm.is_cur_rdlstate = true;
 			}
 		} else {
-			if (rtlpriv->dm.bis_cur_rdlstate ||
+			if (rtlpriv->dm.is_cur_rdlstate ||
 			    !rtlpriv->dm.bcurrent_turbo_edca) {
 				rtl_write_dword(rtlpriv, REG_EDCA_BE_PARAM, edca_be_ul);
-				rtlpriv->dm.bis_cur_rdlstate = false;
+				rtlpriv->dm.is_cur_rdlstate = false;
 			}
 		}
 		rtlpriv->dm.bcurrent_turbo_edca = true;
@@ -1102,7 +1102,7 @@ void rtl92d_dm_check_edca_turbo(struct ieee80211_hw *hw)
 	}
 
 dm_checkedcaturbo_exit:
-	rtlpriv->dm.bis_any_nonbepkts = false;
+	rtlpriv->dm.is_any_nonbepkts = false;
 	last_txok_cnt = rtlpriv->stats.txbytesunicast;
 	last_rxok_cnt = rtlpriv->stats.rxbytesunicast;
 }
@@ -1180,7 +1180,7 @@ static void rtl92d_dm_txpower_tracking_callback_thermalmeter(
 		{0, 2, 4, 5, 7, 10,	13, 16, 16, 18, 18, 18, 18},
 	};
 
-	rtlpriv->dm.btxpower_trackinginit = true;
+	rtlpriv->dm.txpower_trackinginit = true;
 	RT_TRACE(COMP_POWER_TRACKING, DBG_LOUD, ("\n"));
 	thermalvalue = (u8) rtl_get_rfreg(hw, RF90_PATH_A, RF_T_METER, 0xf800);
 	RT_TRACE(COMP_POWER_TRACKING, DBG_LOUD,
@@ -1229,7 +1229,7 @@ static void rtl92d_dm_txpower_tracking_callback_thermalmeter(
 					  BMASKDWORD) & BMASKCCK;
 			rtl92d_release_cckandrw_pagea_ctl(hw, &flag);
 			for (i = 0; i < CCK_TABLE_LENGTH; i++) {
-				if (rtlpriv->dm.b_cck_inch14) {
+				if (rtlpriv->dm.cck_inch14) {
 					if (memcmp((void *)&temp_cck,
 						   (void *)&cckswing_table_ch14[i][2], 4) == 0) {
 						cck_index_old = (u8) i;
@@ -1238,7 +1238,7 @@ static void rtl92d_dm_txpower_tracking_callback_thermalmeter(
 							  "cck_index=0x%x, ch 14 %d\n",
 							  RCCK0_TXFILTER2,
 							  temp_cck, cck_index_old,
-							  rtlpriv->dm.b_cck_inch14));
+							  rtlpriv->dm.cck_inch14));
 						break;
 					}
 				} else {
@@ -1250,7 +1250,7 @@ static void rtl92d_dm_txpower_tracking_callback_thermalmeter(
 							  "cck_index=0x%x, ch14 %d\n",
 							  RCCK0_TXFILTER2,
 							  temp_cck, cck_index_old,
-							  rtlpriv->dm.b_cck_inch14));
+							  rtlpriv->dm.cck_inch14));
 						break;
 					}
 				}
@@ -1294,8 +1294,8 @@ static void rtl92d_dm_txpower_tracking_callback_thermalmeter(
 			    (thermalvalue - rtlefuse->eeprom_thermalmeter) :
 			    (rtlefuse->eeprom_thermalmeter - thermalvalue);
 			rtlhal->reloadtxpowerindex = false;
-			rtlpriv->dm.bdone_txpower = false;
-		} else if (rtlpriv->dm.bdone_txpower) {
+			rtlpriv->dm.done_txpower = false;
+		} else if (rtlpriv->dm.done_txpower) {
 			delta = (thermalvalue > rtlpriv->dm.thermalvalue) ?
 			    (thermalvalue - rtlpriv->dm.thermalvalue) :
 			    (rtlpriv->dm.thermalvalue - thermalvalue);
@@ -1325,7 +1325,7 @@ static void rtl92d_dm_txpower_tracking_callback_thermalmeter(
 			rtl92d_phy_lc_calibrate(hw);
 		}
 		if (delta > 0 && rtlpriv->dm.txpower_track_control) {
-			rtlpriv->dm.bdone_txpower = true;
+			rtlpriv->dm.done_txpower = true;
 			delta = (thermalvalue > rtlefuse->eeprom_thermalmeter) ?
 			    (thermalvalue - rtlefuse->eeprom_thermalmeter) :
 			    (rtlefuse->eeprom_thermalmeter - thermalvalue);
@@ -1467,7 +1467,7 @@ static void rtl92d_dm_txpower_tracking_callback_thermalmeter(
 
 			if (rtlhal->current_bandtype == BAND_ON_2_4G) {
 				/* Adjust CCK according to IQK result */
-				if (!rtlpriv->dm.b_cck_inch14) {
+				if (!rtlpriv->dm.cck_inch14) {
 					rtl_write_byte(rtlpriv, 0xa22, cckswing_table_ch1ch13
 						       [(u8)cck_index][0]);
 					rtl_write_byte(rtlpriv, 0xa23, cckswing_table_ch1ch13
@@ -1571,12 +1571,12 @@ static void rtl92d_dm_initialize_txpower_tracking(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 
-	rtlpriv->dm.btxpower_tracking = true;
-	rtlpriv->dm.btxpower_trackinginit = false;
+	rtlpriv->dm.txpower_tracking = true;
+	rtlpriv->dm.txpower_trackinginit = false;
 	rtlpriv->dm.txpower_track_control = true;
 	RT_TRACE(COMP_POWER_TRACKING, DBG_LOUD,
-		 ("pMgntInfo->btxpower_tracking = %d\n",
-		  rtlpriv->dm.btxpower_tracking));
+		 ("pMgntInfo->txpower_tracking = %d\n",
+		  rtlpriv->dm.txpower_tracking));
 }
 
 void rtl92d_dm_check_txpower_tracking_thermal_meter(struct ieee80211_hw *hw)
@@ -1584,7 +1584,7 @@ void rtl92d_dm_check_txpower_tracking_thermal_meter(struct ieee80211_hw *hw)
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	static u8 tm_trigger;
 
-	if (!rtlpriv->dm.btxpower_tracking)
+	if (!rtlpriv->dm.txpower_tracking)
 		return;
 
 	if (!tm_trigger) {
@@ -1617,9 +1617,9 @@ void rtl92d_dm_init_rate_adaptive_mask(struct ieee80211_hw *hw)
 	p_ra->ratr_state = DM_RATR_STA_INIT;
 	p_ra->pre_ratr_state = DM_RATR_STA_INIT;
 	if (rtlpriv->dm.dm_type == DM_TYPE_BYDRIVER)
-		rtlpriv->dm.b_useramask = true;
+		rtlpriv->dm.useramask = true;
 	else
-		rtlpriv->dm.b_useramask = false;
+		rtlpriv->dm.useramask = false;
 }
 
 void rtl92d_dm_refresh_rate_adaptive_mask(struct ieee80211_hw *hw)
@@ -1636,7 +1636,7 @@ void rtl92d_dm_refresh_rate_adaptive_mask(struct ieee80211_hw *hw)
 			 (" driver is going to unload\n"));
 		return;
 	}
-	if (!rtlpriv->dm.b_useramask) {
+	if (!rtlpriv->dm.useramask) {
 		RT_TRACE(COMP_RATE, DBG_LOUD,
 			 (" driver does not control rate adaptive mask\n"));
 		return;
@@ -1733,8 +1733,8 @@ bool _rtl92d_dm_dual_mac_check_switch_to_dmsp(struct ieee80211_hw *hw)
 			return b_need_to_change;
 		}
 
-		if ((!rtlpriv->rtlhal.b_bbrf_ready) ||
-			(!buddy_priv->rtlhal.b_bbrf_ready)) {
+		if ((!rtlpriv->rtlhal.bbrf_ready) ||
+			(!buddy_priv->rtlhal.bbrf_ready)) {
 			/* hw is not ready */
 			b_need_to_change = false;
 			RT_TRACE(COMP_EASY_CONCURRENT, DBG_LOUD,
@@ -1833,7 +1833,7 @@ void rtl92d_dm_easy_concurrent_switch_to_dmsp(struct ieee80211_hw *hw)
 					sta_entry = (struct rtl_sta_info *) sta->drv_priv;
 					sta_entry->mimo_ps = IEEE80211_SMPS_OFF;
 				}
-				rtlpriv->easy_concurrent_ctl.bchange_to_dmsp = true;
+				rtlpriv->easy_concurrent_ctl.change_to_dmsp = true;
 				rtl_dualmac_easyconcurrent(hw);
 				if (sta) {
 					if (b_buddy_linked) {
@@ -1871,14 +1871,14 @@ void rtl92d_dm_easy_concurrent_switch_to_dmdp(struct ieee80211_hw *hw)
 			(buddy_priv->mac80211.link_state == MAC80211_NOLINK)) {
 			RT_TRACE(COMP_EASY_CONCURRENT, DBG_EMERG,
 					("STA + STA no link Case\n"));
-			rtlpriv->easy_concurrent_ctl.bchange_to_dmdp = true;
-			buddy_priv->easy_concurrent_ctl.bchange_to_dmdp = true;
+			rtlpriv->easy_concurrent_ctl.change_to_dmdp = true;
+			buddy_priv->easy_concurrent_ctl.change_to_dmdp = true;
 
 			if (rtlpriv->rtlhal.interfaceindex == 0)
-				rtlpriv->easy_concurrent_ctl.bclose_bbandrf_for_dmsp
+				rtlpriv->easy_concurrent_ctl.close_bbandrf_for_dmsp
 					= true;
 			else
-				buddy_priv->easy_concurrent_ctl.bclose_bbandrf_for_dmsp
+				buddy_priv->easy_concurrent_ctl.close_bbandrf_for_dmsp
 					= true;
 
 			rtl_dualmac_easyconcurrent(hw);
@@ -1904,7 +1904,7 @@ void rtl92d_dm_watchdog(struct ieee80211_hw *hw)
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_ps_ctl *ppsc = rtl_psc(rtl_priv(hw));
 	struct rtl_priv *buddy_priv = rtlpriv->buddy_priv;
-	bool b_fw_current_inpsmode = false;
+	bool fw_current_inpsmode = false;
 	bool fwps_awake = true;
 	unsigned long flags = 0;
 
@@ -1916,12 +1916,12 @@ void rtl92d_dm_watchdog(struct ieee80211_hw *hw)
 	if (ppsc->p2p_ps_info.p2p_ps_mode)
 		fwps_awake = false;
 
-	if ((ppsc->rfpwr_state == ERFON) && ((!b_fw_current_inpsmode) &&
+	if ((ppsc->rfpwr_state == ERFON) && ((!fw_current_inpsmode) &&
 		fwps_awake) && (!ppsc->rfchange_inprogress)) {
 		rtl92d_dm_pwdb_monitor(hw);
 		if (rtlpriv->dm.supp_phymode_switch) {
 			spin_lock_irqsave(&rtlpriv->glb_var->glb_list_lock, flags);
-			if (rtlpriv->rtlhal.bslave_of_dmsp)
+			if (rtlpriv->rtlhal.slave_of_dmsp)
 				rtl92d_dm_false_alarm_counter_statistics_for_slaveofdmsp(hw);
 			else
 				rtl92d_dm_false_alarm_counter_statistics(hw);

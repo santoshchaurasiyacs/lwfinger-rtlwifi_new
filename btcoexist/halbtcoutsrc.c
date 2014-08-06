@@ -110,7 +110,7 @@ bool halbtc_is_bt_coexist_available(struct btc_coexist *btcoexist)
 bool halbtc_is_wifi_busy(struct rtl_priv *rtlpriv)
 {
 
-	if (rtlpriv->link_info.b_busytraffic)
+	if (rtlpriv->link_info.busytraffic)
 		return true;
 	else
 		return false;
@@ -187,7 +187,7 @@ bool halbtc_is_wifi_uplink(struct rtl_priv *adapter)
 {
 	struct rtl_priv *rtlpriv = adapter;
 
-	if (rtlpriv->link_info.b_tx_busy_traffic)
+	if (rtlpriv->link_info.tx_busy_traffic)
 		return true;
 	else
 		return false;
@@ -524,7 +524,7 @@ bool halbtc_set(void *void_btcoexist, u8 set_type, void *in_buf)
 		btcoexist->bt_info.reject_agg_pkt = *bool_tmp;
 		break;
 	case BTC_SET_BL_BT_CTRL_AGG_SIZE:
-		btcoexist->bt_info.b_bt_ctrl_buf_size = *bool_tmp;
+		btcoexist->bt_info.bt_ctrl_buf_size = *bool_tmp;
 		break;
 	case BTC_SET_BL_INC_SCAN_DEV_NUM:
 		btcoexist->bt_info.increase_scan_dev_num = *bool_tmp;
@@ -773,7 +773,7 @@ bool halbtc_under_ips(struct btc_coexist *btcoexist)
 	struct rtl_ps_ctl *ppsc = rtl_psc(rtlpriv);
 	enum rf_pwrstate rtstate;
 
-	if (ppsc->b_inactiveps) {
+	if (ppsc->inactiveps) {
 		rtstate = ppsc->rfpwr_state;
 
 		if (rtstate != ERFON &&
@@ -841,7 +841,7 @@ bool exhalbtc_initlize_variables(struct rtl_priv *adapter)
 
 	btcoexist->cli_buf = &btc_dbg_buf[0];
 
-	btcoexist->bt_info.b_bt_ctrl_buf_size = false;
+	btcoexist->bt_info.bt_ctrl_buf_size = false;
 	btcoexist->bt_info.agg_buf_size = 5;
 
 	btcoexist->bt_info.increase_scan_dev_num = false;

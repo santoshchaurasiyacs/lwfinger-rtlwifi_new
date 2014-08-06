@@ -477,7 +477,7 @@ static void rtl8723e_dm_dig(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 
-	if (rtlpriv->dm.b_dm_initialgain_enable == false)
+	if (rtlpriv->dm.dm_initialgain_enable == false)
 		return;
 	if (dm_digtable.dig_enable_flag == false)
 		return;
@@ -490,7 +490,7 @@ static void rtl8723e_dm_init_dynamic_txpower(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 
-	rtlpriv->dm.bdynamic_txpower_enable = false;
+	rtlpriv->dm.dynamic_txpower_enable = false;
 
 	rtlpriv->dm.last_dtp_lvl = TXHIGHPWRLEVEL_NORMAL;
 	rtlpriv->dm.dynamic_txhighpower_lvl = TXHIGHPWRLEVEL_NORMAL;
@@ -503,7 +503,7 @@ static void rtl8723e_dm_dynamic_txpower(struct ieee80211_hw *hw)
 	struct rtl_mac *mac = rtl_mac(rtl_priv(hw));
 	long undecorated_smoothed_pwdb;
 
-	if (!rtlpriv->dm.bdynamic_txpower_enable)
+	if (!rtlpriv->dm.dynamic_txpower_enable)
 		return;
 
 	if (rtlpriv->dm.dm_flag & HAL_DM_HIPWR_DISABLE) {
@@ -628,8 +628,8 @@ void rtl8723e_dm_init_edca_turbo(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	rtlpriv->dm.bcurrent_turbo_edca = false;
-	rtlpriv->dm.bis_any_nonbepkts = false;
-	rtlpriv->dm.bis_cur_rdlstate = false;
+	rtlpriv->dm.is_any_nonbepkts = false;
+	rtlpriv->dm.is_cur_rdlstate = false;
 }
 
 static void rtl8723e_dm_check_edca_turbo(struct ieee80211_hw *hw)
@@ -646,7 +646,7 @@ static void rtl8723e_dm_check_edca_turbo(struct ieee80211_hw *hw)
 	u64 cur_rxok_cnt = 0;
 	u32 edca_be_ul = 0x5ea42b;
 	u32 edca_be_dl = 0x5ea42b;
-	bool b_bt_change_edca = false;
+	bool bt_change_edca = false;
 
 	if ((last_bt_edca_ul != rtlpcipriv->btcoexist.bt_edca_ul) ||
 	    (last_bt_edca_dl != rtlpcipriv->btcoexist.bt_edca_dl)) {
@@ -657,12 +657,12 @@ static void rtl8723e_dm_check_edca_turbo(struct ieee80211_hw *hw)
 
 	if (rtlpcipriv->btcoexist.bt_edca_ul != 0) {
 		edca_be_ul = rtlpcipriv->btcoexist.bt_edca_ul;
-		b_bt_change_edca = true;
+		bt_change_edca = true;
 	}
 
 	if (rtlpcipriv->btcoexist.bt_edca_dl != 0) {
 		edca_be_ul = rtlpcipriv->btcoexist.bt_edca_dl;
-		b_bt_change_edca = true;
+		bt_change_edca = true;
 	}
 
 	if (mac->link_state != MAC80211_LINKED) {
@@ -678,27 +678,27 @@ static void rtl8723e_dm_check_edca_turbo(struct ieee80211_hw *hw)
 			edca_be_dl |= 0x005e0000;
 	}
 */
-	if ((b_bt_change_edca) || ((!rtlpriv->dm.bis_any_nonbepkts) &&
-	     (!rtlpriv->dm.b_disable_framebursting))) {
+	if ((bt_change_edca) || ((!rtlpriv->dm.is_any_nonbepkts) &&
+	     (!rtlpriv->dm.disable_framebursting))) {
 
 		cur_txok_cnt = rtlpriv->stats.txbytesunicast - last_txok_cnt;
 		cur_rxok_cnt = rtlpriv->stats.rxbytesunicast - last_rxok_cnt;
 
 		if (cur_rxok_cnt > 4 * cur_txok_cnt) {
-			if (!rtlpriv->dm.bis_cur_rdlstate ||
+			if (!rtlpriv->dm.is_cur_rdlstate ||
 			    !rtlpriv->dm.bcurrent_turbo_edca) {
 				rtl_write_dword(rtlpriv,
 						REG_EDCA_BE_PARAM,
 						edca_be_dl);
-				rtlpriv->dm.bis_cur_rdlstate = true;
+				rtlpriv->dm.is_cur_rdlstate = true;
 			}
 		} else {
-			if (rtlpriv->dm.bis_cur_rdlstate ||
+			if (rtlpriv->dm.is_cur_rdlstate ||
 			    !rtlpriv->dm.bcurrent_turbo_edca) {
 				rtl_write_dword(rtlpriv,
 						REG_EDCA_BE_PARAM,
 						edca_be_ul);
-				rtlpriv->dm.bis_cur_rdlstate = false;
+				rtlpriv->dm.is_cur_rdlstate = false;
 			}
 		}
 		rtlpriv->dm.bcurrent_turbo_edca = true;
@@ -712,7 +712,7 @@ static void rtl8723e_dm_check_edca_turbo(struct ieee80211_hw *hw)
 		}
 	}
 
-	rtlpriv->dm.bis_any_nonbepkts = false;
+	rtlpriv->dm.is_any_nonbepkts = false;
 	last_txok_cnt = rtlpriv->stats.txbytesunicast;
 	last_rxok_cnt = rtlpriv->stats.rxbytesunicast;
 }
@@ -722,12 +722,12 @@ static void rtl8723e_dm_initialize_txpower_tracking_thermalmeter(
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 
-	rtlpriv->dm.btxpower_tracking = true;
-	rtlpriv->dm.btxpower_trackinginit = false;
+	rtlpriv->dm.txpower_tracking = true;
+	rtlpriv->dm.txpower_trackinginit = false;
 
 	RT_TRACE(COMP_POWER_TRACKING, DBG_LOUD,
-		 ("pMgntInfo->btxpower_tracking = %d\n",
-		  rtlpriv->dm.btxpower_tracking));
+		 ("pMgntInfo->txpower_tracking = %d\n",
+		  rtlpriv->dm.txpower_tracking));
 }
 
 static void rtl8723e_dm_initialize_txpower_tracking(struct ieee80211_hw *hw)
@@ -749,9 +749,9 @@ void rtl8723e_dm_init_rate_adaptive_mask(struct ieee80211_hw *hw)
 	p_ra->pre_ratr_state = DM_RATR_STA_INIT;
 
 	if (rtlpriv->dm.dm_type == DM_TYPE_BYDRIVER)
-		rtlpriv->dm.b_useramask = true;
+		rtlpriv->dm.useramask = true;
 	else
-		rtlpriv->dm.b_useramask = false;
+		rtlpriv->dm.useramask = false;
 
 }
 
@@ -770,7 +770,7 @@ void rtl92c_dm_refresh_rate_adaptive_mask(struct ieee80211_hw *hw)
 		return;
 	}
 
-	if (!rtlpriv->dm.b_useramask) {
+	if (!rtlpriv->dm.useramask) {
 		RT_TRACE(COMP_RATE, DBG_LOUD,
 			 (" driver does not control rate adaptive mask\n"));
 		return;
@@ -1011,18 +1011,18 @@ void rtl8723e_dm_watchdog(struct ieee80211_hw *hw)
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_ps_ctl *ppsc = rtl_psc(rtl_priv(hw));
 	struct rtl_pci_priv *rtlpcipriv = rtl_pcipriv(hw);
-	bool b_fw_current_inpsmode = false;
-	bool b_fw_ps_awake = true;
+	bool fw_current_inpsmode = false;
+	bool fw_ps_awake = true;
 	rtlpriv->cfg->ops->get_hw_reg(hw, HW_VAR_FW_PSMODE_STATUS,
-				      (u8 *) (&b_fw_current_inpsmode));
+				      (u8 *) (&fw_current_inpsmode));
 	rtlpriv->cfg->ops->get_hw_reg(hw, HW_VAR_FWLPS_RF_ON,
-				      (u8 *) (&b_fw_ps_awake));
+				      (u8 *) (&fw_ps_awake));
 
 	if (ppsc->p2p_ps_info.p2p_ps_mode)
-		b_fw_ps_awake = false;
+		fw_ps_awake = false;
 
 	if ((ppsc->rfpwr_state == ERFON)
-		&& ((!b_fw_current_inpsmode) && b_fw_ps_awake)
+		&& ((!fw_current_inpsmode) && fw_ps_awake)
 		&& (!ppsc->rfchange_inprogress)) {
 		rtl8723e_dm_pwdb_monitor(hw);
 		rtl8723e_dm_dig(hw);
@@ -1034,7 +1034,7 @@ void rtl8723e_dm_watchdog(struct ieee80211_hw *hw)
 		rtl8723e_dm_bt_coexist(hw);
 		rtl8723e_dm_check_edca_turbo(hw);
 	}
-	if (rtlpcipriv->btcoexist.b_init_set)
+	if (rtlpcipriv->btcoexist.init_set)
 		rtl_write_byte(rtlpriv, 0x76e, 0xc);
 }
 
@@ -1059,7 +1059,7 @@ void rtl8723e_dm_init_bt_coexist(struct ieee80211_hw *hw)
 	rtl_write_byte(rtlpriv, 0x778, 0x3);
 	rtl_write_byte(rtlpriv, 0x40, 0x20);
 
-	rtlpcipriv->btcoexist.b_init_set = true;
+	rtlpcipriv->btcoexist.init_set = true;
 }
 
 void rtl8723e_dm_bt_coexist(struct ieee80211_hw *hw)
@@ -1073,7 +1073,7 @@ void rtl8723e_dm_bt_coexist(struct ieee80211_hw *hw)
 		return;
 	}
 
-	if (!rtlpcipriv->btcoexist.b_init_set) {
+	if (!rtlpcipriv->btcoexist.init_set) {
 		RT_TRACE(COMP_BT_COEXIST, DBG_LOUD,
 			("[DM][BT], rtl8723e_dm_bt_coexist()\n"));
 		rtl8723e_dm_init_bt_coexist(hw);

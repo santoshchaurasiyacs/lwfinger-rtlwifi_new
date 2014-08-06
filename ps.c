@@ -138,8 +138,8 @@ no_protect:
 		ppsc->rfoff_reason &= (~changesource);
 
 		if ((changesource == RF_CHANGE_BY_HW) &&
-		    (ppsc->b_hwradiooff == true)) {
-			ppsc->b_hwradiooff = false;
+		    (ppsc->hwradiooff == true)) {
+			ppsc->hwradiooff = false;
 		}
 
 		if (!ppsc->rfoff_reason) {
@@ -152,8 +152,8 @@ no_protect:
 	case ERFOFF:
 
 		if ((changesource == RF_CHANGE_BY_HW) &&
-		    (ppsc->b_hwradiooff == false)) {
-			ppsc->b_hwradiooff = true;
+		    (ppsc->hwradiooff == false)) {
+			ppsc->hwradiooff = true;
 		}
 
 		ppsc->rfoff_reason |= changesource;
@@ -189,7 +189,7 @@ static void _rtl_ps_inactive_ps(struct ieee80211_hw *hw)
 	struct rtl_hal *rtlhal = rtl_hal(rtl_priv(hw));
 	struct rtl_ps_ctl *ppsc = rtl_psc(rtl_priv(hw));
 
-	ppsc->b_swrf_processing = true;
+	ppsc->swrf_processing = true;
 
 	if (ppsc->inactive_pwrstate == ERFON && rtlhal->interface == INTF_PCI) {
 		if ((ppsc->reg_rfps_level & RT_RF_OFF_LEVL_ASPM) &&
@@ -212,7 +212,7 @@ static void _rtl_ps_inactive_ps(struct ieee80211_hw *hw)
 		}
 	}
 
-	ppsc->b_swrf_processing = false;
+	ppsc->swrf_processing = false;
 }
 
 void rtl_ips_nic_off_wq_callback(void *data)
@@ -246,13 +246,13 @@ void rtl_ips_nic_off_wq_callback(void *data)
 	if (rtlpriv->cfg->ops->bt_turn_off_bt_coexist_before_enter_lps)
 		rtlpriv->cfg->ops->bt_turn_off_bt_coexist_before_enter_lps(hw);
 
-	if (ppsc->b_inactiveps) {
+	if (ppsc->inactiveps) {
 		rtstate = ppsc->rfpwr_state;
 
 		/*
 		 *Do not enter IPS in the following conditions:
 		 *(1) RF is already OFF or Sleep
-		 *(2) b_swrf_processing (indicates the IPS is still under going)
+		 *(2) swrf_processing (indicates the IPS is still under going)
 		 *(3) Connectted (only disconnected can trigger IPS)
 		 *(4) IBSS (send Beacon)
 		 *(5) AP mode (send Beacon)
@@ -260,14 +260,14 @@ void rtl_ips_nic_off_wq_callback(void *data)
 		 */
 
 		if (rtstate == ERFON &&
-		    !ppsc->b_swrf_processing &&
+		    !ppsc->swrf_processing &&
 		    (mac->link_state == MAC80211_NOLINK) &&
 		    !mac->act_scanning) {
 			RT_TRACE(COMP_RF, DBG_LOUD,
 				 ("IPSEnter(): Turn off RF.\n"));
 
 			ppsc->inactive_pwrstate = ERFOFF;
-			ppsc->b_in_powersavemode = true;
+			ppsc->in_powersavemode = true;
 
 			/* call before RF off */
 			if (rtlpriv->cfg->ops->get_btc_status())
@@ -304,15 +304,15 @@ void rtl_ips_nic_on(struct ieee80211_hw *hw)
 	cancel_delayed_work(&rtlpriv->works.ips_nic_off_wq);
 
 	spin_lock(&rtlpriv->locks.ips_lock);
-	if (ppsc->b_inactiveps) {
+	if (ppsc->inactiveps) {
 		rtstate = ppsc->rfpwr_state;
 
 		if (rtstate != ERFON &&
-		    !ppsc->b_swrf_processing &&
+		    !ppsc->swrf_processing &&
 		    ppsc->rfoff_reason <= RF_CHANGE_BY_IPS) {
 
 			ppsc->inactive_pwrstate = ERFON;
-			ppsc->b_in_powersavemode = false;
+			ppsc->in_powersavemode = false;
 			_rtl_ps_inactive_ps(hw);
 			/* call after RF on */
 			if (rtlpriv->cfg->ops->get_btc_status())
@@ -386,7 +386,7 @@ void rtl_lps_set_psmode(struct ieee80211_hw *hw, u8 rt_psmode)
 	 *   mode and set RPWM to turn RF on.
 	 */
 
-	if ((ppsc->b_fwctrl_lps) && ppsc->report_linked) {
+	if ((ppsc->fwctrl_lps) && ppsc->report_linked) {
 		if (ppsc->dot11_psmode == EACTIVE) {
 			RT_TRACE(COMP_RF, DBG_DMESG,
 				 ("FW LPS leave ps_mode:%x\n",
@@ -431,13 +431,13 @@ void rtl_lps_enter(struct ieee80211_hw *hw)
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	unsigned long flag;
 
-	if (!ppsc->b_fwctrl_lps)
+	if (!ppsc->fwctrl_lps)
 		return;
 
 	if (rtlpriv->sec.being_setkey)
 		return;
 
-	if (rtlpriv->link_info.b_busytraffic)
+	if (rtlpriv->link_info.busytraffic)
 		return;
 
 	/*sleep after linked 10s, to let DHCP and 4-way handshake ok enough!! */
@@ -476,7 +476,7 @@ void rtl_lps_leave(struct ieee80211_hw *hw)
 
 	spin_lock_irqsave(&rtlpriv->locks.lps_lock, flag);
 
-	if (ppsc->b_fwctrl_lps) {
+	if (ppsc->fwctrl_lps) {
 		if (ppsc->dot11_psmode != EACTIVE) {
 
 			/*FIX ME */
@@ -514,7 +514,7 @@ void rtl_swlps_beacon(struct ieee80211_hw *hw, void *data, unsigned int len)
 	if (mac->opmode != NL80211_IFTYPE_STATION)
 		return;
 
-	if (!rtlpriv->psc.b_swctrl_lps)
+	if (!rtlpriv->psc.swctrl_lps)
 		return;
 
 	if (rtlpriv->mac80211.link_state != MAC80211_LINKED)
@@ -523,7 +523,7 @@ void rtl_swlps_beacon(struct ieee80211_hw *hw, void *data, unsigned int len)
 	if (!rtlpriv->psc.sw_ps_enabled)
 		return;
 
-	if (rtlpriv->psc.b_fwctrl_lps)
+	if (rtlpriv->psc.fwctrl_lps)
 		return;
 
 	if (likely(!(hw->conf.flags & IEEE80211_CONF_PS)))
@@ -592,7 +592,7 @@ void rtl_swlps_rf_awake(struct ieee80211_hw *hw)
 	struct rtl_mac *mac = rtl_mac(rtl_priv(hw));
 	unsigned long flag;
 
-	if (!rtlpriv->psc.b_swctrl_lps)
+	if (!rtlpriv->psc.swctrl_lps)
 		return;
 	if (mac->link_state != MAC80211_LINKED)
 		return;
@@ -636,7 +636,7 @@ void rtl_swlps_rf_sleep(struct ieee80211_hw *hw)
 	if ((mac->link_state != MAC80211_LINKED) || (mac->cnt_after_linked < 5))
 		return;
 
-	if (rtlpriv->link_info.b_busytraffic)
+	if (rtlpriv->link_info.busytraffic)
 		return;
 
 	spin_lock(&rtlpriv->locks.rf_ps_lock);
@@ -792,7 +792,7 @@ void rtl_p2p_noa_ie(struct ieee80211_hw *hw, void *data, unsigned int len)
 					p2pinfo->p2p_ps_mode = P2P_PS_CTWINDOW;
 					/* Driver should wait LPS
 					 * entering CTWindow*/
-					if (rtlpriv->psc.b_fw_current_inpsmode) {
+					if (rtlpriv->psc.fw_current_inpsmode) {
 						rtl_p2p_ps_cmd(hw,
 							       P2P_PS_ENABLE);
 					}
@@ -887,7 +887,7 @@ void rtl_p2p_action_ie(struct ieee80211_hw *hw, void *data, unsigned int len)
 					p2pinfo->p2p_ps_mode = P2P_PS_CTWINDOW;
 					/* Driver should wait LPS
 					 * entering CTWindow */
-					if (rtlpriv->psc.b_fw_current_inpsmode) {
+					if (rtlpriv->psc.fw_current_inpsmode) {
 						rtl_p2p_ps_cmd(hw,
 							       P2P_PS_ENABLE);
 					}
@@ -927,7 +927,7 @@ void rtl_p2p_ps_cmd(struct ieee80211_hw *hw , u8 p2p_ps_state)
 			p2pinfo->opp_ps = 0;
 			p2pinfo->noa_num = 0;
 			p2pinfo->p2p_ps_mode = P2P_PS_NONE;
-			if (rtlps->b_fw_current_inpsmode == true) {
+			if (rtlps->fw_current_inpsmode == true) {
 				if (rtlps->smart_ps == 0) {
 					rtlps->smart_ps = 2;
 					rtlpriv->cfg->ops->set_hw_reg(hw,

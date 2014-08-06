@@ -411,7 +411,7 @@ static void _rtl_init_mac80211(struct ieee80211_hw *hw)
 	    IEEE80211_HW_MFP_CAPABLE | 0;
 
 	/* swlps or hwlps has been set in diff chip in init_sw_vars */
-	if (rtlpriv->psc.b_swctrl_lps)
+	if (rtlpriv->psc.swctrl_lps)
 		hw->flags |= IEEE80211_HW_SUPPORTS_PS |
 			IEEE80211_HW_PS_NULLFUNC_STACK |
 			/* IEEE80211_HW_SUPPORTS_DYNAMIC_PS | */
@@ -715,21 +715,21 @@ static void _rtl_query_protection_mode(struct ieee80211_hw *hw,
 	u8 rate_flag = info->control.rates[0].flags;
 
 	/* Common Settings */
-	tcb_desc->b_rts_stbc = false;
-	tcb_desc->b_cts_enable = false;
+	tcb_desc->rts_stbc = false;
+	tcb_desc->cts_enable = false;
 	tcb_desc->rts_sc = 0;
-	tcb_desc->b_rts_bw = false;
-	tcb_desc->b_rts_use_shortpreamble = false;
-	tcb_desc->b_rts_use_shortgi = false;
+	tcb_desc->rts_bw = false;
+	tcb_desc->rts_use_shortpreamble = false;
+	tcb_desc->rts_use_shortgi = false;
 
 	if (rate_flag & IEEE80211_TX_RC_USE_CTS_PROTECT) {
 		/* Use CTS-to-SELF in protection mode. */
-		tcb_desc->b_rts_enable = true;
-		tcb_desc->b_cts_enable = true;
+		tcb_desc->rts_enable = true;
+		tcb_desc->cts_enable = true;
 		tcb_desc->rts_rate = rtlpriv->cfg->maps[RTL_RC_OFDM_RATE24M];
 	} else if (rate_flag & IEEE80211_TX_RC_USE_RTS_CTS) {
 		/* Use RTS-CTS in protection mode. */
-		tcb_desc->b_rts_enable = true;
+		tcb_desc->rts_enable = true;
 		tcb_desc->rts_rate = rtlpriv->cfg->maps[RTL_RC_OFDM_RATE24M];
 	}
 }
@@ -752,7 +752,7 @@ static void _rtl_txrate_selectmode(struct ieee80211_hw *hw,
 			tcb_desc->ratr_index = 0;
 		} else if (mac->opmode == NL80211_IFTYPE_ADHOC ||
 				mac->opmode == NL80211_IFTYPE_MESH_POINT) {
-			if (tcb_desc->b_multicast || tcb_desc->b_broadcast) {
+			if (tcb_desc->multicast || tcb_desc->broadcast) {
 				tcb_desc->hw_rate =
 				    rtlpriv->cfg->maps[RTL_RC_CCK_RATE2M];
 				tcb_desc->use_driver_rate = 1;
@@ -765,7 +765,7 @@ static void _rtl_txrate_selectmode(struct ieee80211_hw *hw,
 		}
 	}
 
-	if (rtlpriv->dm.b_useramask) {
+	if (rtlpriv->dm.useramask) {
 		tcb_desc->ratr_index = ratr_index;
 		/* TODO we will differentiate adhoc and station futrue  */
 		if (mac->opmode == NL80211_IFTYPE_STATION ||
@@ -823,7 +823,7 @@ static void _rtl_query_bandwidth_mode(struct ieee80211_hw *hw,
 		if (!mac->bw_40 || !(sta->ht_cap.ht_supported))
 			return;
 	}
-	if (tcb_desc->b_multicast || tcb_desc->b_broadcast)
+	if (tcb_desc->multicast || tcb_desc->broadcast)
 		return;
 
 	/*use legency rate, shall use 20MHz */
@@ -973,9 +973,9 @@ void rtl_get_tcb_desc(struct ieee80211_hw *hw,
 		}
 
 		if (is_multicast_ether_addr(ieee80211_get_DA(hdr)))
-			tcb_desc->b_multicast = 1;
+			tcb_desc->multicast = 1;
 		else if (is_broadcast_ether_addr(ieee80211_get_DA(hdr)))
-			tcb_desc->b_broadcast = 1;
+			tcb_desc->broadcast = 1;
 
 		_rtl_txrate_selectmode(hw, sta, tcb_desc);
 		_rtl_query_bandwidth_mode(hw, sta, tcb_desc);
@@ -1010,7 +1010,7 @@ bool rtl_tx_mgmt_proc(struct ieee80211_hw *hw, struct sk_buff *skb)
 
 		mac->link_state = MAC80211_LINKING;
 		/* Dul mac */
-		rtlpriv->phy.b_need_iqk = true;
+		rtlpriv->phy.need_iqk = true;
 
 	}
 
@@ -1396,11 +1396,11 @@ void rtl_watchdog_wq_callback(void *data)
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_hal *rtlhal = rtl_hal(rtl_priv(hw));
 	struct rtl_mac *mac = rtl_mac(rtl_priv(hw));
-	bool b_busytraffic = false;
-	bool b_tx_busy_traffic = false;
-	bool b_rx_busy_traffic = false;
-	bool b_higher_busytraffic = false;
-	bool b_higher_busyrxtraffic = false;
+	bool busytraffic = false;
+	bool tx_busy_traffic = false;
+	bool rx_busy_traffic = false;
+	bool higher_busytraffic = false;
+	bool higher_busyrxtraffic = false;
 	u8 idx, tid;
 	u32 rx_cnt_inp4eriod = 0;
 	u32 tx_cnt_inp4eriod = 0;
@@ -1447,21 +1447,21 @@ void rtl_watchdog_wq_callback(void *data)
 
 		/* (2) check traffic busy */
 		if (aver_rx_cnt_inperiod > 100 || aver_tx_cnt_inperiod > 100) {
-			b_busytraffic = true;
+			busytraffic = true;
 			if (aver_rx_cnt_inperiod > aver_tx_cnt_inperiod)
-				b_rx_busy_traffic = true;
+				rx_busy_traffic = true;
 			else
-				b_tx_busy_traffic = false;
+				tx_busy_traffic = false;
 		}
 
 		/* Higher Tx/Rx data. */
 		if (aver_rx_cnt_inperiod > 4000 ||
 			aver_tx_cnt_inperiod > 4000) {
-			b_higher_busytraffic = true;
+			higher_busytraffic = true;
 
 			/* Extremely high Rx data. */
 			if (aver_rx_cnt_inperiod > 5000)
-				b_higher_busyrxtraffic = true;
+				higher_busyrxtraffic = true;
 		}
 
 		/* check every tid's tx traffic */
@@ -1504,11 +1504,11 @@ void rtl_watchdog_wq_callback(void *data)
 	for (tid = 0; tid <= 7; tid++)
 		rtlpriv->link_info.tidtx_inperiod[tid] = 0;
 
-	rtlpriv->link_info.b_busytraffic = b_busytraffic;
-	rtlpriv->link_info.b_rx_busy_traffic = b_rx_busy_traffic;
-	rtlpriv->link_info.b_tx_busy_traffic = b_tx_busy_traffic;
-	rtlpriv->link_info.b_higher_busytraffic = b_higher_busytraffic;
-	rtlpriv->link_info.b_higher_busyrxtraffic = b_higher_busyrxtraffic;
+	rtlpriv->link_info.busytraffic = busytraffic;
+	rtlpriv->link_info.rx_busy_traffic = rx_busy_traffic;
+	rtlpriv->link_info.tx_busy_traffic = tx_busy_traffic;
+	rtlpriv->link_info.higher_busytraffic = higher_busytraffic;
+	rtlpriv->link_info.higher_busyrxtraffic = higher_busyrxtraffic;
 
 	/* <3> DM */
 	rtlpriv->cfg->ops->dm_watchdog(hw);
@@ -2025,9 +2025,9 @@ bool rtl_set_vif_info(struct ieee80211_hw *hw, struct ieee80211_vif *vif)
 	vif_info->enable_beacon = false;
 	rtlpriv->vif_priv.vifs++;
 	if (rtlpriv->vif_priv.vifs > 1) {
-		rtlpriv->psc.b_inactiveps = false;
-		rtlpriv->psc.b_swctrl_lps = false;
-		rtlpriv->psc.b_fwctrl_lps = false;
+		rtlpriv->psc.inactiveps = false;
+		rtlpriv->psc.swctrl_lps = false;
+		rtlpriv->psc.fwctrl_lps = false;
 	}
 
 	list_add_tail_rcu(&vif_info->list, &rtlpriv->vif_priv.vif_list);

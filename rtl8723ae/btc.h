@@ -60,7 +60,7 @@ struct btdm_8723 {
 	u32 val_0x6c0;
 	u32 val_0x6c8;
 	u32 val_0x6cc;
-	bool b_sw_dac_swing_on;
+	bool sw_dac_swing_on;
 	u32 sw_dac_swing_lvl;
 	u32 wlan_act_hi;
 	u32 wlan_act_lo;

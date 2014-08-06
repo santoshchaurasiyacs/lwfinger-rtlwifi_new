@@ -431,11 +431,11 @@ void halbtc8192e2ant_limited_tx(struct btc_coexist *btcoexist,
 
 void halbtc8192e2ant_limited_rx(struct btc_coexist *btcoexist,
 				bool force_exec, bool rej_ap_agg_pkt,
-				bool b_bt_ctrl_agg_buf_size,
+				bool bt_ctrl_agg_buf_size,
 				u8 agg_buf_size)
 {
 	bool reject_rx_agg = rej_ap_agg_pkt;
-	bool bt_ctrl_rx_agg_size = b_bt_ctrl_agg_buf_size;
+	bool bt_ctrl_rx_agg_size = bt_ctrl_agg_buf_size;
 	u8 rx_agg_size = agg_buf_size;
 
 	/*********************************************

@@ -629,7 +629,7 @@ bool rtl8723be_is_tx_desc_closed(struct ieee80211_hw *hw,
 				 u8 hw_queue, u16 index);
 void rtl8723be_tx_polling(struct ieee80211_hw *hw, u8 hw_queue);
 void rtl8723be_tx_fill_cmddesc(struct ieee80211_hw *hw, u8 *pdesc,
-			       bool b_firstseg, bool b_lastseg,
+			       bool firstseg, bool lastseg,
 			       struct sk_buff *skb);
 u32 rtl8723be_rx_command_packet(struct ieee80211_hw *hw,
 				struct rtl_stats status,

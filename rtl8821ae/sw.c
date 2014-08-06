@@ -105,9 +105,9 @@ int rtl8821ae_init_sw_vars(struct ieee80211_hw *hw)
 	rtlpci->msi_support = true;
 	rtlpriv->btcoexist.btc_ops = rtl_btc_get_ops_pointer();
 
-	rtlpriv->dm.b_dm_initialgain_enable = 1;
+	rtlpriv->dm.dm_initialgain_enable = 1;
 	rtlpriv->dm.dm_flag = 0;
-	rtlpriv->dm.b_disable_framebursting = 0;
+	rtlpriv->dm.disable_framebursting = 0;
 	rtlpriv->dm.thermalvalue = 0;
 	rtlpci->transmit_config = CFENDFORM | BIT(15) | BIT(24) | BIT(25);
 
@@ -168,20 +168,20 @@ int rtl8821ae_init_sw_vars(struct ieee80211_hw *hw)
 				    WAKE_ON_PATTERN_MATCH;
 
 	/* for LPS & IPS */
-	rtlpriv->psc.b_inactiveps = rtlpriv->cfg->mod_params->b_inactiveps;
-	rtlpriv->psc.b_swctrl_lps = rtlpriv->cfg->mod_params->b_swctrl_lps;
-	rtlpriv->psc.b_fwctrl_lps = rtlpriv->cfg->mod_params->b_fwctrl_lps;
-	rtlpriv->psc.b_reg_fwctrl_lps = 3;
+	rtlpriv->psc.inactiveps = rtlpriv->cfg->mod_params->inactiveps;
+	rtlpriv->psc.swctrl_lps = rtlpriv->cfg->mod_params->swctrl_lps;
+	rtlpriv->psc.fwctrl_lps = rtlpriv->cfg->mod_params->fwctrl_lps;
+	rtlpriv->psc.reg_fwctrl_lps = 3;
 	rtlpriv->psc.reg_max_lps_awakeintvl = 5;
 	/* for ASPM, you can close aspm through
 	 * set const_support_pciaspm = 0 */
 	rtl8821ae_init_aspm_vars(hw);
 
-	if (rtlpriv->psc.b_reg_fwctrl_lps == 1)
+	if (rtlpriv->psc.reg_fwctrl_lps == 1)
 		rtlpriv->psc.fwctrl_psmode = FW_PS_MIN_MODE;
-	else if (rtlpriv->psc.b_reg_fwctrl_lps == 2)
+	else if (rtlpriv->psc.reg_fwctrl_lps == 2)
 		rtlpriv->psc.fwctrl_psmode = FW_PS_MAX_MODE;
-	else if (rtlpriv->psc.b_reg_fwctrl_lps == 3)
+	else if (rtlpriv->psc.reg_fwctrl_lps == 3)
 		rtlpriv->psc.fwctrl_psmode = FW_PS_DTIM_MODE;
 
 	/* for firmware buf */
@@ -216,8 +216,8 @@ int rtl8821ae_init_sw_vars(struct ieee80211_hw *hw)
 
 #if (USE_SPECIFIC_FW_TO_SUPPORT_WOWLAN == 1)
 	/* for wowlan firmware buf */
-	rtlpriv->rtlhal.p_wowlan_firmware = (u8 *) vmalloc(0x8000);
-	if (!rtlpriv->rtlhal.p_wowlan_firmware) {
+	rtlpriv->rtlhal.wowlan_firmware = (u8 *) vmalloc(0x8000);
+	if (!rtlpriv->rtlhal.wowlan_firmware) {
 		RT_TRACE(COMP_ERR, DBG_EMERG,
 			 ("Can't alloc buffer for wowlan fw.\n"));
 		return 1;
@@ -241,7 +241,7 @@ int rtl8821ae_init_sw_vars(struct ieee80211_hw *hw)
 		return 1;
 	}
 
-	memcpy(rtlpriv->rtlhal.p_wowlan_firmware, wowlan_firmware->data,
+	memcpy(rtlpriv->rtlhal.wowlan_firmware, wowlan_firmware->data,
 	       wowlan_firmware->size);
 	rtlpriv->rtlhal.wowlan_fwsize = wowlan_firmware->size;
 	release_firmware(wowlan_firmware);
@@ -260,9 +260,9 @@ void rtl8821ae_deinit_sw_vars(struct ieee80211_hw *hw)
 		rtlpriv->rtlhal.pfirmware = NULL;
 	}
 #if (USE_SPECIFIC_FW_TO_SUPPORT_WOWLAN == 1)
-	if (rtlpriv->rtlhal.p_wowlan_firmware) {
-		vfree(rtlpriv->rtlhal.p_wowlan_firmware);
-		rtlpriv->rtlhal.p_wowlan_firmware = NULL;
+	if (rtlpriv->rtlhal.wowlan_firmware) {
+		vfree(rtlpriv->rtlhal.wowlan_firmware);
+		rtlpriv->rtlhal.wowlan_firmware = NULL;
 	}
 #endif
 }
@@ -324,9 +324,9 @@ struct rtl_hal_ops rtl8821ae_hal_ops = {
 
 struct rtl_mod_params rtl8821ae_mod_params = {
 	.sw_crypto = false,
-	.b_inactiveps = true,/* true, */
-	.b_swctrl_lps = false,
-	.b_fwctrl_lps = true, /* true, */
+	.inactiveps = true,/* true, */
+	.swctrl_lps = false,
+	.fwctrl_lps = true, /* true, */
 };
 
 struct rtl_hal_cfg rtl8821ae_hal_cfg = {
@@ -448,9 +448,9 @@ MODULE_DESCRIPTION("Realtek 8821ae 802.11ac PCI wireless");
 MODULE_FIRMWARE("rtlwifi/rtl8821aefw.bin");
 
 module_param_named(swenc, rtl8821ae_mod_params.sw_crypto, bool, 0444);
-module_param_named(ips, rtl8821ae_mod_params.b_inactiveps, bool, 0444);
-module_param_named(swlps, rtl8821ae_mod_params.b_swctrl_lps, bool, 0444);
-module_param_named(fwlps, rtl8821ae_mod_params.b_fwctrl_lps, bool, 0444);
+module_param_named(ips, rtl8821ae_mod_params.inactiveps, bool, 0444);
+module_param_named(swlps, rtl8821ae_mod_params.swctrl_lps, bool, 0444);
+module_param_named(fwlps, rtl8821ae_mod_params.fwctrl_lps, bool, 0444);
 MODULE_PARM_DESC(swenc, "using hardware crypto (default 0 [hardware])\n");
 MODULE_PARM_DESC(ips, "using no link power save (default 1 is open)\n");
 MODULE_PARM_DESC(fwlps, "using linked fw control power save"

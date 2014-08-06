@@ -633,7 +633,7 @@ static bool _rtl8723be_phy_bb8723b_config_parafile(struct ieee80211_hw *hw)
 		RT_TRACE(COMP_ERR, DBG_EMERG, ("AGC Table Fail\n"));
 		return false;
 	}
-	rtlphy->bcck_high_power = (bool) (rtl_get_bbreg(hw,
+	rtlphy->cck_high_power = (bool) (rtl_get_bbreg(hw,
 						       RFPGA0_XA_HSSIPARAMETER2,
 						       0x200));
 
@@ -1529,7 +1529,7 @@ void rtl8723be_phy_set_txpower_level(struct ieee80211_hw *hw, u8 channel)
 			     DESC92C_RATEMCS6, DESC92C_RATEMCS7};
 	u8 i, size;
 	u8 power_index;
-	if (rtlefuse->b_txpwr_fromeprom == false)
+	if (rtlefuse->txpwr_fromeprom == false)
 		return;
 
 	size = sizeof(cck_rates) / sizeof(u8);
@@ -2618,12 +2618,12 @@ static void _rtl8723be_phy_iq_calibrate(struct ieee80211_hw *hw,
 	}
 	_rtl8723be_phy_path_adda_on(hw, adda_reg, true, is2t);
 	if (t == 0) {
-		rtlphy->b_rfpi_enable = (u8) rtl_get_bbreg(hw,
+		rtlphy->rfpi_enable = (u8) rtl_get_bbreg(hw,
 						RFPGA0_XA_HSSIPARAMETER1,
 						BIT(8));
 	}
 
-/*	if (!rtlphy->b_rfpi_enable)
+/*	if (!rtlphy->rfpi_enable)
 		_rtl8723be_phy_pi_mode_switch(hw, true); */
 
 	path_sel_bb = rtl_get_bbreg(hw, 0x948, MASKDWORD);
@@ -2952,7 +2952,7 @@ void rtl8723be_phy_iq_calibrate(struct ieee80211_hw *hw, bool b_recovery)
 		for (i = 0; i < IQK_MATRIX_REG_NUM; i++)
 			rtlphy->iqk_matrix_regsetting[idx].value[0][i] =
 						result[final_candidate][i];
-		rtlphy->iqk_matrix_regsetting[idx].b_iqk_done = true;
+		rtlphy->iqk_matrix_regsetting[idx].iqk_done = true;
 
 	}
 	_rtl8723be_phy_save_adda_registers(hw, iqk_bb_reg,
@@ -2994,7 +2994,7 @@ void rtl92c_phy_ap_calibrate(struct ieee80211_hw *hw, char delta)
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_phy *rtlphy = &(rtlpriv->phy);
 
-	if (rtlphy->b_apk_done)
+	if (rtlphy->apk_done)
 		return;
 
 	return;

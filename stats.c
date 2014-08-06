@@ -123,7 +123,7 @@ void rtl_process_ui_rssi(struct ieee80211_hw *hw, struct rtl_stats *pstatus)
 	u8 rfpath;
 	u32 last_rssi, tmpval;
 
-	if (!pstatus->b_packet_toself && !pstatus->b_packet_beacon)
+	if (!pstatus->packet_toself && !pstatus->packet_beacon)
 		return;
 
 	rtlpriv->stats.pwdb_all_cnt += pstatus->rx_pwdb_all;
@@ -146,7 +146,7 @@ void rtl_process_ui_rssi(struct ieee80211_hw *hw, struct rtl_stats *pstatus)
 		(u8) tmpval);
 	pstatus->rssi = rtlpriv->stats.signal_strength;
 
-	if (pstatus->b_is_cck)
+	if (pstatus->is_cck)
 		return;
 
 	for (rfpath = RF90_PATH_A; rfpath < rtlphy->num_total_rfpath;
@@ -290,7 +290,7 @@ void rtl_process_phyinfo(struct ieee80211_hw *hw, u8 *buffer,
 			 struct rtl_stats *pstatus)
 {
 
-	if (!pstatus->b_packet_matchbssid)
+	if (!pstatus->packet_matchbssid)
 		return;
 
 	rtl_process_ui_rssi(hw, pstatus);

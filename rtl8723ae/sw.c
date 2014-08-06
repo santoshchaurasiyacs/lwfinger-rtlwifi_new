@@ -102,9 +102,9 @@ int rtl8723e_init_sw_vars(struct ieee80211_hw *hw)
 
 	rtlpriv->btcoexist.btc_ops = rtl_btc_get_ops_pointer();
 
-	rtlpriv->dm.b_dm_initialgain_enable = 1;
+	rtlpriv->dm.dm_initialgain_enable = 1;
 	rtlpriv->dm.dm_flag = 0;
-	rtlpriv->dm.b_disable_framebursting = 0;
+	rtlpriv->dm.disable_framebursting = 0;
 	rtlpriv->dm.thermalvalue = 0;
 	rtlpci->transmit_config = CFENDFORM | BIT(12) | BIT(13);
 
@@ -148,20 +148,20 @@ int rtl8723e_init_sw_vars(struct ieee80211_hw *hw)
 				0);
 
 	/* for LPS & IPS */
-	rtlpriv->psc.b_inactiveps = rtlpriv->cfg->mod_params->b_inactiveps;
-	rtlpriv->psc.b_swctrl_lps = rtlpriv->cfg->mod_params->b_swctrl_lps;
-	rtlpriv->psc.b_fwctrl_lps = rtlpriv->cfg->mod_params->b_fwctrl_lps;
-	rtlpriv->psc.b_reg_fwctrl_lps = 3;
+	rtlpriv->psc.inactiveps = rtlpriv->cfg->mod_params->inactiveps;
+	rtlpriv->psc.swctrl_lps = rtlpriv->cfg->mod_params->swctrl_lps;
+	rtlpriv->psc.fwctrl_lps = rtlpriv->cfg->mod_params->fwctrl_lps;
+	rtlpriv->psc.reg_fwctrl_lps = 3;
 	rtlpriv->psc.reg_max_lps_awakeintvl = 5;
 	/* for ASPM, you can close aspm through
 	 * set const_support_pciaspm = 0 */
 	rtl8723e_init_aspm_vars(hw);
 
-	if (rtlpriv->psc.b_reg_fwctrl_lps == 1)
+	if (rtlpriv->psc.reg_fwctrl_lps == 1)
 		rtlpriv->psc.fwctrl_psmode = FW_PS_MIN_MODE;
-	else if (rtlpriv->psc.b_reg_fwctrl_lps == 2)
+	else if (rtlpriv->psc.reg_fwctrl_lps == 2)
 		rtlpriv->psc.fwctrl_psmode = FW_PS_MAX_MODE;
-	else if (rtlpriv->psc.b_reg_fwctrl_lps == 3)
+	else if (rtlpriv->psc.reg_fwctrl_lps == 3)
 		rtlpriv->psc.fwctrl_psmode = FW_PS_DTIM_MODE;
 
 	/* for firmware buf */
@@ -272,9 +272,9 @@ struct rtl_hal_ops rtl8723e_hal_ops = {
 
 struct rtl_mod_params rtl8723e_mod_params = {
 	.sw_crypto = false,
-	.b_inactiveps = true,
-	.b_swctrl_lps = false,
-	.b_fwctrl_lps = true,
+	.inactiveps = true,
+	.swctrl_lps = false,
+	.fwctrl_lps = true,
 };
 
 struct rtl_hal_cfg rtl8723e_hal_cfg = {
@@ -387,9 +387,9 @@ MODULE_DESCRIPTION("Realtek 8723E 802.11n PCI wireless");
 MODULE_FIRMWARE("rtlwifi/rtl8723efw.bin");
 
 module_param_named(swenc, rtl8723e_mod_params.sw_crypto, bool, 0444);
-module_param_named(ips, rtl8723e_mod_params.b_inactiveps, bool, 0444);
-module_param_named(swlps, rtl8723e_mod_params.b_swctrl_lps, bool, 0444);
-module_param_named(fwlps, rtl8723e_mod_params.b_fwctrl_lps, bool, 0444);
+module_param_named(ips, rtl8723e_mod_params.inactiveps, bool, 0444);
+module_param_named(swlps, rtl8723e_mod_params.swctrl_lps, bool, 0444);
+module_param_named(fwlps, rtl8723e_mod_params.fwctrl_lps, bool, 0444);
 MODULE_PARM_DESC(swenc, "using hardware crypto (default 0 [hardware])\n");
 MODULE_PARM_DESC(ips, "using no link power save (default 1 is open)\n");
 MODULE_PARM_DESC(fwlps,

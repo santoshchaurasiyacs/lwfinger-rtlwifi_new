@@ -125,7 +125,7 @@ void rtl92ce_get_hw_reg(struct ieee80211_hw *hw, u8 variable, u8 *val)
 			break;
 		}
 	case HW_VAR_FW_PSMODE_STATUS:
-		*((bool *) (val)) = ppsc->b_fw_current_inpsmode;
+		*((bool *) (val)) = ppsc->fw_current_inpsmode;
 		break;
 	case HW_VAR_CORRECT_TSF:{
 			u64 tsf;
@@ -432,7 +432,7 @@ void rtl92ce_set_hw_reg(struct ieee80211_hw *hw, u8 variable, u8 *val)
 			break;
 		}
 	case HW_VAR_FW_PSMODE_STATUS:
-		ppsc->b_fw_current_inpsmode = *((bool *) val);
+		ppsc->fw_current_inpsmode = *((bool *) val);
 		break;
 	case HW_VAR_H2C_FW_JOINBSSRPT:{
 			u8 mstatus = (*(u8 *) val);
@@ -514,14 +514,14 @@ void rtl92ce_set_hw_reg(struct ieee80211_hw *hw, u8 variable, u8 *val)
 	case HW_VAR_FW_LPS_ACTION:{
 			bool b_enter_fwlps = *((bool *) val);
 			u8 rpwm_val, fw_pwrmode;
-			bool b_fw_current_inps;
+			bool fw_current_inps;
 
 			if (b_enter_fwlps) {
 					rpwm_val = 0x02;	/* RF off */
-					b_fw_current_inps = true;
+					fw_current_inps = true;
 					rtlpriv->cfg->ops->set_hw_reg(hw,
 							HW_VAR_FW_PSMODE_STATUS,
-							(u8 *) (&b_fw_current_inps));
+							(u8 *) (&fw_current_inps));
 					rtlpriv->cfg->ops->set_hw_reg(hw,
 							HW_VAR_H2C_FW_PWRMODE,
 							(u8 *) (&ppsc->fwctrl_psmode));
@@ -532,7 +532,7 @@ void rtl92ce_set_hw_reg(struct ieee80211_hw *hw, u8 variable, u8 *val)
 			} else {
 					rpwm_val = 0x0C;	/* RF on */
 					fw_pwrmode = FW_PS_ACTIVE_MODE;
-					b_fw_current_inps = false;
+					fw_current_inps = false;
 					rtlpriv->cfg->ops->set_hw_reg(hw, HW_VAR_SET_RPWM,
 							(u8 *) (&rpwm_val));
 					rtlpriv->cfg->ops->set_hw_reg(hw,
@@ -541,7 +541,7 @@ void rtl92ce_set_hw_reg(struct ieee80211_hw *hw, u8 variable, u8 *val)
 
 					rtlpriv->cfg->ops->set_hw_reg(hw,
 							HW_VAR_FW_PSMODE_STATUS,
-							(u8 *) (&b_fw_current_inps));
+							(u8 *) (&fw_current_inps));
 			}
 			 break;
 		}
@@ -901,7 +901,7 @@ static void _rtl92ce_enable_aspm_back_door(struct ieee80211_hw *hw)
 	rtl_write_word(rtlpriv, 0x350, 0x870c);
 	rtl_write_byte(rtlpriv, 0x352, 0x1);
 
-	if (ppsc->b_support_backdoor)
+	if (ppsc->support_backdoor)
 		rtl_write_byte(rtlpriv, 0x349, 0x1b);
 	else
 		rtl_write_byte(rtlpriv, 0x349, 0x03);
@@ -974,10 +974,10 @@ int rtl92ce_hw_init(struct ieee80211_hw *hw)
 			 ("Failed to download FW. Init HW "
 			  "without FW now..\n"));
 		err = 1;
-		rtlhal->bfw_ready = false;
+		rtlhal->fw_ready = false;
 		return err;
 	} else {
-		rtlhal->bfw_ready = true;
+		rtlhal->fw_ready = true;
 	}
 
 	rtlhal->last_hmeboxnum = 0;
@@ -1370,7 +1370,7 @@ static void _rtl92ce_poweroff_adapter(struct ieee80211_hw *hw)
 	rtl_write_byte(rtlpriv, REG_SYS_FUNC_EN, 0xE2);
 	rtl_write_byte(rtlpriv, REG_SYS_FUNC_EN, 0xE0);
 	if ((rtl_read_byte(rtlpriv, REG_MCUFWDL) &
-			BIT(7)) && rtlhal->bfw_ready)
+			BIT(7)) && rtlhal->fw_ready)
 		rtl92c_firmware_selfreset(hw);
 	rtl_write_byte(rtlpriv, REG_SYS_FUNC_EN + 1, 0x51);
 	rtl_write_byte(rtlpriv, REG_MCUFWDL, 0x00);
@@ -1721,7 +1721,7 @@ static void _rtl92ce_read_txpower_info_from_hwpg(
 	rtlefuse->eeprom_thermalmeter = (tempval & 0x1f);
 
 	if (rtlefuse->eeprom_thermalmeter == 0x1f || autoload_fail)
-		rtlefuse->b_apk_thermalmeterignore = true;
+		rtlefuse->apk_thermalmeterignore = true;
 
 	rtlefuse->thermalmeter[0] = rtlefuse->eeprom_thermalmeter;
 	RTPRINT(rtlpriv, FINIT, INIT_TxPower,
@@ -1796,7 +1796,7 @@ static void _rtl92ce_read_adapter_info(struct ieee80211_hw *hw)
 
 	rtlefuse->eeprom_channelplan = *(u8 *) &hwinfo[EEPROM_CHANNELPLAN];
 	rtlefuse->eeprom_version = *(u16 *) &hwinfo[EEPROM_VERSION];
-	rtlefuse->b_txpwr_fromeprom = true;
+	rtlefuse->txpwr_fromeprom = true;
 	rtlefuse->eeprom_oemid = *(u8 *) &hwinfo[EEPROM_CUSTOMER_ID];
 
 	RT_TRACE(COMP_INIT, DBG_LOUD,
@@ -1842,7 +1842,7 @@ static void _rtl92ce_hal_customized_behavior(struct ieee80211_hw *hw)
 
 	switch (rtlhal->oem_id) {
 	case RT_CID_819x_HP:
-		pcipriv->ledctl.bled_opendrain = true;
+		pcipriv->ledctl.led_opendrain = true;
 		break;
 	case RT_CID_819x_Lenovo:
 	case RT_CID_DEFAULT:
@@ -1867,10 +1867,10 @@ void rtl92ce_read_eeprom_info(struct ieee80211_hw *hw)
 
 	rtlhal->version = _rtl92ce_read_chip_version(hw);
 	if (get_rf_type(rtlphy) == RF_1T1R)
-		rtlpriv->dm.brfpath_rxenable[0] = true;
+		rtlpriv->dm.rfpath_rxenable[0] = true;
 	else
-		rtlpriv->dm.brfpath_rxenable[0] =
-		    rtlpriv->dm.brfpath_rxenable[1] = true;
+		rtlpriv->dm.rfpath_rxenable[0] =
+		    rtlpriv->dm.rfpath_rxenable[1] = true;
 	RT_TRACE(COMP_INIT, DBG_LOUD, ("VersionID = 0x%4x\n",
 						rtlhal->version));
 	tmp_u1b = rtl_read_byte(rtlpriv, REG_9346CR);
@@ -2140,7 +2140,7 @@ void rtl92ce_update_hal_rate_tbl(struct ieee80211_hw *hw,
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 
-	if (rtlpriv->dm.b_useramask)
+	if (rtlpriv->dm.useramask)
 		rtl92ce_update_hal_rate_mask(hw, sta, rssi_level);
 	else
 		rtl92ce_update_hal_rate_table(hw, sta);
@@ -2174,7 +2174,7 @@ bool rtl92ce_gpio_radio_on_off_checking(struct ieee80211_hw *hw,
 	if (rtlpriv->rtlhal.being_init_adapter)
 		return false;
 
-	if (ppsc->b_swrf_processing)
+	if (ppsc->swrf_processing)
 		return false;
 
 	spin_lock(&rtlpriv->locks.rf_ps_lock);
@@ -2195,21 +2195,21 @@ bool rtl92ce_gpio_radio_on_off_checking(struct ieee80211_hw *hw,
 	u1tmp = rtl_read_byte(rtlpriv, REG_GPIO_IO_SEL);
 	e_rfpowerstate_toset = (u1tmp & BIT(3)) ? ERFON : ERFOFF;
 
-	if ((ppsc->b_hwradiooff == true) &&
+	if ((ppsc->hwradiooff == true) &&
 		(e_rfpowerstate_toset == ERFON)) {
 		RT_TRACE(COMP_RF, DBG_DMESG,
 			 ("GPIOChangeRF  - HW Radio ON, RF ON\n"));
 
 		e_rfpowerstate_toset = ERFON;
-		ppsc->b_hwradiooff = false;
+		ppsc->hwradiooff = false;
 		b_actuallyset = true;
-	} else if ((ppsc->b_hwradiooff == false)
+	} else if ((ppsc->hwradiooff == false)
 		   && (e_rfpowerstate_toset == ERFOFF)) {
 		RT_TRACE(COMP_RF, DBG_DMESG,
 			 ("GPIOChangeRF  - HW Radio OFF, RF OFF\n"));
 
 		e_rfpowerstate_toset = ERFOFF;
-		ppsc->b_hwradiooff = true;
+		ppsc->hwradiooff = true;
 		b_actuallyset = true;
 	}
 
@@ -2227,7 +2227,7 @@ bool rtl92ce_gpio_radio_on_off_checking(struct ieee80211_hw *hw,
 	}
 
 	*valid = 1;
-	return !ppsc->b_hwradiooff;
+	return !ppsc->hwradiooff;
 
 }
 
@@ -2368,25 +2368,25 @@ void rtl8192ce_bt_var_init(struct ieee80211_hw *hw)
 	rtlpcipriv->btcoexist.bt_coexist_type =
 						rtlpcipriv->btcoexist.eeprom_bt_type;
 
-	if (rtlpcipriv->btcoexist.b_reg_bt_iso == 2)
+	if (rtlpcipriv->btcoexist.reg_bt_iso == 2)
 		rtlpcipriv->btcoexist.bt_ant_isolation =
 				rtlpcipriv->btcoexist.eeprom_bt_ant_isolation;
 	else
 		rtlpcipriv->btcoexist.bt_ant_isolation =
-				rtlpcipriv->btcoexist.b_reg_bt_iso;
+				rtlpcipriv->btcoexist.reg_bt_iso;
 
 	rtlpcipriv->btcoexist.bt_radio_shared_type =
 					rtlpcipriv->btcoexist.eeprom_bt_radio_shared;
 
 	if (rtlpcipriv->btcoexist.bt_coexistence) {
 
-		if (rtlpcipriv->btcoexist.b_reg_bt_sco == 1)
+		if (rtlpcipriv->btcoexist.reg_bt_sco == 1)
 			rtlpcipriv->btcoexist.bt_service = BT_OTHER_ACTION;
-		else if (rtlpcipriv->btcoexist.b_reg_bt_sco == 2)
+		else if (rtlpcipriv->btcoexist.reg_bt_sco == 2)
 			rtlpcipriv->btcoexist.bt_service = BT_SCO;
-		else if (rtlpcipriv->btcoexist.b_reg_bt_sco == 4)
+		else if (rtlpcipriv->btcoexist.reg_bt_sco == 4)
 			rtlpcipriv->btcoexist.bt_service = BT_BUSY;
-		else if (rtlpcipriv->btcoexist.b_reg_bt_sco == 5)
+		else if (rtlpcipriv->btcoexist.reg_bt_sco == 5)
 			rtlpcipriv->btcoexist.bt_service = BT_OTHERBUSY;
 		else
 			rtlpcipriv->btcoexist.bt_service = BT_IDLE;
@@ -2429,11 +2429,11 @@ void rtl8192ce_bt_reg_init(struct ieee80211_hw *hw)
 	struct rtl_pci_priv *rtlpcipriv = rtl_pcipriv(hw);
 
 	/* 0:Low, 1:High, 2:From Efuse. */
-	rtlpcipriv->btcoexist.b_reg_bt_iso = 2;
+	rtlpcipriv->btcoexist.reg_bt_iso = 2;
 	/* 0:Idle, 1:None-SCO, 2:SCO, 3:From Counter. */
-	rtlpcipriv->btcoexist.b_reg_bt_sco = 3;
+	rtlpcipriv->btcoexist.reg_bt_sco = 3;
 	/* 0:Disable BT control A-MPDU, 1:Enable BT control A-MPDU. */
-	rtlpcipriv->btcoexist.b_reg_bt_sco = 0;
+	rtlpcipriv->btcoexist.reg_bt_sco = 0;
 }
 
 

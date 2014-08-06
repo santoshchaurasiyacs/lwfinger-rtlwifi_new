@@ -180,7 +180,7 @@ static void rtl92ee_dm_diginit(struct ieee80211_hw *hw)
 	dm_dig.dig_dynamic_min_1 = DM_DIG_MIN;
 	dm_dig.b_media_connect_0 = false;
 	dm_dig.b_media_connect_1 = false;
-	rtlpriv->dm.b_dm_initialgain_enable = true;
+	rtlpriv->dm.dm_initialgain_enable = true;
 	dm_dig.bt30_cur_igi = 0x32;
 }
 
@@ -329,7 +329,7 @@ static void rtl92ee_dm_dig(struct ieee80211_hw *hw)
 		else
 			dm_dig.rx_gain_range_max = dm_dig.rssi_val_min + 10;
 
-		if (rtlpriv->dm.b_one_entry_only) {
+		if (rtlpriv->dm.one_entry_only) {
 			offset = 0;
 			if (dm_dig.rssi_val_min - offset < dm_dig_min)
 				dig_dynamic_min = dm_dig_min;
@@ -577,7 +577,7 @@ static void rtl92ee_dm_check_rssi_monitor(struct ieee80211_hw *hw)
 	}
 
 	/* Indicate Rx signal strength to FW. */
-	if (dm->b_useramask) {
+	if (dm->useramask) {
 		h2c[3] = 0;
 		h2c[2] = (u8) (dm->undecorated_smoothed_pwdb & 0xFF);
 		h2c[1] = 0x20;
@@ -621,8 +621,8 @@ void rtl92ee_dm_init_edca_turbo(struct ieee80211_hw *hw)
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 
 	rtlpriv->dm.bcurrent_turbo_edca = false;
-	rtlpriv->dm.bis_cur_rdlstate = false;
-	rtlpriv->dm.bis_any_nonbepkts = false;
+	rtlpriv->dm.is_cur_rdlstate = false;
+	rtlpriv->dm.is_any_nonbepkts = false;
 }
 
 static void rtl92ee_dm_check_edca_turbo(struct ieee80211_hw *hw)
@@ -640,15 +640,15 @@ static void rtl92ee_dm_check_edca_turbo(struct ieee80211_hw *hw)
 	bool b_edca_turbo_on = false;
 
 	if (rtlpriv->dm.dbginfo.num_non_be_pkt > 0x100)
-		rtlpriv->dm.bis_any_nonbepkts = true;
+		rtlpriv->dm.is_any_nonbepkts = true;
 	rtlpriv->dm.dbginfo.num_non_be_pkt = 0;
 
 	cur_txok_cnt = rtlpriv->stats.txbytesunicast - last_txok_cnt;
 	cur_rxok_cnt = rtlpriv->stats.rxbytesunicast - last_rxok_cnt;
 
 	/*b_bias_on_rx = false;*/
-	b_edca_turbo_on = ((!rtlpriv->dm.bis_any_nonbepkts) &&
-			   (!rtlpriv->dm.b_disable_framebursting)) ?
+	b_edca_turbo_on = ((!rtlpriv->dm.is_any_nonbepkts) &&
+			   (!rtlpriv->dm.disable_framebursting)) ?
 			  true : false;
 
 	if (rtl92ee_dm_is_edca_turbo_disable(hw))
@@ -660,7 +660,7 @@ static void rtl92ee_dm_check_edca_turbo(struct ieee80211_hw *hw)
 
 		edca_be = b_is_cur_rdlstate ? edca_be_dl : edca_be_ul;
 		rtl_write_dword(rtlpriv , REG_EDCA_BE_PARAM , edca_be);
-		rtlpriv->dm.bis_cur_rdlstate = b_is_cur_rdlstate;
+		rtlpriv->dm.is_cur_rdlstate = b_is_cur_rdlstate;
 		rtlpriv->dm.bcurrent_turbo_edca = true;
 	} else {
 		if (rtlpriv->dm.bcurrent_turbo_edca) {
@@ -672,7 +672,7 @@ static void rtl92ee_dm_check_edca_turbo(struct ieee80211_hw *hw)
 	}
 
 dm_CheckEdcaTurbo_EXIT:
-	rtlpriv->dm.bis_any_nonbepkts = false;
+	rtlpriv->dm.is_any_nonbepkts = false;
 	last_txok_cnt = rtlpriv->stats.txbytesunicast;
 	last_rxok_cnt = rtlpriv->stats.rxbytesunicast;
 }
@@ -681,27 +681,27 @@ void rtl92ee_dm_dynamic_edcca(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	u8 reg_c50 , reg_c58;
-	bool b_fw_current_in_ps_mode = false;
+	bool fw_current_in_ps_mode = false;
 
 	rtlpriv->cfg->ops->get_hw_reg(hw, HW_VAR_FW_PSMODE_STATUS,
-				      (u8 *)(&b_fw_current_in_ps_mode));
-	if (b_fw_current_in_ps_mode)
+				      (u8 *)(&fw_current_in_ps_mode));
+	if (fw_current_in_ps_mode)
 		return;
 
 	reg_c50 = rtl_get_bbreg(hw, ROFDM0_XAAGCCORE1, MASKBYTE0);
 	reg_c58 = rtl_get_bbreg(hw, ROFDM0_XBAGCCORE1, MASKBYTE0);
 
 	if (reg_c50 > 0x28 && reg_c58 > 0x28) {
-		if (!rtlpriv->rtlhal.b_pre_edcca_enable) {
+		if (!rtlpriv->rtlhal.pre_edcca_enable) {
 			rtl_write_byte(rtlpriv, ROFDM0_ECCATHRESHOLD, 0x03);
 			rtl_write_byte(rtlpriv, ROFDM0_ECCATHRESHOLD + 2, 0x00);
-			rtlpriv->rtlhal.b_pre_edcca_enable = true;
+			rtlpriv->rtlhal.pre_edcca_enable = true;
 		}
 	} else if (reg_c50 < 0x25 && reg_c58 < 0x25) {
-		if (rtlpriv->rtlhal.b_pre_edcca_enable) {
+		if (rtlpriv->rtlhal.pre_edcca_enable) {
 			rtl_write_byte(rtlpriv, ROFDM0_ECCATHRESHOLD, 0x7f);
 			rtl_write_byte(rtlpriv, ROFDM0_ECCATHRESHOLD + 2, 0x7f);
-			rtlpriv->rtlhal.b_pre_edcca_enable = false;
+			rtlpriv->rtlhal.pre_edcca_enable = false;
 		}
 	}
 }
@@ -939,7 +939,7 @@ static void rtl92ee_dm_init_txpower_tracking(struct ieee80211_hw *hw)
 	struct rtl_dm *dm = rtl_dm(rtlpriv);
 	u8 path;
 
-	dm->btxpower_tracking = true;
+	dm->txpower_tracking = true;
 	dm->default_ofdm_index = 30;
 	dm->default_cck_index = 20;
 
@@ -964,9 +964,9 @@ void rtl92ee_dm_init_rate_adaptive_mask(struct ieee80211_hw *hw)
 	p_ra->pre_ratr_state = DM_RATR_STA_INIT;
 
 	if (rtlpriv->dm.dm_type == DM_TYPE_BYDRIVER)
-		rtlpriv->dm.b_useramask = true;
+		rtlpriv->dm.useramask = true;
 	else
-		rtlpriv->dm.b_useramask = false;
+		rtlpriv->dm.useramask = false;
 
 	p_ra->ldpc_thres = 35;
 	p_ra->use_ldpc = false;
@@ -1041,7 +1041,7 @@ void rtl92ee_dm_refresh_rate_adaptive_mask(struct ieee80211_hw *hw)
 		return;
 	}
 
-	if (!rtlpriv->dm.b_useramask) {
+	if (!rtlpriv->dm.useramask) {
 		RT_TRACE(COMP_RATE, DBG_LOUD,
 			 ("driver does not control rate adaptive mask\n"));
 		return;
@@ -1104,11 +1104,11 @@ static void rtl92ee_dm_common_info_self_update(struct ieee80211_hw *hw)
 	u8 cnt = 0;
 	struct rtl_sta_info *drv_priv;
 
-	rtlpriv->dm.b_one_entry_only = false;
+	rtlpriv->dm.one_entry_only = false;
 
 	if (rtlpriv->mac80211.opmode == NL80211_IFTYPE_STATION &&
 		rtlpriv->mac80211.link_state >= MAC80211_LINKED) {
-		rtlpriv->dm.b_one_entry_only = true;
+		rtlpriv->dm.one_entry_only = true;
 		return;
 	}
 
@@ -1122,7 +1122,7 @@ static void rtl92ee_dm_common_info_self_update(struct ieee80211_hw *hw)
 		spin_unlock_bh(&rtlpriv->locks.entry_list_lock);
 
 		if (cnt == 1)
-			rtlpriv->dm.b_one_entry_only = true;
+			rtlpriv->dm.one_entry_only = true;
 	}
 }
 
@@ -1235,18 +1235,18 @@ void rtl92ee_dm_watchdog(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_ps_ctl *ppsc = rtl_psc(rtl_priv(hw));
-	bool b_fw_current_inpsmode = false;
-	bool b_fw_ps_awake = true;
+	bool fw_current_inpsmode = false;
+	bool fw_ps_awake = true;
 
 	rtlpriv->cfg->ops->get_hw_reg(hw, HW_VAR_FW_PSMODE_STATUS,
-				      (u8 *) (&b_fw_current_inpsmode));
+				      (u8 *) (&fw_current_inpsmode));
 	rtlpriv->cfg->ops->get_hw_reg(hw, HW_VAR_FWLPS_RF_ON,
-				      (u8 *) (&b_fw_ps_awake));
+				      (u8 *) (&fw_ps_awake));
 	if (ppsc->p2p_ps_info.p2p_ps_mode)
-		b_fw_ps_awake = false;
+		fw_ps_awake = false;
 
 	if ((ppsc->rfpwr_state == ERFON) &&
-	    ((!b_fw_current_inpsmode) && b_fw_ps_awake) &&
+	    ((!fw_current_inpsmode) && fw_ps_awake) &&
 	    (!ppsc->rfchange_inprogress)) {
 		rtl92ee_dm_common_info_self_update(hw);
 		rtl92ee_dm_false_alarm_counter_statistics(hw);

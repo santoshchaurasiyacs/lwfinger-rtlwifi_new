@@ -202,8 +202,8 @@ static bool _rtl92s_firmware_downloadcode(struct ieee80211_hw *hw,
 
 		tcb_desc = (struct rtl_tcb_desc *)(skb->cb);
 		tcb_desc->queue_index = TXCMD_QUEUE;
-		tcb_desc->b_cmd_or_init = DESC_PACKET_TYPE_INIT;
-		tcb_desc->b_last_inipkt = blast_inipkt;
+		tcb_desc->cmd_or_init = DESC_PACKET_TYPE_INIT;
+		tcb_desc->last_inipkt = blast_inipkt;
 
 		_rtl92s_cmd_send_packet(hw, skb, blast_inipkt);
 
@@ -580,8 +580,8 @@ static bool _rtl92s_firmware_set_h2c_cmd(struct ieee80211_hw *hw, u8 h2c_cmd,
 	skb = dev_alloc_skb(len);
 	cb_desc = (struct rtl_tcb_desc *)(skb->cb);
 	cb_desc->queue_index = TXCMD_QUEUE;
-	cb_desc->b_cmd_or_init = DESC_PACKET_TYPE_NORMAL;
-	cb_desc->b_last_inipkt = false;
+	cb_desc->cmd_or_init = DESC_PACKET_TYPE_NORMAL;
+	cb_desc->last_inipkt = false;
 
 	_rtl92s_fill_h2c_cmd(skb, MAX_TRANSMIT_BUFFER_SIZE, 1, &element_id,
 			&cmd_len, &pcmd_buffer,	&rtlhal->h2c_txcmd_seq);
