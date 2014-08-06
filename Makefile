@@ -26,27 +26,27 @@ rtlwifi-objs += $(PCI_MAIN_OBJS)
 all: 
 	$(MAKE) -C $(KSRC) M=$(PWD) modules
 	@cp $(SYMBOL_FILE) btcoexist/
-	@make -C btcoexist/
+	+@make -C btcoexist/
 	@cp $(SYMBOL_FILE) rtl8188ee/
-	@make -C rtl8188ee/
+	+@make -C rtl8188ee/
 	@cp $(SYMBOL_FILE) rtl8192ce/
-	@make -C rtl8192ce/
+	+@make -C rtl8192ce/
 	@cp $(SYMBOL_FILE) rtl8192de/
-	@make -C rtl8192de/
+	+@make -C rtl8192de/
 	@cp $(SYMBOL_FILE) rtl8192ee/
 	@cp btcoexist/$(SYMBOL_FILE) rtl8192ee/
-	@make -C rtl8192ee/
+	+@make -C rtl8192ee/
 	@cp $(SYMBOL_FILE) rtl8192se/
-	@make -C rtl8192se/
+	+@make -C rtl8192se/
 	@cp $(SYMBOL_FILE) rtl8723ae/
 	@cp btcoexist/$(SYMBOL_FILE) rtl8723ae/
-	@make -C rtl8723ae/
+	+@make -C rtl8723ae/
 	@cp $(SYMBOL_FILE) rtl8723be/
 	@cp btcoexist/$(SYMBOL_FILE) rtl8723be/
-	@make -C rtl8723be/
+	+@make -C rtl8723be/
 	@cp $(SYMBOL_FILE) rtl8821ae/
 	@cp btcoexist/$(SYMBOL_FILE) rtl8821ae/
-	@make -C rtl8821ae/
+	+@make -C rtl8821ae/
 install: all
 	@find /lib/modules/$(shell uname -r) -name "rtlwifi.ko" -exec rm {} \;
 	@find /lib/modules/$(shell uname -r) -name "btcoexist.ko" -exec rm {} \;
