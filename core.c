@@ -35,6 +35,56 @@
 #include "ps.h"
 
 #include "btcoexist/rtl_btc.h"
+#include <linux/firmware.h>
+
+void rtl_fw_cb(const struct firmware *firmware, void *context)
+{
+	struct ieee80211_hw *hw = context;
+	struct rtl_priv *rtlpriv = rtl_priv(hw);
+	int err;
+
+	RT_TRACE(COMP_ERR, DBG_LOUD,
+		 ("Firmware callback routine entered!\n"));
+	complete(&rtlpriv->firmware_loading_complete);
+	if (!firmware) {
+		if (rtlpriv->cfg->alt_fw_name) {
+			err = request_firmware(&firmware,
+					       rtlpriv->cfg->alt_fw_name,
+					       rtlpriv->io.dev);
+			pr_info("Loading alternative firmware %s\n",
+				rtlpriv->cfg->alt_fw_name);
+			if (!err)
+				goto found_alt;
+		}
+		pr_err("Firmware %s not available\n", rtlpriv->cfg->fw_name);
+		rtlpriv->max_fw_size = 0;
+		return;
+	}
+found_alt:
+	if (firmware->size > rtlpriv->max_fw_size) {
+		RT_TRACE(COMP_ERR, DBG_EMERG,
+			 ("Firmware is too big!\n"));
+		release_firmware(firmware);
+		return;
+	}
+	memcpy(rtlpriv->rtlhal.pfirmware, firmware->data, firmware->size);
+	rtlpriv->rtlhal.fwsize = firmware->size;
+	release_firmware(firmware);
+
+	err = ieee80211_register_hw(hw);
+	if (err) {
+		RT_TRACE(COMP_ERR, DBG_EMERG,
+			 ("Can't register mac80211 hw\n"));
+		return;
+	} else {
+		rtlpriv->mac80211.mac80211_registered = 1;
+	}
+	set_bit(RTL_STATUS_INTERFACE_START, &rtlpriv->status);
+
+	/*init rfkill */
+	rtl_init_rfkill(hw);
+}
+EXPORT_SYMBOL(rtl_fw_cb);
 
 /*mutex for start & stop is must here. */
 static int rtl_op_start(struct ieee80211_hw *hw)
@@ -49,11 +99,8 @@ static int rtl_op_start(struct ieee80211_hw *hw)
 		return 0;
 	mutex_lock(&rtlpriv->locks.conf_mutex);
 	err = rtlpriv->intf_ops->adapter_start(hw);
-	if (err)
-		goto out;
-	rtl_watch_dog_timer_callback((unsigned long)hw);
-
-out:
+	if (!err)
+		rtl_watch_dog_timer_callback((unsigned long)hw);
 	mutex_unlock(&rtlpriv->locks.conf_mutex);
 	return err;
 }
@@ -64,13 +111,13 @@ static void rtl_op_stop(struct ieee80211_hw *hw)
 	struct rtl_mac *mac = rtl_mac(rtl_priv(hw));
 	struct rtl_hal *rtlhal = rtl_hal(rtl_priv(hw));
 	struct rtl_ps_ctl *ppsc = rtl_psc(rtl_priv(hw));
-	bool b_support_remote_wakeup = false;
+	bool support_remote_wakeup = false;
 
 	if (is_hal_stop(rtlhal))
 		return;
 
 	rtlpriv->cfg->ops->get_hw_reg(hw, HAL_DEF_WOWLAN,
-				      (u8 *) (&b_support_remote_wakeup));
+				      (u8 *)(&support_remote_wakeup));
 	/* here is must, because adhoc do stop and start,
 	 * but stop with RFOFF may cause something wrong,
 	 * like adhoc TP */
@@ -79,7 +126,7 @@ static void rtl_op_stop(struct ieee80211_hw *hw)
 
 	mutex_lock(&rtlpriv->locks.conf_mutex);
 	/* if wowlan supported, DON'T clear connected info */
-	if (!(b_support_remote_wakeup &&
+	if (!(support_remote_wakeup &&
 	      rtlhal->enter_pnp_sleep)) {
 		mac->link_state = MAC80211_NOLINK;
 		memset(mac->bssid, 0, 6);

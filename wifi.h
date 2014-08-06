@@ -2053,6 +2053,7 @@ struct rtl_hal_cfg {
 	bool write_readback;
 	char *name;
 	char *fw_name;
+	char *alt_fw_name;
 	struct rtl_hal_ops *ops;
 	struct rtl_mod_params *mod_params;
 
@@ -2187,7 +2188,11 @@ struct rtl_bt_coexist {
 
 
 struct rtl_priv {
+	struct ieee80211_hw *hw;
+	/* Used to load a second firmware */
+	void (*rtl_fw_second_cb)(struct rtl_priv *rtlpriv);
 	struct list_head list;
+	struct completion firmware_loading_complete;
 #ifdef VIF_TODO
 	struct vif_priv vif_priv;
 #endif
@@ -2217,6 +2222,7 @@ struct rtl_priv {
 	struct rtl_rate_priv *rate_priv;
 
 	struct rtl_debug dbg;
+	int max_fw_size;
 
 	/* sta entry list for ap adhoc or mesh */
 	struct list_head entry_list;

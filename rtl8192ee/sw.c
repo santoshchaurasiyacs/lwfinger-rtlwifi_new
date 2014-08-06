@@ -96,8 +96,6 @@ int rtl92ee_init_sw_vars(struct ieee80211_hw *hw)
 	int err = 0;
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_pci *rtlpci = rtl_pcidev(rtl_pcipriv(hw));
-	const struct firmware *firmware;
-	char *fw_name = NULL;
 
 	rtl92ee_bt_reg_init(hw);
 	rtlpci->msi_support = rtlpriv->cfg->mod_params->msi_support;
@@ -151,6 +149,7 @@ int rtl92ee_init_sw_vars(struct ieee80211_hw *hw)
 	rtlpriv->psc.inactiveps = rtlpriv->cfg->mod_params->inactiveps;
 	rtlpriv->psc.swctrl_lps = rtlpriv->cfg->mod_params->swctrl_lps;
 	rtlpriv->psc.fwctrl_lps = rtlpriv->cfg->mod_params->fwctrl_lps;
+	rtlpci->msi_support = rtlpriv->cfg->mod_params->msi_support;
 	rtlpriv->psc.reg_fwctrl_lps = 3;
 	rtlpriv->psc.reg_max_lps_awakeintvl = 5;
 	/* for ASPM, you can close aspm through
@@ -172,32 +171,28 @@ int rtl92ee_init_sw_vars(struct ieee80211_hw *hw)
 
 
 	/* for firmware buf */
-	rtlpriv->rtlhal.pfirmware = (u8 *)vmalloc(0x8000);
+	rtlpriv->rtlhal.pfirmware = vzalloc(0x8000);
 	if (!rtlpriv->rtlhal.pfirmware) {
 		RT_TRACE(COMP_ERR, DBG_EMERG,
-			 ("Can't alloc buffer for fw.\n"));
+			 ("Can't alloc buffer for fw\n"));
 		return 1;
 	}
 
-	fw_name = "rtlwifi/rtl8192eefw.bin";
-	err = request_firmware(&firmware, fw_name, rtlpriv->io.dev);
+	/* request fw */
+	rtlpriv->cfg->fw_name = "rtlwifi/rtl8192eefw.bin";
 
+	rtlpriv->max_fw_size = 0x8000;
+	pr_info("Using firmware %s\n", rtlpriv->cfg->fw_name);
+	err = request_firmware_nowait(THIS_MODULE, 1, rtlpriv->cfg->fw_name,
+				      rtlpriv->io.dev, GFP_KERNEL, hw,
+				      rtl_fw_cb);
 	if (err) {
 		RT_TRACE(COMP_ERR, DBG_EMERG,
 			 ("Failed to request firmware!\n"));
 		return 1;
 	}
-	if (firmware->size > 0x8000) {
-		RT_TRACE(COMP_ERR, DBG_EMERG,
-			 ("Firmware is too big!\n"));
-		release_firmware(firmware);
-		return 1;
-	}
-	memcpy(rtlpriv->rtlhal.pfirmware, firmware->data, firmware->size);
-	rtlpriv->rtlhal.fwsize = firmware->size;
-	release_firmware(firmware);
 
-	return err;
+	return 0;
 }
 
 void rtl92ee_deinit_sw_vars(struct ieee80211_hw *hw)
@@ -273,6 +268,7 @@ struct rtl_mod_params rtl92ee_mod_params = {
 	.inactiveps = false,
 	.swctrl_lps = false,
 	.fwctrl_lps = true,
+	.msi_support = true,
 	.debug = DBG_EMERG,
 };
 
@@ -396,7 +392,7 @@ MODULE_PARM_DESC(swenc, "Set to 1 for software crypto (default 0)\n");
 MODULE_PARM_DESC(ips, "Set to 0 to not use link power save (default 1)\n");
 MODULE_PARM_DESC(swlps, "Set to 1 to use SW control power save (default 0)\n");
 MODULE_PARM_DESC(fwlps, "Set to 1 to use FW control power save (default 1)\n");
-MODULE_PARM_DESC(msi, "Set to 1 to use MSI interrupts mode (default 0)\n");
+MODULE_PARM_DESC(msi, "Set to 1 to use MSI interrupts mode (default 1)\n");
 MODULE_PARM_DESC(debug, "Set debug level (0-5) (default 0)");
 
 static const SIMPLE_DEV_PM_OPS(rtlwifi_pm_ops, rtl_pci_suspend, rtl_pci_resume);

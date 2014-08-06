@@ -94,9 +94,7 @@ int rtl8723be_init_sw_vars(struct ieee80211_hw *hw)
 	int err = 0;
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_pci *rtlpci = rtl_pcidev(rtl_pcipriv(hw));
-	const struct firmware *firmware;
 	struct rtl_mac *mac = rtl_mac(rtl_priv(hw));
-	char *fw_name = NULL;
 
 	rtl8723be_bt_reg_init(hw);
 	rtlpci->msi_support = rtlpriv->cfg->mod_params->msi_support;
@@ -159,6 +157,7 @@ int rtl8723be_init_sw_vars(struct ieee80211_hw *hw)
 	rtlpriv->psc.inactiveps = rtlpriv->cfg->mod_params->inactiveps;
 	rtlpriv->psc.swctrl_lps = rtlpriv->cfg->mod_params->swctrl_lps;
 	rtlpriv->psc.fwctrl_lps = rtlpriv->cfg->mod_params->fwctrl_lps;
+	rtlpci->msi_support = rtlpriv->cfg->mod_params->msi_support;
 	rtlpriv->psc.reg_fwctrl_lps = 3;
 	rtlpriv->psc.reg_max_lps_awakeintvl = 5;
 	/* for ASPM, you can close aspm through
@@ -178,34 +177,24 @@ int rtl8723be_init_sw_vars(struct ieee80211_hw *hw)
 	rtlpriv->rtlhal.earlymode_enable = false;
 
 	/* for firmware buf */
-	rtlpriv->rtlhal.pfirmware = (u8 *) vmalloc(0x8000);
+	rtlpriv->rtlhal.pfirmware = vzalloc(0x8000);
 	if (!rtlpriv->rtlhal.pfirmware) {
 		RT_TRACE(COMP_ERR, DBG_EMERG,
 			 ("Can't alloc buffer for fw.\n"));
 		return 1;
 	}
 
-	fw_name = "rtlwifi/rtl8723befw.bin";
-	err = request_firmware(&firmware, fw_name, rtlpriv->io.dev);
+	rtlpriv->max_fw_size = 0x8000;
+	pr_info("Using firmware %s\n", rtlpriv->cfg->fw_name);
+	err = request_firmware_nowait(THIS_MODULE, 1, rtlpriv->cfg->fw_name,
+				      rtlpriv->io.dev, GFP_KERNEL, hw,
+				      rtl_fw_cb);
 	if (err) {
 		RT_TRACE(COMP_ERR, DBG_EMERG,
 			 ("Failed to request firmware!\n"));
 		return 1;
 	}
-
-	if (firmware->size > 0x8000) {
-		RT_TRACE(COMP_ERR, DBG_EMERG,
-			 ("Firmware is too big!\n"));
-		release_firmware(firmware);
-		return 1;
-	}
-
-	memcpy(rtlpriv->rtlhal.pfirmware, firmware->data, firmware->size);
-	rtlpriv->rtlhal.fwsize = firmware->size;
-	release_firmware(firmware);
-
-	RT_TRACE(COMP_INIT, DBG_LOUD, (" FirmwareDownload OK\n"));
-	return err;
+	return 0;
 }
 
 void rtl8723be_deinit_sw_vars(struct ieee80211_hw *hw)

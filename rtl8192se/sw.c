@@ -40,6 +40,7 @@
 #include "sw.h"
 #include "trx.h"
 #include "led.h"
+#include "../base.h"
 
 void rtl92s_init_aspm_vars(struct ieee80211_hw *hw)
 {
@@ -85,14 +86,56 @@ void rtl92s_init_aspm_vars(struct ieee80211_hw *hw)
 	rtlpci->const_support_pciaspm = 2;
 }
 
+static void rtl92se_fw_cb(const struct firmware *firmware, void *context)
+{
+	struct ieee80211_hw *hw = context;
+	struct rtl_pci_priv *pcipriv = rtl_pcipriv(hw);
+	struct rtl_priv *rtlpriv = rtl_priv(hw);
+	struct rtl_pci *rtlpci = rtl_pcidev(pcipriv);
+	struct rt_firmware *pfirmware = NULL;
+	int err;
+
+	RT_TRACE(COMP_ERR, DBG_LOUD,
+		 ("Firmware callback routine entered!\n"));
+	complete(&rtlpriv->firmware_loading_complete);
+	if (!firmware) {
+		pr_err("Firmware %s not available\n", rtlpriv->cfg->fw_name);
+		rtlpriv->max_fw_size = 0;
+		return;
+	}
+	if (firmware->size > rtlpriv->max_fw_size) {
+		RT_TRACE(COMP_ERR, DBG_EMERG,
+			 ("Firmware is too big!\n"));
+		rtlpriv->max_fw_size = 0;
+		release_firmware(firmware);
+		return;
+	}
+	pfirmware = (struct rt_firmware *)rtlpriv->rtlhal.pfirmware;
+	memcpy(pfirmware->sz_fw_tmpbuffer, firmware->data, firmware->size);
+	pfirmware->sz_fw_tmpbufferlen = firmware->size;
+	release_firmware(firmware);
+
+	err = ieee80211_register_hw(hw);
+	if (err) {
+		RT_TRACE(COMP_ERR, DBG_EMERG,
+			 ("Can't register mac80211 hw\n"));
+		return;
+	} else {
+		rtlpriv->mac80211.mac80211_registered = 1;
+	}
+	rtlpci->irq_alloc = 1;
+	set_bit(RTL_STATUS_INTERFACE_START, &rtlpriv->status);
+
+	/*init rfkill */
+	rtl_init_rfkill(hw);
+}
+
 int rtl92s_init_sw_vars(struct ieee80211_hw *hw)
 {
 	int err = 0;
 	u16	earlyrxthreshold = 7;
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_pci *rtlpci = rtl_pcidev(rtl_pcipriv(hw));
-	const struct firmware *firmware;
-	struct rt_firmware *pfirmware = NULL;
 
 	rtlpriv->dm.dm_initialgain_enable = 1;
 	rtlpriv->dm.dm_flag = 0;
@@ -177,35 +220,24 @@ int rtl92s_init_sw_vars(struct ieee80211_hw *hw)
 		rtlpriv->psc.fwctrl_psmode = FW_PS_DTIM_MODE;
 
 	/* for firmware buf */
-	rtlpriv->rtlhal.pfirmware = (u8 *) vmalloc(sizeof(
-				struct rt_firmware));
-	if (!rtlpriv->rtlhal.pfirmware) {
-		RT_TRACE(COMP_ERR, DBG_EMERG,
-			 ("Can't alloc buffer for fw.\n"));
+	rtlpriv->rtlhal.pfirmware = vzalloc(sizeof(struct rt_firmware));
+	if (!rtlpriv->rtlhal.pfirmware)
 		return 1;
-	}
 
+	rtlpriv->max_fw_size = RTL8190_MAX_FIRMWARE_CODE_SIZE;
+
+	pr_info("Driver for Realtek RTL8192SE/RTL8191SE\n"
+		"Loading firmware %s\n", rtlpriv->cfg->fw_name);
 	/* request fw */
-	err = request_firmware(&firmware, rtlpriv->cfg->fw_name,
-			rtlpriv->io.dev);
+	err = request_firmware_nowait(THIS_MODULE, 1, rtlpriv->cfg->fw_name,
+				      rtlpriv->io.dev, GFP_KERNEL, hw,
+				      rtl92se_fw_cb);
 	if (err) {
 		RT_TRACE(COMP_ERR, DBG_EMERG,
 			 ("Failed to request firmware!\n"));
 		return 1;
 	}
-	if (firmware->size > 164000) {
-		RT_TRACE(COMP_ERR, DBG_EMERG,
-			 ("Firmware is too big!\n"));
-		release_firmware(firmware);
-		return 1;
-	}
-
-	pfirmware = (struct rt_firmware *)rtlpriv->rtlhal.pfirmware;
-	memcpy(pfirmware->sz_fw_tmpbuffer, firmware->data, firmware->size);
-	pfirmware->sz_fw_tmpbufferlen = firmware->size;
-	release_firmware(firmware);
-
-	return err;
+	return 0;
 }
 
 void rtl92s_deinit_sw_vars(struct ieee80211_hw *hw)

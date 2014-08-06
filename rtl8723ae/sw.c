@@ -45,7 +45,7 @@
 #include "hal_btc.h"
 #include "../btcoexist/rtl_btc.h"
 
-void rtl8723e_init_aspm_vars(struct ieee80211_hw *hw)
+static void rtl8723e_init_aspm_vars(struct ieee80211_hw *hw)
 {
 	struct rtl_pci *rtlpci = rtl_pcidev(rtl_pcipriv(hw));
 
@@ -91,12 +91,10 @@ void rtl8723e_init_aspm_vars(struct ieee80211_hw *hw)
 
 int rtl8723e_init_sw_vars(struct ieee80211_hw *hw)
 {
-	int err = 0;
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_pci *rtlpci = rtl_pcidev(rtl_pcipriv(hw));
-	const struct firmware *firmware;
 	struct rtl_hal *rtlhal = rtl_hal(rtl_priv(hw));
-	char *fw_name = NULL;
+	int err = 0;
 
 	rtl8723e_bt_reg_init(hw);
 
@@ -167,7 +165,7 @@ int rtl8723e_init_sw_vars(struct ieee80211_hw *hw)
 		rtlpriv->psc.fwctrl_psmode = FW_PS_DTIM_MODE;
 
 	/* for firmware buf */
-	rtlpriv->rtlhal.pfirmware = (u8 *) vmalloc(0x7000);
+	rtlpriv->rtlhal.pfirmware = vmalloc(0x6000);
 	if (!rtlpriv->rtlhal.pfirmware) {
 		RT_TRACE(COMP_ERR, DBG_EMERG,
 			 ("Can't alloc buffer for fw.\n"));
@@ -175,33 +173,21 @@ int rtl8723e_init_sw_vars(struct ieee80211_hw *hw)
 	}
 
 	if (IS_VENDOR_8723_A_CUT(rtlhal->version))
-		fw_name = "rtlwifi/rtl8723fw.bin";
-	else if (IS_81xxC_VENDOR_UMC_B_CUT(rtlhal->version)) {
-		RT_TRACE(COMP_ERR, DBG_EMERG,
-			("firemare: rtl8723fw_B.bin\n"));
-		fw_name = "rtlwifi/rtl8723fw_B.bin";
-	}
+		rtlpriv->cfg->fw_name = "rtlwifi/rtl8723fw.bin";
+	else if (IS_81xxC_VENDOR_UMC_B_CUT(rtlhal->version))
+		rtlpriv->cfg->fw_name = "rtlwifi/rtl8723fw_B.bin";
 
-	err = request_firmware(&firmware, fw_name, rtlpriv->io.dev);
+	rtlpriv->max_fw_size = 0x6000;
+	pr_info("Using firmware %s\n", rtlpriv->cfg->fw_name);
+	err = request_firmware_nowait(THIS_MODULE, 1, rtlpriv->cfg->fw_name,
+				      rtlpriv->io.dev, GFP_KERNEL, hw,
+				      rtl_fw_cb);
 	if (err) {
 		RT_TRACE(COMP_ERR, DBG_EMERG,
 			 ("Failed to request firmware!\n"));
 		return 1;
 	}
-
-	if (firmware->size > 0x6000) {
-		RT_TRACE(COMP_ERR, DBG_EMERG,
-			 ("Firmware is too big!\n"));
-		release_firmware(firmware);
-		return 1;
-	}
-
-	memcpy(rtlpriv->rtlhal.pfirmware, firmware->data, firmware->size);
-	rtlpriv->rtlhal.fwsize = firmware->size;
-	release_firmware(firmware);
-
-	RT_TRACE(COMP_INIT, DBG_LOUD, (" FirmwareDownload OK\n"));
-	return err;
+	return 0;
 }
 
 void rtl8723e_deinit_sw_vars(struct ieee80211_hw *hw)
@@ -221,7 +207,7 @@ bool rtl8723e_get_btc_status(void)
 }
 
 
-struct rtl_hal_ops rtl8723e_hal_ops = {
+static struct rtl_hal_ops rtl8723e_hal_ops = {
 	.init_sw_vars = rtl8723e_init_sw_vars,
 	.deinit_sw_vars = rtl8723e_deinit_sw_vars,
 	.read_eeprom_info = rtl8723e_read_eeprom_info,
@@ -272,7 +258,7 @@ struct rtl_hal_ops rtl8723e_hal_ops = {
 	.rx_command_packet = rtl8723e_rx_command_packet,
 };
 
-struct rtl_mod_params rtl8723e_mod_params = {
+static struct rtl_mod_params rtl8723e_mod_params = {
 	.sw_crypto = false,
 	.inactiveps = true,
 	.swctrl_lps = false,
@@ -280,7 +266,7 @@ struct rtl_mod_params rtl8723e_mod_params = {
 	.debug = DBG_EMERG,
 };
 
-struct rtl_hal_cfg rtl8723e_hal_cfg = {
+static struct rtl_hal_cfg rtl8723e_hal_cfg = {
 	.bar_id = 2,
 	.write_readback = true,
 	.name = "rtl8723e_pci",
@@ -400,7 +386,7 @@ MODULE_PARM_DESC(swlps, "Set to 1 to use SW control power save (default 0)\n");
 MODULE_PARM_DESC(fwlps, "Set to 1 to use FW control power save (default 1)\n");
 MODULE_PARM_DESC(debug, "Set debug level (0-5) (default 0)");
 
-static const SIMPLE_DEV_PM_OPS(rtlwifi_pm_ops, rtl_pci_suspend, rtl_pci_resume);
+static SIMPLE_DEV_PM_OPS(rtlwifi_pm_ops, rtl_pci_suspend, rtl_pci_resume);
 
 static struct pci_driver rtl8723e_driver = {
 	.name = KBUILD_MODNAME,

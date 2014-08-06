@@ -92,8 +92,6 @@ int rtl88e_init_sw_vars(struct ieee80211_hw *hw)
 	int err = 0;
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_pci *rtlpci = rtl_pcidev(rtl_pcipriv(hw));
-	const struct firmware *firmware;
-	char *fw_name = NULL;
 	u8 tid;
 
 	rtl8188ee_bt_reg_init(hw);
@@ -127,9 +125,6 @@ int rtl88e_init_sw_vars(struct ieee80211_hw *hw)
 
 	rtlpci->irq_mask[0] =
 			    (u32) (IMR_PSTIMEOUT		|
-				/*	IMR_TBDER			|
-					IMR_TBDOK			|
-					IMR_BCNDMAINT0			|*/
 					IMR_HSISR_IND_ON_INT	|
 					IMR_C2HCMD			|
 					IMR_HIGHDOK		|
@@ -142,20 +137,23 @@ int rtl88e_init_sw_vars(struct ieee80211_hw *hw)
 					IMR_ROK				|
 					0);
 	rtlpci->irq_mask[1] = (u32) (IMR_RXFOVW | 0);
+	rtlpci->sys_irq_mask = (u32) (HSIMR_PDN_INT_EN | HSIMR_RON_INT_EN);
 
-	rtlpci->sys_irq_mask = (u32) (HSIMR_PDN_INT_EN	|
-				      HSIMR_RON_INT_EN	|
-				      0);
 	/* for debug level */
 	rtlpriv->dbg.global_debuglevel = rtlpriv->cfg->mod_params->debug;
 	/* for LPS & IPS */
 	rtlpriv->psc.inactiveps = rtlpriv->cfg->mod_params->inactiveps;
 	rtlpriv->psc.swctrl_lps = rtlpriv->cfg->mod_params->swctrl_lps;
 	rtlpriv->psc.fwctrl_lps = rtlpriv->cfg->mod_params->fwctrl_lps;
+	if (!rtlpriv->psc.inactiveps)
+		pr_info("rtl8188ee: Power Save off (module option)\n");
+	if (!rtlpriv->psc.fwctrl_lps)
+		pr_info("rtl8188ee: FW Power Save off (module option)\n");
 	rtlpriv->psc.reg_fwctrl_lps = 3;
 	rtlpriv->psc.reg_max_lps_awakeintvl = 5;
 	/* for ASPM, you can close aspm through
-	 * set const_support_pciaspm = 0 */
+	 * set const_support_pciaspm = 0
+	 */
 	rtl88e_init_aspm_vars(hw);
 
 	if (rtlpriv->psc.reg_fwctrl_lps == 1)
@@ -166,30 +164,24 @@ int rtl88e_init_sw_vars(struct ieee80211_hw *hw)
 		rtlpriv->psc.fwctrl_psmode = FW_PS_DTIM_MODE;
 
 	/* for firmware buf */
-	rtlpriv->rtlhal.pfirmware = (u8 *) vmalloc(0x8000);
+	rtlpriv->rtlhal.pfirmware = vmalloc(0x8000);
 	if (!rtlpriv->rtlhal.pfirmware) {
 		RT_TRACE(COMP_ERR, DBG_EMERG,
 			 ("Can't alloc buffer for fw.\n"));
 		return 1;
 	}
 
-	fw_name = "rtlwifi/rtl8188efw.bin";
-	err = request_firmware(&firmware, fw_name, rtlpriv->io.dev);
-
+	rtlpriv->cfg->fw_name = "rtlwifi/rtl8188efw.bin";
+	rtlpriv->max_fw_size = 0x8000;
+	pr_info("Using firmware %s\n", rtlpriv->cfg->fw_name);
+	err = request_firmware_nowait(THIS_MODULE, 1, rtlpriv->cfg->fw_name,
+				      rtlpriv->io.dev, GFP_KERNEL, hw,
+				      rtl_fw_cb);
 	if (err) {
 		RT_TRACE(COMP_ERR, DBG_EMERG,
 			 ("Failed to request firmware!\n"));
 		return 1;
 	}
-	if (firmware->size > 0x8000) {
-		RT_TRACE(COMP_ERR, DBG_EMERG,
-			 ("Firmware is too big!\n"));
-		release_firmware(firmware);
-		return 1;
-	}
-	memcpy(rtlpriv->rtlhal.pfirmware, firmware->data, firmware->size);
-	rtlpriv->rtlhal.fwsize = firmware->size;
-	release_firmware(firmware);
 
 	/* for early mode */
 	rtlpriv->rtlhal.earlymode_enable = false;
@@ -202,7 +194,8 @@ int rtl88e_init_sw_vars(struct ieee80211_hw *hw)
 	if (rtlpriv->psc.low_power_enable) {
 		init_timer(&rtlpriv->works.fw_clockoff_timer);
 		setup_timer(&rtlpriv->works.fw_clockoff_timer,
-			rtl88ee_fw_clk_off_timer_callback, (unsigned long)hw);
+			    rtl88ee_fw_clk_off_timer_callback,
+			    (unsigned long)hw);
 	}
 
 	init_timer(&rtlpriv->works.fast_antenna_trainning_timer);

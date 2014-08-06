@@ -679,7 +679,6 @@ bool rtl8723e_phy_config_rf_with_headerfile(struct ieee80211_hw *hw,
 	u32 *radioa_array_table;
 	u32 *radiob_array_table;
 	u16 radioa_arraylen, radiob_arraylen;
-	struct rtl_priv *rtlpriv = rtl_priv(hw);
 
 	radioa_arraylen = Rtl8723ERADIOA_1TARRAYLENGTH;
 	radioa_array_table = RTL8723E_RADIOA_1TARRAY;

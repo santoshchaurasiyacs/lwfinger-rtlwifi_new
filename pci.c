@@ -27,6 +27,7 @@
  *
  *****************************************************************************/
 
+#include <linux/firmware.h>
 #include "core.h"
 #include "wifi.h"
 #include "pci.h"
@@ -2150,13 +2151,8 @@ static int rtl_pci_intr_mode_decide(struct ieee80211_hw *hw)
 	return ret;
 }
 
-/* this is used for other modules get
- * hw pointer in rtl_pci_get_hw_pointer */
-struct ieee80211_hw *hw_export = NULL;
-
 int rtl_pci_probe(struct pci_dev *pdev,
 			const struct pci_device_id *id)
-
 {
 	struct ieee80211_hw *hw = NULL;
 
@@ -2178,8 +2174,8 @@ int rtl_pci_probe(struct pci_dev *pdev,
 		if (pci_set_consistent_dma_mask(pdev, DMA_BIT_MASK(32))) {
 			RT_ASSERT(false, ("Unable to obtain 32bit DMA "
 					  "for consistent allocations\n"));
-			pci_disable_device(pdev);
-			return -ENOMEM;
+			err = -ENOMEM;
+			goto fail1;
 		}
 	}
 
@@ -2193,12 +2189,15 @@ int rtl_pci_probe(struct pci_dev *pdev,
 		err = -ENOMEM;
 		goto fail1;
 	}
-	hw_export = hw;
 
 	SET_IEEE80211_DEV(hw, &pdev->dev);
 	pci_set_drvdata(pdev, hw);
 
 	rtlpriv = hw->priv;
+	rtlpriv->hw = hw;
+	pcipriv = (void *)rtlpriv->priv;
+	pcipriv->dev.pdev = pdev;
+	init_completion(&rtlpriv->firmware_loading_complete);
 	/*proximity init here*/
 	rtlpriv->proximity.proxim_on = false;
 
@@ -2225,7 +2224,7 @@ int rtl_pci_probe(struct pci_dev *pdev,
 	err = pci_request_regions(pdev, KBUILD_MODNAME);
 	if (err) {
 		RT_ASSERT(false, ("Can't obtain PCI resources\n"));
-		return err;
+		goto fail1;
 	}
 
 	pmem_start = pci_resource_start(pdev, rtlpriv->cfg->bar_id);
@@ -2238,6 +2237,7 @@ int rtl_pci_probe(struct pci_dev *pdev,
 			rtlpriv->cfg->bar_id, pmem_len);
 	if (rtlpriv->io.pci_mem_start == 0) {
 		RT_ASSERT(false, ("Can't map PCI mem\n"));
+		err = -ENOMEM;
 		goto fail2;
 	}
 
@@ -2256,21 +2256,16 @@ int rtl_pci_probe(struct pci_dev *pdev,
 
 	/* find adapter */
 	/* if chip not support, will return false */
-	if (!_rtl_pci_find_adapter(pdev, hw))
+	if (!_rtl_pci_find_adapter(pdev, hw)) {
+		err = -ENODEV;
 		goto fail3;
+	}
 
 	/* Init IO handler */
 	_rtl_pci_io_handler_init(&pdev->dev, hw);
 
 	/*like read eeprom and so on */
 	rtlpriv->cfg->ops->read_eeprom_info(hw);
-
-	if (rtlpriv->cfg->ops->init_sw_vars(hw)) {
-		RT_TRACE(COMP_ERR, DBG_EMERG, ("Can't init_sw_vars.\n"));
-		goto fail3;
-	}
-
-	rtlpriv->cfg->ops->init_sw_leds(hw);
 
 	/*aspm */
 	rtl_pci_init_aspm(hw);
@@ -2290,18 +2285,13 @@ int rtl_pci_probe(struct pci_dev *pdev,
 		goto fail3;
 	}
 
-	err = ieee80211_register_hw(hw);
-	if (err) {
-		RT_TRACE(COMP_ERR, DBG_EMERG,
-			 ("Can't register mac80211 hw.\n"));
+	if (rtlpriv->cfg->ops->init_sw_vars(hw)) {
+		RT_TRACE(COMP_ERR, DBG_EMERG, ("Can't init_sw_vars\n"));
+		err = -ENODEV;
 		goto fail3;
-	} else {
-		rtlpriv->mac80211.mac80211_registered = 1;
 	}
-	/* the wiphy must have been registed to
-	 * cfg80211 prior to regulatory_hint */
-	if (regulatory_hint(hw->wiphy, rtlpriv->regd.alpha2))
-		RT_TRACE(COMP_ERR, DBG_WARNING, ("regulatory_hint fail\n"));
+
+	rtlpriv->cfg->ops->init_sw_leds(hw);
 
 	err = sysfs_create_group(&pdev->dev.kobj, &rtl_attribute_group);
 	if (err) {
@@ -2311,9 +2301,6 @@ int rtl_pci_probe(struct pci_dev *pdev,
 	}
 	/* add for prov */
 	rtl_proc_add_one(hw);
-
-	/*init rfkill */
-	rtl_init_rfkill(hw);
 
 	rtlpci = rtl_pcidev(pcipriv);
 	err = rtl_pci_intr_mode_decide(hw);
@@ -2326,7 +2313,6 @@ int rtl_pci_probe(struct pci_dev *pdev,
 		rtlpci->irq_alloc = 1;
 	}
 
-	set_bit(RTL_STATUS_INTERFACE_START, &rtlpriv->status);
 	return 0;
 
 fail3:
@@ -2335,25 +2321,20 @@ fail3:
 	ieee80211_free_hw(hw);
 
 	if (rtlpriv->io.pci_mem_start != 0)
-		pci_iounmap(pdev, (void *)rtlpriv->io.pci_mem_start);
+		pci_iounmap(pdev, (void __iomem *)rtlpriv->io.pci_mem_start);
 
 fail2:
 	pci_release_regions(pdev);
+	complete(&rtlpriv->firmware_loading_complete);
 
 fail1:
-
+	if (hw)
+		ieee80211_free_hw(hw);
 	pci_disable_device(pdev);
 
-	return -ENODEV;
-
+	return err;
 }
 EXPORT_SYMBOL(rtl_pci_probe);
-
-struct ieee80211_hw *rtl_pci_get_hw_pointer(void)
-{
-	return hw_export;
-}
-EXPORT_SYMBOL(rtl_pci_get_hw_pointer);
 
 void rtl_pci_disconnect(struct pci_dev *pdev)
 {
@@ -2363,6 +2344,8 @@ void rtl_pci_disconnect(struct pci_dev *pdev)
 	struct rtl_pci *rtlpci = rtl_pcidev(pcipriv);
 	struct rtl_mac *rtlmac = rtl_mac(rtlpriv);
 
+	/* just in case driver is removed before firmware callback */
+	wait_for_completion(&rtlpriv->firmware_loading_complete);
 	clear_bit(RTL_STATUS_INTERFACE_START, &rtlpriv->status);
 
 	sysfs_remove_group(&pdev->dev.kobj, &rtl_attribute_group);

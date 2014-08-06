@@ -91,9 +91,7 @@ int rtl92c_init_sw_vars(struct ieee80211_hw *hw)
 	int err = 0;
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_pci *rtlpci = rtl_pcidev(rtl_pcipriv(hw));
-	const struct firmware *firmware;
 	struct rtl_hal *rtlhal = rtl_hal(rtl_priv(hw));
-	char *fw_name = NULL;
 
 	rtl8192ce_bt_reg_init(hw);
 
@@ -151,38 +149,32 @@ int rtl92c_init_sw_vars(struct ieee80211_hw *hw)
 		rtlpriv->psc.fwctrl_psmode = FW_PS_DTIM_MODE;
 
 	/* for firmware buf */
-	rtlpriv->rtlhal.pfirmware = (u8 *) vmalloc(0x4000);
+	rtlpriv->rtlhal.pfirmware = vzalloc(0x4000);
 	if (!rtlpriv->rtlhal.pfirmware) {
 		RT_TRACE(COMP_ERR, DBG_EMERG,
-			 ("Can't alloc buffer for fw.\n"));
+			 ("Can't alloc buffer for fw\n"));
 		return 1;
 	}
 
+	/* request fw */
 	if (IS_VENDOR_UMC_A_CUT(rtlhal->version) &&
-		!IS_92C_SERIAL(rtlhal->version))
-		fw_name = "rtlwifi/rtl8192cfwU.bin";
+	    !IS_92C_SERIAL(rtlhal->version))
+		rtlpriv->cfg->fw_name = "rtlwifi/rtl8192cfwU.bin";
 	else if (IS_81xxC_VENDOR_UMC_B_CUT(rtlhal->version))
-		fw_name = "rtlwifi/rtl8192cfwU_B.bin";
-	else
-		fw_name = rtlpriv->cfg->fw_name;
-	err = request_firmware(&firmware, fw_name, rtlpriv->io.dev);
+		rtlpriv->cfg->fw_name = "rtlwifi/rtl8192cfwU_B.bin";
 
+	rtlpriv->max_fw_size = 0x4000;
+	pr_info("Using firmware %s\n", rtlpriv->cfg->fw_name);
+	err = request_firmware_nowait(THIS_MODULE, 1, rtlpriv->cfg->fw_name,
+				      rtlpriv->io.dev, GFP_KERNEL, hw,
+				      rtl_fw_cb);
 	if (err) {
 		RT_TRACE(COMP_ERR, DBG_EMERG,
 			 ("Failed to request firmware!\n"));
 		return 1;
 	}
-	if (firmware->size > 0x4000) {
-		RT_TRACE(COMP_ERR, DBG_EMERG,
-			 ("Firmware is too big!\n"));
-		release_firmware(firmware);
-		return 1;
-	}
-	memcpy(rtlpriv->rtlhal.pfirmware, firmware->data, firmware->size);
-	rtlpriv->rtlhal.fwsize = firmware->size;
-	release_firmware(firmware);
 
-	return err;
+	return 0;
 }
 
 void rtl92c_deinit_sw_vars(struct ieee80211_hw *hw)
@@ -368,6 +360,8 @@ MODULE_AUTHOR("Larry Finger	<Larry.Finger@lwfinger.net>");
 MODULE_LICENSE("GPL");
 MODULE_DESCRIPTION("Realtek 8192C/8188C 802.11n PCI wireless");
 MODULE_FIRMWARE("rtlwifi/rtl8192cfw.bin");
+MODULE_FIRMWARE("rtlwifi/rtl8192cfwU.bin");
+MODULE_FIRMWARE("rtlwifi/rtl8192cfwU_B.bin");
 
 module_param_named(swenc, rtl92ce_mod_params.sw_crypto, bool, 0444);
 module_param_named(debug, rtl92ce_mod_params.debug, int, 0444);
