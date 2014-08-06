@@ -708,11 +708,11 @@ void rtl92de_tx_fill_cmddesc(struct ieee80211_hw *hw,
 	if (firstseg)
 		SET_TX_DESC_OFFSET(pdesc, USB_HWDESC_HEADER_LEN);
 	/* 5G have no CCK rate */
-	if (rtlhal->current_bandtype == BAND_ON_5G)
+	if (rtlhal->current_bandtype == BAND_ON_5G) {
 		SET_TX_DESC_TX_RATE(pdesc, DESC92D_RATE6M);
-
-	else
+	} else {
 		SET_TX_DESC_TX_RATE(pdesc, DESC92D_RATE1M);
+	}
 
 	SET_TX_DESC_SEQ(pdesc, 0);
 	SET_TX_DESC_LINIP(pdesc, 0);

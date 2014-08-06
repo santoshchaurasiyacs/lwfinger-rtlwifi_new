@@ -829,10 +829,11 @@ void rtl92ee_pre_fill_tx_bd_desc(struct ieee80211_hw *hw,
 	CLEAR_PCI_TX_DESC_CONTENT(desc, TX_DESC_SIZE);
 
 	if (rtlpriv->rtlhal.earlymode_enable) {
-		if (queue_index < BEACON_QUEUE)
+		if (queue_index < BEACON_QUEUE) {
 			SET_TX_BUFF_DESC_LEN_0(tx_bd_desc , desc_size + 8);
-		else
+		} else {
 			SET_TX_BUFF_DESC_LEN_0(tx_bd_desc , desc_size);
+		}
 	} else {
 		SET_TX_BUFF_DESC_LEN_0(tx_bd_desc , desc_size);
 	}
