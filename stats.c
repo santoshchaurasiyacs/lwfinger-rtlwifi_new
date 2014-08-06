@@ -77,7 +77,7 @@ u8 rtl_evm_dbm_jaguar(char value)
 }
 EXPORT_SYMBOL(rtl_evm_dbm_jaguar);
 
-long rtl_translate_todbm(struct ieee80211_hw *hw,
+static long rtl_translate_todbm(struct ieee80211_hw *hw,
 			 u8 signal_strength_index)
 {
 	long signal_power;
@@ -116,7 +116,7 @@ long rtl_signal_scale_mapping(struct ieee80211_hw *hw, long currsig)
 }
 EXPORT_SYMBOL(rtl_signal_scale_mapping);
 
-void rtl_process_ui_rssi(struct ieee80211_hw *hw, struct rtl_stats *pstatus)
+static void rtl_process_ui_rssi(struct ieee80211_hw *hw, struct rtl_stats *pstatus)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_phy *rtlphy = &(rtlpriv->phy);

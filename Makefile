@@ -23,6 +23,8 @@ PCI_MAIN_OBJS	:= base.o	\
 
 rtlwifi-objs += $(PCI_MAIN_OBJS)
 
+ccflags-y += -D__CHECK_ENDIAN__
+
 all: 
 	$(MAKE) -C $(KSRC) M=$(PWD) modules
 	@cp $(SYMBOL_FILE) btcoexist/

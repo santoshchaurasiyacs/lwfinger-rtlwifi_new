@@ -155,7 +155,7 @@ static void rtl_get_rate(void *ppriv, struct ieee80211_sta *sta,
 	struct sk_buff *skb = txrc->skb;
 	struct ieee80211_tx_info *tx_info = IEEE80211_SKB_CB(skb);
 	struct ieee80211_tx_rate *rates = tx_info->control.rates;
-	__le16 fc = rtl_get_fc(skb);
+	__le16 fc = cpu_to_le16(rtl_get_fc(skb));
 	u8 try_per_rate, i, rix;
 	bool not_data = !ieee80211_is_data(fc);
 
@@ -202,7 +202,7 @@ static void rtl_tx_status(void *ppriv,
 	struct rtl_priv *rtlpriv = ppriv;
 	struct rtl_mac *mac = rtl_mac(rtlpriv);
 	struct ieee80211_hdr *hdr = rtl_get_hdr(skb);
-	__le16 fc = rtl_get_fc(skb);
+	__le16 fc = cpu_to_le16(rtl_get_fc(skb));
 	struct rtl_sta_info *sta_entry;
 
 	if (!priv_sta || !ieee80211_is_data(fc))

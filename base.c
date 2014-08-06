@@ -216,7 +216,7 @@ static void _rtl_init_hw_ht_capab(struct ieee80211_hw *hw,
 		ht_cap->mcs.rx_mask[1] = 0xFF;
 		ht_cap->mcs.rx_mask[4] = 0x01;
 
-		ht_cap->mcs.rx_highest = MAX_BIT_RATE_40MHZ_MCS15;
+		ht_cap->mcs.rx_highest = cpu_to_le16(MAX_BIT_RATE_40MHZ_MCS15);
 	} else {
 		if (get_rf_type(rtlphy) == RF_1T2R ||
 				get_rf_type(rtlphy) == RF_2T2R) {
@@ -227,7 +227,8 @@ static void _rtl_init_hw_ht_capab(struct ieee80211_hw *hw,
 			ht_cap->mcs.rx_mask[1] = 0xFF;
 			ht_cap->mcs.rx_mask[4] = 0x01;
 
-			ht_cap->mcs.rx_highest = MAX_BIT_RATE_40MHZ_MCS15;
+			ht_cap->mcs.rx_highest =
+				 cpu_to_le16(MAX_BIT_RATE_40MHZ_MCS15);
 		} else if (get_rf_type(rtlphy) == RF_1T1R) {
 
 			RT_TRACE(COMP_INIT, DBG_DMESG, ("1T1R\n"));
@@ -236,7 +237,8 @@ static void _rtl_init_hw_ht_capab(struct ieee80211_hw *hw,
 			ht_cap->mcs.rx_mask[1] = 0x00;
 			ht_cap->mcs.rx_mask[4] = 0x01;
 
-			ht_cap->mcs.rx_highest = MAX_BIT_RATE_40MHZ_MCS7;
+			ht_cap->mcs.rx_highest =
+				 cpu_to_le16(MAX_BIT_RATE_40MHZ_MCS7);
 		}
 	}
 }
@@ -277,10 +279,10 @@ static void _rtl_init_hw_vht_capab(struct ieee80211_hw *hw,
 
 		vht_cap->vht_mcs.rx_mcs_map = cpu_to_le16(mcs_map);
 		vht_cap->vht_mcs.rx_highest =
-			MAX_BIT_RATE_SHORT_GI_2NSS_80MHZ_MCS9;
+			cpu_to_le16(MAX_BIT_RATE_SHORT_GI_2NSS_80MHZ_MCS9);
 		vht_cap->vht_mcs.tx_mcs_map = cpu_to_le16(mcs_map);
 		vht_cap->vht_mcs.tx_highest =
-			MAX_BIT_RATE_SHORT_GI_2NSS_80MHZ_MCS9;
+			cpu_to_le16(MAX_BIT_RATE_SHORT_GI_2NSS_80MHZ_MCS9);
 	} else if (rtlhal->hw_type == HARDWARE_TYPE_RTL8821AE) {
 		u16 mcs_map;
 
@@ -311,10 +313,10 @@ static void _rtl_init_hw_vht_capab(struct ieee80211_hw *hw,
 
 		vht_cap->vht_mcs.rx_mcs_map = cpu_to_le16(mcs_map);
 		vht_cap->vht_mcs.rx_highest =
-			MAX_BIT_RATE_SHORT_GI_1NSS_80MHZ_MCS9;
+			cpu_to_le16(MAX_BIT_RATE_SHORT_GI_1NSS_80MHZ_MCS9);
 		vht_cap->vht_mcs.tx_mcs_map = cpu_to_le16(mcs_map);
 		vht_cap->vht_mcs.tx_highest =
-			MAX_BIT_RATE_SHORT_GI_1NSS_80MHZ_MCS9;
+			cpu_to_le16(MAX_BIT_RATE_SHORT_GI_1NSS_80MHZ_MCS9);
 	}
 }
 #endif
@@ -865,14 +867,15 @@ static u8 _rtl_get_vht_highest_n_rate(struct ieee80211_hw *hw,
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_phy *rtlphy = &(rtlpriv->phy);
 	u8 hw_rate;
+	u16 tx_mcs_map = le16_to_cpu(sta->vht_cap.vht_mcs.tx_mcs_map);
 
 	if ((get_rf_type(rtlphy) == RF_2T2R) &&
-		(sta->vht_cap.vht_mcs.tx_mcs_map & 0x000c) != 0x000c0) {
-		if ((sta->vht_cap.vht_mcs.tx_mcs_map & 0x000c) >> 2 ==
+		(tx_mcs_map & 0x000c) != 0x000c) {
+		if ((tx_mcs_map & 0x000c) >> 2 ==
 			IEEE80211_VHT_MCS_SUPPORT_0_7)
 			hw_rate =
 			rtlpriv->cfg->maps[RTL_RC_VHT_RATE_2SS_MCS7];
-		else if ((sta->vht_cap.vht_mcs.tx_mcs_map  & 0x000c) >> 2 ==
+		else if ((tx_mcs_map  & 0x000c) >> 2 ==
 			IEEE80211_VHT_MCS_SUPPORT_0_8)
 			hw_rate =
 			rtlpriv->cfg->maps[RTL_RC_VHT_RATE_2SS_MCS9];
@@ -880,11 +883,11 @@ static u8 _rtl_get_vht_highest_n_rate(struct ieee80211_hw *hw,
 			hw_rate =
 			rtlpriv->cfg->maps[RTL_RC_VHT_RATE_2SS_MCS9];
 	} else {
-		if ((sta->vht_cap.vht_mcs.tx_mcs_map  & 0x0003) ==
+		if ((tx_mcs_map  & 0x0003) ==
 			IEEE80211_VHT_MCS_SUPPORT_0_7)
 			hw_rate =
 			rtlpriv->cfg->maps[RTL_RC_VHT_RATE_1SS_MCS7];
-		else if ((sta->vht_cap.vht_mcs.tx_mcs_map  & 0x0003) ==
+		else if ((tx_mcs_map  & 0x0003) ==
 			IEEE80211_VHT_MCS_SUPPORT_0_8)
 			hw_rate =
 			rtlpriv->cfg->maps[RTL_RC_VHT_RATE_1SS_MCS9];
@@ -922,7 +925,7 @@ void rtl_get_tcb_desc(struct ieee80211_hw *hw,
 	struct rtl_mac *rtlmac = rtl_mac(rtl_priv(hw));
 	struct ieee80211_hdr *hdr = rtl_get_hdr(skb);
 	struct ieee80211_rate *txrate;
-	u16 fc = rtl_get_fc(skb);
+	__le16 fc = cpu_to_le16(rtl_get_fc(skb));
 
 	txrate = ieee80211_get_tx_rate(hw, info);
 	if (txrate != NULL)
@@ -997,7 +1000,7 @@ bool rtl_tx_mgmt_proc(struct ieee80211_hw *hw, struct sk_buff *skb)
 {
 	struct rtl_mac *mac = rtl_mac(rtl_priv(hw));
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
-	u16 fc = rtl_get_fc(skb);
+	__le16 fc = cpu_to_le16(rtl_get_fc(skb));
 
 	if (rtlpriv->dm.supp_phymode_switch &&
 		mac->link_state < MAC80211_LINKED &&
@@ -1025,7 +1028,7 @@ bool rtl_action_proc(struct ieee80211_hw *hw, struct sk_buff *skb, u8 is_tx)
 	struct rtl_mac *mac = rtl_mac(rtl_priv(hw));
 	struct ieee80211_hdr *hdr = rtl_get_hdr(skb);
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
-	u16 fc = rtl_get_fc(skb);
+	__le16 fc = cpu_to_le16(rtl_get_fc(skb));
 	u8 *act = (u8 *) (((u8 *) skb->data + MAC80211_3ADDR_LEN));
 	u8 category;
 
@@ -1130,7 +1133,7 @@ u8 rtl_is_special_data(struct ieee80211_hw *hw, struct sk_buff *skb, u8 is_tx)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_ps_ctl *ppsc = rtl_psc(rtl_priv(hw));
-	u16 fc = rtl_get_fc(skb);
+	__le16 fc = cpu_to_le16(rtl_get_fc(skb));
 	u16 ether_type;
 	u8 mac_hdr_len = ieee80211_get_hdrlen_from_skb(skb);
 	const struct iphdr *ip;
@@ -1141,8 +1144,8 @@ u8 rtl_is_special_data(struct ieee80211_hw *hw, struct sk_buff *skb, u8 is_tx)
 
 	ip = (struct iphdr *)((u8 *) skb->data + mac_hdr_len +
 			      SNAP_SIZE + PROTOC_TYPE_SIZE);
-	ether_type = *(u16 *) ((u8 *) skb->data + mac_hdr_len + SNAP_SIZE);
-	ether_type = ntohs(ether_type);
+	ether_type = be16_to_cpup((__be16 *)
+				  (skb->data + mac_hdr_len + SNAP_SIZE));
 
 	if (ETH_P_IP == ether_type) {
 		if (IPPROTO_UDP == ip->protocol) {
@@ -1600,7 +1603,7 @@ u8 *rtl_find_ie(u8 *data, unsigned int len, u8 ie)
 
 /* when we use 2 rx ants we send IEEE80211_SMPS_OFF */
 /* when we use 1 rx ant we send IEEE80211_SMPS_STATIC */
-struct sk_buff *rtl_make_smps_action(struct ieee80211_hw *hw,
+static struct sk_buff *rtl_make_smps_action(struct ieee80211_hw *hw,
 				     enum ieee80211_smps_mode smps,
 				     u8 *da, u8 *bssid)
 {
@@ -1785,7 +1788,7 @@ static bool rtl_chk_vendor_ouisub(struct ieee80211_hw *hw,
 	return matched;
 }
 
-bool rtl_find_221_ie(struct ieee80211_hw *hw, u8 *data,
+static bool rtl_find_221_ie(struct ieee80211_hw *hw, u8 *data,
 		unsigned int len)
 {
 	struct ieee80211_mgmt *mgmt = (void *)data;

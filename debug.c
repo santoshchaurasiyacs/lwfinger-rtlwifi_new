@@ -79,7 +79,7 @@ void rtl_dbgp_flag_init(struct ieee80211_hw *hw)
 	/*Init Debug flag enable condition */
 }
 
-struct proc_dir_entry *proc_topdir;
+static struct proc_dir_entry *proc_topdir;
 static int rtl_proc_get_mac_0(struct seq_file *m, void *v)
 {
 	struct ieee80211_hw *hw = m->private;

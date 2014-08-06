@@ -337,7 +337,7 @@ static int rtl_op_change_interface(struct ieee80211_hw *hw,
 }
 
 #ifdef CONFIG_PM
-u16 crc16_ccitt(u8 data, u16 crc)
+static u16 crc16_ccitt(u8 data, u16 crc)
 {
 	u8 shift_in, data_bit, crc_bit11, crc_bit4, crc_bit15;
 	u8 i;
@@ -372,7 +372,7 @@ u16 crc16_ccitt(u8 data, u16 crc)
 	return crc;
 }
 
-u16 _calculate_wol_pattern_crc(u8 *pattern, u16 len)
+static u16 _calculate_wol_pattern_crc(u8 *pattern, u16 len)
 {
 	u16 crc = 0xffff;
 	u32 i;
@@ -964,9 +964,9 @@ static int rtl_op_conf_tx(struct ieee80211_hw *hw, u16 queue,
 
 	aci = _rtl_get_hal_qnum(queue);
 	mac->ac[aci].aifs = param->aifs;
-	mac->ac[aci].cw_min = param->cw_min;
-	mac->ac[aci].cw_max = param->cw_max;
-	mac->ac[aci].tx_op = param->txop;
+	mac->ac[aci].cw_min = cpu_to_le16(param->cw_min);
+	mac->ac[aci].cw_max = cpu_to_le16(param->cw_max);
+	mac->ac[aci].tx_op = cpu_to_le16(param->txop);
 	memcpy(&mac->edca_param[aci], param, sizeof(*param));
 	rtlpriv->cfg->ops->set_qos(hw, aci);
 	return 0;

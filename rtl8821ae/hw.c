@@ -58,8 +58,8 @@ static void _rtl8821ae_return_beacon_queue_skb(struct ieee80211_hw *hw)
 		struct sk_buff *skb = __skb_dequeue(&ring->queue);
 
 		pci_unmap_single(rtlpci->pdev,
-				 le32_to_cpu(rtlpriv->cfg->ops->get_desc(
-				 (u8 *) entry, true, HW_DESC_TXBUFF_ADDR)),
+				 rtlpriv->cfg->ops->get_desc(
+				 (u8 *) entry, true, HW_DESC_TXBUFF_ADDR),
 				 skb->len, PCI_DMA_TODEVICE);
 		kfree_skb(skb);
 		ring->idx = (ring->idx + 1) % ring->entries;
@@ -315,7 +315,7 @@ static void _rtl8821ae_fwlps_enter(struct ieee80211_hw *hw)
 
 }
 
-void _rtl8821ae_download_rsvd_page(struct ieee80211_hw *hw,
+static void _rtl8821ae_download_rsvd_page(struct ieee80211_hw *hw,
 				  bool dl_whole_packets)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
@@ -1139,7 +1139,7 @@ static u16 _rtl8821ae_mdio_read(struct rtl_priv *rtlpriv, u8 addr)
 	return ret;
 }
 
-void _rtl8821ae_mdio_write(struct rtl_priv *rtlpriv, u8 addr, u16 data)
+static void _rtl8821ae_mdio_write(struct rtl_priv *rtlpriv, u8 addr, u16 data)
 {
 	u8 tmp = 0, count = 0;
 
@@ -1175,7 +1175,7 @@ static u8 _rtl8821ae_dbi_read(struct rtl_priv *rtlpriv, u16 addr)
 	return ret;
 }
 
-void _rtl8821ae_dbi_write(struct rtl_priv *rtlpriv, u16 addr, u8 data)
+static void _rtl8821ae_dbi_write(struct rtl_priv *rtlpriv, u16 addr, u8 data)
 {
 	u8 tmp = 0, count = 0;
 	u16 wrtie_addr, remainder = addr % 4;
@@ -1267,7 +1267,7 @@ void rtl8821ae_enable_hw_security_config(struct ieee80211_hw *hw)
 #define MAC_ID_STATIC_FOR_BT_CLIENT_END				3
 /* ----------------------------------------------------------- */
 
-void rtl8821ae_macid_initialize_mediastatus(struct ieee80211_hw *hw)
+static void rtl8821ae_macid_initialize_mediastatus(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	u8	media_rpt[4] = {RT_MEDIA_CONNECT, 1,
@@ -1283,7 +1283,7 @@ void rtl8821ae_macid_initialize_mediastatus(struct ieee80211_hw *hw)
 		MAC_ID_STATIC_FOR_BT_CLIENT_END));
 }
 
-bool _rtl8821ae_check_pcie_dma_hang(struct ieee80211_hw *hw)
+static bool _rtl8821ae_check_pcie_dma_hang(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	u8 tmp;
@@ -1307,7 +1307,7 @@ bool _rtl8821ae_check_pcie_dma_hang(struct ieee80211_hw *hw)
 	}
 }
 
-bool _rtl8821ae_reset_pcie_interface_dma(struct ieee80211_hw *hw,
+static bool _rtl8821ae_reset_pcie_interface_dma(struct ieee80211_hw *hw,
 					 bool mac_power_on,
 					 bool in_watchdog)
 {
@@ -1433,7 +1433,7 @@ bool _rtl8821ae_reset_pcie_interface_dma(struct ieee80211_hw *hw,
 	return true;
 }
 
-void _rtl8821ae_get_wakeup_reason(struct ieee80211_hw *hw)
+static void _rtl8821ae_get_wakeup_reason(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_hal *rtlhal = rtl_hal(rtl_priv(hw));
@@ -1518,7 +1518,7 @@ void _rtl8821ae_get_wakeup_reason(struct ieee80211_hw *hw)
 	}
 }
 
-void _rtl8821ae_init_trx_desc_hw_address(struct ieee80211_hw *hw)
+static void _rtl8821ae_init_trx_desc_hw_address(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_pci *rtlpci = rtl_pcidev(rtl_pcipriv(hw));
@@ -1542,7 +1542,7 @@ void _rtl8821ae_init_trx_desc_hw_address(struct ieee80211_hw *hw)
 			rtlpci->rx_ring[RX_MPDU_QUEUE].dma & DMA_BIT_MASK(32));
 }
 
-bool _rtl8821ae_init_llt_table(struct ieee80211_hw *hw, u32 boundary)
+static bool _rtl8821ae_init_llt_table(struct ieee80211_hw *hw, u32 boundary)
 {
 	bool status = true;
 	u32 i;
@@ -1573,7 +1573,7 @@ bool _rtl8821ae_init_llt_table(struct ieee80211_hw *hw, u32 boundary)
 	return status;
 }
 
-bool _rtl8821ae_dynamic_rqpn(struct ieee80211_hw *hw, u32 boundary,
+static bool _rtl8821ae_dynamic_rqpn(struct ieee80211_hw *hw, u32 boundary,
 			     u16 npq_rqpn_value, u32 rqpn_val)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
@@ -1725,7 +1725,7 @@ bool _rtl8821ae_dynamic_rqpn(struct ieee80211_hw *hw, u32 boundary,
 	return ret;
 }
 
-void _rtl8821ae_simple_initialize_adapter(struct ieee80211_hw *hw)
+static void _rtl8821ae_simple_initialize_adapter(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_hal *rtlhal = rtl_hal(rtlpriv);
@@ -1751,7 +1751,7 @@ void _rtl8821ae_simple_initialize_adapter(struct ieee80211_hw *hw)
 	ppsc->rfpwr_state = ERFON;
 }
 
-void _rtl8821ae_enable_l1off(struct ieee80211_hw *hw)
+static void _rtl8821ae_enable_l1off(struct ieee80211_hw *hw)
 {
 	u8 tmp  = 0;
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
@@ -1775,7 +1775,7 @@ void _rtl8821ae_enable_l1off(struct ieee80211_hw *hw)
 }
 
 
-void _rtl8821ae_enable_ltr(struct ieee80211_hw *hw)
+static void _rtl8821ae_enable_ltr(struct ieee80211_hw *hw)
 {
 	u8 tmp  = 0;
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
@@ -1806,7 +1806,7 @@ void _rtl8821ae_enable_ltr(struct ieee80211_hw *hw)
 	RT_TRACE(COMP_INIT, DBG_LOUD, ("<---\n"));
 }
 
-bool _rtl8821ae_wowlan_initialize_adapter(struct ieee80211_hw *hw)
+static bool _rtl8821ae_wowlan_initialize_adapter(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_hal *rtlhal = rtl_hal(rtlpriv);
@@ -1867,7 +1867,7 @@ bool _rtl8821ae_wowlan_initialize_adapter(struct ieee80211_hw *hw)
 	return init_finished;
 }
 
-void _rtl8812ae_bb8812_config_1t(struct ieee80211_hw *hw)
+static void _rtl8812ae_bb8812_config_1t(struct ieee80211_hw *hw)
 {
 	/* BB OFDM RX Path_A */
 	rtl_set_bbreg(hw, 0x808, 0xff, 0x11);
@@ -2331,7 +2331,7 @@ void rtl8821ae_set_qos(struct ieee80211_hw *hw, int aci)
 	}
 }
 
-void rtl8821ae_clear_interrupt(struct ieee80211_hw *hw)
+static void rtl8821ae_clear_interrupt(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	u32 tmp;
@@ -2382,7 +2382,7 @@ void rtl8821ae_disable_interrupt(struct ieee80211_hw *hw)
 	/*synchronize_irq(rtlpci->pdev->irq);*/
 }
 
-void _rtl8821ae_clear_pci_pme_status(struct ieee80211_hw *hw)
+static void _rtl8821ae_clear_pci_pme_status(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_pci *rtlpci = rtl_pcidev(rtl_pcipriv(hw));
@@ -2504,7 +2504,7 @@ void rtl8821ae_card_disable(struct ieee80211_hw *hw)
 		printk("mac->link_state = %d\n", mac->link_state);
 		if (mac->link_state >= MAC80211_LINKED &&
 		    mac->opmode == NL80211_IFTYPE_STATION) {
-			rtlpriv->cfg->ops->set_hw_reg(hw, HW_VAR_AID, 0);
+			rtlpriv->cfg->ops->set_hw_reg(hw, HW_VAR_AID, NULL);
 			rtl8821ae_set_fw_media_status_rpt_cmd(hw,
 							      RT_MEDIA_CONNECT);
 
@@ -3283,7 +3283,7 @@ static void _rtl8821ae_read_pa_type(struct ieee80211_hw *hw, u8 *hwinfo,
 	}
 }
 
-void _rtl8821ae_read_rfe_type(struct ieee80211_hw *hw, u8 *hwinfo,
+static void _rtl8821ae_read_rfe_type(struct ieee80211_hw *hw, u8 *hwinfo,
 			      bool autoload_fail)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
@@ -3323,7 +3323,7 @@ void _rtl8821ae_read_rfe_type(struct ieee80211_hw *hw, u8 *hwinfo,
 	RT_TRACE(COMP_INIT, DBG_LOUD, ("RFE Type: 0x%2x\n", rtlhal->rfe_type));
 }
 
-void _rtl8812ae_read_bt_coexist_info_from_hwpg(struct ieee80211_hw *hw,
+static void _rtl8812ae_read_bt_coexist_info_from_hwpg(struct ieee80211_hw *hw,
 					      bool auto_load_fail, u8 *hwinfo)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
@@ -3347,7 +3347,7 @@ void _rtl8812ae_read_bt_coexist_info_from_hwpg(struct ieee80211_hw *hw,
 	/*move BT_InitHalVars() to init_sw_vars*/
 }
 
-void _rtl8821ae_read_bt_coexist_info_from_hwpg(struct ieee80211_hw *hw,
+static void _rtl8821ae_read_bt_coexist_info_from_hwpg(struct ieee80211_hw *hw,
 					      bool auto_load_fail, u8 *hwinfo)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
@@ -3798,14 +3798,14 @@ static u8 _rtl8821ae_mrate_idx_to_arfr_id(
 	return ret;
 }
 
-u32 _rtl8821ae_rate_to_bitmap_2ssvht(__le16 vht_rate)
+static u32 _rtl8821ae_rate_to_bitmap_2ssvht(__le16 vht_rate)
 {
 
 	u8 i, j, tmp_rate;
 	u32 rate_bitmap = 0;
 
 	for (i = j = 0; i < 4; i += 2, j += 10) {
-		tmp_rate = (vht_rate >> i) & 3;
+		tmp_rate = (le16_to_cpu(vht_rate) >> i) & 3;
 
 		switch (tmp_rate) {
 
@@ -3829,7 +3829,7 @@ u32 _rtl8821ae_rate_to_bitmap_2ssvht(__le16 vht_rate)
 	return rate_bitmap;
 }
 
-u32 _rtl8821ae_set_ra_vht_ratr_bitmap(struct ieee80211_hw *hw,
+static u32 _rtl8821ae_set_ra_vht_ratr_bitmap(struct ieee80211_hw *hw,
 				     enum wireless_mode wirelessmode,
 				     u32 ratr_bitmap)
 {
@@ -3851,7 +3851,7 @@ u32 _rtl8821ae_set_ra_vht_ratr_bitmap(struct ieee80211_hw *hw,
 	return ret_bitmap;
 }
 
-u8 _rtl8821ae_get_vht_eni(enum wireless_mode wirelessmode,
+static u8 _rtl8821ae_get_vht_eni(enum wireless_mode wirelessmode,
 			u32 ratr_bitmap)
 {
 	u8 ret = 0;
@@ -3869,7 +3869,7 @@ u8 _rtl8821ae_get_vht_eni(enum wireless_mode wirelessmode,
 	return ret << 4;
 }
 
-u8 _rtl8821ae_get_ra_ldpc(struct ieee80211_hw *hw,
+static u8 _rtl8821ae_get_ra_ldpc(struct ieee80211_hw *hw,
 			     u8 mac_id, struct rtl_sta_info *sta_entry,
 			     enum wireless_mode wirelessmode)
 {
@@ -3878,7 +3878,7 @@ u8 _rtl8821ae_get_ra_ldpc(struct ieee80211_hw *hw,
 	return b_ldpc << 2;
 }
 
-u8 _rtl8821ae_get_ra_rftype(struct ieee80211_hw *hw,
+static u8 _rtl8821ae_get_ra_rftype(struct ieee80211_hw *hw,
 			  enum wireless_mode wirelessmode,
 			  u32 ratr_bitmap)
 {
@@ -3902,7 +3902,7 @@ u8 _rtl8821ae_get_ra_rftype(struct ieee80211_hw *hw,
 	return rf_type;
 }
 
-bool _rtl8821ae_get_ra_shortgi(struct ieee80211_hw *hw, struct ieee80211_sta *sta,
+static bool _rtl8821ae_get_ra_shortgi(struct ieee80211_hw *hw, struct ieee80211_sta *sta,
 			      u8 mac_id)
 {
 /*	u8 b_curtxbw_40mhz = (sta->ht_cap.cap & IEEE80211_HT_CAP_SUP_WIDTH_20_40)

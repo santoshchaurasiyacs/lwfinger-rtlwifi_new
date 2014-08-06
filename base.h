@@ -89,7 +89,7 @@ enum ap_peer {
 	SET_BITS_TO_LE_2BYTE(_hdr, 8, 1, _val)
 
 #define SET_80211_PS_POLL_AID(_hdr, _val)		\
-	WRITEEF2BYTE(((u8 *)(_hdr))+2, _val)
+	(*(u16 *)((u8 *)(_hdr) + 2) = _val)
 #define SET_80211_PS_POLL_BSSID(_hdr, _val)		\
 	CP_MACADDR(((u8 *)(_hdr))+4, (u8 *)(_val))
 #define SET_80211_PS_POLL_TA(_hdr, _val)		\

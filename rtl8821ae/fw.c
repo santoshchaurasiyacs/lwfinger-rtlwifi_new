@@ -203,7 +203,7 @@ exit:
 	return err;
 }
 
-void _rtl8821ae_wait_for_h2c_cmd_finish(struct rtl_priv *rtlpriv)
+static void _rtl8821ae_wait_for_h2c_cmd_finish(struct rtl_priv *rtlpriv)
 {
 	u8 val;
 	u16 count = 0;
@@ -1751,7 +1751,7 @@ out:
 }
 
 /*Shoud check FW support p2p or not.*/
-void rtl8821ae_set_p2p_ctw_period_cmd(struct ieee80211_hw *hw, u8 ctwindow)
+static void rtl8821ae_set_p2p_ctw_period_cmd(struct ieee80211_hw *hw, u8 ctwindow)
 {
 	u8 u1_ctwindow_period[1] = { ctwindow};
 
@@ -1847,7 +1847,7 @@ void rtl8821ae_set_p2p_ps_offload_cmd(struct ieee80211_hw *hw, u8 p2p_ps_state)
 
 }
 
-void rtl8821ae_c2h_ra_report_handler(struct ieee80211_hw *hw,
+static void rtl8821ae_c2h_ra_report_handler(struct ieee80211_hw *hw,
 				     u8 *cmd_buf, u8 cmd_len)
 {
 	struct rtl_hal *rtlhal = rtl_hal(rtl_priv(hw));
@@ -1860,7 +1860,7 @@ void rtl8821ae_c2h_ra_report_handler(struct ieee80211_hw *hw,
 }
 
 
-void _rtl8821ae_c2h_content_parsing(
+static void _rtl8821ae_c2h_content_parsing(
 	struct ieee80211_hw *hw,
 	u8 c2h_cmd_id,
 	u8 c2h_cmd_len,

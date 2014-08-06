@@ -45,7 +45,7 @@
 #include "table.h"
 #include "../btcoexist/rtl_btc.h"
 
-void rtl8821ae_init_aspm_vars(struct ieee80211_hw *hw)
+static void rtl8821ae_init_aspm_vars(struct ieee80211_hw *hw)
 {
 	struct rtl_pci *rtlpci = rtl_pcidev(rtl_pcipriv(hw));
 
@@ -279,7 +279,7 @@ bool rtl8821ae_get_btc_status(void)
 	return true;
 }
 
-struct rtl_hal_ops rtl8821ae_hal_ops = {
+static struct rtl_hal_ops rtl8821ae_hal_ops = {
 	.init_sw_vars = rtl8821ae_init_sw_vars,
 	.deinit_sw_vars = rtl8821ae_deinit_sw_vars,
 	.read_eeprom_info = rtl8821ae_read_eeprom_info,
@@ -328,7 +328,7 @@ struct rtl_hal_ops rtl8821ae_hal_ops = {
 	.add_wowlan_pattern = rtl8821ae_add_wowlan_pattern,
 };
 
-struct rtl_mod_params rtl8821ae_mod_params = {
+static struct rtl_mod_params rtl8821ae_mod_params = {
 	.sw_crypto = false,
 	.inactiveps = true,/* true, */
 	.swctrl_lps = false,
@@ -337,7 +337,7 @@ struct rtl_mod_params rtl8821ae_mod_params = {
 	.debug = DBG_EMERG,
 };
 
-struct rtl_hal_cfg rtl8821ae_hal_cfg = {
+static struct rtl_hal_cfg rtl8821ae_hal_cfg = {
 	.bar_id = 2,
 	.write_readback = true,
 	.name = "rtl8821ae_pci",
@@ -468,7 +468,7 @@ MODULE_PARM_DESC(fwlps, "Set to 1 to use FW control power save (default 1)\n");
 MODULE_PARM_DESC(msi, "Set to 1 to use MSI interrupts mode (default 1)\n");
 MODULE_PARM_DESC(debug, "Set debug level (0-5) (default 0)");
 
-static const SIMPLE_DEV_PM_OPS(rtlwifi_pm_ops, rtl_pci_suspend, rtl_pci_resume);
+static SIMPLE_DEV_PM_OPS(rtlwifi_pm_ops, rtl_pci_suspend, rtl_pci_resume);
 
 static struct pci_driver rtl8821ae_driver = {
 	.name = KBUILD_MODNAME,
