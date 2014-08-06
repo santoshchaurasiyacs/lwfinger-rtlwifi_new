@@ -156,12 +156,12 @@ static int _rtl92d_fw_free_to_go(struct ieee80211_hw *hw)
 		 (!(value32 & FWDL_ChkSum_rpt)));
 	if (counter >= FW_8192D_POLLING_TIMEOUT_COUNT) {
 		RT_TRACE(COMP_ERR, DBG_EMERG,
-			 ("chksum report faill ! REG_MCUFWDL:0x%08x .\n",
+			 ("chksum report faill ! REG_MCUFWDL:0x%08x\n",
 				value32));
 		return -EIO;
 	}
 	RT_TRACE(COMP_FW, DBG_TRACE,
-		 ("Checksum report OK ! REG_MCUFWDL:0x%08x .\n", value32));
+		 ("Checksum report OK ! REG_MCUFWDL:0x%08x\n", value32));
 	value32 = rtl_read_dword(rtlpriv, REG_MCUFWDL);
 	value32 |= MCUFWDL_RDY;
 	rtl_write_dword(rtlpriv, REG_MCUFWDL, value32);
@@ -186,7 +186,7 @@ void rtl92d_firmware_selfreset(struct ieee80211_hw *hw)
 	}
 	RT_ASSERT((delay > 0), ("8051 reset failed!\n"));
 	RT_TRACE(COMP_FW, DBG_DMESG,
-		 ("  8051 reset success (%d) .\n", delay));
+		 ("  8051 reset success (%d)\n", delay));
 }
 
 static int _rtl92d_fw_init(struct ieee80211_hw *hw)
@@ -202,8 +202,7 @@ static int _rtl92d_fw_init(struct ieee80211_hw *hw)
 		if (rtlhal->interfaceindex == 0) {
 			if (rtl_read_byte(rtlpriv, FW_MAC0_ready) & mac0_ready) {
 				RT_TRACE(COMP_FW, DBG_DMESG,
-					 ("Polling FW ready success!! "
-					 "REG_MCUFWDL:0x%x .\n",
+					 ("Polling FW ready success!! REG_MCUFWDL:0x%x\n",
 					  rtl_read_byte(rtlpriv, FW_MAC0_ready)));
 				return 0;
 			}
@@ -211,8 +210,7 @@ static int _rtl92d_fw_init(struct ieee80211_hw *hw)
 		} else {
 			if (rtl_read_byte(rtlpriv, FW_MAC1_ready) & mac1_ready) {
 				RT_TRACE(COMP_FW, DBG_DMESG,
-					 ("Polling FW ready success!! "
-					  "REG_MCUFWDL:0x%x .\n",
+					 ("Polling FW ready success!! REG_MCUFWDL:0x%x\n",
 					  rtl_read_byte(rtlpriv, FW_MAC1_ready)));
 				return 0;
 			}
@@ -222,15 +220,15 @@ static int _rtl92d_fw_init(struct ieee80211_hw *hw)
 	} while (counter++ < POLLING_READY_TIMEOUT_COUNT);
 	if (rtlhal->interfaceindex == 0) {
 		RT_TRACE(COMP_FW, DBG_DMESG,
-			 ("Polling FW ready fail!! MAC0 FW init not ready:0x%x .\n",
+			 ("Polling FW ready fail!! MAC0 FW init not ready:0x%x\n",
 			  rtl_read_byte(rtlpriv, FW_MAC0_ready)));
 	} else {
 		RT_TRACE(COMP_FW, DBG_DMESG,
-			 ("Polling FW ready fail!! MAC1 FW init not ready:0x%x .\n",
+			 ("Polling FW ready fail!! MAC1 FW init not ready:0x%x\n",
 			  rtl_read_byte(rtlpriv, FW_MAC1_ready)));
 	}
 	RT_TRACE(COMP_FW, DBG_DMESG,
-		 ("Polling FW ready fail!! REG_MCUFWDL:0x%08ul .\n",
+		 ("Polling FW ready fail!! REG_MCUFWDL:0x%08x\n",
 		  rtl_read_dword(rtlpriv, REG_MCUFWDL)));
 	return -1;
 
@@ -381,7 +379,7 @@ void _rtl92d_fill_h2c_command(struct ieee80211_hw *hw,
 		if (rtlhal->h2c_setinprogress) {
 			RT_TRACE(COMP_CMD, DBG_LOUD,
 				 ("H2C set in progress! Wait to set.."
-				  "element_id(%d).\n", element_id));
+				  "element_id(%d)\n", element_id));
 
 			while (rtlhal->h2c_setinprogress) {
 				spin_unlock_irqrestore(&rtlpriv->locks.h2c_lock, flag);
@@ -453,7 +451,7 @@ void _rtl92d_fill_h2c_command(struct ieee80211_hw *hw,
 		if (!isfw_read) {
 			RT_TRACE(COMP_CMD, DBG_LOUD,
 				 ("Write H2C register BOX[%d] fail!!!!! "
-				  "Fw do not read.\n", boxnum));
+				  "Fw do not read\n", boxnum));
 			break;
 		}
 		memset(boxcontent, 0, sizeof(boxcontent));
@@ -767,14 +765,14 @@ void rtl92d_set_fw_rsvdpagepkt(struct ieee80211_hw *hw, bool b_dl_finished)
 		b_dlok = true;
 	if (b_dlok) {
 		RT_TRACE(COMP_POWER, DBG_LOUD,
-			("Set RSVD page location to Fw.\n"));
+			("Set RSVD page location to Fw\n"));
 		RT_PRINT_DATA(rtlpriv, COMP_CMD, DBG_DMESG,
 			"H2C_RSVDPAGE:\n", u1RsvdPageLoc, 3);
 		rtl92d_fill_h2c_cmd(hw, H2C_RSVDPAGE,
 			sizeof(u1RsvdPageLoc), u1RsvdPageLoc);
 	} else
 		RT_TRACE(COMP_ERR, DBG_WARNING,
-		("Set RSVD page location to Fw FAIL!!!!!!.\n"));
+		("Set RSVD page location to Fw FAIL!!!!!!\n"));
 }
 
 void rtl92d_set_fw_joinbss_report_cmd(struct ieee80211_hw *hw, u8 mstatus)
