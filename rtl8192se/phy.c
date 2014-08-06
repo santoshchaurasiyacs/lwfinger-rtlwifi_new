@@ -450,7 +450,7 @@ static bool _rtl92s_phy_sw_chnl_step_by_step(struct ieee80211_hw *hw,
 			}
 			break;
 		default:
-			RT_TRACE(COMP_ERR, DBG_EMERG,
+			RT_TRACE(COMP_ERR, DBG_LOUD,
 				 ("switch case not process\n"));
 			break;
 		}
@@ -660,7 +660,7 @@ bool rtl92s_phy_set_rf_power_state(struct ieee80211_hw *hw,
 			_rtl92se_phy_set_rf_sleep(hw);
 	    break;
 	default:
-		RT_TRACE(COMP_ERR, DBG_EMERG, ("switch case not process\n"));
+		RT_TRACE(COMP_ERR, DBG_LOUD, ("switch case not process\n"));
 		bresult = false;
 		break;
 	}

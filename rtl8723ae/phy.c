@@ -712,16 +712,8 @@ bool rtl8723e_phy_config_rf_with_headerfile(struct ieee80211_hw *hw,
 		}
 		break;
 	case RF90_PATH_B:
-		RT_TRACE(COMP_ERR, DBG_EMERG,
-			 ("switch case not process\n"));
-		break;
 	case RF90_PATH_C:
-		RT_TRACE(COMP_ERR, DBG_EMERG,
-			 ("switch case not process\n"));
-		break;
 	case RF90_PATH_D:
-		RT_TRACE(COMP_ERR, DBG_EMERG,
-			 ("switch case not process\n"));
 		break;
 	}
 	return true;
@@ -1329,7 +1321,7 @@ static bool _rtl8723e_phy_sw_chnl_step_by_step(struct ieee80211_hw *hw,
 			_rtl8723e_phy_sw_rf_seting(hw, channel);
 			break;
 		default:
-			RT_TRACE(COMP_ERR, DBG_EMERG,
+			RT_TRACE(COMP_ERR, DBG_LOUD,
 				 ("switch case not process\n"));
 			break;
 		}
@@ -2375,7 +2367,7 @@ bool rtl8723e_phy_set_io_cmd(struct ieee80211_hw *hw, enum io_type iotype)
 			b_postprocessing = true;
 			break;
 		default:
-			RT_TRACE(COMP_ERR, DBG_EMERG,
+			RT_TRACE(COMP_ERR, DBG_LOUD,
 				 ("switch case not process\n"));
 			break;
 		}
@@ -2411,7 +2403,7 @@ static void rtl8723e_phy_set_io(struct ieee80211_hw *hw)
 		rtl8723e_dm_write_dig(hw);
 		break;
 	default:
-		RT_TRACE(COMP_ERR, DBG_EMERG,
+		RT_TRACE(COMP_ERR, DBG_LOUD,
 			 ("switch case not process\n"));
 		break;
 	}
@@ -2562,7 +2554,7 @@ static bool _rtl8723e_phy_set_rf_power_state(struct ieee80211_hw *hw,
 			break;
 		}
 	default:
-		RT_TRACE(COMP_ERR, DBG_EMERG,
+		RT_TRACE(COMP_ERR, DBG_LOUD,
 			 ("switch case not process\n"));
 		bresult = false;
 		break;

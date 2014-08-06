@@ -993,10 +993,7 @@ bool rtl92d_phy_config_rf_with_headerfile(struct ieee80211_hw *hw,
 		}
 		break;
 	case RF90_PATH_C:
-		RT_TRACE(COMP_ERR, DBG_EMERG, ("switch case not process\n"));
-		break;
 	case RF90_PATH_D:
-		RT_TRACE(COMP_ERR, DBG_EMERG, ("switch case not process\n"));
 		break;
 	}
 	return true;
@@ -3121,7 +3118,7 @@ static bool _rtl92d_phy_sw_chnl_step_by_step(struct ieee80211_hw *hw,
 			rtl92d_phy_reload_iqk_setting(hw, channel);
 			break;
 		default:
-			RT_TRACE(COMP_ERR, DBG_EMERG,
+			RT_TRACE(COMP_ERR, DBG_LOUD,
 				 ("switch case not process\n"));
 			break;
 		}
@@ -3232,7 +3229,7 @@ static void rtl92d_phy_set_io(struct ieee80211_hw *hw)
 		rtl92d_dm_write_dig(hw);
 		break;
 	default:
-		RT_TRACE(COMP_ERR, DBG_EMERG,
+		RT_TRACE(COMP_ERR, DBG_LOUD,
 			 ("switch case not process\n"));
 		break;
 	}
@@ -3263,7 +3260,7 @@ bool rtl92d_phy_set_io_cmd(struct ieee80211_hw *hw, enum io_type iotype)
 			b_postprocessing = true;
 			break;
 		default:
-			RT_TRACE(COMP_ERR, DBG_EMERG,
+			RT_TRACE(COMP_ERR, DBG_LOUD,
 				 ("switch case not process\n"));
 			break;
 		}
@@ -3445,7 +3442,7 @@ bool rtl92d_phy_set_rf_power_state(struct ieee80211_hw *hw,
 		_rtl92d_phy_set_rfsleep(hw);
 		break;
 	default:
-		RT_TRACE(COMP_ERR, DBG_EMERG, ("switch case not process\n"));
+		RT_TRACE(COMP_ERR, DBG_LOUD, ("switch case not process\n"));
 		bresult = false;
 		break;
 	}

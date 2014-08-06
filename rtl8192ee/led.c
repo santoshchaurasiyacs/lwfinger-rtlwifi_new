@@ -65,7 +65,7 @@ void rtl92ee_sw_led_on(struct ieee80211_hw *hw, struct rtl_led *pled)
 
 		break;
 	default:
-		RT_TRACE(COMP_ERR, DBG_EMERG,
+		RT_TRACE(COMP_ERR, DBG_LOUD,
 			 ("switch case not process\n"));
 		break;
 	}
@@ -95,7 +95,7 @@ void rtl92ee_sw_led_off(struct ieee80211_hw *hw, struct rtl_led *pled)
 
 		break;
 	default:
-		RT_TRACE(COMP_ERR, DBG_EMERG,
+		RT_TRACE(COMP_ERR, DBG_LOUD,
 			 ("switch case not process\n"));
 		break;
 	}

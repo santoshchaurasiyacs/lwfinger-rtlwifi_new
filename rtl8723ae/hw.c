@@ -143,7 +143,7 @@ void rtl8723e_get_hw_reg(struct ieee80211_hw *hw, u8 variable, u8 *val)
 			break;
 		}
 	default:
-		RT_TRACE(COMP_ERR, DBG_EMERG,
+		RT_TRACE(COMP_ERR, DBG_LOUD,
 			 ("switch case not process\n"));
 		break;
 	}
@@ -366,7 +366,7 @@ void rtl8723e_set_hw_reg(struct ieee80211_hw *hw, u8 variable, u8 *val)
 					acm_ctrl &= (~AcmHw_BeqEn);
 					break;
 				default:
-					RT_TRACE(COMP_ERR, DBG_EMERG,
+					RT_TRACE(COMP_ERR, DBG_LOUD,
 						 ("switch case not process\n"));
 					break;
 				}
@@ -545,7 +545,7 @@ void rtl8723e_set_hw_reg(struct ieee80211_hw *hw, u8 variable, u8 *val)
 			 break;
 		}
 	default:
-		RT_TRACE(COMP_ERR, DBG_EMERG, ("switch case not process\n"));
+		RT_TRACE(COMP_ERR, DBG_LOUD, ("switch case not process\n"));
 		break;
 	}
 }
@@ -2378,8 +2378,8 @@ void rtl8723e_set_key(struct ieee80211_hw *hw, u32 key_index,
 			enc_algo = CAM_AES;
 			break;
 		default:
-			RT_TRACE(COMP_ERR, DBG_EMERG, ("switch case "
-								"not process\n"));
+			RT_TRACE(COMP_ERR, DBG_LOUD,
+				 ("switch case not process\n"));
 			enc_algo = CAM_TKIP;
 			break;
 		}

@@ -824,18 +824,9 @@ bool rtl88e_phy_config_rf_with_headerfile(struct ieee80211_hw *hw,
 			_rtl8188e_config_rf_radio_a(hw, 0x52, 0x7E4BD);
 
 		break;
-
 	case RF90_PATH_B:
-		RT_TRACE(COMP_ERR, DBG_EMERG,
-			 ("switch case not process\n"));
-		break;
 	case RF90_PATH_C:
-		RT_TRACE(COMP_ERR, DBG_EMERG,
-			 ("switch case not process\n"));
-		break;
 	case RF90_PATH_D:
-		RT_TRACE(COMP_ERR, DBG_EMERG,
-			 ("switch case not process\n"));
 		break;
 	}
 	return true;
@@ -1381,7 +1372,7 @@ static bool _rtl88e_phy_sw_chnl_step_by_step(struct ieee80211_hw *hw,
 			}
 			break;
 		default:
-			RT_TRACE(COMP_ERR, DBG_EMERG,
+			RT_TRACE(COMP_ERR, DBG_LOUD,
 				 ("switch case not process\n"));
 			break;
 		}
@@ -2180,8 +2171,8 @@ bool rtl88e_phy_set_io_cmd(struct ieee80211_hw *hw, enum io_type iotype)
 			b_postprocessing = true;
 			break;
 		default:
-			RT_TRACE(COMP_ERR, DBG_EMERG,
-				 ("switch case not process\n"));
+				RT_TRACE(COMP_ERR, DBG_LOUD,
+					 ("switch case not process\n"));
 			break;
 		}
 	} while (false);
@@ -2217,7 +2208,7 @@ static void rtl88e_phy_set_io(struct ieee80211_hw *hw)
 		rtl_set_bbreg(hw, RCCK0_CCA, 0xff0000, 0x40);
 		break;
 	default:
-		RT_TRACE(COMP_ERR, DBG_EMERG,
+		RT_TRACE(COMP_ERR, DBG_LOUD,
 			 ("switch case not process\n"));
 		break;
 	}
@@ -2393,7 +2384,7 @@ static bool _rtl88ee_phy_set_rf_power_state(struct ieee80211_hw *hw,
 			break;
 		}
 	default:
-		RT_TRACE(COMP_ERR, DBG_EMERG,
+		RT_TRACE(COMP_ERR, DBG_LOUD,
 			 ("switch case not process\n"));
 		bresult = false;
 		break;
