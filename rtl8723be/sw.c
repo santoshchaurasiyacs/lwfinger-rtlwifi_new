@@ -99,7 +99,7 @@ int rtl8723be_init_sw_vars(struct ieee80211_hw *hw)
 	char *fw_name = NULL;
 
 	rtl8723be_bt_reg_init(hw);
-	rtlpci->msi_support = true;
+	rtlpci->msi_support = rtlpriv->cfg->mod_params->msi_support;
 	rtlpriv->btcoexist.btc_ops = rtl_btc_get_ops_pointer();
 
 	rtlpriv->dm.dm_initialgain_enable = 1;
@@ -153,6 +153,8 @@ int rtl8723be_init_sw_vars(struct ieee80211_hw *hw)
 				      HSIMR_RON_INT_EN	|
 				      0);
 
+	/* for debug level */
+	rtlpriv->dbg.global_debuglevel = rtlpriv->cfg->mod_params->debug;
 	/* for LPS & IPS */
 	rtlpriv->psc.inactiveps = rtlpriv->cfg->mod_params->inactiveps;
 	rtlpriv->psc.swctrl_lps = rtlpriv->cfg->mod_params->swctrl_lps;
@@ -389,25 +391,24 @@ MODULE_DESCRIPTION("Realtek 8723BE 802.11n PCI wireless");
 MODULE_FIRMWARE("rtlwifi/rtl8723befw.bin");
 
 module_param_named(swenc, rtl8723be_mod_params.sw_crypto, bool, 0444);
+module_param_named(debug, rtl8723be_mod_params.debug, int, 0444);
 module_param_named(ips, rtl8723be_mod_params.inactiveps, bool, 0444);
 module_param_named(swlps, rtl8723be_mod_params.swctrl_lps, bool, 0444);
 module_param_named(fwlps, rtl8723be_mod_params.fwctrl_lps, bool, 0444);
 MODULE_PARM_DESC(swenc, "using hardware crypto (default 0 [hardware])\n");
 MODULE_PARM_DESC(ips, "using no link power save (default 1 is open)\n");
 MODULE_PARM_DESC(fwlps, "using linked fw control power save (default 1 is open)\n");
+MODULE_PARM_DESC(msi, "Set to 1 to use MSI interrupts mode (default 0)\n");
+MODULE_PARM_DESC(debug, "Set debug level (0-5) (default 0)");
 
 static const SIMPLE_DEV_PM_OPS(rtlwifi_pm_ops, rtl_pci_suspend, rtl_pci_resume);
-
 
 static struct pci_driver rtl8723be_driver = {
 	.name = KBUILD_MODNAME,
 	.id_table = rtl8723be_pci_ids,
 	.probe = rtl_pci_probe,
 	.remove = rtl_pci_disconnect,
-
 	.driver.pm = &rtlwifi_pm_ops,
-
-
 };
 
 static int __init rtl8723be_module_init(void)

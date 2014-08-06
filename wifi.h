@@ -2031,6 +2031,9 @@ struct rtl_mod_params {
 	/* default: 0 = using hardware encryption */
 	bool sw_crypto;
 
+	/* default: 0 = DBG_EMERG (0)*/
+	int debug;
+
 	/* default: 1 = using no linked power save */
 	bool inactiveps;
 
@@ -2039,6 +2042,10 @@ struct rtl_mod_params {
 
 	/* default: 1 = using linked fw power save */
 	bool fwctrl_lps;
+
+	/* default: 0 = not using MSI interrupts mode */
+	/* submodules should set their own default value */
+	bool msi_support;
 };
 
 struct rtl_hal_cfg {
