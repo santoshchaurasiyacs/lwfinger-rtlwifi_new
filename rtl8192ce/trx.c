@@ -78,7 +78,7 @@ static int _rtl92ce_rate_mapping(struct ieee80211_hw *hw,
 	if (false == isht) {
 		/*modified by binxia*/
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,10,0))
-		if (IEEE80211_BAND_2GHZ == hw->conf.chandef.chan->band) {	/*modified by binxia*/	
+		if (IEEE80211_BAND_2GHZ == hw->conf.chandef.chan->band) {	/*modified by binxia*/
 #else
 		if (IEEE80211_BAND_2GHZ == hw->conf.channel->band) {
 #endif

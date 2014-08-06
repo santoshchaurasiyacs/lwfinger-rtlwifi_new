@@ -1241,7 +1241,7 @@ static u64 rtl_op_get_tsf(struct ieee80211_hw *hw)
 }
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,2,0))
-static void rtl_op_set_tsf(struct ieee80211_hw *hw, 
+static void rtl_op_set_tsf(struct ieee80211_hw *hw,
 			   struct ieee80211_vif *vif, u64 tsf)
 #else
 static void rtl_op_set_tsf(struct ieee80211_hw *hw, u64 tsf)

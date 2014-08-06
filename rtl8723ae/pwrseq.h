@@ -204,7 +204,7 @@
 
 
 /* format */
-/* { offset, cut_msk, fab_msk|interface_msk, base|cmd, msk, value }, */	
+/* { offset, cut_msk, fab_msk|interface_msk, base|cmd, msk, value }, */
 #define RTL8723A_TRANS_PDN_TO_CARDEMU	\
 	{0x0005, PWR_CUT_ALL_MSK, PWR_FAB_ALL_MSK, \
 		PWR_INTF_ALL_MSK, PWR_BASEADDR_MAC,\

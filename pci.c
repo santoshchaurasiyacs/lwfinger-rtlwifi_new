@@ -1571,7 +1571,7 @@ int rtl_pci_reset_trx_ring(struct ieee80211_hw *hw)
 }
 
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(3,7,0))
-static bool rtl_pci_tx_chk_waitq_insert(struct ieee80211_hw *hw, 
+static bool rtl_pci_tx_chk_waitq_insert(struct ieee80211_hw *hw,
 					struct sk_buff *skb)
 #else
 static bool rtl_pci_tx_chk_waitq_insert(struct ieee80211_hw *hw,

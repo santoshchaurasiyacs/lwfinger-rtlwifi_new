@@ -753,7 +753,7 @@ bool rtl8821ae_rx_query_desc(struct ieee80211_hw *hw,
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 15, 0))
 		rx_status->vht_flag |= RX_VHT_FLAG_80MHZ;
 #elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 8, 0))
-		rx_status->flag |= RX_FLAG_80MHZ;
+		rx_status->flag |= RX_FLAG_80MHZ;
 #else
 		;
 #endif
