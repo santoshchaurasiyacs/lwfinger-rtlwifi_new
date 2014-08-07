@@ -795,7 +795,7 @@ void rtl92ee_set_fw_rsvdpagepkt(struct ieee80211_hw *hw, bool b_dl_finished)
 }
 
 /*Shoud check FW support p2p or not.*/
-void rtl92ee_set_p2p_ctw_period_cmd(struct ieee80211_hw *hw, u8 ctwindow)
+static void rtl92ee_set_p2p_ctw_period_cmd(struct ieee80211_hw *hw, u8 ctwindow)
 {
 	u8 u1_ctwindow_period[1] = {ctwindow};
 
@@ -888,7 +888,7 @@ void rtl92ee_set_p2p_ps_offload_cmd(struct ieee80211_hw *hw, u8 p2p_ps_state)
 
 }
 
-void _rtl92ee_c2h_ra_report_handler(struct ieee80211_hw *hw,
+static void _rtl92ee_c2h_ra_report_handler(struct ieee80211_hw *hw,
 				    u8 *cmd_buf, u8 cmd_len)
 {
 	u8 rate = cmd_buf[0] & 0x3F;
@@ -897,7 +897,7 @@ void _rtl92ee_c2h_ra_report_handler(struct ieee80211_hw *hw,
 	rtl92ee_dm_dynamic_arfb_select(hw, rate, collision_state);
 }
 
-void _rtl92ee_c2h_content_parsing(struct ieee80211_hw *hw, u8 c2h_cmd_id,
+static void _rtl92ee_c2h_content_parsing(struct ieee80211_hw *hw, u8 c2h_cmd_id,
 				  u8 c2h_cmd_len, u8 *tmp_buf)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);

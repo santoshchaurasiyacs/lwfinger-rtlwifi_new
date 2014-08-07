@@ -423,7 +423,7 @@ static void _rtl92ee_phy_init_tx_power_by_rate(struct ieee80211_hw *hw)
 						     [band][rf][txnum][sec] = 0;
 }
 
-void _rtl92ee_phy_set_txpower_by_rate_base(struct ieee80211_hw *hw,
+static void _rtl92ee_phy_set_txpower_by_rate_base(struct ieee80211_hw *hw,
 					   u8 band, u8 path,
 					   u8 rate_section, u8 txnum, u8 value)
 {
@@ -460,7 +460,7 @@ void _rtl92ee_phy_set_txpower_by_rate_base(struct ieee80211_hw *hw,
 	}
 }
 
-u8 _rtl92ee_phy_get_txpower_by_rate_base(struct ieee80211_hw *hw, u8 band,
+static u8 _rtl92ee_phy_get_txpower_by_rate_base(struct ieee80211_hw *hw, u8 band,
 					 u8 path, u8 txnum, u8 rate_section)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
@@ -498,7 +498,7 @@ u8 _rtl92ee_phy_get_txpower_by_rate_base(struct ieee80211_hw *hw, u8 band,
 	return value;
 }
 
-void _rtl92ee_phy_store_txpower_by_rate_base(struct ieee80211_hw *hw)
+static void _rtl92ee_phy_store_txpower_by_rate_base(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_phy *rtlphy = &(rtlpriv->phy);
@@ -538,7 +538,7 @@ void _rtl92ee_phy_store_txpower_by_rate_base(struct ieee80211_hw *hw)
 	}
 }
 
-void _phy_convert_txpower_dbm_to_relative_value(u32 *data, u8 start,
+static void _phy_convert_txpower_dbm_to_relative_value(u32 *data, u8 start,
 						u8 end, u8 base)
 {
 	char i = 0;
@@ -562,7 +562,7 @@ void _phy_convert_txpower_dbm_to_relative_value(u32 *data, u8 start,
 	*data = temp_data;
 }
 
-void _rtl92ee_phy_convert_txpower_dbm_to_relative_value(struct ieee80211_hw *hw)
+static void _rtl92ee_phy_convert_txpower_dbm_to_relative_value(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_phy *rtlphy = &(rtlpriv->phy);
@@ -1197,7 +1197,7 @@ static u8 _rtl92ee_phy_get_ratesection_intxpower_byrate(enum radio_path path,
 	return rate_section;
 }
 
-u8 _rtl92ee_get_txpower_by_rate(struct ieee80211_hw *hw,
+static u8 _rtl92ee_get_txpower_by_rate(struct ieee80211_hw *hw,
 				enum band_type band,
 				enum radio_path rf, u8 rate)
 {
@@ -1370,7 +1370,7 @@ static u8 _rtl92ee_get_txpower_index(struct ieee80211_hw *hw,
 	return tx_power;
 }
 
-void _rtl92ee_set_txpower_index(struct ieee80211_hw *hw, u8 pwr_idx,
+static void _rtl92ee_set_txpower_index(struct ieee80211_hw *hw, u8 pwr_idx,
 				enum radio_path rfpath, u8 rate)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
@@ -1630,7 +1630,7 @@ void _rtl92ee_set_txpower_index(struct ieee80211_hw *hw, u8 pwr_idx,
     }
 }
 
-void rtl92ee_phy_set_txpower_index_by_rate_array(struct ieee80211_hw *hw,
+static void rtl92ee_phy_set_txpower_index_by_rate_array(struct ieee80211_hw *hw,
 						 enum radio_path rfpath, u8 bw,
 						 u8 channel, u8 *rates, u8 size)
 {
@@ -1643,7 +1643,7 @@ void rtl92ee_phy_set_txpower_index_by_rate_array(struct ieee80211_hw *hw,
 	}
 }
 
-void rtl92ee_phy_set_txpower_index_by_rate_section(struct ieee80211_hw *hw,
+static void rtl92ee_phy_set_txpower_index_by_rate_section(struct ieee80211_hw *hw,
 						   enum radio_path rfpath,
 						   u8 channel,
 						   enum rate_section section)
@@ -2896,7 +2896,7 @@ static void _rtl92ee_phy_set_rfpath_switch(struct ieee80211_hw *hw,
 #undef IQK_ADDA_REG_NUM
 #undef IQK_DELAY_TIME
 
-u8 rtl92ee_get_rightchnlplace_for_iqk(u8 chnl)
+static u8 rtl92ee_get_rightchnlplace_for_iqk(u8 chnl)
 {
 	u8 channel_all[59] = {
 		1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14,

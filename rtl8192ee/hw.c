@@ -101,8 +101,8 @@ static void _rtl92ee_return_beacon_queue_skb(struct ieee80211_hw *hw)
 		struct sk_buff *skb = __skb_dequeue(&ring->queue);
 
 		pci_unmap_single(rtlpci->pdev,
-				 le32_to_cpu(rtlpriv->cfg->ops->get_desc(
-				 (u8 *) entry, true, HW_DESC_TXBUFF_ADDR)),
+				 rtlpriv->cfg->ops->get_desc(
+				 (u8 *) entry, true, HW_DESC_TXBUFF_ADDR),
 				 skb->len, PCI_DMA_TODEVICE);
 		kfree_skb(skb);
 		ring->idx = (ring->idx + 1) % ring->entries;
@@ -369,7 +369,7 @@ void rtl92ee_get_hw_reg(struct ieee80211_hw *hw, u8 variable, u8 *val)
 	}
 }
 
-void _rtl92ee_download_rsvd_page(struct ieee80211_hw *hw)
+static void _rtl92ee_download_rsvd_page(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	u8 tmp_regcr, tmp_reg422;
@@ -665,7 +665,7 @@ void rtl92ee_set_hw_reg(struct ieee80211_hw *hw, u8 variable, u8 *val)
 		u8 mstatus = (*(u8 *) val);
 
 		if (mstatus == RT_MEDIA_CONNECT) {
-			rtlpriv->cfg->ops->set_hw_reg(hw, HW_VAR_AID, 0);
+			rtlpriv->cfg->ops->set_hw_reg(hw, HW_VAR_AID, NULL);
 			_rtl92ee_download_rsvd_page(hw);
 		}
 		rtl92ee_set_fw_media_status_rpt_cmd(hw, mstatus);
@@ -1159,18 +1159,6 @@ void rtl92ee_enable_hw_security_config(struct ieee80211_hw *hw)
 	rtlpriv->cfg->ops->set_hw_reg(hw, HW_VAR_WPA_CONFIG, &sec_reg_value);
 
 }
-void rtl92ee_allow_error_packet(struct ieee80211_hw *hw , bool b_allow_err_pkt)
-{
-	struct rtl_priv *rtlpriv = rtl_priv(hw);
-	struct rtl_pci *rtlpci = rtl_pcidev(rtl_pcipriv(hw));
-
-	if (b_allow_err_pkt)
-		rtlpci->receive_config |= (RCR_ACRC32 | RCR_AICV);
-	else
-		rtlpci->receive_config &= ~(RCR_ACRC32 | RCR_AICV);
-
-	rtl_write_dword(rtlpriv, REG_RCR, rtlpci->receive_config);
-}
 
 int rtl92ee_hw_init(struct ieee80211_hw *hw)
 {
@@ -1481,7 +1469,7 @@ void rtl92ee_set_qos(struct ieee80211_hw *hw, int aci)
 	}
 }
 
-void rtl92ee_clear_interrupt(struct ieee80211_hw *hw)
+static void rtl92ee_clear_interrupt(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	u32 tmp;
@@ -2335,8 +2323,8 @@ static void rtl92ee_update_hal_rate_mask(struct ieee80211_hw *hw,
 
 	RT_TRACE(COMP_RATR, DBG_DMESG,
 		 ("ratr_bitmap :%x\n", ratr_bitmap));
-	*(u32 *) &rate_mask = EF4BYTE((ratr_bitmap & 0x0fffffff) |
-				       (ratr_index << 28));
+	*(u32 *) &rate_mask = (ratr_bitmap & 0x0fffffff) |
+				       (ratr_index << 28);
 	rate_mask[0] = macid;
 	rate_mask[1] = ratr_index | (b_shortgi ? 0x80 : 0x00);
 	rate_mask[2] = b_curtxbw_40mhz;

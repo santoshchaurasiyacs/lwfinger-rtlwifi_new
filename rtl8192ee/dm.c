@@ -461,7 +461,7 @@ void rtl92ee_dm_write_dig(struct ieee80211_hw *hw, u8 current_igi)
 	dm_dig.cur_igvalue = current_igi;
 }
 
-void rtl92ee_rssi_dump_to_register(struct ieee80211_hw *hw)
+static void rtl92ee_rssi_dump_to_register(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	rtl_write_byte(rtlpriv, RA_RSSIDUMP,
@@ -489,7 +489,7 @@ void rtl92ee_rssi_dump_to_register(struct ieee80211_hw *hw)
 	rtl_write_word(rtlpriv, RB_CFOLONGDUMP, rtlpriv->stats.rx_cfo_tail[1]);
 }
 
-void rtl92ee_dm_find_minimum_rssi(struct ieee80211_hw *hw)
+static void rtl92ee_dm_find_minimum_rssi(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_dig *rtl_dm_dig = &(rtlpriv->dm.dm_digtable);
@@ -591,7 +591,7 @@ static void rtl92ee_dm_check_rssi_monitor(struct ieee80211_hw *hw)
 	dm_dig.rssi_val_min = dm->dm_digtable.min_undecorated_pwdb_for_dm;
 }
 
-void rtl92ee_dm_init_primary_cca_check(struct ieee80211_hw *hw)
+static void rtl92ee_dm_init_primary_cca_check(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_hal *rtlhal = rtl_hal(rtlpriv);
@@ -606,7 +606,7 @@ void rtl92ee_dm_init_primary_cca_check(struct ieee80211_hw *hw)
 	primarycca->mf_state = 0;
 }
 
-bool rtl92ee_dm_is_edca_turbo_disable(struct ieee80211_hw *hw)
+static bool rtl92ee_dm_is_edca_turbo_disable(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 
@@ -677,7 +677,7 @@ dm_CheckEdcaTurbo_EXIT:
 	last_rxok_cnt = rtlpriv->stats.rxbytesunicast;
 }
 
-void rtl92ee_dm_dynamic_edcca(struct ieee80211_hw *hw)
+static void rtl92ee_dm_dynamic_edcca(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	u8 reg_c50 , reg_c58;
@@ -706,12 +706,12 @@ void rtl92ee_dm_dynamic_edcca(struct ieee80211_hw *hw)
 	}
 }
 
-void rtl92ee_dm_adaptivity(struct ieee80211_hw *hw)
+static void rtl92ee_dm_adaptivity(struct ieee80211_hw *hw)
 {
 	rtl92ee_dm_dynamic_edcca(hw);
 }
 
-void rtl92ee_dm_write_dynamic_cca(struct ieee80211_hw *hw, u8 cur_mf_state)
+static void rtl92ee_dm_write_dynamic_cca(struct ieee80211_hw *hw, u8 cur_mf_state)
 {
 	struct dynamic_primary_cca *primarycca = &(rtl_priv(hw)->primarycca);
 
@@ -722,7 +722,7 @@ void rtl92ee_dm_write_dynamic_cca(struct ieee80211_hw *hw, u8 cur_mf_state)
 	primarycca->mf_state = cur_mf_state;
 }
 
-void rtl92ee_dm_dynamic_primary_cca_ckeck(struct ieee80211_hw *hw)
+static void rtl92ee_dm_dynamic_primary_cca_ckeck(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct false_alarm_statistics *falsealm_cnt = &(rtlpriv->falsealm_cnt);
@@ -827,7 +827,7 @@ void rtl92ee_dm_dynamic_primary_cca_ckeck(struct ieee80211_hw *hw)
 	}
 }
 
-void rtl92ee_dm_dynamic_atc_switch(struct ieee80211_hw *hw)
+static void rtl92ee_dm_dynamic_atc_switch(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_dm *rtldm = rtl_dm(rtl_priv(hw));
@@ -975,7 +975,7 @@ void rtl92ee_dm_init_rate_adaptive_mask(struct ieee80211_hw *hw)
 
 }
 
-bool _rtl92ee_dm_ra_state_check(struct ieee80211_hw *hw,
+static bool _rtl92ee_dm_ra_state_check(struct ieee80211_hw *hw,
 				s32 rssi, u8 *ratr_state)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
@@ -1027,7 +1027,7 @@ bool _rtl92ee_dm_ra_state_check(struct ieee80211_hw *hw,
 	return false;
 }
 
-void rtl92ee_dm_refresh_rate_adaptive_mask(struct ieee80211_hw *hw)
+static void rtl92ee_dm_refresh_rate_adaptive_mask(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_hal *rtlhal = rtl_hal(rtl_priv(hw));
@@ -1074,7 +1074,7 @@ void rtl92ee_dm_refresh_rate_adaptive_mask(struct ieee80211_hw *hw)
 	}
 }
 
-void rtl92ee_dm_init_dynamic_atc_switch(struct ieee80211_hw *hw)
+static void rtl92ee_dm_init_dynamic_atc_switch(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 

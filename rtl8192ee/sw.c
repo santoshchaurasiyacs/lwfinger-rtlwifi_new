@@ -47,7 +47,7 @@
 #include "../btcoexist/rtl_btc.h"
 
 
-void rtl92ee_init_aspm_vars(struct ieee80211_hw *hw)
+static void rtl92ee_init_aspm_vars(struct ieee80211_hw *hw)
 {
 	struct rtl_pci *rtlpci = rtl_pcidev(rtl_pcipriv(hw));
 
@@ -212,7 +212,7 @@ bool rtl92ee_get_btc_status(void)
 }
 
 
-struct rtl_hal_ops rtl8192ee_hal_ops = {
+static struct rtl_hal_ops rtl8192ee_hal_ops = {
 	.init_sw_vars = rtl92ee_init_sw_vars,
 	.deinit_sw_vars = rtl92ee_deinit_sw_vars,
 	.read_eeprom_info = rtl92ee_read_eeprom_info,
@@ -263,7 +263,7 @@ struct rtl_hal_ops rtl8192ee_hal_ops = {
 	.rx_command_packet = rtl92ee_rx_command_packet,
 };
 
-struct rtl_mod_params rtl92ee_mod_params = {
+static struct rtl_mod_params rtl92ee_mod_params = {
 	.sw_crypto = false,
 	.inactiveps = false,
 	.swctrl_lps = false,
@@ -272,7 +272,7 @@ struct rtl_mod_params rtl92ee_mod_params = {
 	.debug = DBG_EMERG,
 };
 
-struct rtl_hal_cfg rtl92ee_hal_cfg = {
+static struct rtl_hal_cfg rtl92ee_hal_cfg = {
 	.bar_id = 2,
 	.write_readback = true,
 	.name = "rtl92ee_pci",
@@ -395,7 +395,7 @@ MODULE_PARM_DESC(fwlps, "Set to 1 to use FW control power save (default 1)\n");
 MODULE_PARM_DESC(msi, "Set to 1 to use MSI interrupts mode (default 1)\n");
 MODULE_PARM_DESC(debug, "Set debug level (0-5) (default 0)");
 
-static const SIMPLE_DEV_PM_OPS(rtlwifi_pm_ops, rtl_pci_suspend, rtl_pci_resume);
+static SIMPLE_DEV_PM_OPS(rtlwifi_pm_ops, rtl_pci_suspend, rtl_pci_resume);
 
 static struct pci_driver rtl92ee_driver = {
 	.name = KBUILD_MODNAME,
