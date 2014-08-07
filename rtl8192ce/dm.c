@@ -150,33 +150,37 @@ static const u8 cckswing_table_ch14[CCK_TABLE_SIZE][8] = {
 
 static void rtl92c_dm_diginit(struct ieee80211_hw *hw)
 {
-	dm_digtable.dig_enable_flag = true;
-	dm_digtable.dig_ext_port_stage = DIG_EXT_PORT_STAGE_MAX;
-	dm_digtable.cur_igvalue = 0x20;
-	dm_digtable.pre_igvalue = 0x0;
-	dm_digtable.cursta_cstate = DIG_STA_DISCONNECT;
-	dm_digtable.presta_cstate = DIG_STA_DISCONNECT;
-	dm_digtable.curmultista_cstate = DIG_MULTISTA_DISCONNECT;
-	dm_digtable.rssi_lowthresh = DM_DIG_THRESH_LOW;
-	dm_digtable.rssi_highthresh = DM_DIG_THRESH_HIGH;
-	dm_digtable.fa_lowthresh = DM_FALSEALARM_THRESH_LOW;
-	dm_digtable.fa_highthresh = DM_FALSEALARM_THRESH_HIGH;
-	dm_digtable.rx_gain_max = DM_DIG_MAX;
-	dm_digtable.rx_gain_min = DM_DIG_MIN;
-	dm_digtable.back_val = DM_DIG_BACKOFF_DEFAULT;
-	dm_digtable.back_range_max = DM_DIG_BACKOFF_MAX;
-	dm_digtable.back_range_min = DM_DIG_BACKOFF_MIN;
-	dm_digtable.pre_cck_pd_state = CCK_PD_STAGE_MAX;
-	dm_digtable.cur_cck_pd_state = CCK_PD_STAGE_MAX;
+	struct rtl_priv *rtlpriv = rtl_priv(hw);
+	struct dig_t *dm_digtable = &rtlpriv->dm_digtable;
+
+	dm_digtable->dig_enable_flag = true;
+	dm_digtable->dig_ext_port_stage = DIG_EXT_PORT_STAGE_MAX;
+	dm_digtable->cur_igvalue = 0x20;
+	dm_digtable->pre_igvalue = 0x0;
+	dm_digtable->cursta_cstate = DIG_STA_DISCONNECT;
+	dm_digtable->presta_cstate = DIG_STA_DISCONNECT;
+	dm_digtable->curmultista_cstate = DIG_MULTISTA_DISCONNECT;
+	dm_digtable->rssi_lowthresh = DM_DIG_THRESH_LOW;
+	dm_digtable->rssi_highthresh = DM_DIG_THRESH_HIGH;
+	dm_digtable->fa_lowthresh = DM_FALSEALARM_THRESH_LOW;
+	dm_digtable->fa_highthresh = DM_FALSEALARM_THRESH_HIGH;
+	dm_digtable->rx_gain_max = DM_DIG_MAX;
+	dm_digtable->rx_gain_min = DM_DIG_MIN;
+	dm_digtable->back_val = DM_DIG_BACKOFF_DEFAULT;
+	dm_digtable->back_range_max = DM_DIG_BACKOFF_MAX;
+	dm_digtable->back_range_min = DM_DIG_BACKOFF_MIN;
+	dm_digtable->pre_cck_pd_state = CCK_PD_STAGE_MAX;
+	dm_digtable->cur_cck_pd_state = CCK_PD_STAGE_MAX;
 }
 
 static u8 rtl92c_dm_initial_gain_min_pwdb(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
+	struct dig_t *dm_digtable = &rtlpriv->dm_digtable;
 	long rssi_val_min = 0;
 
-	if ((dm_digtable.curmultista_cstate == DIG_MULTISTA_CONNECT) &&
-	    (dm_digtable.cursta_cstate == DIG_STA_CONNECT)) {
+	if ((dm_digtable->curmultista_cstate == DIG_MULTISTA_CONNECT) &&
+	    (dm_digtable->cursta_cstate == DIG_STA_CONNECT)) {
 		if (rtlpriv->dm.entry_min_undec_sm_pwdb != 0)
 			rssi_val_min =
 			    (rtlpriv->dm.entry_min_undec_sm_pwdb >
@@ -185,10 +189,10 @@ static u8 rtl92c_dm_initial_gain_min_pwdb(struct ieee80211_hw *hw)
 			    rtlpriv->dm.entry_min_undec_sm_pwdb;
 		else
 			rssi_val_min = rtlpriv->dm.undec_sm_pwdb;
-	} else if (dm_digtable.cursta_cstate == DIG_STA_CONNECT ||
-		   dm_digtable.cursta_cstate == DIG_STA_BEFORE_CONNECT) {
+	} else if (dm_digtable->cursta_cstate == DIG_STA_CONNECT ||
+		   dm_digtable->cursta_cstate == DIG_STA_BEFORE_CONNECT) {
 		rssi_val_min = rtlpriv->dm.undec_sm_pwdb;
-	} else if (dm_digtable.curmultista_cstate ==
+	} else if (dm_digtable->curmultista_cstate ==
 		DIG_MULTISTA_CONNECT) {
 		rssi_val_min = rtlpriv->dm.entry_min_undec_sm_pwdb;
 	}
@@ -248,7 +252,8 @@ static void rtl92c_dm_false_alarm_counter_statistics(struct ieee80211_hw *hw)
 static void rtl92c_dm_ctrl_initgain_by_fa(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
-	u8 value_igi = dm_digtable.cur_igvalue;
+	struct dig_t *dm_digtable = &rtlpriv->dm_digtable;
+	u8 value_igi = dm_digtable->cur_igvalue;
 
 	if (rtlpriv->falsealm_cnt.cnt_all < DM_DIG_FA_TH0)
 		value_igi--;
@@ -265,123 +270,126 @@ static void rtl92c_dm_ctrl_initgain_by_fa(struct ieee80211_hw *hw)
 	if (rtlpriv->falsealm_cnt.cnt_all > 10000)
 		value_igi = 0x32;
 
-	dm_digtable.cur_igvalue = value_igi;
+	dm_digtable->cur_igvalue = value_igi;
 	rtl92c_dm_write_dig(hw);
 }
 
 static void rtl92c_dm_ctrl_initgain_by_rssi(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
+	struct dig_t *dm_digtable = &rtlpriv->dm_digtable;
 
-	if (rtlpriv->falsealm_cnt.cnt_all > dm_digtable.fa_highthresh) {
-		if ((dm_digtable.back_val - 2) <
-		    dm_digtable.back_range_min)
-			dm_digtable.back_val =
-			    dm_digtable.back_range_min;
+	if (rtlpriv->falsealm_cnt.cnt_all > dm_digtable->fa_highthresh) {
+		if ((dm_digtable->back_val - 2) <
+		    dm_digtable->back_range_min)
+			dm_digtable->back_val =
+			    dm_digtable->back_range_min;
 		else
-			dm_digtable.back_val -= 2;
-	} else if (rtlpriv->falsealm_cnt.cnt_all < dm_digtable.fa_lowthresh) {
-		if ((dm_digtable.back_val + 2) >
-		    dm_digtable.back_range_max)
-			dm_digtable.back_val =
-			    dm_digtable.back_range_max;
+			dm_digtable->back_val -= 2;
+	} else if (rtlpriv->falsealm_cnt.cnt_all < dm_digtable->fa_lowthresh) {
+		if ((dm_digtable->back_val + 2) >
+		    dm_digtable->back_range_max)
+			dm_digtable->back_val =
+			    dm_digtable->back_range_max;
 		else
-			dm_digtable.back_val += 2;
+			dm_digtable->back_val += 2;
 	}
 
-	if ((dm_digtable.rssi_val_min + 10 - dm_digtable.back_val) >
-	    dm_digtable.rx_gain_max)
-		dm_digtable.cur_igvalue = dm_digtable.rx_gain_max;
-	else if ((dm_digtable.rssi_val_min + 10 -
-		  dm_digtable.back_val) < dm_digtable.rx_gain_min)
-		dm_digtable.cur_igvalue = dm_digtable.rx_gain_min;
+	if ((dm_digtable->rssi_val_min + 10 - dm_digtable->back_val) >
+	    dm_digtable->rx_gain_max)
+		dm_digtable->cur_igvalue = dm_digtable->rx_gain_max;
+	else if ((dm_digtable->rssi_val_min + 10 -
+		  dm_digtable->back_val) < dm_digtable->rx_gain_min)
+		dm_digtable->cur_igvalue = dm_digtable->rx_gain_min;
 	else
-		dm_digtable.cur_igvalue = dm_digtable.rssi_val_min + 10 -
-		    dm_digtable.back_val;
+		dm_digtable->cur_igvalue = dm_digtable->rssi_val_min + 10 -
+		    dm_digtable->back_val;
 
 	RT_TRACE(COMP_DIG, DBG_TRACE,
 		 ("rssi_val_min = %x back_val %x\n",
-		  dm_digtable.rssi_val_min, dm_digtable.back_val));
+		  dm_digtable->rssi_val_min, dm_digtable->back_val));
 
 	rtl92c_dm_write_dig(hw);
 }
 
 static void rtl92c_dm_initial_gain_multi_sta(struct ieee80211_hw *hw)
 {
-	static u8 binitialized;
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
+	struct dig_t *dm_digtable = &rtlpriv->dm_digtable;
 	struct rtl_mac *mac = rtl_mac(rtl_priv(hw));
 	long rssi_strength = rtlpriv->dm.entry_min_undec_sm_pwdb;
 	bool b_multi_sta = false;
+	static u8 binitialized;
 
 	if (mac->opmode == NL80211_IFTYPE_ADHOC)
 		b_multi_sta = true;
 
-	if ((b_multi_sta == false) || (dm_digtable.cursta_cstate !=
+	if ((b_multi_sta == false) || (dm_digtable->cursta_cstate !=
 				       DIG_STA_DISCONNECT)) {
 		binitialized = false;
-		dm_digtable.dig_ext_port_stage = DIG_EXT_PORT_STAGE_MAX;
+		dm_digtable->dig_ext_port_stage = DIG_EXT_PORT_STAGE_MAX;
 		return;
 	} else if (binitialized == false) {
 		binitialized = true;
-		dm_digtable.dig_ext_port_stage = DIG_EXT_PORT_STAGE_0;
-		dm_digtable.cur_igvalue = 0x20;
+		dm_digtable->dig_ext_port_stage = DIG_EXT_PORT_STAGE_0;
+		dm_digtable->cur_igvalue = 0x20;
 		rtl92c_dm_write_dig(hw);
 	}
 
-	if (dm_digtable.curmultista_cstate == DIG_MULTISTA_CONNECT) {
-		if ((rssi_strength < dm_digtable.rssi_lowthresh) &&
-		    (dm_digtable.dig_ext_port_stage != DIG_EXT_PORT_STAGE_1)) {
+	if (dm_digtable->curmultista_cstate == DIG_MULTISTA_CONNECT) {
+		if ((rssi_strength < dm_digtable->rssi_lowthresh) &&
+		    (dm_digtable->dig_ext_port_stage != DIG_EXT_PORT_STAGE_1)) {
 
-			if (dm_digtable.dig_ext_port_stage ==
+			if (dm_digtable->dig_ext_port_stage ==
 			    DIG_EXT_PORT_STAGE_2) {
-				dm_digtable.cur_igvalue = 0x20;
+				dm_digtable->cur_igvalue = 0x20;
 				rtl92c_dm_write_dig(hw);
 			}
 
-			dm_digtable.dig_ext_port_stage = DIG_EXT_PORT_STAGE_1;
-		} else if (rssi_strength > dm_digtable.rssi_highthresh) {
-			dm_digtable.dig_ext_port_stage = DIG_EXT_PORT_STAGE_2;
+			dm_digtable->dig_ext_port_stage = DIG_EXT_PORT_STAGE_1;
+		} else if (rssi_strength > dm_digtable->rssi_highthresh) {
+			dm_digtable->dig_ext_port_stage = DIG_EXT_PORT_STAGE_2;
 			rtl92c_dm_ctrl_initgain_by_fa(hw);
 		}
-	} else if (dm_digtable.dig_ext_port_stage != DIG_EXT_PORT_STAGE_0) {
-		dm_digtable.dig_ext_port_stage = DIG_EXT_PORT_STAGE_0;
-		dm_digtable.cur_igvalue = 0x20;
+	} else if (dm_digtable->dig_ext_port_stage != DIG_EXT_PORT_STAGE_0) {
+		dm_digtable->dig_ext_port_stage = DIG_EXT_PORT_STAGE_0;
+		dm_digtable->cur_igvalue = 0x20;
 		rtl92c_dm_write_dig(hw);
 	}
 
 	RT_TRACE(COMP_DIG, DBG_TRACE,
 		 ("curmultista_cstate = "
 		  "%x dig_ext_port_stage %x\n",
-		  dm_digtable.curmultista_cstate,
-		  dm_digtable.dig_ext_port_stage));
+		  dm_digtable->curmultista_cstate,
+		  dm_digtable->dig_ext_port_stage));
 }
 
 static void rtl92c_dm_initial_gain_sta(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
+	struct dig_t *dm_digtable = &rtlpriv->dm_digtable;
 
 	RT_TRACE(COMP_DIG, DBG_TRACE,
 		 ("presta_cstate = %x,"
 		  " cursta_cstate = %x\n",
-		  dm_digtable.presta_cstate,
-		  dm_digtable.cursta_cstate));
+		  dm_digtable->presta_cstate,
+		  dm_digtable->cursta_cstate));
 
-	if (dm_digtable.presta_cstate == dm_digtable.cursta_cstate
-	    || dm_digtable.cursta_cstate == DIG_STA_BEFORE_CONNECT
-	    || dm_digtable.cursta_cstate == DIG_STA_CONNECT) {
+	if (dm_digtable->presta_cstate == dm_digtable->cursta_cstate
+	    || dm_digtable->cursta_cstate == DIG_STA_BEFORE_CONNECT
+	    || dm_digtable->cursta_cstate == DIG_STA_CONNECT) {
 
-		if (dm_digtable.cursta_cstate != DIG_STA_DISCONNECT) {
-			dm_digtable.rssi_val_min =
+		if (dm_digtable->cursta_cstate != DIG_STA_DISCONNECT) {
+			dm_digtable->rssi_val_min =
 			    rtl92c_dm_initial_gain_min_pwdb(hw);
 			rtl92c_dm_ctrl_initgain_by_rssi(hw);
 		}
 	} else {
-		dm_digtable.rssi_val_min = 0;
-		dm_digtable.dig_ext_port_stage = DIG_EXT_PORT_STAGE_MAX;
-		dm_digtable.back_val = DM_DIG_BACKOFF_DEFAULT;
-		dm_digtable.cur_igvalue = 0x20;
-		dm_digtable.pre_igvalue = 0;
+		dm_digtable->rssi_val_min = 0;
+		dm_digtable->dig_ext_port_stage = DIG_EXT_PORT_STAGE_MAX;
+		dm_digtable->back_val = DM_DIG_BACKOFF_DEFAULT;
+		dm_digtable->cur_igvalue = 0x20;
+		dm_digtable->pre_igvalue = 0;
 		rtl92c_dm_write_dig(hw);
 	}
 }
@@ -390,40 +398,41 @@ static void rtl92c_dm_cck_packet_detection_thresh(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_hal *rtlhal = rtl_hal(rtl_priv(hw));
+	struct dig_t *dm_digtable = &rtlpriv->dm_digtable;
 
-	if (dm_digtable.cursta_cstate == DIG_STA_CONNECT) {
-		dm_digtable.rssi_val_min = rtl92c_dm_initial_gain_min_pwdb(hw);
+	if (dm_digtable->cursta_cstate == DIG_STA_CONNECT) {
+		dm_digtable->rssi_val_min = rtl92c_dm_initial_gain_min_pwdb(hw);
 
-		if (dm_digtable.pre_cck_pd_state == CCK_PD_STAGE_LowRssi) {
-			if (dm_digtable.rssi_val_min <= 25)
-				dm_digtable.cur_cck_pd_state =
+		if (dm_digtable->pre_cck_pd_state == CCK_PD_STAGE_LowRssi) {
+			if (dm_digtable->rssi_val_min <= 25)
+				dm_digtable->cur_cck_pd_state =
 				    CCK_PD_STAGE_LowRssi;
 			else
-				dm_digtable.cur_cck_pd_state =
+				dm_digtable->cur_cck_pd_state =
 				    CCK_PD_STAGE_HighRssi;
 		} else {
-			if (dm_digtable.rssi_val_min <= 20)
-				dm_digtable.cur_cck_pd_state =
+			if (dm_digtable->rssi_val_min <= 20)
+				dm_digtable->cur_cck_pd_state =
 				    CCK_PD_STAGE_LowRssi;
 			else
-				dm_digtable.cur_cck_pd_state =
+				dm_digtable->cur_cck_pd_state =
 				    CCK_PD_STAGE_HighRssi;
 		}
 	} else {
-		dm_digtable.cur_cck_pd_state = CCK_PD_STAGE_MAX;
+		dm_digtable->cur_cck_pd_state = CCK_PD_STAGE_MAX;
 	}
 
-	if (dm_digtable.pre_cck_pd_state != dm_digtable.cur_cck_pd_state) {
-		if (dm_digtable.cur_cck_pd_state == CCK_PD_STAGE_LowRssi) {
+	if (dm_digtable->pre_cck_pd_state != dm_digtable->cur_cck_pd_state) {
+		if (dm_digtable->cur_cck_pd_state == CCK_PD_STAGE_LowRssi) {
 			if (rtlpriv->falsealm_cnt.cnt_cck_fail > 800)
-				dm_digtable.cur_cck_fa_state =
+				dm_digtable->cur_cck_fa_state =
 				    CCK_FA_STAGE_High;
 			else
-				dm_digtable.cur_cck_fa_state = CCK_FA_STAGE_Low;
+				dm_digtable->cur_cck_fa_state = CCK_FA_STAGE_Low;
 
-			if (dm_digtable.pre_cck_fa_state !=
-			    dm_digtable.cur_cck_fa_state) {
-				if (dm_digtable.cur_cck_fa_state ==
+			if (dm_digtable->pre_cck_fa_state !=
+			    dm_digtable->cur_cck_fa_state) {
+				if (dm_digtable->cur_cck_fa_state ==
 				    CCK_FA_STAGE_Low)
 					rtl_set_bbreg(hw, RCCK0_CCA, MASKBYTE2,
 						      0x83);
@@ -431,8 +440,8 @@ static void rtl92c_dm_cck_packet_detection_thresh(struct ieee80211_hw *hw)
 					rtl_set_bbreg(hw, RCCK0_CCA, MASKBYTE2,
 						      0xcd);
 
-				dm_digtable.pre_cck_fa_state =
-				    dm_digtable.cur_cck_fa_state;
+				dm_digtable->pre_cck_fa_state =
+				    dm_digtable->cur_cck_fa_state;
 			}
 
 			rtl_set_bbreg(hw, RCCK0_SYSTEM, MASKBYTE1, 0x40);
@@ -448,11 +457,11 @@ static void rtl92c_dm_cck_packet_detection_thresh(struct ieee80211_hw *hw)
 				rtl_set_bbreg(hw, RCCK0_FALSEALARMREPORT,
 					      MASKBYTE2, 0xd3);
 		}
-		dm_digtable.pre_cck_pd_state = dm_digtable.cur_cck_pd_state;
+		dm_digtable->pre_cck_pd_state = dm_digtable->cur_cck_pd_state;
 	}
 
 	RT_TRACE(COMP_DIG, DBG_TRACE,
-		 ("CCKPDStage=%x\n", dm_digtable.cur_cck_pd_state));
+		 ("CCKPDStage=%x\n", dm_digtable->cur_cck_pd_state));
 
 	RT_TRACE(COMP_DIG, DBG_TRACE,
 		 ("is92C=%x\n", IS_92C_SERIAL(rtlhal->version)));
@@ -460,31 +469,34 @@ static void rtl92c_dm_cck_packet_detection_thresh(struct ieee80211_hw *hw)
 
 static void rtl92c_dm_ctrl_initgain_by_twoport(struct ieee80211_hw *hw)
 {
+	struct rtl_priv *rtlpriv = rtl_priv(hw);
+	struct dig_t *dm_digtable = &rtlpriv->dm_digtable;
 	struct rtl_mac *mac = rtl_mac(rtl_priv(hw));
 
 	if (mac->act_scanning == true)
 		return;
 
 	if (mac->link_state >= MAC80211_LINKED)
-		dm_digtable.cursta_cstate = DIG_STA_CONNECT;
+		dm_digtable->cursta_cstate = DIG_STA_CONNECT;
 	else
-		dm_digtable.cursta_cstate = DIG_STA_DISCONNECT;
+		dm_digtable->cursta_cstate = DIG_STA_DISCONNECT;
 
 	rtl92c_dm_initial_gain_sta(hw);
 	rtl92c_dm_initial_gain_multi_sta(hw);
 	rtl92c_dm_cck_packet_detection_thresh(hw);
 
-	dm_digtable.presta_cstate = dm_digtable.cursta_cstate;
+	dm_digtable->presta_cstate = dm_digtable->cursta_cstate;
 
 }
 
 static void rtl92c_dm_dig(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
+	struct dig_t *dm_digtable = &rtlpriv->dm_digtable;
 
 	if (rtlpriv->dm.dm_initialgain_enable == false)
 		return;
-	if (dm_digtable.dig_enable_flag == false)
+	if (dm_digtable->dig_enable_flag == false)
 		return;
 
 	rtl92c_dm_ctrl_initgain_by_twoport(hw);
@@ -583,22 +595,23 @@ static void rtl92c_dm_dynamic_txpower(struct ieee80211_hw *hw)
 void rtl92c_dm_write_dig(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
+	struct dig_t *dm_digtable = &rtlpriv->dm_digtable;
 
 	RT_TRACE(COMP_DIG, DBG_LOUD,
 		 ("cur_igvalue = 0x%x, "
 		  "pre_igvalue = 0x%x, back_val = %d\n",
-		  dm_digtable.cur_igvalue, dm_digtable.pre_igvalue,
-		  dm_digtable.back_val));
-	dm_digtable.cur_igvalue += 2;
-	if (dm_digtable.cur_igvalue > 0x3f)
-		dm_digtable.cur_igvalue = 0x3f;
-	if (dm_digtable.pre_igvalue != dm_digtable.cur_igvalue) {
+		  dm_digtable->cur_igvalue, dm_digtable->pre_igvalue,
+		  dm_digtable->back_val));
+	dm_digtable->cur_igvalue += 2;
+	if (dm_digtable->cur_igvalue > 0x3f)
+		dm_digtable->cur_igvalue = 0x3f;
+	if (dm_digtable->pre_igvalue != dm_digtable->cur_igvalue) {
 		rtl_set_bbreg(hw, ROFDM0_XAAGCCORE1, 0x7f,
-			      dm_digtable.cur_igvalue);
+			      dm_digtable->cur_igvalue);
 		rtl_set_bbreg(hw, ROFDM0_XBAGCCORE1, 0x7f,
-			      dm_digtable.cur_igvalue);
+			      dm_digtable->cur_igvalue);
 
-		dm_digtable.pre_igvalue = dm_digtable.cur_igvalue;
+		dm_digtable->pre_igvalue = dm_digtable->cur_igvalue;
 	}
 }
 
