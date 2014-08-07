@@ -161,7 +161,7 @@ void rtl_recognize_peer(struct ieee80211_hw *hw, u8 *data, unsigned int len);
 u8 rtl_tid_to_ac(struct ieee80211_hw *hw, u8 tid);
 extern struct attribute_group rtl_attribute_group;
 void rtl_easy_concurrent_retrytimer_callback(unsigned long data);
-extern struct rtl_global_var global_var;
+extern struct rtl_global_var rtl_global_var;
 
 #ifdef VIF_TODO
 struct ieee80211_vif *rtl_get_main_vif(struct ieee80211_hw *hw);

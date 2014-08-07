@@ -19,7 +19,9 @@ PCI_MAIN_OBJS	:= base.o	\
 		ps.o	\
 		core.o	\
 		stats.o	\
-		pci.o	\
+
+obj-$(CONFIG_RTLWIFI_PCI)	+= rtl_pci.o
+rtl_pci-objs	:=		pci.o
 
 rtlwifi-objs += $(PCI_MAIN_OBJS)
 

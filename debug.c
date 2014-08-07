@@ -29,6 +29,7 @@
 
 #include "wifi.h"
 #include "cam.h"
+#include <linux/moduleparam.h>
 
 #ifndef GET_INODE_DATA
 	#define GET_INODE_DATA(__node)		PDE_DATA(__node)
@@ -78,6 +79,7 @@ void rtl_dbgp_flag_init(struct ieee80211_hw *hw)
 
 	/*Init Debug flag enable condition */
 }
+EXPORT_SYMBOL_GPL(rtl_dbgp_flag_init);
 
 static struct proc_dir_entry *proc_topdir;
 static int rtl_proc_get_mac_0(struct seq_file *m, void *v)
@@ -1023,6 +1025,7 @@ void rtl_proc_add_one(struct ieee80211_hw *hw)
 			 ("Unable to initialize /proc/net/%s/%s/cam-3\n",
 			  rtlpriv->cfg->name, rtlpriv->dbg.proc_name));
 }
+EXPORT_SYMBOL_GPL(rtl_proc_add_one);
 
 void rtl_proc_remove_one(struct ieee80211_hw *hw)
 {
@@ -1056,6 +1059,7 @@ void rtl_proc_remove_one(struct ieee80211_hw *hw)
 		rtlpriv->dbg.proc_dir = NULL;
 	}
 }
+EXPORT_SYMBOL_GPL(rtl_proc_remove_one);
 
 void rtl_proc_add_topdir(void)
 {

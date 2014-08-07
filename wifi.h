@@ -98,7 +98,7 @@
 #define MAX_REGULATION_NUM			4
 #define MAX_RF_PATH_NUM	2
 #define MAX_RATE_SECTION_NUM		6
-#define MAX_2_4G_BANDWITH_NUM		2
+#define MAX_2_4G_BANDWITH_NUM		4
 #define MAX_5G_BANDWITH_NUM		4
 
 
@@ -1248,9 +1248,9 @@ struct rtl_mac {
 	u8 bssid[6];
 	u32 vendor;
 	u32 basic_rates; /* b/g rates */
+	u16 mode;		/* wireless mode */
 	u8 ht_enable;
 	u8 bw_40;
-	u8 mode;		/* wireless mode */
 	u8 slot_time;
 	u8 short_preamble;
 	u8 use_cts_protect;
@@ -1759,7 +1759,6 @@ struct rtl_stats {
 	u32 mac_time[2];
 	s8 rssi;
 	u8 signal;
-	u8 noise;
 	u8 rate;		/* hw desc rate */
 	u8 rawdata;
 	u8 received_channel;

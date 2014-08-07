@@ -4717,39 +4717,6 @@ void _rtl8812ae_iqk_restore_macbb(
 #define AFE_REG_NUM 14
 #define RF_REG_NUM 3
 
-static void _rtl8812ae_phy_iq_calibrate(
-		struct ieee80211_hw *hw,
-		u8 channel)
-{
-	u32	macbb_backup[MACBB_REG_NUM];
-	u32 afe_backup[AFE_REG_NUM];
-	u32 rfa_backup[RF_REG_NUM];
-	u32 rfb_backup[RF_REG_NUM];
-	u32	backup_macbb_reg[MACBB_REG_NUM] = {0xb00, 0x520, 0x550,
-						0x808, 0x90c, 0xc00, 0xe00,
-						0x8c4, 0x838,  0x82c};
-	u32	backup_afe_reg[AFE_REG_NUM] = {0xc5c, 0xc60, 0xc64, 0xc68,
-					0xcb8, 0xcb0, 0xcb4, 0xe5c,
-					0xe60, 0xe64, 0xe68, 0xeb8,
-					0xeb0, 0xeb4};
-	u32	backup_rf_reg[RF_REG_NUM] = {0x65, 0x8f, 0x0};
-	u8	chnl_idx = _rtl8812ae_get_right_chnl_place_for_iqk(channel);
-
-	_rtl8812ae_iqk_backup_macbb(hw, macbb_backup, backup_macbb_reg, MACBB_REG_NUM);
-	_rtl8812ae_iqk_backup_afe(hw, afe_backup, backup_afe_reg, AFE_REG_NUM);
-	_rtl8812ae_iqk_backup_rf(hw, rfa_backup, rfb_backup, backup_rf_reg, RF_REG_NUM);
-
-	_rtl8812ae_iqk_configure_mac(hw);
-	_rtl8812ae_iqk_tx(hw, chnl_idx);
-	_rtl8812ae_iqk_restore_rf(hw, RF90_PATH_A, backup_rf_reg, rfa_backup, RF_REG_NUM);
-	 /* PATH_A ? */
-	_rtl8812ae_iqk_restore_rf(hw, RF90_PATH_A, backup_rf_reg, rfb_backup, RF_REG_NUM);
-
-	_rtl8812ae_iqk_restore_afe(hw, afe_backup, backup_afe_reg, AFE_REG_NUM);
-	_rtl8812ae_iqk_restore_macbb(hw, macbb_backup, backup_macbb_reg, MACBB_REG_NUM);
-}
-
-
 void _rtl8821ae_iqk_backup_macbb(
 		struct ieee80211_hw *hw,
 		u32 *macbb_backup,
@@ -5779,50 +5746,7 @@ static void _rtl8821ae_phy_set_rfpath_switch(struct ieee80211_hw *hw, bool main)
 
 void rtl8812ae_phy_iq_calibrate(struct ieee80211_hw *hw, bool b_recovery)
 {
-	struct rtl_priv *rtlpriv = rtl_priv(hw);
-	struct rtl_phy *rtlphy = &(rtlpriv->phy);
 	return;
-	if (!rtlphy->iqk_inprogress) {
-		spin_lock(&rtlpriv->locks.iqk_lock);
-		rtlphy->iqk_inprogress = true;
-		spin_unlock(&rtlpriv->locks.iqk_lock);
-
-		_rtl8812ae_phy_iq_calibrate(hw, rtlphy->current_channel);
-
-		spin_lock(&rtlpriv->locks.iqk_lock);
-		rtlphy->iqk_inprogress = false;
-		spin_unlock(&rtlpriv->locks.iqk_lock);
-	}
-}
-
-static void rtl8812ae_reset_iqk_result(struct ieee80211_hw *hw)
-{
-	struct rtl_priv *rtlpriv = rtl_priv(hw);
-	struct rtl_phy *rtlphy = &(rtlpriv->phy);
-	u8 i;
-
-	RT_TRACE(COMP_IQK, DBG_LOUD,
-		("rtl8812ae_dm_reset_iqk_result:: settings regs %d default regs %d\n",
-		(int)(sizeof(rtlphy->iqk_matrix_regsetting) /
-		sizeof(struct iqk_matrix_regs)),
-		IQK_MATRIX_SETTINGS_NUM));
-
-	for (i = 0; i < IQK_MATRIX_SETTINGS_NUM; i++) {
-		{
-			rtlphy->iqk_matrix_regsetting[i].value[0][0] =
-				rtlphy->iqk_matrix_regsetting[i].value[0][2] =
-				rtlphy->iqk_matrix_regsetting[i].value[0][4] =
-				rtlphy->iqk_matrix_regsetting[i].value[0][6] = 0x100;
-
-			rtlphy->iqk_matrix_regsetting[i].value[0][1] =
-				rtlphy->iqk_matrix_regsetting[i].value[0][3] =
-				rtlphy->iqk_matrix_regsetting[i].value[0][5] =
-				rtlphy->iqk_matrix_regsetting[i].value[0][7] = 0x0;
-
-			rtlphy->iqk_matrix_regsetting[i].iqk_done = false;
-
-		}
-	}
 }
 
 void rtl8812ae_do_iqk(struct ieee80211_hw *hw, u8 delta_thermal_index,

@@ -139,7 +139,7 @@ static void _rtl8821ae_set_fw_clock_on(struct ieee80211_hw *hw,
 				count++;
 				udelay(100);
 				if (count > 1000)
-					return;
+					goto change_done;
 				spin_lock_bh(&rtlpriv->locks.fw_ps_lock);
 			}
 			spin_unlock_bh(&rtlpriv->locks.fw_ps_lock);
@@ -148,7 +148,7 @@ static void _rtl8821ae_set_fw_clock_on(struct ieee80211_hw *hw,
 			spin_unlock_bh(&rtlpriv->locks.fw_ps_lock);
 		}
 	}
-
+change_done:
 	if (IS_IN_LOW_POWER_STATE_8821AE(rtlhal->fw_ps_state)) {
 		rtlpriv->cfg->ops->get_hw_reg(hw, HW_VAR_SET_RPWM,
 					(u8 *) (&rpwm_val));

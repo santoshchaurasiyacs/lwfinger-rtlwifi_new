@@ -509,7 +509,7 @@ static int rtl_op_suspend(struct ieee80211_hw *hw,
 	do_gettimeofday(&ts);
 	rtlhal->last_suspend_sec = ts.tv_sec;
 
-	if ((ppsc->wo_wlan_mode | WAKE_ON_PATTERN_MATCH) && wow->n_patterns)
+	if ((ppsc->wo_wlan_mode & WAKE_ON_PATTERN_MATCH) && wow->n_patterns)
 		_rtl_add_wowlan_patterns(hw, wow);
 
 	rtlhal->driver_is_goingto_unload = true;
@@ -1052,7 +1052,10 @@ static void rtl_op_bss_info_changed(struct ieee80211_hw *hw,
 
 			rcu_read_lock();
 			sta = ieee80211_find_sta(vif, (u8 *)bss_conf->bssid);
-
+			if (!sta) {
+				rcu_read_unlock();
+				goto out;
+			}
 			if (vif->type == NL80211_IFTYPE_STATION && sta)
 				rtlpriv->cfg->ops->update_rate_tbl(hw, sta, 0);
 			RT_TRACE(COMP_EASY_CONCURRENT, DBG_LOUD,
@@ -1724,3 +1727,4 @@ const struct ieee80211_ops rtl_ops = {
 	.sta_remove = rtl_op_sta_remove,
 	.flush = rtl_op_flush,
 };
+EXPORT_SYMBOL_GPL(rtl_ops);

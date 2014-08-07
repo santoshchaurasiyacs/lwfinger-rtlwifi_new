@@ -228,12 +228,13 @@ void read_efuse_byte(struct ieee80211_hw *hw, u16 _offset, u8 *pbuf)
 
 	*pbuf = (u8) (value32 & 0xff);
 }
+EXPORT_SYMBOL_GPL(read_efuse_byte);
 
 void read_efuse(struct ieee80211_hw *hw, u16 _offset, u16 _size_byte, u8 *pbuf)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_efuse *rtlefuse = rtl_efuse(rtl_priv(hw));
-	u8 efuse_tbl[rtlpriv->cfg->maps[EFUSE_HWSET_MAX_SIZE]];
+	u8 *efuse_tbl;
 	u8 rtemp8[1];
 	u16 efuse_addr = 0;
 	u8 offset, wren;
@@ -242,22 +243,37 @@ void read_efuse(struct ieee80211_hw *hw, u16 _offset, u16 _size_byte, u8 *pbuf)
 	u16 j;
 	const u16 efuse_max_section =
 		rtlpriv->cfg->maps[EFUSE_MAX_SECTION_MAP];
-	const u32 efuse_real_content_len =
+	const u32 efuse_len =
 		rtlpriv->cfg->maps[EFUSE_REAL_CONTENT_SIZE];
-	u16 efuse_word[efuse_max_section][EFUSE_MAX_WORD_UNIT];
+	u16 **efuse_word;
 	u16 efuse_utilized = 0;
 	u8 efuse_usage;
 
 	if ((_offset + _size_byte) > rtlpriv->cfg->maps[EFUSE_HWSET_MAX_SIZE]) {
 		RT_TRACE(COMP_EFUSE, DBG_LOUD,
-			 ("read_efuse(): Invalid offset(%#x) with read "
-			  "bytes(%#x)!!\n", _offset, _size_byte));
+			 ("read_efuse(): Invalid offset(%#x) with read bytes(%#x)!!\n",
+			 _offset, _size_byte));
 		return;
+	}
+
+	/* allocate memory for efuse_tbl and efuse_word */
+	efuse_tbl = kmalloc(rtlpriv->cfg->maps[EFUSE_HWSET_MAX_SIZE] *
+			    sizeof(u8), GFP_ATOMIC);
+	if (!efuse_tbl)
+		return;
+	efuse_word = kzalloc(EFUSE_MAX_WORD_UNIT * sizeof(u16 *), GFP_ATOMIC);
+	if (!efuse_word)
+		goto out;
+	for (i = 0; i < EFUSE_MAX_WORD_UNIT; i++) {
+		efuse_word[i] = kmalloc(efuse_max_section * sizeof(u16),
+					GFP_ATOMIC);
+		if (!efuse_word[i])
+			goto done;
 	}
 
 	for (i = 0; i < efuse_max_section; i++)
 		for (j = 0; j < EFUSE_MAX_WORD_UNIT; j++)
-			efuse_word[i][j] = 0xFFFF;
+			efuse_word[j][i] = 0xFFFF;
 
 	read_efuse_byte(hw, efuse_addr, rtemp8);
 	if (*rtemp8 != 0xFF) {
@@ -267,7 +283,7 @@ void read_efuse(struct ieee80211_hw *hw, u16 _offset, u16 _size_byte, u8 *pbuf)
 		efuse_addr++;
 	}
 
-	while ((*rtemp8 != 0xFF) && (efuse_addr < efuse_real_content_len)) {
+	while ((*rtemp8 != 0xFF) && (efuse_addr < efuse_len)) {
 		/*  Check PG header for section num.  */
 		if ((*rtemp8 & 0x1F) == 0x0F) {/* extended header */
 			u1temp = ((*rtemp8 & 0xE0) >> 5);
@@ -278,7 +294,7 @@ void read_efuse(struct ieee80211_hw *hw, u16 _offset, u16 _size_byte, u8 *pbuf)
 				read_efuse_byte(hw, efuse_addr, rtemp8);
 
 				if (*rtemp8 != 0xFF &&
-				    (efuse_addr < efuse_real_content_len)) {
+				    (efuse_addr < efuse_len)) {
 					efuse_addr++;
 				}
 				continue;
@@ -299,31 +315,29 @@ void read_efuse(struct ieee80211_hw *hw, u16 _offset, u16 _size_byte, u8 *pbuf)
 			for (i = 0; i < EFUSE_MAX_WORD_UNIT; i++) {
 				if (!(wren & 0x01)) {
 					RTPRINT(rtlpriv, FEEPROM,
-						EFUSE_READ_ALL, ("Addr=%d\n",
-								 efuse_addr));
+						EFUSE_READ_ALL,
+						("Addr=%d\n", efuse_addr));
 
 					read_efuse_byte(hw, efuse_addr, rtemp8);
 					efuse_addr++;
 					efuse_utilized++;
-					efuse_word[offset][i] = (*rtemp8 &
-								 0xff);
+					efuse_word[i][offset] =
+							 (*rtemp8 & 0xff);
 
-					if (efuse_addr >=
-					    efuse_real_content_len)
+					if (efuse_addr >= efuse_len)
 						break;
 
 					RTPRINT(rtlpriv, FEEPROM,
-						EFUSE_READ_ALL, ("Addr=%d\n",
-								 efuse_addr));
+						EFUSE_READ_ALL,
+						("Addr=%d\n", efuse_addr));
 
 					read_efuse_byte(hw, efuse_addr, rtemp8);
 					efuse_addr++;
 					efuse_utilized++;
-					efuse_word[offset][i] |=
-					    (((u16) *rtemp8 << 8) & 0xff00);
+					efuse_word[i][offset] |=
+					    (((u16)*rtemp8 << 8) & 0xff00);
 
-					if (efuse_addr >=
-					    efuse_real_content_len)
+					if (efuse_addr >= efuse_len)
 						break;
 				}
 
@@ -334,7 +348,7 @@ void read_efuse(struct ieee80211_hw *hw, u16 _offset, u16 _size_byte, u8 *pbuf)
 		RTPRINT(rtlpriv, FEEPROM, EFUSE_READ_ALL,
 			("Addr=%d\n", efuse_addr));
 		read_efuse_byte(hw, efuse_addr, rtemp8);
-		if (*rtemp8 != 0xFF && (efuse_addr < efuse_real_content_len)) {
+		if (*rtemp8 != 0xFF && (efuse_addr < efuse_len)) {
 			efuse_utilized++;
 			efuse_addr++;
 		}
@@ -343,9 +357,9 @@ void read_efuse(struct ieee80211_hw *hw, u16 _offset, u16 _size_byte, u8 *pbuf)
 	for (i = 0; i < efuse_max_section; i++) {
 		for (j = 0; j < EFUSE_MAX_WORD_UNIT; j++) {
 			efuse_tbl[(i * 8) + (j * 2)] =
-			    (efuse_word[i][j] & 0xff);
+			    (efuse_word[j][i] & 0xff);
 			efuse_tbl[(i * 8) + ((j * 2) + 1)] =
-			    ((efuse_word[i][j] >> 8) & 0xff);
+			    ((efuse_word[j][i] >> 8) & 0xff);
 		}
 	}
 
@@ -353,12 +367,18 @@ void read_efuse(struct ieee80211_hw *hw, u16 _offset, u16 _size_byte, u8 *pbuf)
 		pbuf[i] = efuse_tbl[_offset + i];
 
 	rtlefuse->efuse_usedbytes = efuse_utilized;
-	efuse_usage = (u8) ((efuse_utilized * 100) / efuse_real_content_len);
+	efuse_usage = (u8) ((efuse_utilized * 100) / efuse_len);
 	rtlefuse->efuse_usedpercentage = efuse_usage;
 	rtlpriv->cfg->ops->set_hw_reg(hw, HW_VAR_EFUSE_BYTES,
-				      (u8 *) &efuse_utilized);
+				      (u8 *)&efuse_utilized);
 	rtlpriv->cfg->ops->set_hw_reg(hw, HW_VAR_EFUSE_USAGE,
-				      (u8 *) &efuse_usage);
+				      &efuse_usage);
+done:
+	for (i = 0; i < EFUSE_MAX_WORD_UNIT; i++)
+		kfree(efuse_word[i]);
+	kfree(efuse_word);
+out:
+	kfree(efuse_tbl);
 }
 
 bool efuse_shadow_update_chk(struct ieee80211_hw *hw)

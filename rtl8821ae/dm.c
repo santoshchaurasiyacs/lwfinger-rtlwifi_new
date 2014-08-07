@@ -934,10 +934,10 @@ static void rtl8821ae_dm_check_rssi_monitor(struct ieee80211_hw *hw)
 			if (mac->mode == WIRELESS_MODE_AC_24G ||
 			    mac->mode == WIRELESS_MODE_AC_5G ||
 			    mac->mode == WIRELESS_MODE_AC_ONLY)
-				stbc_tx = (mac->vht_cur_stbc |
+				stbc_tx = (mac->vht_cur_stbc &
 					   STBC_VHT_ENABLE_TX) ? 1 : 0;
 			else
-				stbc_tx = (mac->ht_cur_stbc |
+				stbc_tx = (mac->ht_cur_stbc &
 					   STBC_HT_ENABLE_TX) ? 1 : 0;
 			h2c_parameter[3] |= stbc_tx << 1;
 		}
