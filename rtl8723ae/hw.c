@@ -1249,26 +1249,16 @@ void rtl8723e_set_qos(struct ieee80211_hw *hw, int aci)
 	}
 }
 
-void rtl8723e_clear_interrupt(struct ieee80211_hw *hw)
+static void rtl8723e_clear_interrupt(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	u32 tmp;
 	tmp = rtl_read_dword(rtlpriv, REG_HISR);
-	/*printk("clear interrupt first:\n");
-	printk("0x%x = 0x%08x\n",REG_HISR, tmp);*/
 	rtl_write_dword(rtlpriv, REG_HISR, tmp);
 
 	tmp = rtl_read_dword(rtlpriv, REG_HISRE);
-	/*printk("0x%x = 0x%08x\n",REG_HISRE, tmp);*/
 	rtl_write_dword(rtlpriv, REG_HISRE, tmp);
-
-	/* tmp = rtl_read_dword(rtlpriv, REG_HSISR); */
-	/*printk("0x%x = 0x%08x\n",REG_HSISR, tmp);*/
-	/* rtl_write_dword(rtlpriv, REG_HSISR, tmp); */
-
 }
-
-
 
 void rtl8723e_enable_interrupt(struct ieee80211_hw *hw)
 {
@@ -2448,7 +2438,7 @@ void rtl8723e_set_key(struct ieee80211_hw *hw, u32 key_index,
 	}
 }
 
-void rtl8723e_bt_var_init(struct ieee80211_hw *hw)
+static void rtl8723e_bt_var_init(struct ieee80211_hw *hw)
 {
 	struct rtl_pci_priv *rtlpcipriv = rtl_pcipriv(hw);
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
