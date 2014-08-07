@@ -55,7 +55,7 @@ void rtl8821ae_phy_rf6052_set_bandwidth(struct ieee80211_hw *hw, u8 bandwidth)
 		break;
 	default:
 		RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG,
-			 ("unknown bandwidth: %#X\n", bandwidth));
+			 "unknown bandwidth: %#X\n", bandwidth);
 		break;
 	}
 }
@@ -133,15 +133,15 @@ void rtl8821ae_phy_rf6052_set_cck_txpower(struct ieee80211_hw *hw,
 	rtl_set_bbreg(hw, RTXAGC_A_CCK11_CCK1, MASKDWORD, tmpval);
 
 	RTPRINT(rtlpriv, FPHY, PHY_TXPWR,
-		("CCK PWR 1~11M (rf-A) = 0x%x (reg 0x%x)\n", tmpval,
-		 RTXAGC_A_CCK11_CCK1));
+		"CCK PWR 1~11M (rf-A) = 0x%x (reg 0x%x)\n", tmpval,
+		 RTXAGC_A_CCK11_CCK1);
 
 	tmpval = tx_agc[RF90_PATH_B];
 	rtl_set_bbreg(hw, RTXAGC_B_CCK11_CCK1, MASKDWORD, tmpval);
 
 	RTPRINT(rtlpriv, FPHY, PHY_TXPWR,
-		("CCK PWR 11M (rf-B) = 0x%x (reg 0x%x)\n", tmpval,
-		 RTXAGC_B_CCK11_CCK1));
+		"CCK PWR 11M (rf-B) = 0x%x (reg 0x%x)\n", tmpval,
+		 RTXAGC_B_CCK11_CCK1);
 }
 
 static void rtl8821ae_phy_get_power_base(struct ieee80211_hw *hw,
@@ -162,8 +162,8 @@ static void rtl8821ae_phy_get_power_base(struct ieee80211_hw *hw,
 		    (powerBase0 << 8) | powerBase0;
 		*(ofdmbase + i) = powerBase0;
 		RTPRINT(rtlpriv, FPHY, PHY_TXPWR,
-			(" [OFDM power base index rf(%c) = 0x%x]\n",
-			 ((i == 0) ? 'A' : 'B'), *(ofdmbase + i)));
+			" [OFDM power base index rf(%c) = 0x%x]\n",
+			 ((i == 0) ? 'A' : 'B'), *(ofdmbase + i));
 	}
 
 	for (i = 0; i < 2; i++) {
@@ -179,8 +179,8 @@ static void rtl8821ae_phy_get_power_base(struct ieee80211_hw *hw,
 		*(mcsbase + i) = powerBase1;
 
 		RTPRINT(rtlpriv, FPHY, PHY_TXPWR,
-			(" [MCS power base index rf(%c) = 0x%x]\n",
-			 ((i == 0) ? 'A' : 'B'), *(mcsbase + i)));
+			" [MCS power base index rf(%c) = 0x%x]\n",
+			 ((i == 0) ? 'A' : 'B'), *(mcsbase + i));
 	}
 }
 
@@ -207,9 +207,9 @@ static void _rtl8821ae_get_txpower_writeval_by_regulatory(struct ieee80211_hw *h
 			    + ((index < 2) ? powerBase0[rf] : powerBase1[rf]);
 
 			RTPRINT(rtlpriv, FPHY, PHY_TXPWR,
-				("RTK better performance, "
+				"RTK better performance, "
 				 "writeVal(%c) = 0x%x\n",
-				 ((rf == 0) ? 'A' : 'B'), writeVal));
+				 ((rf == 0) ? 'A' : 'B'), writeVal);
 			break;
 		case 1:
 			if (rtlphy->pwrgroup_cnt == 1)
@@ -236,9 +236,9 @@ static void _rtl8821ae_get_txpower_writeval_by_regulatory(struct ieee80211_hw *h
 						      powerBase1[rf]);
 
 			RTPRINT(rtlpriv, FPHY, PHY_TXPWR,
-				("Realtek regulatory, 20MHz, "
+				"Realtek regulatory, 20MHz, "
 				 "writeVal(%c) = 0x%x\n",
-				 ((rf == 0) ? 'A' : 'B'), writeVal));
+				 ((rf == 0) ? 'A' : 'B'), writeVal);
 
 			break;
 		case 2:
@@ -246,27 +246,27 @@ static void _rtl8821ae_get_txpower_writeval_by_regulatory(struct ieee80211_hw *h
 			    ((index < 2) ? powerBase0[rf] : powerBase1[rf]);
 
 			RTPRINT(rtlpriv, FPHY, PHY_TXPWR,
-				("Better regulatory, "
+				"Better regulatory, "
 				 "writeVal(%c) = 0x%x\n",
-				 ((rf == 0) ? 'A' : 'B'), writeVal));
+				 ((rf == 0) ? 'A' : 'B'), writeVal);
 			break;
 		case 3:
 			chnlgroup = 0;
 
 			if (rtlphy->current_chan_bw == HT_CHANNEL_WIDTH_20_40) {
 				RTPRINT(rtlpriv, FPHY, PHY_TXPWR,
-					("customer's limit, 40MHz "
+					"customer's limit, 40MHz "
 					 "rf(%c) = 0x%x\n",
 					 ((rf == 0) ? 'A' : 'B'),
 					 rtlefuse->pwrgroup_ht40[rf][channel -
-								     1]));
+								     1]);
 			} else {
 				RTPRINT(rtlpriv, FPHY, PHY_TXPWR,
-					("customer's limit, 20MHz "
+					"customer's limit, 20MHz "
 					 "rf(%c) = 0x%x\n",
 					 ((rf == 0) ? 'A' : 'B'),
 					 rtlefuse->pwrgroup_ht20[rf][channel -
-								     1]));
+								     1]);
 			}
 
 			if (index < 2)
@@ -299,15 +299,15 @@ static void _rtl8821ae_get_txpower_writeval_by_regulatory(struct ieee80211_hw *h
 			    (pwr_diff_limit[1] << 8) | (pwr_diff_limit[0]);
 
 			RTPRINT(rtlpriv, FPHY, PHY_TXPWR,
-				("Customer's limit rf(%c) = 0x%x\n",
-				 ((rf == 0) ? 'A' : 'B'), customer_limit));
+				"Customer's limit rf(%c) = 0x%x\n",
+				 ((rf == 0) ? 'A' : 'B'), customer_limit);
 
 			writeVal = customer_limit +
 			    ((index < 2) ? powerBase0[rf] : powerBase1[rf]);
 
 			RTPRINT(rtlpriv, FPHY, PHY_TXPWR,
-				("Customer, writeVal rf(%c)= 0x%x\n",
-				 ((rf == 0) ? 'A' : 'B'), writeVal));
+				"Customer, writeVal rf(%c)= 0x%x\n",
+				 ((rf == 0) ? 'A' : 'B'), writeVal);
 			break;
 		default:
 			chnlgroup = 0;
@@ -317,9 +317,9 @@ static void _rtl8821ae_get_txpower_writeval_by_regulatory(struct ieee80211_hw *h
 			    + ((index < 2) ? powerBase0[rf] : powerBase1[rf]);
 
 			RTPRINT(rtlpriv, FPHY, PHY_TXPWR,
-				("RTK better performance, writeVal "
+				"RTK better performance, writeVal "
 				 "rf(%c) = 0x%x\n",
-				 ((rf == 0) ? 'A' : 'B'), writeVal));
+				 ((rf == 0) ? 'A' : 'B'), writeVal);
 			break;
 		}
 
@@ -369,7 +369,7 @@ static void _rtl8821ae_write_ofdm_power_reg(struct ieee80211_hw *hw,
 		rtl_set_bbreg(hw, regoffset, MASKDWORD, writeVal);
 
 		RTPRINT(rtlpriv, FPHY, PHY_TXPWR,
-			("Set 0x%x = %08x\n", regoffset, writeVal));
+			"Set 0x%x = %08x\n", regoffset, writeVal);
 	}
 }
 
@@ -462,7 +462,7 @@ static bool _rtl8821ae_phy_rf6052_config_parafile(struct ieee80211_hw *hw)
 
 		if (rtstatus != true) {
 			RT_TRACE(rtlpriv, COMP_INIT, DBG_TRACE,
-				 ("Radio[%d] Fail!!", rfpath));
+				 "Radio[%d] Fail!!", rfpath);
 			return false;
 		}
 
@@ -470,6 +470,6 @@ static bool _rtl8821ae_phy_rf6052_config_parafile(struct ieee80211_hw *hw)
 
 	/*put arrays in dm.c*/
 	/*_rtl8821ae_config_rf_txpwr_track_headerfile(hw);*/
-	RT_TRACE(rtlpriv, COMP_INIT, DBG_TRACE, ("\n"));
+	RT_TRACE(rtlpriv, COMP_INIT, DBG_TRACE, "\n");
 	return rtstatus;
 }

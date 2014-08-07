@@ -166,9 +166,9 @@ static void _rtl8723be_set_fw_clock_on(struct ieee80211_hw *hw, u8 rpwm_val,
 				rtl_write_word(rtlpriv, isr_regaddr, 0x0100);
 				rtlhal->fw_ps_state = FW_PS_STATE_RF_ON;
 				RT_TRACE(rtlpriv, COMP_POWER, DBG_LOUD,
-				 ("Receive CPWM INT!!! Set "
+				 "Receive CPWM INT!!! Set "
 				  "pHalData->FwPSState = %X\n",
-				  rtlhal->fw_ps_state));
+				  rtlhal->fw_ps_state);
 			}
 		}
 
@@ -357,7 +357,7 @@ void rtl8723be_get_hw_reg(struct ieee80211_hw *hw, u8 variable, u8 *val)
 		break;
 	default:
 		RT_TRACE(rtlpriv, COMP_ERR, DBG_LOUD,
-			 ("switch case not process %x\n", variable));
+			 "switch case not process %x\n", variable);
 		break;
 	}
 }
@@ -462,7 +462,7 @@ void rtl8723be_set_hw_reg(struct ieee80211_hw *hw, u8 variable, u8 *val)
 		u8 e_aci;
 
 		RT_TRACE(rtlpriv, COMP_MLME, DBG_LOUD,
-			 ("HW_VAR_SLOT_TIME %x\n", val[0]));
+			 "HW_VAR_SLOT_TIME %x\n", val[0]);
 
 		rtl_write_byte(rtlpriv, REG_SLOT, val[0]);
 
@@ -505,8 +505,8 @@ void rtl8723be_set_hw_reg(struct ieee80211_hw *hw, u8 variable, u8 *val)
 			*val = min_spacing_to_set;
 
 			RT_TRACE(rtlpriv, COMP_MLME, DBG_LOUD,
-				 ("Set HW_VAR_AMPDU_MIN_SPACE: %#x\n",
-				  mac->min_space_cfg));
+				 "Set HW_VAR_AMPDU_MIN_SPACE: %#x\n",
+				  mac->min_space_cfg);
 
 			rtl_write_byte(rtlpriv, REG_AMPDU_MIN_SPACE,
 				       mac->min_space_cfg);
@@ -520,8 +520,8 @@ void rtl8723be_set_hw_reg(struct ieee80211_hw *hw, u8 variable, u8 *val)
 		mac->min_space_cfg |= (density_to_set << 3);
 
 		RT_TRACE(rtlpriv, COMP_MLME, DBG_LOUD,
-			 ("Set HW_VAR_SHORTGI_DENSITY: %#x\n",
-			  mac->min_space_cfg));
+			 "Set HW_VAR_SHORTGI_DENSITY: %#x\n",
+			  mac->min_space_cfg);
 
 		rtl_write_byte(rtlpriv, REG_AMPDU_MIN_SPACE,
 			       mac->min_space_cfg);
@@ -560,8 +560,8 @@ void rtl8723be_set_hw_reg(struct ieee80211_hw *hw, u8 variable, u8 *val)
 			}
 
 			RT_TRACE(rtlpriv, COMP_MLME, DBG_LOUD,
-				 ("Set HW_VAR_AMPDU_FACTOR: %#x\n",
-				  factor_toset));
+				 "Set HW_VAR_AMPDU_FACTOR: %#x\n",
+				  factor_toset);
 		}
 		}
 		break;
@@ -597,8 +597,8 @@ void rtl8723be_set_hw_reg(struct ieee80211_hw *hw, u8 variable, u8 *val)
 				break;
 			default:
 				RT_TRACE(rtlpriv, COMP_ERR, DBG_WARNING,
-					 ("HW_VAR_ACM_CTRL acm set "
-					  "failed: eACI is %d\n", acm));
+					 "HW_VAR_ACM_CTRL acm set "
+					  "failed: eACI is %d\n", acm);
 				break;
 			}
 		} else {
@@ -614,14 +614,14 @@ void rtl8723be_set_hw_reg(struct ieee80211_hw *hw, u8 variable, u8 *val)
 				break;
 			default:
 				RT_TRACE(rtlpriv, COMP_ERR, DBG_LOUD,
-					 ("switch case not process\n"));
+					 "switch case not process\n");
 				break;
 			}
 		}
 
 		RT_TRACE(rtlpriv, COMP_QOS, DBG_TRACE,
-			 ("SetHwReg8190pci(): [HW_VAR_ACM_CTRL] "
-			  "Write 0x%X\n", acm_ctrl));
+			 "SetHwReg8190pci(): [HW_VAR_ACM_CTRL] "
+			  "Write 0x%X\n", acm_ctrl);
 		rtl_write_byte(rtlpriv, REG_ACMHWCTRL, acm_ctrl);
 		}
 		break;
@@ -730,8 +730,8 @@ void rtl8723be_set_hw_reg(struct ieee80211_hw *hw, u8 variable, u8 *val)
 		}
 		break;
 	default:
-		RT_TRACE(rtlpriv, COMP_ERR, DBG_LOUD, ("switch case not process %x\n",
-			 variable));
+		RT_TRACE(rtlpriv, COMP_ERR, DBG_LOUD, "switch case not process %x\n",
+			 variable);
 		break;
 	}
 }
@@ -753,8 +753,8 @@ static bool _rtl8723be_llt_write(struct ieee80211_hw *hw, u32 address, u32 data)
 
 		if (count > POLLING_LLT_THRESHOLD) {
 			RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG,
-				 ("Failed to polling write LLT done at "
-				  "address %d!\n", address));
+				 "Failed to polling write LLT done at "
+				  "address %d!\n", address);
 			status = false;
 			break;
 		}
@@ -852,7 +852,7 @@ static bool _rtl8723be_init_mac(struct ieee80211_hw *hw)
 				      PWR_FAB_ALL_MSK, PWR_INTF_PCI_MSK,
 				      Rtl8723_NIC_ENABLE_FLOW)) {
 		RT_TRACE(rtlpriv, COMP_INIT, DBG_LOUD,
-			 ("init MAC Fail as power on failure\n"));
+			 "init MAC Fail as power on failure\n");
 		return false;
 	}
 
@@ -1151,12 +1151,12 @@ void rtl8723be_enable_hw_security_config(struct ieee80211_hw *hw)
 	u8 sec_reg_value;
 
 	RT_TRACE(rtlpriv, COMP_INIT, DBG_DMESG,
-		 ("PairwiseEncAlgorithm = %d GroupEncAlgorithm = %d\n",
+		 "PairwiseEncAlgorithm = %d GroupEncAlgorithm = %d\n",
 		  rtlpriv->sec.pairwise_enc_algorithm,
-		  rtlpriv->sec.group_enc_algorithm));
+		  rtlpriv->sec.group_enc_algorithm);
 
 	if (rtlpriv->cfg->mod_params->sw_crypto || rtlpriv->sec.use_sw_sec) {
-		RT_TRACE(rtlpriv, COMP_SEC, DBG_DMESG, ("not open hw encryption\n"));
+		RT_TRACE(rtlpriv, COMP_SEC, DBG_DMESG, "not open hw encryption\n");
 		return;
 	}
 
@@ -1171,7 +1171,7 @@ void rtl8723be_enable_hw_security_config(struct ieee80211_hw *hw)
 
 	rtl_write_byte(rtlpriv, REG_CR + 1, 0x02);
 
-	RT_TRACE(rtlpriv, COMP_SEC, DBG_DMESG, ("The SECR-value %x\n", sec_reg_value));
+	RT_TRACE(rtlpriv, COMP_SEC, DBG_DMESG, "The SECR-value %x\n", sec_reg_value);
 
 	rtlpriv->cfg->ops->set_hw_reg(hw, HW_VAR_WPA_CONFIG, &sec_reg_value);
 
@@ -1236,7 +1236,7 @@ static bool _rtl8723be_check_pcie_dma_hang(struct rtl_priv *rtlpriv)
 	tmp = rtl_read_byte(rtlpriv, REG_DBI_CTRL + 3);
 	if ((tmp & BIT(0)) || (tmp & BIT(1))) {
 		RT_TRACE(rtlpriv, COMP_INIT, DBG_LOUD,
-			 ("CheckPcieDMAHang8723BE(): true!!\n"));
+			 "CheckPcieDMAHang8723BE(): true!!\n");
 		return true;
 	} else {
 		return false;
@@ -1250,7 +1250,7 @@ static void _rtl8723be_reset_pcie_interface_dma(struct rtl_priv *rtlpriv,
 	bool release_mac_rx_pause;
 	u8 backup_pcie_dma_pause;
 
-	RT_TRACE(rtlpriv, COMP_INIT, DBG_LOUD, ("ResetPcieInterfaceDMA8723BE()\n"));
+	RT_TRACE(rtlpriv, COMP_INIT, DBG_LOUD, "ResetPcieInterfaceDMA8723BE()\n");
 
 	/* Revise Note: Follow the document "PCIe RX DMA Hang Reset Flow_v03"
 	 * released by SD1 Alan.
@@ -1374,7 +1374,7 @@ int rtl8723be_hw_init(struct ieee80211_hw *hw)
 	}
 	rtstatus = _rtl8723be_init_mac(hw);
 	if (rtstatus != true) {
-		RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG, ("Init MAC failed\n"));
+		RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG, "Init MAC failed\n");
 		err = 1;
 		return err;
 	}
@@ -1385,7 +1385,7 @@ int rtl8723be_hw_init(struct ieee80211_hw *hw)
 	err = rtl8723be_download_fw(hw, false);
 	if (err) {
 		RT_TRACE(rtlpriv, COMP_ERR, DBG_WARNING,
-			 ("Failed to download FW. Init HW without FW now..\n"));
+			 "Failed to download FW. Init HW without FW now..\n");
 		err = 1;
 		rtlhal->fw_ready = false;
 		return err;
@@ -1467,7 +1467,7 @@ static enum version_8723be _rtl8723be_read_chip_version(struct ieee80211_hw *hw)
 
 	value32 = rtl_read_dword(rtlpriv, REG_SYS_CFG1);
 	if ((value32 & (CHIP_8723B)) != CHIP_8723B)
-		RT_TRACE(rtlpriv, COMP_INIT, DBG_LOUD, ("unkown chip version\n"));
+		RT_TRACE(rtlpriv, COMP_INIT, DBG_LOUD, "unkown chip version\n");
 	else
 		version = (enum version_8723be) CHIP_8723B;
 
@@ -1484,8 +1484,8 @@ static enum version_8723be _rtl8723be_read_chip_version(struct ieee80211_hw *hw)
 		version = (enum version_8723be) (version | CHIP_VENDOR_SMIC);
 
 	RT_TRACE(rtlpriv, COMP_INIT, DBG_LOUD,
-		 ("Chip RF Type: %s\n", (rtlphy->rf_type == RF_2T2R) ?
-		  "RF_2T2R" : "RF_1T1R"));
+		 "Chip RF Type: %s\n", (rtlphy->rf_type == RF_2T2R) ?
+		  "RF_2T2R" : "RF_1T1R");
 
 	return version;
 }
@@ -1503,27 +1503,27 @@ static int _rtl8723be_set_media_status(struct ieee80211_hw *hw,
 	case NL80211_IFTYPE_UNSPECIFIED:
 		mode = MSR_NOLINK;
 		RT_TRACE(rtlpriv, COMP_INIT, DBG_TRACE,
-			 ("Set Network type to NO LINK!\n"));
+			 "Set Network type to NO LINK!\n");
 		break;
 	case NL80211_IFTYPE_ADHOC:
 	case NL80211_IFTYPE_MESH_POINT:
 		mode = MSR_ADHOC;
 		RT_TRACE(rtlpriv, COMP_INIT, DBG_TRACE,
-			 ("Set Network type to Ad Hoc!\n"));
+			 "Set Network type to Ad Hoc!\n");
 		break;
 	case NL80211_IFTYPE_STATION:
 		mode = MSR_INFRA;
 		ledaction = LED_CTL_LINK;
-		RT_TRACE(rtlpriv, COMP_INIT, DBG_TRACE, ("Set Network type to STA!\n"));
+		RT_TRACE(rtlpriv, COMP_INIT, DBG_TRACE, "Set Network type to STA!\n");
 		break;
 	case NL80211_IFTYPE_AP:
 		mode = MSR_AP;
 		ledaction = LED_CTL_LINK;
-		RT_TRACE(rtlpriv, COMP_INIT, DBG_TRACE, ("Set Network type to AP!\n"));
+		RT_TRACE(rtlpriv, COMP_INIT, DBG_TRACE, "Set Network type to AP!\n");
 		break;
 	default:
 		RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG,
-			 ("Network type %d not support!\n", type));
+			 "Network type %d not support!\n", type);
 		return 1;
 		break;
 	}
@@ -1546,8 +1546,8 @@ static int _rtl8723be_set_media_status(struct ieee80211_hw *hw,
 		_rtl8723be_resume_tx_beacon(hw);
 		_rtl8723be_disable_bcn_sub_func(hw);
 	} else {
-		RT_TRACE(rtlpriv, COMP_ERR, DBG_WARNING, ("Set HW_VAR_MEDIA_STATUS: "
-			  "No such media status(%x).\n", mode));
+		RT_TRACE(rtlpriv, COMP_ERR, DBG_WARNING, "Set HW_VAR_MEDIA_STATUS: "
+			  "No such media status(%x).\n", mode);
 	}
 
 	rtl_write_byte(rtlpriv, (MSR), bt_msr | mode);
@@ -1619,7 +1619,7 @@ void rtl8723be_set_qos(struct ieee80211_hw *hw, int aci)
 		rtl_write_dword(rtlpriv, REG_EDCA_VO_PARAM, 0x2f3222);
 		break;
 	default:
-		RT_ASSERT(false, ("invalid aci: %d !\n", aci));
+		RT_ASSERT(false, "invalid aci: %d !\n", aci);
 		break;
 	}
 }
@@ -1630,16 +1630,16 @@ static void rtl8723be_clear_interrupt(struct ieee80211_hw *hw)
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	u32 tmp;
 	tmp = rtl_read_dword(rtlpriv, REG_HISR);
-	/*printk("clear interrupt first:\n");
-	printk("0x%x = 0x%08x\n",REG_HISR, tmp);*/
+	/*printk"clear interrupt first:\n";
+	printk"0x%x = 0x%08x\n",REG_HISR, tmp;*/
 	rtl_write_dword(rtlpriv, REG_HISR, tmp);
 
 	tmp = rtl_read_dword(rtlpriv, REG_HISRE);
-	/*printk("0x%x = 0x%08x\n",REG_HISRE, tmp);*/
+	/*printk"0x%x = 0x%08x\n",REG_HISRE, tmp;*/
 	rtl_write_dword(rtlpriv, REG_HISRE, tmp);
 
 	tmp = rtl_read_dword(rtlpriv, REG_HSISR);
-	/*printk("0x%x = 0x%08x\n",REG_HSISR, tmp);*/
+	/*printk"0x%x = 0x%08x\n",REG_HSISR, tmp;*/
 	rtl_write_dword(rtlpriv, REG_HSISR, tmp);
 
 }
@@ -1736,7 +1736,7 @@ void rtl8723be_set_beacon_interval(struct ieee80211_hw *hw)
 	u16 bcn_interval = mac->beacon_interval;
 
 	RT_TRACE(rtlpriv, COMP_BEACON, DBG_DMESG,
-		 ("beacon_interval:%d\n", bcn_interval));
+		 "beacon_interval:%d\n", bcn_interval);
 	rtl8723be_disable_interrupt(hw);
 	rtl_write_word(rtlpriv, REG_BCN_INTERVAL, bcn_interval);
 	rtl8723be_enable_interrupt(hw);
@@ -1749,7 +1749,7 @@ void rtl8723be_update_interrupt_mask(struct ieee80211_hw *hw,
 	struct rtl_pci *rtlpci = rtl_pcidev(rtl_pcipriv(hw));
 
 	RT_TRACE(rtlpriv, COMP_INTR, DBG_LOUD,
-		 ("add_msr:%x, rm_msr:%x\n", add_msr, rm_msr));
+		 "add_msr:%x, rm_msr:%x\n", add_msr, rm_msr);
 
 	if (add_msr)
 		rtlpci->irq_mask[0] |= add_msr;
@@ -1781,15 +1781,15 @@ static void _rtl8723be_read_power_value_fromprom(struct ieee80211_hw *hw,
 	u32 path, addr = EEPROM_TX_PWR_INX, group, cnt = 0;
 
 	RT_TRACE(rtlpriv, COMP_INIT, DBG_LOUD,
-		("hal_ReadPowerValueFromPROM8723BE(): "
+		"hal_ReadPowerValueFromPROM8723BE(): "
 		"PROMContent[0x%x]=0x%x\n",
-		(addr + 1), hwinfo[addr + 1]));
+		(addr + 1), hwinfo[addr + 1]);
 	if (0xFF == hwinfo[addr + 1])  /*YJ,add,120316*/
 		autoload_fail = true;
 
 	if (autoload_fail) {
 		RT_TRACE(rtlpriv, COMP_INIT, DBG_LOUD,
-			 ("auto load fail : Use Default value!\n"));
+			 "auto load fail : Use Default value!\n");
 		for (path = 0; path < MAX_RF_PATH; path++) {
 			/* 2.4G default value */
 			for (group = 0 ; group < MAX_CHNL_GROUP_24G; group++) {
@@ -2007,10 +2007,10 @@ static void _rtl8723be_read_txpower_info_from_hwpg(struct ieee80211_hw *hw,
 
 		for (i = 0; i < 14; i++) {
 			RTPRINT(rtlpriv, FINIT, INIT_TxPower,
-				("RF(%d)-Ch(%d) [CCK / HT40_1S ] = "
+				"RF(%d)-Ch(%d) [CCK / HT40_1S ] = "
 				 "[0x%x / 0x%x ]\n", rf_path, i,
 				 rtlefuse->txpwrlevel_cck[rf_path][i],
-				 rtlefuse->txpwrlevel_ht40_1s[rf_path][i]));
+				 rtlefuse->txpwrlevel_ht40_1s[rf_path][i]);
 		}
 	}
 
@@ -2027,7 +2027,7 @@ static void _rtl8723be_read_txpower_info_from_hwpg(struct ieee80211_hw *hw,
 
 	rtlefuse->thermalmeter[0] = rtlefuse->eeprom_thermalmeter;
 	RTPRINT(rtlpriv, FINIT, INIT_TxPower,
-		("thermalmeter = 0x%x\n", rtlefuse->eeprom_thermalmeter));
+		"thermalmeter = 0x%x\n", rtlefuse->eeprom_thermalmeter);
 
 	if (!autoload_fail) {
 		rtlefuse->eeprom_regulatory =
@@ -2038,7 +2038,7 @@ static void _rtl8723be_read_txpower_info_from_hwpg(struct ieee80211_hw *hw,
 		rtlefuse->eeprom_regulatory = 0;
 	}
 	RTPRINT(rtlpriv, FINIT, INIT_TxPower,
-		("eeprom_regulatory = 0x%x\n", rtlefuse->eeprom_regulatory));
+		"eeprom_regulatory = 0x%x\n", rtlefuse->eeprom_regulatory);
 }
 
 static void _rtl8723be_read_adapter_info(struct ieee80211_hw *hw,
@@ -2062,19 +2062,19 @@ static void _rtl8723be_read_adapter_info(struct ieee80211_hw *hw,
 		       HWSET_MAX_SIZE);
 	} else if (rtlefuse->epromtype == EEPROM_93C46) {
 		RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG,
-			 ("RTL819X Not boot from eeprom, check it !!"));
+			 "RTL819X Not boot from eeprom, check it !!");
 	}
 
-	RT_PRINT_DATA(rtlpriv, COMP_INIT, DBG_DMESG, ("MAP\n"),
+	RT_PRINT_DATA(rtlpriv, COMP_INIT, DBG_DMESG, "MAP\n",
 		      hwinfo, HWSET_MAX_SIZE);
 
 	eeprom_id = *((u16 *) &hwinfo[0]);
 	if (eeprom_id != RTL8723BE_EEPROM_ID) {
 		RT_TRACE(rtlpriv, COMP_ERR, DBG_WARNING,
-			 ("EEPROM ID(%#x) is invalid!!\n", eeprom_id));
+			 "EEPROM ID(%#x) is invalid!!\n", eeprom_id);
 		rtlefuse->autoload_failflag = true;
 	} else {
-		RT_TRACE(rtlpriv, COMP_INIT, DBG_LOUD, ("Autoload OK\n"));
+		RT_TRACE(rtlpriv, COMP_INIT, DBG_LOUD, "Autoload OK\n");
 		rtlefuse->autoload_failflag = false;
 	}
 
@@ -2086,22 +2086,22 @@ static void _rtl8723be_read_adapter_info(struct ieee80211_hw *hw,
 	rtlefuse->eeprom_svid = *(u16 *) &hwinfo[EEPROM_SVID];
 	rtlefuse->eeprom_smid = *(u16 *) &hwinfo[EEPROM_SMID];
 	RT_TRACE(rtlpriv, COMP_INIT, DBG_LOUD,
-		 ("EEPROMId = 0x%4x\n", eeprom_id));
+		 "EEPROMId = 0x%4x\n", eeprom_id);
 	RT_TRACE(rtlpriv, COMP_INIT, DBG_LOUD,
-		 ("EEPROM VID = 0x%4x\n", rtlefuse->eeprom_vid));
+		 "EEPROM VID = 0x%4x\n", rtlefuse->eeprom_vid);
 	RT_TRACE(rtlpriv, COMP_INIT, DBG_LOUD,
-		 ("EEPROM DID = 0x%4x\n", rtlefuse->eeprom_did));
+		 "EEPROM DID = 0x%4x\n", rtlefuse->eeprom_did);
 	RT_TRACE(rtlpriv, COMP_INIT, DBG_LOUD,
-		 ("EEPROM SVID = 0x%4x\n", rtlefuse->eeprom_svid));
+		 "EEPROM SVID = 0x%4x\n", rtlefuse->eeprom_svid);
 	RT_TRACE(rtlpriv, COMP_INIT, DBG_LOUD,
-		 ("EEPROM SMID = 0x%4x\n", rtlefuse->eeprom_smid));
+		 "EEPROM SMID = 0x%4x\n", rtlefuse->eeprom_smid);
 
 	for (i = 0; i < 6; i += 2) {
 		usvalue = *(u16 *) &hwinfo[EEPROM_MAC_ADDR + i];
 		*((u16 *) (&rtlefuse->dev_addr[i])) = usvalue;
 	}
 
-	RT_TRACE(rtlpriv, COMP_INIT, DBG_DMESG, ("dev_addr: %pM\n", rtlefuse->dev_addr));
+	RT_TRACE(rtlpriv, COMP_INIT, DBG_DMESG, "dev_addr: %pM\n", rtlefuse->dev_addr);
 
 	/*parse xtal*/
 	rtlefuse->crystalcap = hwinfo[EEPROM_XTAL_8723BE];
@@ -2122,7 +2122,7 @@ static void _rtl8723be_read_adapter_info(struct ieee80211_hw *hw,
 	rtlefuse->eeprom_oemid = *(u8 *) &hwinfo[EEPROM_CUSTOMER_ID];
 
 	RT_TRACE(rtlpriv, COMP_INIT, DBG_LOUD,
-		 ("EEPROM Customer ID: 0x%2x\n", rtlefuse->eeprom_oemid));
+		 "EEPROM Customer ID: 0x%2x\n", rtlefuse->eeprom_oemid);
 
 	/* set channel paln to world wide 13 */
 	rtlefuse->channel_plan = COUNTRY_CODE_WORLD_WIDE_13;
@@ -2359,7 +2359,7 @@ static void _rtl8723be_hal_customized_behavior(struct ieee80211_hw *hw)
 		break;
 	}
 	RT_TRACE(rtlpriv, COMP_INIT, DBG_DMESG,
-		 ("RT Customized ID: 0x%02X\n", rtlhal->oem_id));
+		 "RT Customized ID: 0x%02X\n", rtlhal->oem_id);
 }
 
 void rtl8723be_read_eeprom_info(struct ieee80211_hw *hw)
@@ -2376,22 +2376,22 @@ void rtl8723be_read_eeprom_info(struct ieee80211_hw *hw)
 	else
 		rtlpriv->dm.rfpath_rxenable[0] =
 		    rtlpriv->dm.rfpath_rxenable[1] = true;
-	RT_TRACE(rtlpriv, COMP_INIT, DBG_LOUD, ("VersionID = 0x%4x\n",
-						rtlhal->version));
+	RT_TRACE(rtlpriv, COMP_INIT, DBG_LOUD, "VersionID = 0x%4x\n",
+						rtlhal->version);
 	tmp_u1b = rtl_read_byte(rtlpriv, REG_9346CR);
 	if (tmp_u1b & BIT(4)) {
-		RT_TRACE(rtlpriv, COMP_INIT, DBG_DMESG, ("Boot from EEPROM\n"));
+		RT_TRACE(rtlpriv, COMP_INIT, DBG_DMESG, "Boot from EEPROM\n");
 		rtlefuse->epromtype = EEPROM_93C46;
 	} else {
-		RT_TRACE(rtlpriv, COMP_INIT, DBG_DMESG, ("Boot from EFUSE\n"));
+		RT_TRACE(rtlpriv, COMP_INIT, DBG_DMESG, "Boot from EFUSE\n");
 		rtlefuse->epromtype = EEPROM_BOOT_EFUSE;
 	}
 	if (tmp_u1b & BIT(5)) {
-		RT_TRACE(rtlpriv, COMP_INIT, DBG_LOUD, ("Autoload OK\n"));
+		RT_TRACE(rtlpriv, COMP_INIT, DBG_LOUD, "Autoload OK\n");
 		rtlefuse->autoload_failflag = false;
 		_rtl8723be_read_adapter_info(hw, false);
 	} else {
-		RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG, ("Autoload ERR!!\n"));
+		RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG, "Autoload ERR!!\n");
 	}
 	_rtl8723be_hal_customized_behavior(hw);
 }
@@ -2545,7 +2545,7 @@ static void rtl8723be_update_hal_rate_mask(struct ieee80211_hw *hw,
 	sta_entry->ratr_index = ratr_index;
 
 	RT_TRACE(rtlpriv, COMP_RATR, DBG_DMESG,
-		 ("ratr_bitmap :%x\n", ratr_bitmap));
+		 "ratr_bitmap :%x\n", ratr_bitmap);
 	*(u32 *)&rate_mask = (ratr_bitmap & 0x0fffffff) |
 				       (ratr_index << 28);
 	rate_mask[0] = macid;
@@ -2560,13 +2560,13 @@ static void rtl8723be_update_hal_rate_mask(struct ieee80211_hw *hw,
 	rate_mask[5] = (u8)((ratr_bitmap & 0x00ff0000) >> 16);
 	rate_mask[6] = (u8)((ratr_bitmap & 0xff000000) >> 24);
 
-	RT_TRACE(rtlpriv, COMP_RATR, DBG_DMESG, ("Rate_index:%x, "
+	RT_TRACE(rtlpriv, COMP_RATR, DBG_DMESG, "Rate_index:%x, "
 					"ratr_val:%x, %x:%x:%x:%x:%x:%x:%x\n",
 					ratr_index, ratr_bitmap,
 					rate_mask[0], rate_mask[1],
 					rate_mask[2], rate_mask[3],
 					rate_mask[4], rate_mask[5],
-					rate_mask[6]));
+					rate_mask[6]);
 	rtl8723be_fill_h2c_cmd(hw, H2C_8723B_RA_MASK, 7, rate_mask);
 	_rtl8723be_set_bcn_ctrl_reg(hw, BIT(3), 0);
 }
@@ -2634,7 +2634,7 @@ bool rtl8723be_gpio_radio_on_off_checking(struct ieee80211_hw *hw, u8 *valid)
 	if ((ppsc->hwradiooff == true) &&
 	    (e_rfpowerstate_toset == ERFON)) {
 		RT_TRACE(rtlpriv, COMP_RF, DBG_DMESG,
-			 ("GPIOChangeRF  - HW Radio ON, RF ON\n"));
+			 "GPIOChangeRF  - HW Radio ON, RF ON\n");
 
 		e_rfpowerstate_toset = ERFON;
 		ppsc->hwradiooff = false;
@@ -2642,7 +2642,7 @@ bool rtl8723be_gpio_radio_on_off_checking(struct ieee80211_hw *hw, u8 *valid)
 	} else if ((ppsc->hwradiooff == false) &&
 		   (e_rfpowerstate_toset == ERFOFF)) {
 		RT_TRACE(rtlpriv, COMP_RF, DBG_DMESG,
-			 ("GPIOChangeRF  - HW Radio OFF, RF OFF\n"));
+			 "GPIOChangeRF  - HW Radio OFF, RF OFF\n");
 
 		e_rfpowerstate_toset = ERFOFF;
 		ppsc->hwradiooff = true;
@@ -2693,7 +2693,7 @@ void rtl8723be_set_key(struct ieee80211_hw *hw, u32 key_index,
 		u8 cam_offset = 0;
 		u8 clear_number = 5;
 
-		RT_TRACE(rtlpriv, COMP_SEC, DBG_DMESG, ("clear_all\n"));
+		RT_TRACE(rtlpriv, COMP_SEC, DBG_DMESG, "clear_all\n");
 
 		for (idx = 0; idx < clear_number; idx++) {
 			rtl_cam_mark_invalid(hw, cam_offset + idx);
@@ -2722,7 +2722,7 @@ void rtl8723be_set_key(struct ieee80211_hw *hw, u32 key_index,
 			break;
 		default:
 			RT_TRACE(rtlpriv, COMP_ERR, DBG_LOUD,
-				 ("switch case not process\n"));
+				 "switch case not process\n");
 			enc_algo = CAM_TKIP;
 			break;
 		}
@@ -2740,9 +2740,9 @@ void rtl8723be_set_key(struct ieee80211_hw *hw, u32 key_index,
 								p_macaddr);
 					if (entry_id >=  TOTAL_CAM_ENTRY) {
 						RT_TRACE(rtlpriv, COMP_SEC, DBG_EMERG,
-							 ("Can not find free"
+							 "Can not find free"
 							  " hw security cam "
-							  "entry\n"));
+							  "entry\n");
 						return;
 					}
 				} else {
@@ -2756,16 +2756,16 @@ void rtl8723be_set_key(struct ieee80211_hw *hw, u32 key_index,
 
 		if (rtlpriv->sec.key_len[key_index] == 0) {
 			RT_TRACE(rtlpriv, COMP_SEC, DBG_DMESG,
-				 ("delete one entry, entry_id is %d\n",
-				  entry_id));
+				 "delete one entry, entry_id is %d\n",
+				  entry_id);
 			if (mac->opmode == NL80211_IFTYPE_AP)
 				rtl_cam_del_entry(hw, p_macaddr);
 			rtl_cam_delete_one_entry(hw, p_macaddr, entry_id);
 		} else {
-			RT_TRACE(rtlpriv, COMP_SEC, DBG_DMESG, ("add one entry\n"));
+			RT_TRACE(rtlpriv, COMP_SEC, DBG_DMESG, "add one entry\n");
 			if (is_pairwise) {
 				RT_TRACE(rtlpriv, COMP_SEC, DBG_DMESG,
-					 ("set Pairwiase key\n"));
+					 "set Pairwiase key\n");
 
 				rtl_cam_add_one_entry(hw, macaddr, key_index,
 					       entry_id, enc_algo,
@@ -2773,7 +2773,7 @@ void rtl8723be_set_key(struct ieee80211_hw *hw, u32 key_index,
 					       rtlpriv->sec.key_buf[key_index]);
 			} else {
 				RT_TRACE(rtlpriv, COMP_SEC, DBG_DMESG,
-					 ("set group key\n"));
+					 "set group key\n");
 
 				if (mac->opmode == NL80211_IFTYPE_ADHOC) {
 					rtl_cam_add_one_entry(hw,
@@ -2867,6 +2867,6 @@ void rtl8723be_allow_all_destaddr(struct ieee80211_hw *hw, bool allow_all_da,
 
 
 	RT_TRACE(rtlpriv, COMP_TURBO | COMP_INIT, DBG_LOUD,
-		 ("receive_config=0x%08X, write_into_reg=%d\n",
-		  rtlpci->receive_config, write_into_reg));
+		 "receive_config=0x%08X, write_into_reg=%d\n",
+		  rtlpci->receive_config, write_into_reg);
 }

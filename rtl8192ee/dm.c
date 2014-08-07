@@ -260,16 +260,16 @@ static void rtl92ee_dm_false_alarm_counter_statistics(struct ieee80211_hw *hw)
 
 
 	RT_TRACE(rtlpriv, COMP_DIG, DBG_TRACE,
-		 ("cnt_parity_fail = %d, cnt_rate_illegal = %d, "
+		 "cnt_parity_fail = %d, cnt_rate_illegal = %d, "
 		  "cnt_crc8_fail = %d, cnt_mcs_fail = %d\n",
 		  falsealm_cnt->cnt_parity_fail,
 		  falsealm_cnt->cnt_rate_illegal,
-		  falsealm_cnt->cnt_crc8_fail, falsealm_cnt->cnt_mcs_fail));
+		  falsealm_cnt->cnt_crc8_fail, falsealm_cnt->cnt_mcs_fail);
 
 	RT_TRACE(rtlpriv, COMP_DIG, DBG_TRACE,
-		 ("cnt_ofdm_fail = %x, cnt_cck_fail = %x, cnt_all = %x\n",
+		 "cnt_ofdm_fail = %x, cnt_cck_fail = %x, cnt_all = %x\n",
 		  falsealm_cnt->cnt_ofdm_fail,
-		  falsealm_cnt->cnt_cck_fail, falsealm_cnt->cnt_all));
+		  falsealm_cnt->cnt_cck_fail, falsealm_cnt->cnt_all);
 }
 
 static void rtl92ee_dm_cck_packet_detection_thresh(struct ieee80211_hw *hw)
@@ -345,7 +345,7 @@ static void rtl92ee_dm_dig(struct ieee80211_hw *hw)
 	} else {
 		dm_dig.rx_gain_max = dm_dig_max;
 		dig_dynamic_min = dm_dig_min;
-		RT_TRACE(rtlpriv, COMP_DIG, DBG_LOUD, ("no link\n"));
+		RT_TRACE(rtlpriv, COMP_DIG, DBG_LOUD, "no link\n");
 	}
 
 	if (rtlpriv->falsealm_cnt.cnt_all > 10000) {
@@ -500,7 +500,7 @@ static void rtl92ee_dm_find_minimum_rssi(struct ieee80211_hw *hw)
 	    (rtlpriv->dm.entry_min_undec_sm_pwdb == 0)) {
 		rtl_dm_dig->min_undecorated_pwdb_for_dm = 0;
 		RT_TRACE(rtlpriv, COMP_BB_POWERSAVING, DBG_LOUD,
-			 ("Not connected to any\n"));
+			 "Not connected to any\n");
 	}
 	if (mac->link_state >= MAC80211_LINKED) {
 		if (mac->opmode == NL80211_IFTYPE_AP ||
@@ -508,24 +508,24 @@ static void rtl92ee_dm_find_minimum_rssi(struct ieee80211_hw *hw)
 			rtl_dm_dig->min_undecorated_pwdb_for_dm =
 				rtlpriv->dm.entry_min_undec_sm_pwdb;
 			RT_TRACE(rtlpriv, COMP_BB_POWERSAVING, DBG_LOUD,
-			      ("AP Client PWDB = 0x%lx\n",
-			       rtlpriv->dm.entry_min_undec_sm_pwdb));
+			      "AP Client PWDB = 0x%lx\n",
+			       rtlpriv->dm.entry_min_undec_sm_pwdb);
 		} else {
 			rtl_dm_dig->min_undecorated_pwdb_for_dm =
 			    rtlpriv->dm.undec_sm_pwdb;
 			RT_TRACE(rtlpriv, COMP_BB_POWERSAVING, DBG_LOUD,
-				("STA Default Port PWDB = 0x%x\n",
-				rtl_dm_dig->min_undecorated_pwdb_for_dm));
+				"STA Default Port PWDB = 0x%x\n",
+				rtl_dm_dig->min_undecorated_pwdb_for_dm);
 		}
 	} else {
 		rtl_dm_dig->min_undecorated_pwdb_for_dm =
 			rtlpriv->dm.entry_min_undec_sm_pwdb;
 		RT_TRACE(rtlpriv, COMP_BB_POWERSAVING, DBG_LOUD,
-			("AP Ext Port or disconnet PWDB = 0x%x\n",
-			rtl_dm_dig->min_undecorated_pwdb_for_dm));
+			"AP Ext Port or disconnet PWDB = 0x%x\n",
+			rtl_dm_dig->min_undecorated_pwdb_for_dm);
 	}
-	RT_TRACE(rtlpriv, COMP_DIG, DBG_LOUD, ("MinUndecoratedPWDBForDM =%d\n",
-		rtl_dm_dig->min_undecorated_pwdb_for_dm));
+	RT_TRACE(rtlpriv, COMP_DIG, DBG_LOUD, "MinUndecoratedPWDBForDM =%d\n",
+		rtl_dm_dig->min_undecorated_pwdb_for_dm);
 }
 
 static void rtl92ee_dm_check_rssi_monitor(struct ieee80211_hw *hw)
@@ -562,7 +562,7 @@ static void rtl92ee_dm_check_rssi_monitor(struct ieee80211_hw *hw)
 		if (max != 0) {
 			dm->entry_max_undec_sm_pwdb = max;
 			RTPRINT(rtlpriv, FDM, DM_PWDB,
-				("EntryMaxPWDB = 0x%lx(%ld)\n", max, max));
+				"EntryMaxPWDB = 0x%lx(%ld)\n", max, max);
 		} else {
 			dm->entry_max_undec_sm_pwdb = 0;
 		}
@@ -570,7 +570,7 @@ static void rtl92ee_dm_check_rssi_monitor(struct ieee80211_hw *hw)
 		if (min != 0xff) {
 			dm->entry_min_undec_sm_pwdb = min;
 			RTPRINT(rtlpriv, FDM, DM_PWDB,
-				("EntryMinPWDB = 0x%lx(%ld)\n", min, min));
+				"EntryMinPWDB = 0x%lx(%ld)\n", min, min);
 		} else {
 			dm->entry_min_undec_sm_pwdb = 0;
 		}
@@ -846,8 +846,8 @@ static void rtl92ee_dm_dynamic_atc_switch(struct ieee80211_hw *hw)
 		if (rtlpriv->cfg->ops->get_btc_status()) {
 			if (!rtlpriv->btcoexist.btc_ops->btc_is_bt_disabled(rtlpriv)) {
 				RT_TRACE(rtlpriv, COMP_BT_COEXIST, DBG_LOUD,
-					("odm_DynamicATCSwitch(): "
-					"Disable CFO tracking for BT!!\n"));
+					"odm_DynamicATCSwitch(): "
+					"Disable CFO tracking for BT!!\n");
 				return;
 			}
 		}
@@ -1007,7 +1007,7 @@ static bool _rtl92ee_dm_ra_state_check(struct ieee80211_hw *hw,
 
 	default:
 			RT_TRACE(rtlpriv, COMP_RATR, DBG_DMESG,
-				("wrong rssi level setting %d !", *ratr_state));
+				"wrong rssi level setting %d !", *ratr_state);
 			break;
 	}
 
@@ -1037,13 +1037,13 @@ static void rtl92ee_dm_refresh_rate_adaptive_mask(struct ieee80211_hw *hw)
 
 	if (is_hal_stop(rtlhal)) {
 		RT_TRACE(rtlpriv, COMP_RATE, DBG_LOUD,
-			 ("driver is going to unload\n"));
+			 "driver is going to unload\n");
 		return;
 	}
 
 	if (!rtlpriv->dm.useramask) {
 		RT_TRACE(rtlpriv, COMP_RATE, DBG_LOUD,
-			 ("driver does not control rate adaptive mask\n"));
+			 "driver does not control rate adaptive mask\n");
 		return;
 	}
 

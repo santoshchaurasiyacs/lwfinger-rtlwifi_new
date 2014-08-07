@@ -101,7 +101,7 @@ static void load_wowlan_fw(struct rtl_priv *rtlpriv)
 	rtlpriv->rtlhal.wowlan_firmware = vmalloc(0x8000);
 	if (!rtlpriv->rtlhal.wowlan_firmware) {
 		RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG,
-			 ("Can't alloc buffer for wowlan fw.\n"));
+			 "Can't alloc buffer for wowlan fw.\n");
 		return;
 	}
 
@@ -112,13 +112,13 @@ static void load_wowlan_fw(struct rtl_priv *rtlpriv)
 	err = request_firmware(&wowlan_firmware, fw_name, rtlpriv->io.dev);
 	if (err) {
 		RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG,
-			 ("Failed to request wowlan firmware!\n"));
+			 "Failed to request wowlan firmware!\n");
 		goto error;
 	}
 
 	if (wowlan_firmware->size > 0x8000) {
 		RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG,
-			 ("Wowlan Firmware is too big!\n"));
+			 "Wowlan Firmware is too big!\n");
 		goto error;
 	}
 
@@ -127,7 +127,7 @@ static void load_wowlan_fw(struct rtl_priv *rtlpriv)
 	rtlpriv->rtlhal.wowlan_fwsize = wowlan_firmware->size;
 	release_firmware(wowlan_firmware);
 
-	RT_TRACE(rtlpriv, COMP_INIT, DBG_LOUD, ("WOWLAN FirmwareDownload OK\n"));
+	RT_TRACE(rtlpriv, COMP_INIT, DBG_LOUD, "WOWLAN FirmwareDownload OK\n");
 	return;
 error:
 	release_firmware(wowlan_firmware);
@@ -235,7 +235,7 @@ int rtl8821ae_init_sw_vars(struct ieee80211_hw *hw)
 	rtlpriv->rtlhal.pfirmware = vzalloc(0x8000);
 	if (!rtlpriv->rtlhal.pfirmware) {
 		RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG,
-			 ("Can't alloc buffer for fw.\n"));
+			 "Can't alloc buffer for fw.\n");
 		return 1;
 	}
 
@@ -251,7 +251,7 @@ int rtl8821ae_init_sw_vars(struct ieee80211_hw *hw)
 				      rtl_fw_cb);
 	if (err) {
 		RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG,
-			 ("Failed to request firmware!\n"));
+			 "Failed to request firmware!\n");
 		return 1;
 	}
 	return 0;
@@ -482,10 +482,9 @@ static int __init rtl8821ae_module_init(void)
 {
 	int ret;
 
-	/* printk("==========>rtl8821ae_module_init().\n"); */
 	ret = pci_register_driver(&rtl8821ae_driver);
 	if (ret)
-		RT_ASSERT(false, (": No device found\n"));
+		RT_ASSERT(false, ": No device found\n");
 
 	return ret;
 }

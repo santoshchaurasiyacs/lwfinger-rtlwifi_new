@@ -211,7 +211,7 @@ static void _rtl_init_hw_ht_capab(struct ieee80211_hw *hw,
 	 *highest supported RX rate
 	 */
 	if (rtlpriv->dm.supp_phymode_switch) {
-		RT_TRACE(rtlpriv, COMP_INIT, DBG_EMERG, ("Support phy mode switch\n"));
+		RT_TRACE(rtlpriv, COMP_INIT, DBG_EMERG, "Support phy mode switch\n");
 
 		ht_cap->mcs.rx_mask[0] = 0xFF;
 		ht_cap->mcs.rx_mask[1] = 0xFF;
@@ -222,7 +222,7 @@ static void _rtl_init_hw_ht_capab(struct ieee80211_hw *hw,
 		if (get_rf_type(rtlphy) == RF_1T2R ||
 				get_rf_type(rtlphy) == RF_2T2R) {
 
-			RT_TRACE(rtlpriv, COMP_INIT, DBG_DMESG, ("1T2R or 2T2R\n"));
+			RT_TRACE(rtlpriv, COMP_INIT, DBG_DMESG, "1T2R or 2T2R\n");
 
 			ht_cap->mcs.rx_mask[0] = 0xFF;
 			ht_cap->mcs.rx_mask[1] = 0xFF;
@@ -232,7 +232,7 @@ static void _rtl_init_hw_ht_capab(struct ieee80211_hw *hw,
 				 cpu_to_le16(MAX_BIT_RATE_40MHZ_MCS15);
 		} else if (get_rf_type(rtlphy) == RF_1T1R) {
 
-			RT_TRACE(rtlpriv, COMP_INIT, DBG_DMESG, ("1T1R\n"));
+			RT_TRACE(rtlpriv, COMP_INIT, DBG_DMESG, "1T1R\n");
 
 			ht_cap->mcs.rx_mask[0] = 0xFF;
 			ht_cap->mcs.rx_mask[1] = 0x00;
@@ -400,8 +400,8 @@ static void _rtl_init_mac80211(struct ieee80211_hw *hw)
 			/* <4> set mac->sband to wiphy->sband */
 			hw->wiphy->bands[IEEE80211_BAND_5GHZ] = sband;
 		} else {
-			RT_TRACE(rtlpriv, COMP_INIT, DBG_EMERG, ("Err BAND %d\n",
-				 rtlhal->current_bandtype));
+			RT_TRACE(rtlpriv, COMP_INIT, DBG_EMERG, "Err BAND %d\n",
+				 rtlhal->current_bandtype);
 		}
 	}
 	/* <5> set hw caps */
@@ -592,7 +592,7 @@ int rtl_init_core(struct ieee80211_hw *hw)
 	 * mac80211 hw  in _rtl_init_mac80211.
 	 */
 	if (rtl_regd_init(hw, rtl_reg_notifier)) {
-		RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG, ("REGD init failed\n"));
+		RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG, "REGD init failed\n");
 		return 1;
 	}
 
@@ -1015,7 +1015,7 @@ bool rtl_tx_mgmt_proc(struct ieee80211_hw *hw, struct sk_buff *skb)
 			rtlpriv->cfg->ops->check_switch_to_dmdp(hw);
 	}
 	if (ieee80211_is_auth(fc)) {
-		RT_TRACE(rtlpriv, COMP_SEND, DBG_DMESG, ("MAC80211_LINKING\n"));
+		RT_TRACE(rtlpriv, COMP_SEND, DBG_DMESG, "MAC80211_LINKING\n");
 		rtl_ips_nic_on(hw);
 
 		mac->link_state = MAC80211_LINKING;
@@ -1052,9 +1052,9 @@ bool rtl_action_proc(struct ieee80211_hw *hw, struct sk_buff *skb, u8 is_tx)
 				return false;
 
 			RT_TRACE(rtlpriv, (COMP_SEND | COMP_RECV), DBG_DMESG,
-				("%s ACT_ADDBAREQ From :%pM\n",
-				is_tx ? "Tx" : "Rx", hdr->addr2));
-			RT_PRINT_DATA(rtlpriv, COMP_INIT, DBG_DMESG, ("req\n"),
+				"%s ACT_ADDBAREQ From :%pM\n",
+				is_tx ? "Tx" : "Rx", hdr->addr2);
+			RT_PRINT_DATA(rtlpriv, COMP_INIT, DBG_DMESG, "req\n",
 				skb->data, skb->len);
 			if (!is_tx) {
 				struct ieee80211_sta *sta = NULL;
@@ -1069,7 +1069,7 @@ bool rtl_action_proc(struct ieee80211_hw *hw, struct sk_buff *skb, u8 is_tx)
 				sta = rtl_find_sta(hw, hdr->addr3);
 				if (sta == NULL) {
 					RT_TRACE(rtlpriv, (COMP_SEND | COMP_RECV),
-						 DBG_EMERG, ("sta is NULL\n"));
+						 DBG_EMERG, "sta is NULL\n");
 					rcu_read_unlock();
 					return true;
 				}
@@ -1109,7 +1109,7 @@ bool rtl_action_proc(struct ieee80211_hw *hw, struct sk_buff *skb, u8 is_tx)
 						memcpy(IEEE80211_SKB_RXCB(skb_delba),
 							&rx_status, sizeof(rx_status));
 						RT_PRINT_DATA(rtlpriv, COMP_INIT,
-							DBG_DMESG, ("fake del\n"),
+							DBG_DMESG, "fake del\n",
 							skb_delba->data, skb_delba->len);
 						ieee80211_rx_irqsafe(hw, skb_delba);
 					}
@@ -1119,12 +1119,12 @@ bool rtl_action_proc(struct ieee80211_hw *hw, struct sk_buff *skb, u8 is_tx)
 			break;
 		case ACT_ADDBARSP:
 			RT_TRACE(rtlpriv, (COMP_SEND | COMP_RECV), DBG_DMESG,
-				 ("%s ACT_ADDBARSP From :%pM\n",
-				  is_tx ? "Tx" : "Rx", hdr->addr2));
+				 "%s ACT_ADDBARSP From :%pM\n",
+				  is_tx ? "Tx" : "Rx", hdr->addr2);
 			break;
 		case ACT_DELBA:
 			RT_TRACE(rtlpriv, (COMP_SEND | COMP_RECV), DBG_DMESG,
-				 ("ACT_ADDBADEL From :%pM\n", hdr->addr2));
+				 "ACT_ADDBADEL From :%pM\n", hdr->addr2);
 			break;
 		}
 		break;
@@ -1168,8 +1168,8 @@ u8 rtl_is_special_data(struct ieee80211_hw *hw, struct sk_buff *skb, u8 is_tx)
 				 * 67 : UDP BOOTP server
 				 */
 				RT_TRACE(rtlpriv, (COMP_SEND | COMP_RECV),
-					 DBG_DMESG, ("dhcp %s !!\n",
-						     (is_tx) ? "Tx" : "Rx"));
+					 DBG_DMESG, "dhcp %s !!\n",
+						     (is_tx) ? "Tx" : "Rx");
 
 				if (is_tx) {
 					rtlpriv->ra.is_special_data = true;
@@ -1197,7 +1197,7 @@ u8 rtl_is_special_data(struct ieee80211_hw *hw, struct sk_buff *skb, u8 is_tx)
 		return true;
 	} else if (ETH_P_PAE == ether_type) {
 		RT_TRACE(rtlpriv, (COMP_SEND | COMP_RECV), DBG_DMESG,
-			 ("802.1X %s EAPOL pkt!!\n", (is_tx) ? "Tx" : "Rx"));
+			 "802.1X %s EAPOL pkt!!\n", (is_tx) ? "Tx" : "Rx");
 
 		if (is_tx) {
 			rtlpriv->ra.is_special_data = true;
@@ -1240,8 +1240,8 @@ int rtl_tx_agg_start(struct ieee80211_hw *hw, struct ieee80211_vif *vif,
 	tid_data = &sta_entry->tids[tid];
 
 	RT_TRACE(rtlpriv, COMP_SEND, DBG_DMESG,
-		 ("on ra = %pM tid = %d seq:%d\n", sta->addr, tid,
-		  tid_data->seq_number));
+		 "on ra = %pM tid = %d seq:%d\n", sta->addr, tid,
+		  tid_data->seq_number);
 
 	*ssn = tid_data->seq_number;
 	tid_data->agg.agg_state = RTL_AGG_START;
@@ -1262,12 +1262,12 @@ int rtl_tx_agg_stop(struct ieee80211_hw *hw, struct ieee80211_vif *vif,
 
 	/* Comparing an array to null is not useful */
 	/*if (!sta->addr) {
-		RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG, ("ra = NULL\n"));
+		RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG, "ra = NULL\n");
 		return -EINVAL;
 	}*/
 
 	RT_TRACE(rtlpriv, COMP_SEND, DBG_DMESG,
-		 ("on ra = %pM tid = %d\n", sta->addr, tid));
+		 "on ra = %pM tid = %d\n", sta->addr, tid);
 
 	if (unlikely(tid >= MAX_TID_COUNT))
 		return -EINVAL;
@@ -1299,8 +1299,8 @@ int rtl_rx_agg_start(struct ieee80211_hw *hw,
 	tid_data = &sta_entry->tids[tid];
 
 	RT_TRACE(rtlpriv, COMP_RECV, DBG_DMESG,
-		 ("on ra = %pM tid = %d seq:%d\n", sta->addr, tid,
-		 tid_data->seq_number));
+		 "on ra = %pM tid = %d seq:%d\n", sta->addr, tid,
+		 tid_data->seq_number);
 
 	tid_data->agg.rx_agg_state = RTL_RX_AGG_START;
 	return 0;
@@ -1318,12 +1318,12 @@ int rtl_rx_agg_stop(struct ieee80211_hw *hw,
 
 	/* Comparing an array to null is not useful */
 	/*if (!sta->addr) {
-		RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG, ("ra = NULL\n"));
+		RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG, "ra = NULL\n");
 		return -EINVAL;
 	}*/
 
 	RT_TRACE(rtlpriv, COMP_SEND, DBG_DMESG,
-		 ("on ra = %pM tid = %d\n", sta->addr, tid));
+		 "on ra = %pM tid = %d\n", sta->addr, tid);
 
 	if (unlikely(tid >= MAX_TID_COUNT))
 		return -EINVAL;
@@ -1346,12 +1346,12 @@ int rtl_tx_agg_oper(struct ieee80211_hw *hw,
 
 	/* Comparing an array to null is not useful */
 	/*if (!sta->addr) {
-		RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG, ("ra = NULL\n"));
+		RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG, "ra = NULL\n");
 		return -EINVAL;
 	}*/
 
 	RT_TRACE(rtlpriv, COMP_SEND, DBG_DMESG,
-		 ("on ra = %pM tid = %d\n", sta->addr, tid));
+		 "on ra = %pM tid = %d\n", sta->addr, tid);
 
 	if (unlikely(tid >= MAX_TID_COUNT))
 		return -EINVAL;
@@ -1533,14 +1533,14 @@ void rtl_watchdog_wq_callback(void *data)
 		if ((rtlpriv->link_info.bcn_rx_inperiod +
 			rtlpriv->link_info.num_rx_inperiod) == 0) {
 			rtlpriv->link_info.roam_times++;
-			RT_TRACE(rtlpriv, COMP_ERR, DBG_DMESG, ("AP off for %d s\n",
-				(rtlpriv->link_info.roam_times * 2)));
+			RT_TRACE(rtlpriv, COMP_ERR, DBG_DMESG, "AP off for %d s\n",
+				(rtlpriv->link_info.roam_times * 2));
 
 			/* if we can't recv beacon for 10s,
 			* we should reconnect this AP */
 			if (rtlpriv->link_info.roam_times >= 5) {
 				RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG,
-					 ("AP off, try to reconnect now\n"));
+					 "AP off, try to reconnect now\n");
 				rtlpriv->link_info.roam_times = 0;
 				ieee80211_connection_loss(
 					rtlpriv->mac80211.vif);
@@ -1885,29 +1885,29 @@ void rtl_recognize_peer(struct ieee80211_hw *hw, u8 *data, unsigned int len)
 		(memcmp(mac->bssid, ap5_6, 3) == 0) ||
 		vendor == PEER_ATH) {
 		vendor = PEER_ATH;
-		RT_TRACE(rtlpriv, COMP_MAC80211, DBG_LOUD, ("=>ath find\n"));
+		RT_TRACE(rtlpriv, COMP_MAC80211, DBG_LOUD, "=>ath find\n");
 	} else if ((memcmp(mac->bssid, ap4_4, 3) == 0) ||
 		(memcmp(mac->bssid, ap4_5, 3) == 0) ||
 		(memcmp(mac->bssid, ap4_1, 3) == 0) ||
 		(memcmp(mac->bssid, ap4_2, 3) == 0) ||
 		(memcmp(mac->bssid, ap4_3, 3) == 0) ||
 		vendor == PEER_RAL) {
-		RT_TRACE(rtlpriv, COMP_MAC80211, DBG_LOUD, ("=>ral findn\n"));
+		RT_TRACE(rtlpriv, COMP_MAC80211, DBG_LOUD, "=>ral findn\n");
 		vendor = PEER_RAL;
 	} else if (memcmp(mac->bssid, ap6_1, 3) == 0 ||
 		vendor == PEER_CISCO) {
 		vendor = PEER_CISCO;
-		RT_TRACE(rtlpriv, COMP_MAC80211, DBG_LOUD, ("=>cisco find\n"));
+		RT_TRACE(rtlpriv, COMP_MAC80211, DBG_LOUD, "=>cisco find\n");
 	} else if ((memcmp(mac->bssid, ap3_1, 3) == 0) ||
 		(memcmp(mac->bssid, ap3_2, 3) == 0) ||
 		(memcmp(mac->bssid, ap3_3, 3) == 0) ||
 		vendor == PEER_BROAD) {
-		RT_TRACE(rtlpriv, COMP_MAC80211, DBG_LOUD, ("=>broad find\n"));
+		RT_TRACE(rtlpriv, COMP_MAC80211, DBG_LOUD, "=>broad find\n");
 		vendor = PEER_BROAD;
 	} else if (memcmp(mac->bssid, ap7_1, 3) == 0 ||
 		vendor == PEER_MARV) {
 		vendor = PEER_MARV;
-		RT_TRACE(rtlpriv, COMP_MAC80211, DBG_LOUD, ("=>marv find\n"));
+		RT_TRACE(rtlpriv, COMP_MAC80211, DBG_LOUD, "=>marv find\n");
 	}
 
 	mac->vendor = vendor;
@@ -1941,12 +1941,12 @@ static ssize_t rtl_store_debug_level(struct device *d,
 	if (ret) {
 
 		RT_TRACE(rtlpriv, COMP_ERR, DBG_DMESG,
-			("%s is not in hex or decimal form.\n", buf));
+			"%s is not in hex or decimal form.\n", buf);
 	} else {
 		rtlpriv->dbg.global_debuglevel = val;
 		RT_TRACE(rtlpriv, COMP_ERR, DBG_DMESG,
-			("debuglevel:%x\n",
-			rtlpriv->dbg.global_debuglevel));
+			"debuglevel:%x\n",
+			rtlpriv->dbg.global_debuglevel);
 	}
 
 	return strnlen(buf, count);
@@ -2019,8 +2019,8 @@ bool rtl_set_vif_info(struct ieee80211_hw *hw, struct ieee80211_vif *vif)
 
 	if (rtlpriv->vif_priv.vifs >= MAX_VIRTUAL_MAC) {
 		RT_TRACE(rtlpriv, COMP_ERR, DBG_WARNING,
-			 ("vif number can not bigger than %d, now vifs is:%d\n",
-			  MAX_VIRTUAL_MAC, rtlpriv->vif_priv.vifs));
+			 "vif number can not bigger than %d, now vifs is:%d\n",
+			  MAX_VIRTUAL_MAC, rtlpriv->vif_priv.vifs);
 		return false;
 	}
 
@@ -2028,7 +2028,7 @@ bool rtl_set_vif_info(struct ieee80211_hw *hw, struct ieee80211_vif *vif)
 	vif_id = bitmap_find_free_region(&rtlpriv->vif_priv.vif_bitmap,
 					 MAX_VIRTUAL_MAC, 0);
 	RT_TRACE(rtlpriv, COMP_MAC80211, DBG_DMESG,
-		 ("%s vid_id:%d\n", __func__, vif_id));
+		 "%s vid_id:%d\n", __func__, vif_id);
 
 	if (vif_id < 0) {
 		rcu_read_unlock();
@@ -2049,8 +2049,8 @@ bool rtl_set_vif_info(struct ieee80211_hw *hw, struct ieee80211_vif *vif)
 	list_add_tail_rcu(&vif_info->list, &rtlpriv->vif_priv.vif_list);
 	rcu_assign_pointer(rtlpriv->vif_priv.vif[vif_id].vif, vif);
 
-	RT_TRACE(rtlpriv, COMP_MAC80211, DBG_DMESG, ("vifaddress:%p %p %p\n",
-		 rtlpriv->vif_priv.vif[vif_id].vif, vif, rtl_get_main_vif(hw)));
+	RT_TRACE(rtlpriv, COMP_MAC80211, DBG_DMESG, "vifaddress:%p %p %p\n",
+		 rtlpriv->vif_priv.vif[vif_id].vif, vif, rtl_get_main_vif(hw));
 
 	rcu_read_unlock();
 

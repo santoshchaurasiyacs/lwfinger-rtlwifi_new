@@ -544,7 +544,7 @@ void rtl92se_tx_fill_desc(struct ieee80211_hw *hw, struct ieee80211_hdr *hdr,
 
 	if (pci_dma_mapping_error(rtlpci->pdev, mapping)) {
 		RT_TRACE(rtlpriv, COMP_SEND, DBG_TRACE,
-			 ("DMA mapping error"));
+			 "DMA mapping error");
 		return;
 	}
 	if (mac->opmode == NL80211_IFTYPE_STATION) {
@@ -703,7 +703,7 @@ void rtl92se_tx_fill_desc(struct ieee80211_hw *hw, struct ieee80211_hdr *hdr,
 	/* DOWRD 8 */
 	SET_TX_DESC_TX_BUFFER_ADDRESS(pdesc, mapping);
 
-	RT_TRACE(rtlpriv, COMP_SEND, DBG_TRACE, ("\n"));
+	RT_TRACE(rtlpriv, COMP_SEND, DBG_TRACE, "\n");
 }
 
 void rtl92se_tx_fill_cmddesc(struct ieee80211_hw *hw, u8 *pdesc,
@@ -719,7 +719,7 @@ void rtl92se_tx_fill_cmddesc(struct ieee80211_hw *hw, u8 *pdesc,
 
 	if (pci_dma_mapping_error(rtlpci->pdev, mapping)) {
 		RT_TRACE(rtlpriv, COMP_SEND, DBG_TRACE,
-			 ("DMA mapping error"));
+			 "DMA mapping error");
 		return;
 	}
     /* Clear all status	*/
@@ -776,7 +776,7 @@ void rtl92se_set_desc(struct ieee80211_hw *hw, u8 *pdesc,
 			break;
 		default:
 			RT_ASSERT(false,
-				("ERR txdesc :%d not process\n", desc_name));
+				"ERR txdesc :%d not process\n", desc_name);
 			break;
 		}
 	} else {
@@ -795,7 +795,7 @@ void rtl92se_set_desc(struct ieee80211_hw *hw, u8 *pdesc,
 			break;
 		default:
 			RT_ASSERT(false,
-				("ERR rxdesc :%d not process\n", desc_name));
+				"ERR rxdesc :%d not process\n", desc_name);
 			break;
 		}
 	}
@@ -815,7 +815,7 @@ u32 rtl92se_get_desc(u8 *pdesc, bool istx, u8 desc_name)
 			break;
 		default:
 			RT_ASSERT(false,
-				("ERR txdesc :%d not process\n", desc_name));
+				"ERR txdesc :%d not process\n", desc_name);
 			break;
 		}
 	} else {
@@ -831,7 +831,7 @@ u32 rtl92se_get_desc(u8 *pdesc, bool istx, u8 desc_name)
 			break;
 		default:
 			RT_ASSERT(false,
-				("ERR rxdesc :%d not process\n", desc_name));
+				"ERR rxdesc :%d not process\n", desc_name);
 			break;
 		}
 	}

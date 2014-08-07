@@ -166,33 +166,31 @@ enum dbgp_flag_e {
 	DBGP_TYPE_MAX
 };
 
-#define RT_ASSERT(_exp , fmt)				\
-	do { \
-		if (!(_exp))	{			\
-			printk(KERN_DEBUG "%s:%s(): ", KBUILD_MODNAME, \
-			__func__);	\
-			printk fmt;			\
-		} \
-	} while (0)
+#define RT_ASSERT(_exp, fmt, ...)					\
+do {									\
+	if (!(_exp)) {							\
+		printk(KERN_DEBUG KBUILD_MODNAME ":%s(): " fmt,		\
+		       __func__, ##__VA_ARGS__);			\
+	}								\
+} while (0)
 
-#define RT_TRACE(priv, comp, level, fmt)\
-	do { \
-		if (unlikely(((comp) & rtlpriv->dbg.global_debugcomponents) && \
-			((level) <= priv->dbg.global_debuglevel))) {\
-			printk(KERN_DEBUG "%s-%d:%s() ", \
-			KBUILD_MODNAME, \
-			priv->rtlhal.interfaceindex, __func__); \
-			printk fmt;			\
-		} \
-	} while (0)
+#define RT_TRACE(rtlpriv, comp, level, fmt, ...)			\
+do {									\
+	if (unlikely(((comp) & rtlpriv->dbg.global_debugcomponents) &&	\
+		     ((level) <= rtlpriv->dbg.global_debuglevel))) {	\
+		printk(KERN_DEBUG KBUILD_MODNAME ":%s():<%lx-%x> " fmt,	\
+		       __func__, in_interrupt(), in_atomic(),		\
+		       ##__VA_ARGS__);					\
+	}								\
+} while (0)
 
-#define RTPRINT(rtlpriv, dbgtype, dbgflag, printstr)	\
-	do {						\
-		if (unlikely(rtlpriv->dbg.dbgp_type[dbgtype] & dbgflag)) { \
-			printk(KERN_DEBUG "%s: ", KBUILD_MODNAME);	\
-			printk printstr;		\
-		}					\
-	} while (0)
+#define RTPRINT(rtlpriv, dbgtype, dbgflag, fmt, ...)			\
+do {									\
+	if (unlikely(rtlpriv->dbg.dbgp_type[dbgtype] & dbgflag)) {	\
+		printk(KERN_DEBUG KBUILD_MODNAME ": " fmt,		\
+		       ##__VA_ARGS__);					\
+	}								\
+} while (0)
 
 #define RT_PRINT_DATA(rtlpriv, _comp, _level, _titlestring, _hexdata, \
 		_hexdatalen) \
