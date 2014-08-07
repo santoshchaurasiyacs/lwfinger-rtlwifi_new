@@ -43,7 +43,7 @@
 #include "led.h"
 #include "table.h"
 
-void rtl88e_init_aspm_vars(struct ieee80211_hw *hw)
+static void rtl88e_init_aspm_vars(struct ieee80211_hw *hw)
 {
 	struct rtl_pci *rtlpci = rtl_pcidev(rtl_pcipriv(hw));
 
@@ -227,7 +227,7 @@ bool rtl88e_get_btc_status(void)
 }
 
 
-struct rtl_hal_ops rtl8188ee_hal_ops = {
+static struct rtl_hal_ops rtl8188ee_hal_ops = {
 	.init_sw_vars = rtl88e_init_sw_vars,
 	.deinit_sw_vars = rtl88e_deinit_sw_vars,
 	.read_eeprom_info = rtl88ee_read_eeprom_info,
@@ -275,7 +275,7 @@ struct rtl_hal_ops rtl8188ee_hal_ops = {
 
 };
 
-struct rtl_mod_params rtl88ee_mod_params = {
+static struct rtl_mod_params rtl88ee_mod_params = {
 	.sw_crypto = false,
 	.inactiveps = false,
 	.swctrl_lps = false,
@@ -284,7 +284,7 @@ struct rtl_mod_params rtl88ee_mod_params = {
 	.debug = DBG_EMERG,
 };
 
-struct rtl_hal_cfg rtl88ee_hal_cfg = {
+static struct rtl_hal_cfg rtl88ee_hal_cfg = {
 	.bar_id = 2,
 	.write_readback = true,
 	.name = "rtl88e_pci",

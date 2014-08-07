@@ -1230,7 +1230,7 @@ void rtl88e_dm_init_rate_adaptive_mask(struct ieee80211_hw *hw)
 
 }
 
-void rtl88e_dm_refresh_rate_adaptive_mask(struct ieee80211_hw *hw)
+static void rtl88e_dm_refresh_rate_adaptive_mask(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_hal *rtlhal = rtl_hal(rtl_priv(hw));

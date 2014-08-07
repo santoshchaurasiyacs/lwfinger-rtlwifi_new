@@ -100,8 +100,8 @@ static void _rtl88ee_return_beacon_queue_skb(struct ieee80211_hw *hw)
 		struct sk_buff *skb = __skb_dequeue(&ring->queue);
 
 		pci_unmap_single(rtlpci->pdev,
-				 le32_to_cpu(rtlpriv->cfg->ops->get_desc(
-				 (u8 *) entry, true, HW_DESC_TXBUFF_ADDR)),
+				 rtlpriv->cfg->ops->get_desc(
+				 (u8 *) entry, true, HW_DESC_TXBUFF_ADDR),
 				 skb->len, PCI_DMA_TODEVICE);
 		kfree_skb(skb);
 		ring->idx = (ring->idx + 1) % ring->entries;
@@ -1174,19 +1174,6 @@ void rtl88ee_enable_hw_security_config(struct ieee80211_hw *hw)
 	rtlpriv->cfg->ops->set_hw_reg(hw, HW_VAR_WPA_CONFIG, &sec_reg_value);
 
 }
-void rtl8188ee_allow_error_packet(struct ieee80211_hw *hw,
-		bool b_allow_err_pkt)
-{
-	struct rtl_priv *rtlpriv = rtl_priv(hw);
-	struct rtl_pci *rtlpci = rtl_pcidev(rtl_pcipriv(hw));
-
-	if (b_allow_err_pkt)
-		rtlpci->receive_config |= (RCR_ACRC32 | RCR_AICV);
-	else
-		rtlpci->receive_config &= ~(RCR_ACRC32 | RCR_AICV);
-
-	rtl_write_dword(rtlpriv, REG_RCR, rtlpci->receive_config);
-}
 
 int rtl88ee_hw_init(struct ieee80211_hw *hw)
 {
@@ -1484,7 +1471,7 @@ void rtl88ee_set_qos(struct ieee80211_hw *hw, int aci)
 }
 
 
-void rtl88ee_clear_interrupt(struct ieee80211_hw *hw)
+static void rtl88ee_clear_interrupt(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	u32 tmp;
@@ -2390,8 +2377,8 @@ static void rtl88ee_update_hal_rate_mask(struct ieee80211_hw *hw,
 
 	RT_TRACE(COMP_RATR, DBG_DMESG,
 		 ("ratr_bitmap :%x\n", ratr_bitmap));
-	*(u32 *) &rate_mask = EF4BYTE((ratr_bitmap & 0x0fffffff) |
-				       (ratr_index << 28));
+	*(u32 *) &rate_mask = (ratr_bitmap & 0x0fffffff) |
+				       (ratr_index << 28);
 	rate_mask[4] = macid | (b_shortgi ? 0x20 : 0x00) | 0x80;
 	RT_TRACE(COMP_RATR, DBG_DMESG, ("Rate_index:%x, "
 						 "ratr_val:%x, %x:%x:%x:%x:%x\n",
@@ -2618,16 +2605,13 @@ void rtl88ee_set_key(struct ieee80211_hw *hw, u32 key_index,
 	}
 }
 
-void rtl8188ee_bt_var_init(struct ieee80211_hw *hw)
+static void rtl8188ee_bt_var_init(struct ieee80211_hw *hw)
 {
 	struct rtl_pci_priv *rtlpcipriv = rtl_pcipriv(hw);
 
-	rtlpcipriv->btcoexist.bt_coexistence =
-						rtlpcipriv->btcoexist.eeprom_bt_coexist;
-	rtlpcipriv->btcoexist.bt_ant_num =
-						rtlpcipriv->btcoexist.eeprom_bt_ant_num;
-	rtlpcipriv->btcoexist.bt_coexist_type =
-						rtlpcipriv->btcoexist.eeprom_bt_type;
+	rtlpcipriv->btcoexist.bt_coexistence = rtlpcipriv->btcoexist.eeprom_bt_coexist;
+	rtlpcipriv->btcoexist.bt_ant_num = rtlpcipriv->btcoexist.eeprom_bt_ant_num;
+	rtlpcipriv->btcoexist.bt_coexist_type = rtlpcipriv->btcoexist.eeprom_bt_type;
 
 	if (rtlpcipriv->btcoexist.reg_bt_iso == 2)
 		rtlpcipriv->btcoexist.bt_ant_isolation =
