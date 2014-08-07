@@ -336,15 +336,15 @@ static u32 halbtc_get_bt_patch_version(struct btc_coexist *btcoexist)
 static s32 halbtc_get_wifi_rssi(struct rtl_priv *adapter)
 {
 	struct rtl_priv *rtlpriv = adapter;
-	s32	undecorated_smoothed_pwdb = 0;
+	s32	undec_sm_pwdb = 0;
 
 	if (rtlpriv->mac80211.link_state >= MAC80211_LINKED)
-		undecorated_smoothed_pwdb =
-			rtlpriv->dm.undecorated_smoothed_pwdb;
+		undec_sm_pwdb =
+			rtlpriv->dm.undec_sm_pwdb;
 	else /* associated entry pwdb */
-		undecorated_smoothed_pwdb =
-			rtlpriv->dm.undecorated_smoothed_pwdb;
-	return undecorated_smoothed_pwdb;
+		undec_sm_pwdb =
+			rtlpriv->dm.undec_sm_pwdb;
+	return undec_sm_pwdb;
 }
 
 static bool halbtc_get(void *void_btcoexist, u8 get_type, void *out_buf)

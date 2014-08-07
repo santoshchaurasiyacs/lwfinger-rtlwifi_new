@@ -429,7 +429,7 @@ long rtl8723e_dm_bt_get_rx_ss(struct ieee80211_hw *hw)
 			GET_UNDECORATED_AVERAGE_RSSI(rtlpriv);
 	} else {
 		undecoratedsmoothed_pwdb
-			= rtlpriv->dm.entry_min_undecoratedsmoothed_pwdb;
+			= rtlpriv->dm.entry_min_undec_sm_pwdb;
 	}
 	RT_TRACE(COMP_BT_COEXIST, DBG_TRACE,
 		("rtl8723e_dm_bt_get_rx_ss() = %ld\n",

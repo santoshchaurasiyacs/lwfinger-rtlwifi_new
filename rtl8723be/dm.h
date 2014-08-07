@@ -247,60 +247,6 @@
 #define	CFO_THRESHOLD_XTAL			10 /* kHz */
 #define	CFO_THRESHOLD_ATC			80 /* kHz */
 
-struct ps_t {
-	u8 pre_ccastate;
-	u8 cur_ccasate;
-	u8 pre_rfstate;
-	u8 cur_rfstate;
-	u8 initialize;
-	long rssi_val_min;
-
-};
-
-struct dig_t {
-	u8 dig_enable_flag;
-	u8 dig_ext_port_stage;
-	u32 rssi_lowthresh;
-	u32 rssi_highthresh;
-
-	u32 fa_lowthresh;
-	u32 fa_highthresh;
-
-	u8 cursta_connectctate;
-	u8 presta_connectstate;
-	u8 curmultista_connectstate;
-
-	u8 pre_igvalue;
-	u8 cur_igvalue;
-	u8 bt30_cur_igi;
-	u8 backup_igvalue;
-	u8 stop_dig;
-
-	char backoff_val;
-	char backoff_val_range_max;
-	char backoff_val_range_min;
-	u8 rx_gain_range_max;
-	u8 rx_gain_range_min;
-	u8 rssi_val_min;
-
-	u8 pre_cck_cca_thres;
-	u8 cur_cck_cca_thres;
-	u8 pre_cck_pd_state;
-	u8 cur_cck_pd_state;
-
-	u8 large_fa_hit;
-	u8 forbidden_igi;
-	u32 recover_cnt;
-
-	u8 dig_dynamic_min_0;
-	u8 dig_dynamic_min_1;
-	bool b_media_connect_0;
-	bool b_media_connect_1;
-
-	u32 antdiv_rssi_max;
-	u32 rssi_max;
-};
-
 enum dm_1r_cca_e {
 	CCA_1R		= 0,
 	CCA_2R		= 1,

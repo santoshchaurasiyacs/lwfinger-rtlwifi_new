@@ -256,62 +256,6 @@
 #define MAX_PATH_NUM_8812A		2
 #define MAX_PATH_NUM_8821A		1
 
-
-struct ps_t {
-	u8 pre_ccastate;
-	u8 cur_ccasate;
-	u8 pre_rfstate;
-	u8 cur_rfstate;
-	u8 initialize;
-	long rssi_val_min;
-
-};
-
-struct dig_t {
-	u8 dig_enable_flag;
-	u8 dig_ext_port_stage;
-	u32 rssi_lowthresh;
-	u32 rssi_highthresh;
-
-	u32 fa_lowthresh;
-	u32 fa_highthresh;
-
-	u8 cursta_connectctate;
-	u8 presta_connectstate;
-	u8 curmultista_connectstate;
-
-	u8 pre_igvalue;
-	u8 cur_igvalue;
-	u8 bt30_cur_igi;
-	u8 backup_igvalue;
-	u8 stop_dig;
-
-	char backoff_val;
-	char backoff_val_range_max;
-	char backoff_val_range_min;
-	u8 rx_gain_range_max;
-	u8 rx_gain_range_min;
-	u8 rssi_val_min;
-
-	u8 pre_cck_cca_thres;
-	u8 cur_cck_cca_thres;
-	u8 pre_cck_pd_state;
-	u8 cur_cck_pd_state;
-
-	u8 large_fa_hit;
-	u8 forbidden_igi;
-	u32 recover_cnt;
-
-	u8 dig_dynamic_min_0;
-	u8 dig_dynamic_min_1;
-	bool b_media_connect_0;
-	bool b_media_connect_1;
-
-	u32 antdiv_rssi_max;
-	u32 rssi_max;
-};
-
-
 enum FAT_STATE {
 	FAT_NORMAL_STATE	= 0,
 	FAT_TRAINING_STATE = 1,
@@ -384,8 +328,8 @@ enum pwr_track_control_method {
 #define BT_RSSI_STATE_TXPOWER_LOW       BIT_OFFSET_LEN_MASK_32(4, 1)
 #define GET_UNDECORATED_AVERAGE_RSSI(_priv)     \
 	(((struct rtl_priv *)(_priv))->mac80211.opmode == NL80211_IFTYPE_ADHOC) ? \
-	(((struct rtl_priv *)(_priv))->dm.entry_min_undecoratedsmoothed_pwdb) : \
-	(((struct rtl_priv *)(_priv))->dm.undecorated_smoothed_pwdb)
+	(((struct rtl_priv *)(_priv))->dm.entry_min_undec_sm_pwdb) : \
+	(((struct rtl_priv *)(_priv))->dm.undec_sm_pwdb)
 
 extern struct dig_t dm_digtable;
 void rtl8821ae_dm_set_tx_ant_by_tx_info(struct ieee80211_hw *hw,

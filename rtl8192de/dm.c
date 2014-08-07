@@ -346,7 +346,7 @@ static void rtl92d_dm_find_minimum_rssi(struct ieee80211_hw *hw)
 
 	/* Determine the minimum RSSI  */
 	if ((mac->link_state < MAC80211_LINKED) &&
-	    (rtlpriv->dm.entry_min_undecoratedsmoothed_pwdb == 0)) {
+	    (rtlpriv->dm.entry_min_undec_sm_pwdb == 0)) {
 		rtl_dm_dig->min_undecorated_pwdb_for_dm = 0;
 		RT_TRACE(COMP_BB_POWERSAVING, DBG_LOUD,
 			 ("Not connected to any\n"));
@@ -355,20 +355,20 @@ static void rtl92d_dm_find_minimum_rssi(struct ieee80211_hw *hw)
 		if (mac->opmode == NL80211_IFTYPE_AP ||
 			mac->opmode == NL80211_IFTYPE_ADHOC) {
 			rtl_dm_dig->min_undecorated_pwdb_for_dm =
-			    rtlpriv->dm.entry_min_undecoratedsmoothed_pwdb;
+			    rtlpriv->dm.entry_min_undec_sm_pwdb;
 			RT_TRACE(COMP_BB_POWERSAVING, DBG_LOUD,
 				 ("AP Client PWDB = 0x%lx\n",
-				  rtlpriv->dm.entry_min_undecoratedsmoothed_pwdb));
+				  rtlpriv->dm.entry_min_undec_sm_pwdb));
 		} else {
 			rtl_dm_dig->min_undecorated_pwdb_for_dm =
-			    rtlpriv->dm.undecorated_smoothed_pwdb;
+			    rtlpriv->dm.undec_sm_pwdb;
 			RT_TRACE(COMP_BB_POWERSAVING, DBG_LOUD,
 				 ("STA Default Port PWDB = 0x%x\n",
 				  rtl_dm_dig->min_undecorated_pwdb_for_dm));
 		}
 	} else {
 		rtl_dm_dig->min_undecorated_pwdb_for_dm =
-		    rtlpriv->dm.entry_min_undecoratedsmoothed_pwdb;
+		    rtlpriv->dm.entry_min_undec_sm_pwdb;
 		RT_TRACE(COMP_BB_POWERSAVING, DBG_LOUD,
 			 ("AP Ext Port or disconnet PWDB = 0x%x\n",
 			  rtl_dm_dig->min_undecorated_pwdb_for_dm));
@@ -416,19 +416,19 @@ static u8 _rtl92d_dm_initial_gain_minpwdb(struct ieee80211_hw *hw)
 	digtable->curmultista_connectstate = MULTISTA_CONNECT(rtlpriv);
 	if ((digtable->curmultista_connectstate == DIG_MULTISTA_CONNECT) &&
 		(digtable->cursta_connectstate == DIG_STA_CONNECT)) {
-		if (rtlpriv->dm.entry_min_undecoratedsmoothed_pwdb != 0) {
-			rssi_val_min = (rtlpriv->dm.entry_min_undecoratedsmoothed_pwdb >
-				rtlpriv->dm.undecorated_smoothed_pwdb) ?
-				rtlpriv->dm.undecorated_smoothed_pwdb :
-				rtlpriv->dm.entry_min_undecoratedsmoothed_pwdb;
+		if (rtlpriv->dm.entry_min_undec_sm_pwdb != 0) {
+			rssi_val_min = (rtlpriv->dm.entry_min_undec_sm_pwdb >
+				rtlpriv->dm.undec_sm_pwdb) ?
+				rtlpriv->dm.undec_sm_pwdb :
+				rtlpriv->dm.entry_min_undec_sm_pwdb;
 		} else {
-			rssi_val_min = rtlpriv->dm.undecorated_smoothed_pwdb;
+			rssi_val_min = rtlpriv->dm.undec_sm_pwdb;
 		}
 	} else if (digtable->cursta_connectstate == DIG_STA_CONNECT ||
 			digtable->cursta_connectstate == DIG_STA_BEFORE_CONNECT) {
-		rssi_val_min = rtlpriv->dm.undecorated_smoothed_pwdb;
+		rssi_val_min = rtlpriv->dm.undec_sm_pwdb;
 	} else if (digtable->curmultista_connectstate == DIG_MULTISTA_CONNECT) {
-		rssi_val_min = rtlpriv->dm.entry_min_undecoratedsmoothed_pwdb;
+		rssi_val_min = rtlpriv->dm.entry_min_undec_sm_pwdb;
 	}
 
 	return (u8)rssi_val_min;
@@ -816,7 +816,7 @@ static void rtl92d_dm_dynamic_txpower(struct ieee80211_hw *hw)
 	struct rtl_phy *rtlphy = &(rtlpriv->phy);
 	struct rtl_hal *rtlhal = rtl_hal(rtlpriv);
 	struct rtl_mac *mac = rtl_mac(rtl_priv(hw));
-	long undecorated_smoothed_pwdb;
+	long undec_sm_pwdb;
 	struct rtl_priv *buddy_priv = rtlpriv->buddy_priv;
 	bool bgetvalue_from_buddy = _rtl92d_dualmac_getparameter_from_buddy(hw);
 	u8 highpowerlvl_backformac0 = TXHIGHPWRLEVEL_LEVEL1;
@@ -828,7 +828,7 @@ static void rtl92d_dm_dynamic_txpower(struct ieee80211_hw *hw)
 	}
 	if (!rtlpriv->dm.supp_phymode_switch &&
 	    (mac->link_state < MAC80211_LINKED) &&
-	    (rtlpriv->dm.entry_min_undecoratedsmoothed_pwdb == 0)) {
+	    (rtlpriv->dm.entry_min_undec_sm_pwdb == 0)) {
 		RT_TRACE(COMP_POWER, DBG_TRACE, ("Not connected to any\n"));
 		rtlpriv->dm.dynamic_txhighpower_lvl = TXHIGHPWRLEVEL_NORMAL;
 		rtlpriv->dm.last_dtp_lvl = TXHIGHPWRLEVEL_NORMAL;
@@ -836,57 +836,57 @@ static void rtl92d_dm_dynamic_txpower(struct ieee80211_hw *hw)
 	}
 	if (mac->link_state >= MAC80211_LINKED) {
 		if (mac->opmode == NL80211_IFTYPE_ADHOC) {
-			undecorated_smoothed_pwdb =
-			    rtlpriv->dm.entry_min_undecoratedsmoothed_pwdb;
+			undec_sm_pwdb =
+			    rtlpriv->dm.entry_min_undec_sm_pwdb;
 			RT_TRACE(COMP_POWER, DBG_LOUD,
 				 ("IBSS Client PWDB = 0x%lx\n",
-				  undecorated_smoothed_pwdb));
+				  undec_sm_pwdb));
 		} else {
-			undecorated_smoothed_pwdb =
-			    rtlpriv->dm.undecorated_smoothed_pwdb;
+			undec_sm_pwdb =
+			    rtlpriv->dm.undec_sm_pwdb;
 			RT_TRACE(COMP_POWER, DBG_LOUD,
 				 ("STA Default Port PWDB = 0x%lx\n",
-				  undecorated_smoothed_pwdb));
+				  undec_sm_pwdb));
 		}
 	} else {
-		undecorated_smoothed_pwdb =
-		    rtlpriv->dm.entry_min_undecoratedsmoothed_pwdb;
+		undec_sm_pwdb =
+		    rtlpriv->dm.entry_min_undec_sm_pwdb;
 
 		RT_TRACE(COMP_POWER, DBG_LOUD,
 			 ("AP Ext Port PWDB = 0x%lx\n",
-			  undecorated_smoothed_pwdb));
+			  undec_sm_pwdb));
 	}
 	if (rtlhal->current_bandtype == BAND_ON_5G) {
-		if (undecorated_smoothed_pwdb >= 0x33) {
+		if (undec_sm_pwdb >= 0x33) {
 			rtlpriv->dm.dynamic_txhighpower_lvl = TXHIGHPWRLEVEL_LEVEL2;
 			RT_TRACE(COMP_HIPWR, DBG_LOUD,
 				 ("5G:TxHighPwrLevel_Level2 (TxPwr=0x0)\n"));
-		} else if ((undecorated_smoothed_pwdb < 0x33)
-			   && (undecorated_smoothed_pwdb >= 0x2b)) {
+		} else if ((undec_sm_pwdb < 0x33)
+			   && (undec_sm_pwdb >= 0x2b)) {
 			rtlpriv->dm.dynamic_txhighpower_lvl = TXHIGHPWRLEVEL_LEVEL1;
 			RT_TRACE(COMP_HIPWR, DBG_LOUD,
 				 ("5G:TxHighPwrLevel_Level1 (TxPwr=0x10)\n"));
-		} else if (undecorated_smoothed_pwdb < 0x2b) {
+		} else if (undec_sm_pwdb < 0x2b) {
 			rtlpriv->dm.dynamic_txhighpower_lvl = TXHIGHPWRLEVEL_NORMAL;
 			RT_TRACE(COMP_HIPWR, DBG_LOUD,
 				 ("5G:TxHighPwrLevel_Normal\n"));
 		}
 	} else {
-		if (undecorated_smoothed_pwdb >=
+		if (undec_sm_pwdb >=
 		    TX_POWER_NEAR_FIELD_THRESH_LVL2) {
 			rtlpriv->dm.dynamic_txhighpower_lvl = TXHIGHPWRLEVEL_LEVEL2;
 			RT_TRACE(COMP_POWER, DBG_LOUD,
 				 ("TXHIGHPWRLEVEL_LEVEL1 (TxPwr=0x0)\n"));
 		} else
-		    if ((undecorated_smoothed_pwdb <
+		    if ((undec_sm_pwdb <
 			 (TX_POWER_NEAR_FIELD_THRESH_LVL2 - 3))
-			&& (undecorated_smoothed_pwdb >=
+			&& (undec_sm_pwdb >=
 			    TX_POWER_NEAR_FIELD_THRESH_LVL1)) {
 
 			rtlpriv->dm.dynamic_txhighpower_lvl = TXHIGHPWRLEVEL_LEVEL1;
 			RT_TRACE(COMP_POWER, DBG_LOUD,
 				 ("TXHIGHPWRLEVEL_LEVEL1 (TxPwr=0x10)\n"));
-		} else if (undecorated_smoothed_pwdb <
+		} else if (undec_sm_pwdb <
 			   (TX_POWER_NEAR_FIELD_THRESH_LVL1 - 5)) {
 			rtlpriv->dm.dynamic_txhighpower_lvl = TXHIGHPWRLEVEL_NORMAL;
 			RT_TRACE(COMP_POWER, DBG_LOUD,
@@ -961,34 +961,34 @@ static void rtl92d_dm_pwdb_monitor(struct ieee80211_hw *hw)
 	/* AP & ADHOC & MESH */
 	spin_lock_bh(&rtlpriv->locks.entry_list_lock);
 	list_for_each_entry(drv_priv, &rtlpriv->entry_list, list) {
-		if (drv_priv->rssi_stat.undecorated_smoothed_pwdb < tmp_entry_min_pwdb)
-			tmp_entry_min_pwdb = drv_priv->rssi_stat.undecorated_smoothed_pwdb;
-		if (drv_priv->rssi_stat.undecorated_smoothed_pwdb > tmp_entry_max_pwdb)
-			tmp_entry_max_pwdb = drv_priv->rssi_stat.undecorated_smoothed_pwdb;
+		if (drv_priv->rssi_stat.undec_sm_pwdb < tmp_entry_min_pwdb)
+			tmp_entry_min_pwdb = drv_priv->rssi_stat.undec_sm_pwdb;
+		if (drv_priv->rssi_stat.undec_sm_pwdb > tmp_entry_max_pwdb)
+			tmp_entry_max_pwdb = drv_priv->rssi_stat.undec_sm_pwdb;
 	}
 	spin_unlock_bh(&rtlpriv->locks.entry_list_lock);
 
 	/* If associated entry is found */
 	if (tmp_entry_max_pwdb != 0)	{
-		rtlpriv->dm.entry_max_undecoratedsmoothed_pwdb = tmp_entry_max_pwdb;
+		rtlpriv->dm.entry_max_undec_sm_pwdb = tmp_entry_max_pwdb;
 		RTPRINT(rtlpriv, FDM, DM_PWDB, ("EntryMaxPWDB = 0x%lx(%ld)\n",
 			tmp_entry_max_pwdb, tmp_entry_max_pwdb));
 	} else {
-		rtlpriv->dm.entry_max_undecoratedsmoothed_pwdb = 0;
+		rtlpriv->dm.entry_max_undec_sm_pwdb = 0;
 	}
 	/* If associated entry is found */
 	if (tmp_entry_min_pwdb != 0xff) {
-		rtlpriv->dm.entry_min_undecoratedsmoothed_pwdb = tmp_entry_min_pwdb;
+		rtlpriv->dm.entry_min_undec_sm_pwdb = tmp_entry_min_pwdb;
 		RTPRINT(rtlpriv, FDM, DM_PWDB, ("EntryMinPWDB = 0x%lx(%ld)\n",
 					tmp_entry_min_pwdb, tmp_entry_min_pwdb));
 	} else {
-		rtlpriv->dm.entry_min_undecoratedsmoothed_pwdb = 0;
+		rtlpriv->dm.entry_min_undec_sm_pwdb = 0;
 	}
 
 	/* Indicate Rx signal strength to FW. */
 	if (rtlpriv->dm.useramask) {
 		u32 temp = 0;
-		temp = rtlpriv->dm.undecorated_smoothed_pwdb;
+		temp = rtlpriv->dm.undec_sm_pwdb;
 		temp = temp << 16;
 		temp = temp | 0x100;
 		/* fw v12 cmdid 5:use max macid ,for nic ,
@@ -996,7 +996,7 @@ static void rtl92d_dm_pwdb_monitor(struct ieee80211_hw *hw)
 		rtl92d_fill_h2c_cmd(hw, H2C_RSSI_REPORT, 3, (u8 *) (&temp));
 	} else {
 		rtl_write_byte(rtlpriv, 0x4fe,
-				(u8) rtlpriv->dm.undecorated_smoothed_pwdb);
+				(u8) rtlpriv->dm.undec_sm_pwdb);
 	}
 }
 

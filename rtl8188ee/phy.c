@@ -2191,20 +2191,21 @@ static void rtl88e_phy_set_io(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_phy *rtlphy = &(rtlpriv->phy);
+	struct dig_t *dm_digtable = &rtlpriv->dm_digtable;
 
 	RT_TRACE(COMP_CMD, DBG_TRACE,
 		 ("--->Cmd(%#x), set_io_inprogress(%d)\n",
 		  rtlphy->current_io_type, rtlphy->set_io_inprogress));
 	switch (rtlphy->current_io_type) {
 	case IO_CMD_RESUME_DM_BY_SCAN:
-		dm_digtable.cur_igvalue = rtlphy->initgain_backup.xaagccore1;
+		dm_digtable->cur_igvalue = rtlphy->initgain_backup.xaagccore1;
 		/*rtl92c_dm_write_dig(hw);*/
 		rtl88e_phy_set_txpower_level(hw, rtlphy->current_channel);
 		rtl_set_bbreg(hw, RCCK0_CCA, 0xff0000, 0x83);
 		break;
 	case IO_CMD_PAUSE_BAND0_DM_BY_SCAN:
-		rtlphy->initgain_backup.xaagccore1 = dm_digtable.cur_igvalue;
-		dm_digtable.cur_igvalue = 0x17;
+		rtlphy->initgain_backup.xaagccore1 = dm_digtable->cur_igvalue;
+		dm_digtable->cur_igvalue = 0x17;
 		rtl_set_bbreg(hw, RCCK0_CCA, 0xff0000, 0x40);
 		break;
 	default:

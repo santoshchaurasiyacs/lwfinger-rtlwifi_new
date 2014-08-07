@@ -3123,22 +3123,23 @@ static void rtl92ee_phy_set_io(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_phy *rtlphy = &(rtlpriv->phy);
+	struct dig_t *dm_dig = &rtlpriv->dm_digtable;
 
 	RT_TRACE(COMP_CMD, DBG_TRACE,
 		 ("--->Cmd(%#x), set_io_inprogress(%d)\n",
 		  rtlphy->current_io_type, rtlphy->set_io_inprogress));
 	switch (rtlphy->current_io_type) {
 	case IO_CMD_RESUME_DM_BY_SCAN:
-		rtl92ee_dm_write_dig(hw , rtlphy->initgain_backup.xaagccore1);
+		rtl92ee_dm_write_dig(hw, rtlphy->initgain_backup.xaagccore1);
 		rtl92ee_dm_write_cck_cca_thres(hw, rtlphy->initgain_backup.cca);
 		RT_TRACE(COMP_CMD, DBG_TRACE , ("no set txpower\n"));
 		rtl92ee_phy_set_txpower_level(hw, rtlphy->current_channel);
 		break;
 	case IO_CMD_PAUSE_BAND0_DM_BY_SCAN:
 		/* 8192eebt */
-		rtlphy->initgain_backup.xaagccore1 = dm_dig.cur_igvalue;
+		rtlphy->initgain_backup.xaagccore1 = dm_dig->cur_igvalue;
 		rtl92ee_dm_write_dig(hw, 0x17);
-		rtlphy->initgain_backup.cca = dm_dig.cur_cck_cca_thres;
+		rtlphy->initgain_backup.cca = dm_dig->cur_cck_cca_thres;
 		rtl92ee_dm_write_cck_cca_thres(hw, 0x40);
 		break;
 	default:

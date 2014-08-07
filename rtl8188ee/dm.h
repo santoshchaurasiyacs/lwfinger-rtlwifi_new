@@ -239,57 +239,6 @@
 #define TX_POWER_NEAR_FIELD_THRESH_LVL1	67
 #define TXPWRTRACK_MAX_IDX 6
 
-struct ps_t {
-	u8 pre_ccastate;
-	u8 cur_ccasate;
-	u8 pre_rfstate;
-	u8 cur_rfstate;
-	long rssi_val_min;
-
-};
-
-struct dig_t {
-	u8 dig_enable_flag;
-	u8 dig_ext_port_stage;
-	u32 rssi_lowthresh;
-	u32 rssi_highthresh;
-
-	u32 fa_lowthresh;
-	u32 fa_highthresh;
-
-	u8 cursta_connectctate;
-	u8 presta_connectstate;
-	u8 curmultista_connectstate;
-
-	u8 pre_igvalue;
-	u8 cur_igvalue;
-	u8 backup_igvalue;
-
-	char backoff_val;
-	char backoff_val_range_max;
-	char backoff_val_range_min;
-	u8 rx_gain_range_max;
-	u8 rx_gain_range_min;
-	u8 rssi_val_min;
-
-	u8 pre_cck_cca_thres;
-	u8 cur_cck_cca_thres;
-	u8 pre_cck_pd_state;
-	u8 cur_cck_pd_state;
-
-	u8 large_fa_hit;
-	u8 forbidden_igi;
-	u32 recover_cnt;
-
-	u8 dig_dynamic_min_0;
-	u8 dig_dynamic_min_1;
-	bool b_media_connect_0;
-	bool b_media_connect_1;
-
-	u32 antdiv_rssi_max;
-	u32 rssi_max;
-};
-
 struct swat_t {
 	u8 failure_cnt;
 	u8 try_flag;
@@ -365,7 +314,6 @@ enum pwr_track_control_method {
 	TXAGC
 };
 
-extern struct dig_t dm_digtable;
 void rtl88e_dm_set_tx_ant_by_tx_info(struct ieee80211_hw *hw,
 	u8 *pdesc, u32 mac_id);
 void rtl88e_dm_ant_sel_statistics(struct ieee80211_hw *hw,

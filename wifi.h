@@ -845,7 +845,7 @@ struct rtl_tid_data {
 };
 
 struct rssi_sta {
-	long undecorated_smoothed_pwdb;
+	long undec_sm_pwdb;
 };
 
 struct rtl_sta_info {
@@ -1482,9 +1482,10 @@ struct dm_phy_dbg_info {
 
 struct rtl_dm {
 	/*PHY status for DM */
-	long entry_min_undecoratedsmoothed_pwdb;
-	long undecorated_smoothed_pwdb;	/*out dm */
-	long entry_max_undecoratedsmoothed_pwdb;
+	long entry_min_undec_sm_pwdb;
+	long undec_sm_cck;
+	long undec_sm_pwdb;	/*out dm */
+	long entry_max_undec_sm_pwdb;
 	bool dm_initialgain_enable;
 	bool dynamic_txpower_enable;
 	bool bcurrent_turbo_edca;
@@ -2146,6 +2147,80 @@ struct rtl_dmsp_ctl {
 	long rssivalmin_for_anothermacofdmsp;
 };
 
+struct ps_t {
+	u8 pre_ccastate;
+	u8 cur_ccasate;
+	u8 pre_rfstate;
+	u8 cur_rfstate;
+	u8 initialize;
+	long rssi_val_min;
+};
+
+struct dig_t {
+	u32 rssi_lowthresh;
+	u32 rssi_highthresh;
+	u32 fa_lowthresh;
+	u32 fa_highthresh;
+	long last_min_undec_pwdb_for_dm;
+	long rssi_highpower_lowthresh;
+	long rssi_highpower_highthresh;
+	u32 recover_cnt;
+	u32 pre_igvalue;
+	u32 cur_igvalue;
+	long rssi_val;
+	u8 dig_enable_flag;
+	u8 dig_ext_port_stage;
+	u8 dig_algorithm;
+	u8 dig_twoport_algorithm;
+	u8 dig_dbgmode;
+	u8 dig_slgorithm_switch;
+	u8 cursta_cstate;
+	u8 presta_cstate;
+	u8 curmultista_cstate;
+	u8 stop_dig;
+	u8 back_val;
+	u8 back_range_max;
+	u8 back_range_min;
+	u8 rx_gain_max;
+	u8 rx_gain_min;
+	u8 min_undec_pwdb_for_dm;
+	u8 rssi_val_min;
+	u8 pre_cck_cca_thres;
+	u8 cur_cck_cca_thres;
+	u8 pre_cck_pd_state;
+	u8 cur_cck_pd_state;
+	u8 pre_cck_fa_state;
+	u8 cur_cck_fa_state;
+	u8 pre_ccastate;
+	u8 cur_ccasate;
+	u8 large_fa_hit;
+	u8 dig_dynamic_min_0;
+	u8 dig_dynamic_min_1;
+	u8 forbidden_igi;
+	u8 dig_state;
+	u8 dig_highpwrstate;
+	u8 cur_sta_cstate;
+	u8 pre_sta_cstate;
+	u8 cur_ap_cstate;
+	u8 pre_ap_cstate;
+	u8 cur_pd_thstate;
+	u8 pre_pd_thstate;
+	u8 cur_cs_ratiostate;
+	u8 pre_cs_ratiostate;
+	u8 backoff_enable_flag;
+	u8 backoff_val;
+	u8 backoffval_range_max;
+	u8 backoffval_range_min;
+	u8 dig_min_0;
+	u8 dig_min_1;
+	u8 bt30_cur_igi;
+	bool media_connect_0;
+	bool media_connect_1;
+
+	u32 antdiv_rssi_max;
+	u32 rssi_max;
+};
+
 struct rtl_global_var {
 	/* from this list we can get
 	 * other adapter's rtl_priv */
@@ -2237,6 +2312,10 @@ struct rtl_priv {
 	   and was used to indicate status of
 	   interface or hardware */
 	unsigned long status;
+
+	/* tables for dm */
+	struct dig_t dm_digtable;
+	struct ps_t dm_pstable;
 
 	/* intel Proximity, should be alloc mem
 	 * in intel Proximity module and can only
