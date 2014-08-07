@@ -618,10 +618,7 @@ bool rtl92ee_rx_query_desc(struct ieee80211_hw *hw,
 		_rtl92ee_translate_rx_signal_stuff(hw, skb, status, pdesc,
 						   p_drvinfo);
 	}
-
-	/*rx_status->qual = status->signal; */
 	rx_status->signal = status->recvsignalpower + 10;
-	/*rx_status->noise = -status->noise; */
 	if (status->packet_report_type == TX_REPORT2) {
 		status->macid_valid_entry[0] =
 			GET_RX_RPT2_DESC_MACID_VALID_1(pdesc);

@@ -539,11 +539,7 @@ bool rtl8723e_rx_query_desc(struct ieee80211_hw *hw,
 						   skb, status, pdesc,
 						   p_drvinfo);
 	}
-
-	/*rx_status->qual = status->signal; */
 	rx_status->signal = status->recvsignalpower + 10;
-	/*rx_status->noise = -status->noise; */
-
 	return true;
 }
 

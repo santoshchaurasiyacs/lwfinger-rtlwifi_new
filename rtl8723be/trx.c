@@ -557,8 +557,8 @@ bool rtl8723be_rx_query_desc(struct ieee80211_hw *hw,
 	rx_status->flag |= RX_FLAG_MACTIME_MPDU;
 
 	/* hw will set status->decrypted true, if it finds the
-	 * frame is open data frame or mgmt frame. */
-	/* So hw will not decryption robust managment frame
+	 * frame is open data frame or mgmt frame.
+	 * So hw will not decryption robust managment frame
 	 * for IEEE80211w but still set status->decrypted
 	 * true, so here we should set it back to undecrypted
 	 * for IEEE80211w frame, and mac80211 sw will help
@@ -585,7 +585,6 @@ bool rtl8723be_rx_query_desc(struct ieee80211_hw *hw,
 	/* rate_idx: index of data rate into band's
 	 * supported rates or MCS index if HT rates
 	 * are use (RX_FLAG_HT)*/
-	/* Notice: this is diff with windows define */
 	rx_status->rate_idx = _rtl8723be_rate_mapping(hw, status->is_ht,
 						      status->rate);
 
@@ -597,13 +596,10 @@ bool rtl8723be_rx_query_desc(struct ieee80211_hw *hw,
 		_rtl8723be_translate_rx_signal_stuff(hw, skb, status,
 						     pdesc, p_drvinfo);
 	}
-
-	/*rx_status->qual = status->signal; */
 	rx_status->signal = status->recvsignalpower + 10;
-	/*rx_status->noise = -status->noise; */
 	if (status->packet_report_type == TX_REPORT2) {
-	status->macid_valid_entry[0] = GET_RX_RPT2_DESC_MACID_VALID_1(pdesc);
-	status->macid_valid_entry[1] = GET_RX_RPT2_DESC_MACID_VALID_2(pdesc);
+		status->macid_valid_entry[0] = GET_RX_RPT2_DESC_MACID_VALID_1(pdesc);
+		status->macid_valid_entry[1] = GET_RX_RPT2_DESC_MACID_VALID_2(pdesc);
 	}
 	return true;
 }
