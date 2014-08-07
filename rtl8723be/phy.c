@@ -394,7 +394,7 @@ static void _rtl8723be_config_bb_reg(struct ieee80211_hw *hw,
 	}
 }
 
-void _rtl8723be_phy_set_txpower_by_rate_base(struct ieee80211_hw *hw, u8 band,
+static void _rtl8723be_phy_set_txpower_by_rate_base(struct ieee80211_hw *hw, u8 band,
 					     u8 path, u8 rate_section,
 					     u8 txnum, u8 value)
 {
@@ -437,7 +437,7 @@ void _rtl8723be_phy_set_txpower_by_rate_base(struct ieee80211_hw *hw, u8 band,
 
 }
 
-u8 _rtl8723be_phy_get_txpower_by_rate_base(struct ieee80211_hw *hw, u8 band,
+static u8 _rtl8723be_phy_get_txpower_by_rate_base(struct ieee80211_hw *hw, u8 band,
 					   u8 path, u8 txnum, u8 rate_section)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
@@ -480,7 +480,7 @@ u8 _rtl8723be_phy_get_txpower_by_rate_base(struct ieee80211_hw *hw, u8 band,
 	return value;
 }
 
-void _rtl8723be_phy_store_txpower_by_rate_base(struct ieee80211_hw *hw)
+static void _rtl8723be_phy_store_txpower_by_rate_base(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_phy *rtlphy = &(rtlpriv->phy);
@@ -521,7 +521,7 @@ void _rtl8723be_phy_store_txpower_by_rate_base(struct ieee80211_hw *hw)
 	}
 }
 
-void _phy_convert_txpower_dbm_to_relative_value(u32 *data, u8 start,
+static void _phy_convert_txpower_dbm_to_relative_value(u32 *data, u8 start,
 						u8 end, u8 base_val)
 {
 	char i = 0;
@@ -547,7 +547,7 @@ void _phy_convert_txpower_dbm_to_relative_value(u32 *data, u8 start,
 	*data = temp_data;
 }
 
-void _rtl8723be_phy_convert_txpower_dbm_to_relative_value(
+static void _rtl8723be_phy_convert_txpower_dbm_to_relative_value(
 							struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
@@ -1217,7 +1217,7 @@ static u8 _rtl8723be_phy_get_ratesection_intxpower_byrate(enum radio_path path,
 	return rate_section;
 }
 
-u8 _rtl8723be_get_txpower_by_rate(struct ieee80211_hw *hw,
+static u8 _rtl8723be_get_txpower_by_rate(struct ieee80211_hw *hw,
 				  enum band_type band,
 				  enum radio_path rfpath, u8 rate)
 {

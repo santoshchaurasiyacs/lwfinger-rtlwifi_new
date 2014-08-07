@@ -58,8 +58,8 @@ static void _rtl8723be_return_beacon_queue_skb(struct ieee80211_hw *hw)
 		struct sk_buff *skb = __skb_dequeue(&ring->queue);
 
 		pci_unmap_single(rtlpci->pdev,
-				 le32_to_cpu(rtlpriv->cfg->ops->get_desc(
-				 (u8 *) entry, true, HW_DESC_TXBUFF_ADDR)),
+				 rtlpriv->cfg->ops->get_desc(
+				 (u8 *) entry, true, HW_DESC_TXBUFF_ADDR),
 				 skb->len, PCI_DMA_TODEVICE);
 		kfree_skb(skb);
 		ring->idx = (ring->idx + 1) % ring->entries;
@@ -362,7 +362,7 @@ void rtl8723be_get_hw_reg(struct ieee80211_hw *hw, u8 variable, u8 *val)
 	}
 }
 
-void _rtl8723be_download_rsvd_page(struct ieee80211_hw *hw)
+static void _rtl8723be_download_rsvd_page(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	u8 tmp_regcr, tmp_reg422, bcnvalid_reg;
@@ -1220,7 +1220,7 @@ static void _rtl8723be_poweroff_adapter(struct ieee80211_hw *hw)
 	rtl_write_byte(rtlpriv, REG_RSV_CTRL, 0x0e);
 }
 
-bool _rtl8723be_check_pcie_dma_hang(struct rtl_priv *rtlpriv)
+static bool _rtl8723be_check_pcie_dma_hang(struct rtl_priv *rtlpriv)
 {
 	u8 tmp;
 
@@ -1243,7 +1243,7 @@ bool _rtl8723be_check_pcie_dma_hang(struct rtl_priv *rtlpriv)
 	}
 }
 
-void _rtl8723be_reset_pcie_interface_dma(struct rtl_priv *rtlpriv,
+static void _rtl8723be_reset_pcie_interface_dma(struct rtl_priv *rtlpriv,
 					 bool mac_power_on)
 {
 	u8 tmp;
@@ -1625,7 +1625,7 @@ void rtl8723be_set_qos(struct ieee80211_hw *hw, int aci)
 }
 
 
-void rtl8723be_clear_interrupt(struct ieee80211_hw *hw)
+static void rtl8723be_clear_interrupt(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	u32 tmp;
@@ -2546,8 +2546,8 @@ static void rtl8723be_update_hal_rate_mask(struct ieee80211_hw *hw,
 
 	RT_TRACE(COMP_RATR, DBG_DMESG,
 		 ("ratr_bitmap :%x\n", ratr_bitmap));
-	*(u32 *) &rate_mask = EF4BYTE((ratr_bitmap & 0x0fffffff) |
-				       (ratr_index << 28));
+	*(u32 *)&rate_mask = (ratr_bitmap & 0x0fffffff) |
+				       (ratr_index << 28);
 	rate_mask[0] = macid;
 	rate_mask[1] = _rtl8723be_mrate_idx_to_arfr_id(hw, ratr_index) |
 						      (b_shortgi ? 0x80 : 0x00);

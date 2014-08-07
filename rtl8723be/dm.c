@@ -319,7 +319,7 @@ static void rtl8723be_dm_init_txpower_tracking(struct ieee80211_hw *hw)
 }
 
 
-void rtl8723be_dm_init_dynamic_atc_switch(struct ieee80211_hw *hw)
+static void rtl8723be_dm_init_dynamic_atc_switch(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 
@@ -344,7 +344,7 @@ void rtl8723be_dm_init(struct ieee80211_hw *hw)
 	rtl8723be_dm_init_dynamic_atc_switch(hw);
 }
 
-void rtl8723be_dm_find_minimum_rssi(struct ieee80211_hw *hw)
+static void rtl8723be_dm_find_minimum_rssi(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_dig *rtl_dm_dig = &(rtlpriv->dm.dm_digtable);
@@ -1027,7 +1027,7 @@ void rtl8723be_dm_check_txpower_tracking(struct ieee80211_hw *hw)
 }
 
 
-void rtl8723be_dm_refresh_rate_adaptive_mask(struct ieee80211_hw *hw)
+static void rtl8723be_dm_refresh_rate_adaptive_mask(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_hal *rtlhal = rtl_hal(rtl_priv(hw));
@@ -1095,7 +1095,7 @@ void rtl8723be_dm_refresh_rate_adaptive_mask(struct ieee80211_hw *hw)
 	}
 }
 
-bool rtl8723be_dm_is_edca_turbo_disable(struct ieee80211_hw *hw)
+static bool rtl8723be_dm_is_edca_turbo_disable(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 
@@ -1206,7 +1206,7 @@ static void rtl8723be_dm_cck_packet_detection_thresh(struct ieee80211_hw *hw)
 
 }
 
-void rtl8723be_dm_dynamic_edcca(struct ieee80211_hw *hw)
+static void rtl8723be_dm_dynamic_edcca(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	u8 reg_c50, reg_c58;
@@ -1233,7 +1233,7 @@ void rtl8723be_dm_dynamic_edcca(struct ieee80211_hw *hw)
 	}
 }
 
-void rtl8723be_dm_dynamic_atc_switch(struct ieee80211_hw *hw)
+static void rtl8723be_dm_dynamic_atc_switch(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_dm *rtldm = rtl_dm(rtl_priv(hw));

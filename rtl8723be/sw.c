@@ -45,7 +45,7 @@
 #include "table.h"
 #include "../btcoexist/rtl_btc.h"
 
-void rtl8723be_init_aspm_vars(struct ieee80211_hw *hw)
+static void rtl8723be_init_aspm_vars(struct ieee80211_hw *hw)
 {
 	struct rtl_pci *rtlpci = rtl_pcidev(rtl_pcipriv(hw));
 
@@ -213,7 +213,7 @@ bool rtl8723be_get_btc_status(void)
 	return true;
 }
 
-struct rtl_hal_ops rtl8723be_hal_ops = {
+static struct rtl_hal_ops rtl8723be_hal_ops = {
 	.init_sw_vars = rtl8723be_init_sw_vars,
 	.deinit_sw_vars = rtl8723be_deinit_sw_vars,
 	.read_eeprom_info = rtl8723be_read_eeprom_info,
@@ -261,14 +261,14 @@ struct rtl_hal_ops rtl8723be_hal_ops = {
 	.rx_command_packet = rtl8723be_rx_command_packet,
 };
 
-struct rtl_mod_params rtl8723be_mod_params = {
+static struct rtl_mod_params rtl8723be_mod_params = {
 	.sw_crypto = false,
 	.inactiveps = true,
 	.swctrl_lps = false,
 	.fwctrl_lps = true,
 };
 
-struct rtl_hal_cfg rtl8723be_hal_cfg = {
+static struct rtl_hal_cfg rtl8723be_hal_cfg = {
 	.bar_id = 2,
 	.write_readback = true,
 	.name = "rtl8723be_pci",
@@ -390,7 +390,7 @@ MODULE_PARM_DESC(fwlps, "using linked fw control power save (default 1 is open)\
 MODULE_PARM_DESC(msi, "Set to 1 to use MSI interrupts mode (default 0)\n");
 MODULE_PARM_DESC(debug, "Set debug level (0-5) (default 0)");
 
-static const SIMPLE_DEV_PM_OPS(rtlwifi_pm_ops, rtl_pci_suspend, rtl_pci_resume);
+static SIMPLE_DEV_PM_OPS(rtlwifi_pm_ops, rtl_pci_suspend, rtl_pci_resume);
 
 static struct pci_driver rtl8723be_driver = {
 	.name = KBUILD_MODNAME,

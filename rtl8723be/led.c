@@ -30,6 +30,7 @@
 #include "../wifi.h"
 #include "../pci.h"
 #include "reg.h"
+#include "led.h"
 
 static void _rtl8723be_init_led(struct ieee80211_hw *hw,  struct rtl_led *pled,
 				enum rtl_led_pin ledpin)
