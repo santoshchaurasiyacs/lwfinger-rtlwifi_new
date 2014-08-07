@@ -175,14 +175,13 @@ enum dbgp_flag_e {
 		} \
 	} while (0)
 
-#define RT_TRACE(comp, level, fmt)\
+#define RT_TRACE(priv, comp, level, fmt)\
 	do { \
 		if (unlikely(((comp) & rtlpriv->dbg.global_debugcomponents) && \
-			((level) <= rtlpriv->dbg.global_debuglevel))) {\
-			printk(KERN_DEBUG "%s-%d:%s():<%lx-%x> ", \
+			((level) <= priv->dbg.global_debuglevel))) {\
+			printk(KERN_DEBUG "%s-%d:%s() ", \
 			KBUILD_MODNAME, \
-			rtlpriv->rtlhal.interfaceindex, __func__, \
-			in_interrupt(), in_atomic());	\
+			priv->rtlhal.interfaceindex, __func__); \
 			printk fmt;			\
 		} \
 	} while (0)

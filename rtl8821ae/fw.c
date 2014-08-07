@@ -123,7 +123,7 @@ static void _rtl8821ae_write_fw(struct ieee80211_hw *hw,
 	u32 pageNums, remainSize;
 	u32 page, offset;
 
-	RT_TRACE(COMP_FW, DBG_LOUD, ("FW size is %d bytes,\n", size));
+	RT_TRACE(rtlpriv, COMP_FW, DBG_LOUD, ("FW size is %d bytes,\n", size));
 
 	_rtl8821ae_fill_dummy(bufferPtr, &size);
 
@@ -131,7 +131,7 @@ static void _rtl8821ae_write_fw(struct ieee80211_hw *hw,
 	remainSize = size % FW_8821AE_PAGE_SIZE;
 
 	if (pageNums > 8) {
-		RT_TRACE(COMP_ERR, DBG_EMERG,
+		RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG,
 			 ("Page numbers should not greater then 8\n"));
 	}
 
@@ -163,13 +163,13 @@ static int _rtl8821ae_fw_free_to_go(struct ieee80211_hw *hw)
 		 (!(value32 & FWDL_CHKSUM_RPT)));
 
 	if (counter >= FW_8821AE_POLLING_TIMEOUT_COUNT) {
-		RT_TRACE(COMP_ERR, DBG_LOUD,
+		RT_TRACE(rtlpriv, COMP_ERR, DBG_LOUD,
 			 ("chksum report faill ! REG_MCUFWDL:0x%08x .\n",
 			  value32));
 		goto exit;
 	}
 
-	RT_TRACE(COMP_FW, DBG_EMERG,
+	RT_TRACE(rtlpriv, COMP_FW, DBG_EMERG,
 		 ("Checksum report OK ! REG_MCUFWDL:0x%08x .\n", value32));
 
 	value32 = rtl_read_dword(rtlpriv, REG_MCUFWDL);
@@ -183,7 +183,7 @@ static int _rtl8821ae_fw_free_to_go(struct ieee80211_hw *hw)
 	do {
 		value32 = rtl_read_dword(rtlpriv, REG_MCUFWDL);
 		if (value32 & WINTINI_RDY) {
-			RT_TRACE(COMP_FW, DBG_LOUD,
+			RT_TRACE(rtlpriv, COMP_FW, DBG_LOUD,
 				 ("Polling FW ready success!! "
 				 "REG_MCUFWDL:0x%08x .\n",
 				  value32));
@@ -195,7 +195,7 @@ static int _rtl8821ae_fw_free_to_go(struct ieee80211_hw *hw)
 
 	} while (counter++ < FW_8821AE_POLLING_TIMEOUT_COUNT);
 
-	RT_TRACE(COMP_ERR, DBG_EMERG,
+	RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG,
 		 ("Polling FW ready fail!! REG_MCUFWDL:0x%08x .\n",
 		 value32));
 
@@ -254,13 +254,13 @@ int rtl8821ae_download_fw(struct ieee80211_hw *hw, bool buse_wake_on_wlan_fw)
 		fwsize = rtlhal->fwsize;
 	}
 
-	RT_TRACE(COMP_FW, DBG_DMESG,
+	RT_TRACE(rtlpriv, COMP_FW, DBG_DMESG,
 		 ("%s Firmware SIZE %d\n",
 		  buse_wake_on_wlan_fw ? "Wowlan" : "Normal", fwsize));
 
 	if (IS_FW_HEADER_EXIST_8812(pfwheader) ||
 	    IS_FW_HEADER_EXIST_8821(pfwheader)) {
-		RT_TRACE(COMP_FW, DBG_DMESG,
+		RT_TRACE(rtlpriv, COMP_FW, DBG_DMESG,
 			 ("Firmware Version(%d), Signature(%#x)\n",
 			  pfwheader->version, pfwheader->signature));
 
@@ -280,10 +280,10 @@ int rtl8821ae_download_fw(struct ieee80211_hw *hw, bool buse_wake_on_wlan_fw)
 
 	err = _rtl8821ae_fw_free_to_go(hw);
 	if (err) {
-		RT_TRACE(COMP_ERR, DBG_EMERG,
+		RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG,
 			 ("Firmware is not ready to run!\n"));
 	} else {
-		RT_TRACE(COMP_FW, DBG_LOUD,
+		RT_TRACE(rtlpriv, COMP_FW, DBG_LOUD,
 			 ("Firmware is ready to run!\n"));
 	}
 
@@ -299,12 +299,12 @@ void rtl8821ae_set_fw_related_for_wowlan(struct ieee80211_hw *hw,
 	struct rtl_ps_ctl *ppsc = rtl_psc(rtl_priv(hw));
 	/* 1. Before WoWLAN or After WOWLAN we need to re-download Fw. */
 	if (rtl8821ae_download_fw(hw, used_wowlan_fw)) {
-		RT_TRACE(COMP_INIT, DBG_DMESG,
+		RT_TRACE(rtlpriv, COMP_INIT, DBG_DMESG,
 			 ("Re-Download Firmware failed!!\n"));
 		rtlhal->fw_ready = false;
 		return;
 	} else {
-		RT_TRACE(COMP_INIT, DBG_DMESG,
+		RT_TRACE(rtlpriv, COMP_INIT, DBG_DMESG,
 			 ("Re-Download Firmware Success !!\n"));
 		rtlhal->fw_ready = true;
 	}
@@ -348,12 +348,12 @@ static void _rtl8821ae_fill_h2c_command(struct ieee80211_hw *hw,
 	unsigned long flag = 0;
 	u8 idx = 0;
 
-	RT_TRACE(COMP_CMD, DBG_LOUD, ("come in\n"));
+	RT_TRACE(rtlpriv, COMP_CMD, DBG_LOUD, ("come in\n"));
 
 	while (true) {
 		spin_lock_irqsave(&rtlpriv->locks.h2c_lock, flag);
 		if (rtlhal->h2c_setinprogress) {
-			RT_TRACE(COMP_CMD, DBG_LOUD,
+			RT_TRACE(rtlpriv, COMP_CMD, DBG_LOUD,
 				 ("H2C set in progress! Wait to set.."
 				  "element_id(%d).\n", element_id));
 
@@ -361,7 +361,7 @@ static void _rtl8821ae_fill_h2c_command(struct ieee80211_hw *hw,
 				spin_unlock_irqrestore(&rtlpriv->locks.h2c_lock,
 						       flag);
 				h2c_waitcounter++;
-				RT_TRACE(COMP_CMD, DBG_LOUD,
+				RT_TRACE(rtlpriv, COMP_CMD, DBG_LOUD,
 					 ("Wait 100 us (%d times)...\n",
 					  h2c_waitcounter));
 				udelay(100);
@@ -384,7 +384,7 @@ static void _rtl8821ae_fill_h2c_command(struct ieee80211_hw *hw,
 #if 0
 		wait_writeh2c_limmit--;
 		if (wait_writeh2c_limmit == 0) {
-			RT_TRACE(COMP_ERR, DBG_EMERG,
+			RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG,
 				 ("Write H2C fail because no trigger "
 				  "for FW INT!\n"));
 			break;
@@ -410,7 +410,7 @@ static void _rtl8821ae_fill_h2c_command(struct ieee80211_hw *hw,
 			box_extreg = REG_HMEBOX_EXT_3;
 			break;
 		default:
-			RT_TRACE(COMP_ERR, DBG_LOUD,
+			RT_TRACE(rtlpriv, COMP_ERR, DBG_LOUD,
 				 ("switch case not process\n"));
 			break;
 		}
@@ -433,7 +433,7 @@ static void _rtl8821ae_fill_h2c_command(struct ieee80211_hw *hw,
 				/*wait until Fw read*/
 				wait_h2c_limmit--;
 				if (wait_h2c_limmit == 0) {
-					RT_TRACE(COMP_CMD, DBG_LOUD,
+					RT_TRACE(rtlpriv, COMP_CMD, DBG_LOUD,
 						 ("Wating too long for FW read "
 						  "clear HMEBox(%d)!\n", boxnum));
 					break;
@@ -445,14 +445,14 @@ static void _rtl8821ae_fill_h2c_command(struct ieee80211_hw *hw,
 					_rtl8821ae_check_fw_read_last_h2c(hw,
 									boxnum);
 				u1b_tmp = rtl_read_byte(rtlpriv, 0x130);
-				RT_TRACE(COMP_CMD, DBG_LOUD,
+				RT_TRACE(rtlpriv, COMP_CMD, DBG_LOUD,
 					 ("Wating for FW read clear HMEBox(%d)!!! "
 					  "0x130 = %2x\n", boxnum, u1b_tmp));
 			}
 		}
 
 		if (!isfw_read) {
-			RT_TRACE(COMP_CMD, DBG_LOUD,
+			RT_TRACE(rtlpriv, COMP_CMD, DBG_LOUD,
 				 ("Write H2C register BOX[%d] fail!!!!! "
 				  "Fw do not read.\n", boxnum));
 			break;
@@ -461,7 +461,7 @@ static void _rtl8821ae_fill_h2c_command(struct ieee80211_hw *hw,
 		memset(boxcontent, 0, sizeof(boxcontent));
 		memset(boxextcontent, 0, sizeof(boxextcontent));
 		boxcontent[0] = element_id;
-		RT_TRACE(COMP_CMD, DBG_LOUD,
+		RT_TRACE(rtlpriv, COMP_CMD, DBG_LOUD,
 			 ("Write element_id box_reg(%4x) = %2x\n",
 			  box_reg, element_id));
 
@@ -499,7 +499,7 @@ static void _rtl8821ae_fill_h2c_command(struct ieee80211_hw *hw,
 			}
 			break;
 		default:
-			RT_TRACE(COMP_ERR, DBG_LOUD,
+			RT_TRACE(rtlpriv, COMP_ERR, DBG_LOUD,
 				 ("switch case not process\n"));
 			break;
 		}
@@ -510,7 +510,7 @@ static void _rtl8821ae_fill_h2c_command(struct ieee80211_hw *hw,
 		if (rtlhal->last_hmeboxnum == 4)
 			rtlhal->last_hmeboxnum = 0;
 
-		RT_TRACE(COMP_CMD, DBG_LOUD,
+		RT_TRACE(rtlpriv, COMP_CMD, DBG_LOUD,
 			 ("pHalData->last_hmeboxnum  = %d\n",
 			  rtlhal->last_hmeboxnum));
 	}
@@ -519,7 +519,7 @@ static void _rtl8821ae_fill_h2c_command(struct ieee80211_hw *hw,
 	rtlhal->h2c_setinprogress = false;
 	spin_unlock_irqrestore(&rtlpriv->locks.h2c_lock, flag);
 
-	RT_TRACE(COMP_CMD, DBG_LOUD, ("go out\n"));
+	RT_TRACE(rtlpriv, COMP_CMD, DBG_LOUD, ("go out\n"));
 }
 
 void rtl8821ae_fill_h2c_cmd(struct ieee80211_hw *hw,
@@ -570,7 +570,7 @@ void rtl8821ae_firmware_selfreset(struct ieee80211_hw *hw)
 	u1b_tmp = rtl_read_byte(rtlpriv, REG_SYS_FUNC_EN+1);
 	rtl_write_byte(rtlpriv, REG_SYS_FUNC_EN+1, (u1b_tmp | BIT(2)));
 
-	RT_TRACE(COMP_INIT, DBG_LOUD, ("_8051Reset8812ae(): "
+	RT_TRACE(rtlpriv, COMP_INIT, DBG_LOUD, ("_8051Reset8812ae(): "
 					"8051 reset success .\n"));
 
 }
@@ -581,7 +581,7 @@ void rtl8821ae_set_fw_pwrmode_cmd(struct ieee80211_hw *hw, u8 mode)
 	u8 u1_h2c_set_pwrmode[H2C_8821AE_PWEMODE_LENGTH] = { 0 };
 	struct rtl_ps_ctl *ppsc = rtl_psc(rtl_priv(hw));
 	u8 rlbm, power_state = 0;
-	RT_TRACE(COMP_POWER, DBG_LOUD, ("FW LPS mode = %d\n", mode));
+	RT_TRACE(rtlpriv, COMP_POWER, DBG_LOUD, ("FW LPS mode = %d\n", mode));
 
 	SET_H2CCMD_PWRMODE_PARM_MODE(u1_h2c_set_pwrmode, ((mode) ? 1 : 0));
 	rlbm = 0;/*YJ,temp,120316. FW now not support RLBM=2.*/
@@ -646,7 +646,7 @@ void rtl8821ae_set_fw_wowlan_mode(struct ieee80211_hw *hw, bool func_en)
 	u8 fw_wowlan_info[H2C_8821AE_WOWLAN_LENGTH] = {0};
 	struct rtl_ps_ctl *ppsc = rtl_psc(rtl_priv(hw));
 
-	RT_TRACE(COMP_POWER, DBG_LOUD, ("enable(%d)\n", func_en));
+	RT_TRACE(rtlpriv, COMP_POWER, DBG_LOUD, ("enable(%d)\n", func_en));
 
 	SET_8812_H2CCMD_WOWLAN_FUNC_ENABLE(fw_wowlan_info,
 					   (func_en ? true : false));
@@ -680,7 +680,7 @@ void rtl8821ae_set_fw_remote_wake_ctrl_cmd(struct ieee80211_hw *hw,
 	struct rtl_ps_ctl *ppsc = rtl_psc(rtl_priv(hw));
 	struct rtl_hal *rtlhal = rtl_hal(rtl_priv(hw));
 
-	RT_TRACE(COMP_POWER, DBG_LOUD,
+	RT_TRACE(rtlpriv, COMP_POWER, DBG_LOUD,
 		 ("enable=%d, ARP offload=%d, GTK offload=%d\n",
 		  enable, ppsc->arp_offload_enable, ppsc->gtk_offload_enable));
 
@@ -707,7 +707,7 @@ void rtl8821ae_set_fw_keep_alive_cmd(struct ieee80211_hw *hw,
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	u8 keep_alive_info[H2C_8821AE_KEEP_ALIVE_CTRL_LENGTH] = {0};
 
-	RT_TRACE(COMP_POWER, DBG_LOUD, ("Enable(%d)\n", func_en));
+	RT_TRACE(rtlpriv, COMP_POWER, DBG_LOUD, ("Enable(%d)\n", func_en));
 
 	SET_8812_H2CCMD_KEEP_ALIVE_ENABLE(keep_alive_info, func_en);
 	/* 1: the period is controled by driver, 0: by Fw default */
@@ -747,7 +747,7 @@ void rtl8821ae_set_fw_global_info_cmd(struct ieee80211_hw *hw)
 	struct rtl_security *sec = &(rtlpriv->sec);
 	u8 remote_wakeup_sec_info[H2C_8821AE_AOAC_GLOBAL_INFO_LEN] = {0};
 
-	RT_TRACE(COMP_POWER, DBG_LOUD,
+	RT_TRACE(rtlpriv, COMP_POWER, DBG_LOUD,
 		 ("PairwiseEncAlgorithm=%d, GroupEncAlgorithm=%d\n",
 		  sec->pairwise_enc_algorithm, sec->group_enc_algorithm));
 
@@ -1621,7 +1621,7 @@ out:
 	}
 
 	if (!b_dlok) {
-		RT_TRACE(COMP_ERR, DBG_WARNING,
+		RT_TRACE(rtlpriv, COMP_ERR, DBG_WARNING,
 			 ("Set RSVD page location to Fw FAIL!!!!!!.\n"));
 	}
 }
@@ -1728,7 +1728,7 @@ out:
 		b_dlok = true;
 
 	if (!b_dl_finished && b_dlok) {
-		RT_TRACE(COMP_POWER, DBG_LOUD,
+		RT_TRACE(rtlpriv, COMP_POWER, DBG_LOUD,
 			 ("Set RSVD page location to Fw.\n"));
 		RT_PRINT_DATA(rtlpriv, COMP_CMD, DBG_DMESG,
 				"H2C_RSVDPAGE:\n", u1RsvdPageLoc, 5);
@@ -1745,7 +1745,7 @@ out:
 	}
 
 	if (!b_dlok) {
-		RT_TRACE(COMP_ERR, DBG_WARNING,
+		RT_TRACE(rtlpriv, COMP_ERR, DBG_WARNING,
 			 ("Set RSVD page location to Fw FAIL!!!!!!.\n"));
 	}
 }
@@ -1772,11 +1772,11 @@ void rtl8821ae_set_p2p_ps_offload_cmd(struct ieee80211_hw *hw, u8 p2p_ps_state)
 
 	switch (p2p_ps_state) {
 	case P2P_PS_DISABLE:
-		RT_TRACE(COMP_FW, DBG_LOUD, ("P2P_PS_DISABLE\n"));
+		RT_TRACE(rtlpriv, COMP_FW, DBG_LOUD, ("P2P_PS_DISABLE\n"));
 		memset(p2p_ps_offload, 0, 1);
 		break;
 	case P2P_PS_ENABLE:
-		RT_TRACE(COMP_FW, DBG_LOUD, ("P2P_PS_ENABLE\n"));
+		RT_TRACE(rtlpriv, COMP_FW, DBG_LOUD, ("P2P_PS_ENABLE\n"));
 		/* update CTWindow value. */
 		if (p2pinfo->ctwindow > 0) {
 			p2p_ps_offload->CTWindow_En = 1;
@@ -1830,11 +1830,11 @@ void rtl8821ae_set_p2p_ps_offload_cmd(struct ieee80211_hw *hw, u8 p2p_ps_state)
 		}
 		break;
 	case P2P_PS_SCAN:
-		RT_TRACE(COMP_FW, DBG_LOUD, ("P2P_PS_SCAN\n"));
+		RT_TRACE(rtlpriv, COMP_FW, DBG_LOUD, ("P2P_PS_SCAN\n"));
 		p2p_ps_offload->discovery = 1;
 		break;
 	case P2P_PS_SCAN_DONE:
-		RT_TRACE(COMP_FW, DBG_LOUD, ("P2P_PS_SCAN_DONE\n"));
+		RT_TRACE(rtlpriv, COMP_FW, DBG_LOUD, ("P2P_PS_SCAN_DONE\n"));
 		p2p_ps_offload->discovery = 0;
 		p2pinfo->p2p_ps_state = P2P_PS_ENABLE;
 		break;
@@ -1871,7 +1871,7 @@ static void _rtl8821ae_c2h_content_parsing(
 
 	switch (c2h_cmd_id) {
 	case C2H_8812_DBG:
-		RT_TRACE(COMP_FW, DBG_LOUD, ("[C2H], C2H_8812_DBG!!\n"));
+		RT_TRACE(rtlpriv, COMP_FW, DBG_LOUD, ("[C2H], C2H_8812_DBG!!\n"));
 		break;
 
 	case C2H_8812_RA_RPT:
@@ -1879,7 +1879,7 @@ static void _rtl8821ae_c2h_content_parsing(
 		break;
 
 	case C2H_8812_BT_INFO:
-		RT_TRACE(COMP_FW, DBG_LOUD, ("[C2H], C2H_8812_BT_INFO!!\n"));
+		RT_TRACE(rtlpriv, COMP_FW, DBG_LOUD, ("[C2H], C2H_8812_BT_INFO!!\n"));
 		if (rtlpriv->cfg->ops->get_btc_status())
 			rtlpriv->btcoexist.btc_ops->btc_btinfo_notify(rtlpriv,
 									tmp_buf,
@@ -1908,7 +1908,7 @@ void rtl8821ae_c2h_packet_handler(
 	c2h_cmd_len = length - 2;
 	tmp_buf = buffer + 2;
 
-	RT_TRACE(COMP_FW, DBG_LOUD,
+	RT_TRACE(rtlpriv, COMP_FW, DBG_LOUD,
 		("[C2H packet], c2hCmdId=0x%x, c2hCmdSeq=0x%x, c2hCmdLen=%d\n",
 		c2h_cmd_id, c2h_cmd_seq, c2h_cmd_len));
 

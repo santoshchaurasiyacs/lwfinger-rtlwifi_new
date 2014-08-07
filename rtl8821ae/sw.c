@@ -100,7 +100,7 @@ static void load_wowlan_fw(struct rtl_priv *rtlpriv)
 	/* for wowlan firmware buf */
 	rtlpriv->rtlhal.wowlan_firmware = vmalloc(0x8000);
 	if (!rtlpriv->rtlhal.wowlan_firmware) {
-		RT_TRACE(COMP_ERR, DBG_EMERG,
+		RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG,
 			 ("Can't alloc buffer for wowlan fw.\n"));
 		return;
 	}
@@ -111,13 +111,13 @@ static void load_wowlan_fw(struct rtl_priv *rtlpriv)
 		fw_name = "rtlwifi/rtl8812aefw_wowlan.bin";
 	err = request_firmware(&wowlan_firmware, fw_name, rtlpriv->io.dev);
 	if (err) {
-		RT_TRACE(COMP_ERR, DBG_EMERG,
+		RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG,
 			 ("Failed to request wowlan firmware!\n"));
 		goto error;
 	}
 
 	if (wowlan_firmware->size > 0x8000) {
-		RT_TRACE(COMP_ERR, DBG_EMERG,
+		RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG,
 			 ("Wowlan Firmware is too big!\n"));
 		goto error;
 	}
@@ -127,7 +127,7 @@ static void load_wowlan_fw(struct rtl_priv *rtlpriv)
 	rtlpriv->rtlhal.wowlan_fwsize = wowlan_firmware->size;
 	release_firmware(wowlan_firmware);
 
-	RT_TRACE(COMP_INIT, DBG_LOUD, ("WOWLAN FirmwareDownload OK\n"));
+	RT_TRACE(rtlpriv, COMP_INIT, DBG_LOUD, ("WOWLAN FirmwareDownload OK\n"));
 	return;
 error:
 	release_firmware(wowlan_firmware);
@@ -234,7 +234,7 @@ int rtl8821ae_init_sw_vars(struct ieee80211_hw *hw)
 	/* for firmware buf */
 	rtlpriv->rtlhal.pfirmware = vzalloc(0x8000);
 	if (!rtlpriv->rtlhal.pfirmware) {
-		RT_TRACE(COMP_ERR, DBG_EMERG,
+		RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG,
 			 ("Can't alloc buffer for fw.\n"));
 		return 1;
 	}
@@ -250,7 +250,7 @@ int rtl8821ae_init_sw_vars(struct ieee80211_hw *hw)
 				      rtlpriv->io.dev, GFP_KERNEL, hw,
 				      rtl_fw_cb);
 	if (err) {
-		RT_TRACE(COMP_ERR, DBG_EMERG,
+		RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG,
 			 ("Failed to request firmware!\n"));
 		return 1;
 	}

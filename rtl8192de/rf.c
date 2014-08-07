@@ -49,7 +49,7 @@ void rtl92d_phy_rf6052_set_bandwidth(struct ieee80211_hw *hw, u8 bandwidth)
 					0xfffff3ff) | 0x0400);
 			rtl_set_rfreg(hw, rfpath, RF_CHNLBW, BIT(10) | BIT(11), 0x01);
 
-			RT_TRACE(COMP_RF, DBG_LOUD,
+			RT_TRACE(rtlpriv, COMP_RF, DBG_LOUD,
 				 ("20M RF 0x18 = 0x%x\n",
 					rtlphy->rfreg_chnlval[rfpath]));
 		}
@@ -61,13 +61,13 @@ void rtl92d_phy_rf6052_set_bandwidth(struct ieee80211_hw *hw, u8 bandwidth)
 			    ((rtlphy->rfreg_chnlval[rfpath] & 0xfffff3ff));
 			rtl_set_rfreg(hw, rfpath, RF_CHNLBW, BIT(10) | BIT(11),
 				      0x00);
-			RT_TRACE(COMP_RF, DBG_LOUD,
+			RT_TRACE(rtlpriv, COMP_RF, DBG_LOUD,
 				 ("40M RF 0x18 = 0x%x\n",
 					rtlphy->rfreg_chnlval[rfpath]));
 		}
 		break;
 	default:
-		RT_TRACE(COMP_ERR, DBG_EMERG,
+		RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG,
 			 ("unknown bandwidth: %#X\n", bandwidth));
 		break;
 	}
@@ -394,11 +394,11 @@ bool rtl92d_phy_enable_anotherphy(struct ieee80211_hw *hw, bool bmac0)
 
 	rtlhal->during_mac0init_radiob = false;
 	rtlhal->during_mac1init_radioa = false;
-	RT_TRACE(COMP_RF, DBG_LOUD, ("\n"));
+	RT_TRACE(rtlpriv, COMP_RF, DBG_LOUD, ("\n"));
 	/* MAC0 Need PHY1 load radio_b.txt . Driver use DBI to write. */
 	u1btmp = rtl_read_byte(rtlpriv, mac_reg);
 	if (!(u1btmp & mac_on_bit)) {
-		RT_TRACE(COMP_INIT, DBG_LOUD, ("enable BB & RF\n"));
+		RT_TRACE(rtlpriv, COMP_INIT, DBG_LOUD, ("enable BB & RF\n"));
 		/* Enable BB and RF power */
 		rtl92de_write_dword_dbi(hw,	REG_SYS_ISO_CTRL,
 			rtl92de_read_dword_dbi(hw, REG_SYS_ISO_CTRL, direct) |
@@ -408,7 +408,7 @@ bool rtl92d_phy_enable_anotherphy(struct ieee80211_hw *hw, bool bmac0)
 		 * and radio_b.txt has been load. */
 		bresult = false;
 	}
-	RT_TRACE(COMP_RF, DBG_LOUD, ("\n"));
+	RT_TRACE(rtlpriv, COMP_RF, DBG_LOUD, ("\n"));
 	return bresult;
 
 }
@@ -424,17 +424,17 @@ void rtl92d_phy_powerdown_anotherphy(struct ieee80211_hw *hw, bool bmac0)
 
 	rtlhal->during_mac0init_radiob = false;
 	rtlhal->during_mac1init_radioa = false;
-	RT_TRACE(COMP_RF, DBG_LOUD, ("start\n"));
+	RT_TRACE(rtlpriv, COMP_RF, DBG_LOUD, ("start\n"));
 	/* check MAC0 enable or not again now, if
 	 * enabled, not power down radio A. */
 	u1btmp = rtl_read_byte(rtlpriv, mac_reg);
 	if (!(u1btmp & mac_on_bit)) {
-		RT_TRACE(COMP_INIT, DBG_LOUD, ("power down\n"));
+		RT_TRACE(rtlpriv, COMP_INIT, DBG_LOUD, ("power down\n"));
 		/* power down RF radio A according to YuNan's advice. */
 		rtl92de_write_dword_dbi(hw,	RFPGA0_XA_LSSIPARAMETER,
 					0x00000000, direct);
 	}
-	RT_TRACE(COMP_RF, DBG_LOUD, (" end\n"));
+	RT_TRACE(rtlpriv, COMP_RF, DBG_LOUD, (" end\n"));
 }
 
 bool rtl92d_phy_rf6052_config(struct ieee80211_hw *hw)
@@ -570,7 +570,7 @@ bool rtl92d_phy_rf6052_config(struct ieee80211_hw *hw)
 			break;
 		}
 		if (rtstatus != true) {
-			RT_TRACE(COMP_INIT, DBG_TRACE,
+			RT_TRACE(rtlpriv, COMP_INIT, DBG_TRACE,
 				("Radio[%d] Fail!!", rfpath));
 			goto phy_rf_cfg_fail;
 		}
@@ -585,7 +585,7 @@ bool rtl92d_phy_rf6052_config(struct ieee80211_hw *hw)
 		rtl92d_phy_powerdown_anotherphy(hw, false);
 	else if (need_pwrdown_radiob)
 		rtl92d_phy_powerdown_anotherphy(hw, true);
-	RT_TRACE(COMP_INIT, DBG_TRACE, ("\n"));
+	RT_TRACE(rtlpriv, COMP_INIT, DBG_TRACE, ("\n"));
 	return rtstatus;
 
 phy_rf_cfg_fail:

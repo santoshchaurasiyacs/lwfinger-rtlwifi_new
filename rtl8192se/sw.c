@@ -95,7 +95,7 @@ static void rtl92se_fw_cb(const struct firmware *firmware, void *context)
 	struct rt_firmware *pfirmware = NULL;
 	int err;
 
-	RT_TRACE(COMP_ERR, DBG_LOUD,
+	RT_TRACE(rtlpriv, COMP_ERR, DBG_LOUD,
 		 ("Firmware callback routine entered!\n"));
 	complete(&rtlpriv->firmware_loading_complete);
 	if (!firmware) {
@@ -104,7 +104,7 @@ static void rtl92se_fw_cb(const struct firmware *firmware, void *context)
 		return;
 	}
 	if (firmware->size > rtlpriv->max_fw_size) {
-		RT_TRACE(COMP_ERR, DBG_EMERG,
+		RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG,
 			 ("Firmware is too big!\n"));
 		rtlpriv->max_fw_size = 0;
 		release_firmware(firmware);
@@ -117,7 +117,7 @@ static void rtl92se_fw_cb(const struct firmware *firmware, void *context)
 
 	err = ieee80211_register_hw(hw);
 	if (err) {
-		RT_TRACE(COMP_ERR, DBG_EMERG,
+		RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG,
 			 ("Can't register mac80211 hw\n"));
 		return;
 	} else {
@@ -233,7 +233,7 @@ static int rtl92s_init_sw_vars(struct ieee80211_hw *hw)
 				      rtlpriv->io.dev, GFP_KERNEL, hw,
 				      rtl92se_fw_cb);
 	if (err) {
-		RT_TRACE(COMP_ERR, DBG_EMERG,
+		RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG,
 			 ("Failed to request firmware!\n"));
 		return 1;
 	}

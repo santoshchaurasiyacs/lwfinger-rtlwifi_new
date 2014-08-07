@@ -594,7 +594,7 @@ bool rtl88ee_rx_query_desc(struct ieee80211_hw *hw,
 	else
 		status->wake_match = 0;
 	if (status->wake_match)
-		RT_TRACE(COMP_RXDESC, DBG_LOUD,
+		RT_TRACE(rtlpriv, COMP_RXDESC, DBG_LOUD,
 		("GGGGGGGGGGGGGet Wakeup Packet!! WakeMatch=%d\n", status->wake_match));
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,10,0))
 	rx_status->freq = hw->conf.chandef.chan->center_freq;
@@ -714,7 +714,7 @@ void rtl88ee_tx_fill_desc(struct ieee80211_hw *hw,
 	mapping = pci_map_single(rtlpci->pdev, skb->data, skb->len,
 				 PCI_DMA_TODEVICE);
 	if (pci_dma_mapping_error(rtlpci->pdev, mapping)) {
-		RT_TRACE(COMP_SEND, DBG_TRACE,
+		RT_TRACE(rtlpriv, COMP_SEND, DBG_TRACE,
 			 ("DMA mapping error"));
 		return;
 	}
@@ -728,7 +728,7 @@ void rtl88ee_tx_fill_desc(struct ieee80211_hw *hw,
 			SET_TX_DESC_PKT_OFFSET(pdesc, 1);
 			SET_TX_DESC_OFFSET(pdesc, USB_HWDESC_HEADER_LEN + EM_HDR_LEN);
 			if (ptcb_desc->empkt_num) {
-				RT_TRACE(COMP_SEND, DBG_TRACE,
+				RT_TRACE(rtlpriv, COMP_SEND, DBG_TRACE,
 					 ("Insert 8 byte.pTcb->EMPktNum:%d\n",
 					  ptcb_desc->empkt_num));
 				_rtl88ee_insert_emcontent(ptcb_desc, (u8 *)(skb->data));
@@ -820,7 +820,7 @@ void rtl88ee_tx_fill_desc(struct ieee80211_hw *hw,
 		}
 		if (ieee80211_is_data_qos(fc)) {
 			if (mac->rdg_en) {
-				RT_TRACE(COMP_SEND, DBG_TRACE,
+				RT_TRACE(rtlpriv, COMP_SEND, DBG_TRACE,
 					("Enable RDG function.\n"));
 				SET_TX_DESC_RDG_ENABLE(pdesc, 1);
 				SET_TX_DESC_HTC(pdesc, 1);
@@ -852,7 +852,7 @@ void rtl88ee_tx_fill_desc(struct ieee80211_hw *hw,
 	}
 
 	rtl88e_dm_set_tx_ant_by_tx_info(hw, pdesc, ptcb_desc->mac_id);
-	RT_TRACE(COMP_SEND, DBG_TRACE, ("\n"));
+	RT_TRACE(rtlpriv, COMP_SEND, DBG_TRACE, ("\n"));
 }
 
 void rtl88ee_tx_fill_cmddesc(struct ieee80211_hw *hw,
@@ -871,7 +871,7 @@ void rtl88ee_tx_fill_cmddesc(struct ieee80211_hw *hw,
 	__le16 fc = hdr->frame_control;
 
 	if (pci_dma_mapping_error(rtlpci->pdev, mapping)) {
-		RT_TRACE(COMP_SEND, DBG_TRACE,
+		RT_TRACE(rtlpriv, COMP_SEND, DBG_TRACE,
 			 ("DMA mapping error"));
 		return;
 	}

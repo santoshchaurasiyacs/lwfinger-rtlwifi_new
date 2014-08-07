@@ -54,7 +54,7 @@ bool rtl_hal_pwrseqcmdparsing(struct rtl_priv *rtlpriv, u8 cut_version,
 
 	do {
 		pwr_cfg_cmd = pwrcfgcmd[ary_idx];
-		RT_TRACE(COMP_INIT, DBG_TRACE,
+		RT_TRACE(rtlpriv, COMP_INIT, DBG_TRACE,
 			("rtl_hal_pwrseqcmdparsing(): offset(%#x),cut_msk(%#x), fab_msk(%#x),"
 			"interface_msk(%#x), base(%#x), cmd(%#x), msk(%#x), value(%#x)\n",
 			GET_PWR_CFG_OFFSET(pwr_cfg_cmd),
@@ -71,12 +71,12 @@ bool rtl_hal_pwrseqcmdparsing(struct rtl_priv *rtlpriv, u8 cut_version,
 			&& (GET_PWR_CFG_INTF_MASK(pwr_cfg_cmd)&interface_type)) {
 			switch (GET_PWR_CFG_CMD(pwr_cfg_cmd)) {
 			case PWR_CMD_READ:
-				RT_TRACE(COMP_INIT, DBG_TRACE,
+				RT_TRACE(rtlpriv, COMP_INIT, DBG_TRACE,
 					("rtl_hal_pwrseqcmdparsing(): PWR_CMD_READ\n"));
 				break;
 
 			case PWR_CMD_WRITE: {
-				RT_TRACE(COMP_INIT, DBG_TRACE,
+				RT_TRACE(rtlpriv, COMP_INIT, DBG_TRACE,
 					("rtl_hal_pwrseqcmdparsing(): PWR_CMD_WRITE\n"));
 				offset = GET_PWR_CFG_OFFSET(pwr_cfg_cmd);
 
@@ -92,7 +92,7 @@ bool rtl_hal_pwrseqcmdparsing(struct rtl_priv *rtlpriv, u8 cut_version,
 				break;
 
 			case PWR_CMD_POLLING:
-				RT_TRACE(COMP_INIT, DBG_TRACE,
+				RT_TRACE(rtlpriv, COMP_INIT, DBG_TRACE,
 					("rtl_hal_pwrseqcmdparsing(): PWR_CMD_POLLING\n"));
 				b_polling_bit = false;
 				offset = GET_PWR_CFG_OFFSET(pwr_cfg_cmd);
@@ -108,7 +108,7 @@ bool rtl_hal_pwrseqcmdparsing(struct rtl_priv *rtlpriv, u8 cut_version,
 						udelay(10);
 
 					if (polling_count++ > max_polling_cnt) {
-						RT_TRACE(COMP_INIT, DBG_LOUD,
+						RT_TRACE(rtlpriv, COMP_INIT, DBG_LOUD,
 							("polling fail in pwrseqcmd\n"));
 						return false;
 					}
@@ -117,7 +117,7 @@ bool rtl_hal_pwrseqcmdparsing(struct rtl_priv *rtlpriv, u8 cut_version,
 				break;
 
 			case PWR_CMD_DELAY:
-				RT_TRACE(COMP_INIT, DBG_TRACE,
+				RT_TRACE(rtlpriv, COMP_INIT, DBG_TRACE,
 					("rtl_hal_pwrseqcmdparsing(): PWR_CMD_DELAY\n"));
 				if (GET_PWR_CFG_VALUE(pwr_cfg_cmd) == PWRSEQ_DELAY_US)
 					udelay(GET_PWR_CFG_OFFSET(pwr_cfg_cmd));
@@ -126,7 +126,7 @@ bool rtl_hal_pwrseqcmdparsing(struct rtl_priv *rtlpriv, u8 cut_version,
 				break;
 
 			case PWR_CMD_END:
-				RT_TRACE(COMP_INIT, DBG_TRACE,
+				RT_TRACE(rtlpriv, COMP_INIT, DBG_TRACE,
 					("rtl_hal_pwrseqcmdparsing(): PWR_CMD_END\n"));
 				return true;
 				break;

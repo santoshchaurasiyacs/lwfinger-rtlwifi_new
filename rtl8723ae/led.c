@@ -45,7 +45,7 @@ void rtl8723e_sw_led_on(struct ieee80211_hw *hw, struct rtl_led *pled)
 	u8 ledcfg;
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 
-	RT_TRACE(COMP_LED, DBG_LOUD,
+	RT_TRACE(rtlpriv, COMP_LED, DBG_LOUD,
 		 ("LedAddr:%X ledpin=%d\n", REG_LEDCFG2, pled->ledpin));
 
 	switch (pled->ledpin) {
@@ -62,7 +62,7 @@ void rtl8723e_sw_led_on(struct ieee80211_hw *hw, struct rtl_led *pled)
 		rtl_write_byte(rtlpriv, REG_LEDCFG1, ledcfg & 0x10);
 		break;
 	default:
-		RT_TRACE(COMP_ERR, DBG_EMERG,
+		RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG,
 			 ("switch case not process\n"));
 		break;
 	}
@@ -75,7 +75,7 @@ void rtl8723e_sw_led_off(struct ieee80211_hw *hw, struct rtl_led *pled)
 	struct rtl_pci_priv *pcipriv = rtl_pcipriv(hw);
 	u8 ledcfg;
 
-	RT_TRACE(COMP_LED, DBG_LOUD,
+	RT_TRACE(rtlpriv, COMP_LED, DBG_LOUD,
 		 ("LedAddr:%X ledpin=%d\n", REG_LEDCFG2, pled->ledpin));
 
 	ledcfg = rtl_read_byte(rtlpriv, REG_LEDCFG2);
@@ -104,7 +104,7 @@ void rtl8723e_sw_led_off(struct ieee80211_hw *hw, struct rtl_led *pled)
 
 		break;
 	default:
-		RT_TRACE(COMP_ERR, DBG_EMERG,
+		RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG,
 			 ("switch case not process\n"));
 		break;
 	}
@@ -153,7 +153,7 @@ void rtl8723e_led_control(struct ieee80211_hw *hw,
 	     ledaction == LED_CTL_POWER_ON)) {
 		return;
 	}
-	RT_TRACE(COMP_LED, DBG_LOUD, ("ledaction %d,\n",
+	RT_TRACE(rtlpriv, COMP_LED, DBG_LOUD, ("ledaction %d,\n",
 				ledaction));
 	_rtl8723e_sw_led_control(hw, ledaction);
 }

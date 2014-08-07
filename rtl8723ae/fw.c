@@ -108,13 +108,13 @@ static void _rtl8723e_write_fw(struct ieee80211_hw *hw,
 	u32 page_nums, remain_size;
 	u32 page, offset;
 
-	RT_TRACE(COMP_FW, DBG_TRACE, ("FW size is %d bytes,\n", size));
+	RT_TRACE(rtlpriv, COMP_FW, DBG_TRACE, ("FW size is %d bytes,\n", size));
 
 	page_nums = size / FW_8192C_PAGE_SIZE;
 	remain_size = size % FW_8192C_PAGE_SIZE;
 
 	if (page_nums > 6) {
-		RT_TRACE(COMP_ERR, DBG_EMERG,
+		RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG,
 			("Page numbers should not greater then 6\n"));
 	}
 
@@ -131,7 +131,7 @@ static void _rtl8723e_write_fw(struct ieee80211_hw *hw,
 				      remain_size);
 	}
 
-	RT_TRACE(COMP_FW, DBG_TRACE, ("FW write done.\n"));
+	RT_TRACE(rtlpriv, COMP_FW, DBG_TRACE, ("FW write done.\n"));
 
 }
 
@@ -148,13 +148,13 @@ static int _rtl8723e_fw_free_to_go(struct ieee80211_hw *hw)
 		 (!(value32 & FWDL_ChkSum_rpt)));
 
 	if (counter >= FW_8192C_POLLING_TIMEOUT_COUNT) {
-		RT_TRACE(COMP_ERR, DBG_EMERG,
+		RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG,
 			 ("chksum report faill ! REG_MCUFWDL:0x%08x .\n",
 			  value32));
 		goto exit;
 	}
 
-	RT_TRACE(COMP_FW, DBG_TRACE,
+	RT_TRACE(rtlpriv, COMP_FW, DBG_TRACE,
 		 ("Checksum report OK ! REG_MCUFWDL:0x%08x .\n", value32));
 
 	value32 = rtl_read_dword(rtlpriv, REG_MCUFWDL);
@@ -167,7 +167,7 @@ static int _rtl8723e_fw_free_to_go(struct ieee80211_hw *hw)
 	do {
 		value32 = rtl_read_dword(rtlpriv, REG_MCUFWDL);
 		if (value32 & WINTINI_RDY) {
-			RT_TRACE(COMP_FW, DBG_TRACE,
+			RT_TRACE(rtlpriv, COMP_FW, DBG_TRACE,
 				 ("Polling FW ready success!! "
 				 "REG_MCUFWDL:0x%08x .\n",
 				  value32));
@@ -179,7 +179,7 @@ static int _rtl8723e_fw_free_to_go(struct ieee80211_hw *hw)
 
 	} while (counter++ < FW_8192C_POLLING_TIMEOUT_COUNT);
 
-	RT_TRACE(COMP_ERR, DBG_EMERG,
+	RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG,
 		 ("Polling FW ready fail!! REG_MCUFWDL:0x%08x .\n",
 		 value32));
 
@@ -205,7 +205,7 @@ int rtl8723e_download_fw(struct ieee80211_hw *hw)
 	fwsize = rtlhal->fwsize;
 
 	if (IS_FW_HEADER_EXIST(pfwheader)) {
-		RT_TRACE(COMP_FW, DBG_DMESG,
+		RT_TRACE(rtlpriv, COMP_FW, DBG_DMESG,
 			 ("Firmware Version(%d), Signature(%#x),Size(%d)\n",
 			  pfwheader->version, pfwheader->signature,
 			  (int)sizeof(struct rtl8723e_firmware_header)));
@@ -224,10 +224,10 @@ int rtl8723e_download_fw(struct ieee80211_hw *hw)
 
 	err = _rtl8723e_fw_free_to_go(hw);
 	if (err) {
-		RT_TRACE(COMP_ERR, DBG_EMERG,
+		RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG,
 			 ("Firmware is not ready to run!\n"));
 	} else {
-		RT_TRACE(COMP_FW, DBG_TRACE,
+		RT_TRACE(rtlpriv, COMP_FW, DBG_TRACE,
 			 ("Firmware is ready to run!\n"));
 	}
 
@@ -267,12 +267,12 @@ static void _rtl8723e_fill_h2c_command(struct ieee80211_hw *hw,
 	unsigned long flag;
 	u8 idx;
 
-	RT_TRACE(COMP_CMD, DBG_LOUD, ("come in\n"));
+	RT_TRACE(rtlpriv, COMP_CMD, DBG_LOUD, ("come in\n"));
 
 	while (true) {
 		spin_lock_irqsave(&rtlpriv->locks.h2c_lock, flag);
 		if (rtlhal->h2c_setinprogress) {
-			RT_TRACE(COMP_CMD, DBG_LOUD,
+			RT_TRACE(rtlpriv, COMP_CMD, DBG_LOUD,
 				 ("H2C set in progress! Wait to set.."
 				  "element_id(%d).\n", element_id));
 
@@ -280,7 +280,7 @@ static void _rtl8723e_fill_h2c_command(struct ieee80211_hw *hw,
 				spin_unlock_irqrestore(&rtlpriv->locks.h2c_lock,
 						       flag);
 				h2c_waitcounter++;
-				RT_TRACE(COMP_CMD, DBG_LOUD,
+				RT_TRACE(rtlpriv, COMP_CMD, DBG_LOUD,
 					 ("Wait 100 us (%d times)...\n",
 					  h2c_waitcounter));
 				udelay(100);
@@ -301,7 +301,7 @@ static void _rtl8723e_fill_h2c_command(struct ieee80211_hw *hw,
 	while (!bwrite_sucess) {
 		wait_writeh2c_limmit--;
 		if (wait_writeh2c_limmit == 0) {
-			RT_TRACE(COMP_ERR, DBG_EMERG,
+			RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG,
 				 ("Write H2C fail because no trigger "
 				  "for FW INT!\n"));
 			break;
@@ -326,7 +326,7 @@ static void _rtl8723e_fill_h2c_command(struct ieee80211_hw *hw,
 			box_extreg = REG_HMEBOX_EXT_3;
 			break;
 		default:
-			RT_TRACE(COMP_ERR, DBG_EMERG,
+			RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG,
 				 ("switch case not process\n"));
 			break;
 		}
@@ -336,7 +336,7 @@ static void _rtl8723e_fill_h2c_command(struct ieee80211_hw *hw,
 
 			wait_h2c_limmit--;
 			if (wait_h2c_limmit == 0) {
-				RT_TRACE(COMP_CMD, DBG_LOUD,
+				RT_TRACE(rtlpriv, COMP_CMD, DBG_LOUD,
 					 ("Wating too long for FW read "
 					  "clear HMEBox(%d)!\n", boxnum));
 				break;
@@ -347,13 +347,13 @@ static void _rtl8723e_fill_h2c_command(struct ieee80211_hw *hw,
 			isfw_read = _rtl8723e_check_fw_read_last_h2c(hw,
 								boxnum);
 			u1b_tmp = rtl_read_byte(rtlpriv, 0x1BF);
-			RT_TRACE(COMP_CMD, DBG_LOUD,
+			RT_TRACE(rtlpriv, COMP_CMD, DBG_LOUD,
 				 ("Wating for FW read clear HMEBox(%d)!!! "
 				  "0x1BF = %2x\n", boxnum, u1b_tmp));
 		}
 
 		if (!isfw_read) {
-			RT_TRACE(COMP_CMD, DBG_LOUD,
+			RT_TRACE(rtlpriv, COMP_CMD, DBG_LOUD,
 				 ("Write H2C register BOX[%d] fail!!!!! "
 				  "Fw do not read.\n", boxnum));
 			break;
@@ -362,7 +362,7 @@ static void _rtl8723e_fill_h2c_command(struct ieee80211_hw *hw,
 		memset(boxcontent, 0, sizeof(boxcontent));
 		memset(boxextcontent, 0, sizeof(boxextcontent));
 		boxcontent[0] = element_id;
-		RT_TRACE(COMP_CMD, DBG_LOUD,
+		RT_TRACE(rtlpriv, COMP_CMD, DBG_LOUD,
 			 ("Write element_id box_reg(%4x) = %2x\n",
 			  box_reg, element_id));
 
@@ -432,7 +432,7 @@ static void _rtl8723e_fill_h2c_command(struct ieee80211_hw *hw,
 			}
 			break;
 		default:
-			RT_TRACE(COMP_ERR, DBG_EMERG,
+			RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG,
 				 ("switch case not process\n"));
 			break;
 		}
@@ -443,7 +443,7 @@ static void _rtl8723e_fill_h2c_command(struct ieee80211_hw *hw,
 		if (rtlhal->last_hmeboxnum == 4)
 			rtlhal->last_hmeboxnum = 0;
 
-		RT_TRACE(COMP_CMD, DBG_LOUD,
+		RT_TRACE(rtlpriv, COMP_CMD, DBG_LOUD,
 			 ("pHalData->last_hmeboxnum  = %d\n",
 			  rtlhal->last_hmeboxnum));
 	}
@@ -452,7 +452,7 @@ static void _rtl8723e_fill_h2c_command(struct ieee80211_hw *hw,
 	rtlhal->h2c_setinprogress = false;
 	spin_unlock_irqrestore(&rtlpriv->locks.h2c_lock, flag);
 
-	RT_TRACE(COMP_CMD, DBG_LOUD, ("go out\n"));
+	RT_TRACE(rtlpriv, COMP_CMD, DBG_LOUD, ("go out\n"));
 }
 
 void rtl8723e_fill_h2c_cmd(struct ieee80211_hw *hw,
@@ -504,7 +504,7 @@ void rtl8723e_set_fw_pwrmode_cmd(struct ieee80211_hw *hw, u8 mode)
 	u8 u1_h2c_set_pwrmode[3] = { 0 };
 	struct rtl_ps_ctl *ppsc = rtl_psc(rtl_priv(hw));
 
-	RT_TRACE(COMP_POWER, DBG_LOUD, ("FW LPS mode = %d\n", mode));
+	RT_TRACE(rtlpriv, COMP_POWER, DBG_LOUD, ("FW LPS mode = %d\n", mode));
 
 	SET_H2CCMD_PWRMODE_PARM_MODE(u1_h2c_set_pwrmode, mode);
 	SET_H2CCMD_PWRMODE_PARM_SMART_PS(u1_h2c_set_pwrmode,
@@ -742,7 +742,7 @@ void rtl8723e_set_fw_rsvdpagepkt(struct ieee80211_hw *hw, bool b_dl_finished)
 		b_dlok = true;
 
 	if (b_dlok) {
-		RT_TRACE(COMP_POWER, DBG_LOUD,
+		RT_TRACE(rtlpriv, COMP_POWER, DBG_LOUD,
 			 ("Set RSVD page location to Fw.\n"));
 		RT_PRINT_DATA(rtlpriv, COMP_CMD, DBG_DMESG,
 				"H2C_RSVDPAGE:\n",
@@ -750,7 +750,7 @@ void rtl8723e_set_fw_rsvdpagepkt(struct ieee80211_hw *hw, bool b_dl_finished)
 		rtl8723e_fill_h2c_cmd(hw, H2C_RSVDPAGE,
 				    sizeof(u1RsvdPageLoc), u1RsvdPageLoc);
 	} else
-		RT_TRACE(COMP_ERR, DBG_WARNING,
+		RT_TRACE(rtlpriv, COMP_ERR, DBG_WARNING,
 			 ("Set RSVD page location to Fw FAIL!!!!!!.\n"));
 }
 
@@ -784,11 +784,11 @@ void rtl8723e_set_p2p_ps_offload_cmd(struct ieee80211_hw *hw, u8 p2p_ps_state)
 
 	switch (p2p_ps_state) {
 	case P2P_PS_DISABLE:
-		RT_TRACE(COMP_FW, DBG_LOUD, ("P2P_PS_DISABLE\n"));
+		RT_TRACE(rtlpriv, COMP_FW, DBG_LOUD, ("P2P_PS_DISABLE\n"));
 		memset(p2p_ps_offload, 0, 1);
 		break;
 	case P2P_PS_ENABLE:
-		RT_TRACE(COMP_FW, DBG_LOUD, ("P2P_PS_ENABLE\n"));
+		RT_TRACE(rtlpriv, COMP_FW, DBG_LOUD, ("P2P_PS_ENABLE\n"));
 		/* update CTWindow value. */
 		if (p2pinfo->ctwindow > 0) {
 			p2p_ps_offload->CTWindow_En = 1;
@@ -849,11 +849,11 @@ void rtl8723e_set_p2p_ps_offload_cmd(struct ieee80211_hw *hw, u8 p2p_ps_state)
 		}
 		break;
 	case P2P_PS_SCAN:
-		RT_TRACE(COMP_FW, DBG_LOUD, ("P2P_PS_SCAN\n"));
+		RT_TRACE(rtlpriv, COMP_FW, DBG_LOUD, ("P2P_PS_SCAN\n"));
 		p2p_ps_offload->discovery = 1;
 		break;
 	case P2P_PS_SCAN_DONE:
-		RT_TRACE(COMP_FW, DBG_LOUD, ("P2P_PS_SCAN_DONE\n"));
+		RT_TRACE(rtlpriv, COMP_FW, DBG_LOUD, ("P2P_PS_SCAN_DONE\n"));
 		p2p_ps_offload->discovery = 0;
 		p2pinfo->p2p_ps_state = P2P_PS_ENABLE;
 		break;
