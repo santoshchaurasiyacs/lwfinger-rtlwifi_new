@@ -235,7 +235,7 @@ void rtl92s_phy_set_rf_reg(struct ieee80211_hw *hw,	enum radio_path rfpath,
 
 }
 
-extern void rtl92s_phy_scan_operation_backup(struct ieee80211_hw *hw,
+void rtl92s_phy_scan_operation_backup(struct ieee80211_hw *hw,
 			u8 operation)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
@@ -671,7 +671,7 @@ bool rtl92s_phy_set_rf_power_state(struct ieee80211_hw *hw,
 	return bresult;
 }
 
-bool _rtl92s_phy_config_rfpa_bias_current(struct ieee80211_hw *hw,
+static bool _rtl92s_phy_config_rfpa_bias_current(struct ieee80211_hw *hw,
 			enum radio_path rfpath)
 {
 	struct rtl_hal *rtlhal = rtl_hal(rtl_priv(hw));

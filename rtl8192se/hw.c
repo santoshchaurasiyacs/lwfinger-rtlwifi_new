@@ -808,9 +808,9 @@ static void _rtl92se_macconfig_after_fwdownload(struct ieee80211_hw *hw)
 
 	/* 2. Command Control Register (Offset: 0x0040 - 0x004F) */
 	/* Turn on 0x40 Command register */
-	rtl_write_byte(rtlpriv, CMDR, (u8)(BBRSTN | BB_GLB_RSTN |
-			SCHEDULE_EN | MACRXEN | MACTXEN | DDMA_EN | FW2HW_EN |
-			RXDMA_EN | TXDMA_EN | HCI_RXDMA_EN | HCI_TXDMA_EN));
+	rtl_write_word(rtlpriv, CMDR, BBRSTN | BB_GLB_RSTN |
+		       SCHEDULE_EN | MACRXEN | MACTXEN | DDMA_EN | FW2HW_EN |
+		       RXDMA_EN | TXDMA_EN | HCI_RXDMA_EN | HCI_TXDMA_EN);
 
 	/* Set TCR TX DMA pre 2 FULL enable bit	*/
 	rtl_write_dword(rtlpriv, TCR, rtl_read_dword(rtlpriv, TCR) |
@@ -1709,7 +1709,7 @@ static void _rtl8192se_get_IC_Inferiority(struct ieee80211_hw *hw)
 	}
 }
 
-void _rtl92se_read_adapter_info(struct ieee80211_hw *hw)
+static void _rtl92se_read_adapter_info(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_efuse *rtlefuse = rtl_efuse(rtl_priv(hw));

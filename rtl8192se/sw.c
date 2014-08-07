@@ -42,7 +42,7 @@
 #include "led.h"
 #include "../base.h"
 
-void rtl92s_init_aspm_vars(struct ieee80211_hw *hw)
+static void rtl92s_init_aspm_vars(struct ieee80211_hw *hw)
 {
 	struct rtl_pci *rtlpci = rtl_pcidev(rtl_pcipriv(hw));
 
@@ -130,7 +130,7 @@ static void rtl92se_fw_cb(const struct firmware *firmware, void *context)
 	rtl_init_rfkill(hw);
 }
 
-int rtl92s_init_sw_vars(struct ieee80211_hw *hw)
+static int rtl92s_init_sw_vars(struct ieee80211_hw *hw)
 {
 	int err = 0;
 	u16	earlyrxthreshold = 7;
@@ -240,7 +240,7 @@ int rtl92s_init_sw_vars(struct ieee80211_hw *hw)
 	return 0;
 }
 
-void rtl92s_deinit_sw_vars(struct ieee80211_hw *hw)
+static void rtl92s_deinit_sw_vars(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 
@@ -257,7 +257,7 @@ bool rtl92s_get_btc_status(void)
 }
 
 
-struct rtl_hal_ops rtl8192se_hal_ops = {
+static struct rtl_hal_ops rtl8192se_hal_ops = {
 	.init_sw_vars = rtl92s_init_sw_vars,
 	.deinit_sw_vars = rtl92s_deinit_sw_vars,
 	.read_eeprom_info = rtl92se_read_eeprom_info,
@@ -304,7 +304,7 @@ struct rtl_hal_ops rtl8192se_hal_ops = {
 	.rx_command_packet = rtl92se_rx_command_packet,
 };
 
-struct rtl_mod_params rtl92se_mod_params = {
+static struct rtl_mod_params rtl92se_mod_params = {
 	.sw_crypto = false,
 	.inactiveps = true,
 	.swctrl_lps = true,
@@ -314,7 +314,7 @@ struct rtl_mod_params rtl92se_mod_params = {
 
 /* Because memory R/W bursting will cause system hang/crash
  * for 92se, so we don't read back after every write action */
-struct rtl_hal_cfg rtl92se_hal_cfg = {
+static struct rtl_hal_cfg rtl92se_hal_cfg = {
 	.bar_id = 1,
 	.write_readback = false,
 	.name = "rtl92s_pci",
@@ -410,7 +410,7 @@ struct rtl_hal_cfg rtl92se_hal_cfg = {
 	.maps[RTL_RC_HT_RATEMCS15] = DESC92S_RATEMCS15,
 };
 
-struct pci_device_id rtl92se_pci_ids[] = {
+static struct pci_device_id rtl92se_pci_ids[] = {
 	{RTL_PCI_DEVICE(PCI_VENDOR_ID_REALTEK, 0x8192, rtl92se_hal_cfg)},
 	{RTL_PCI_DEVICE(PCI_VENDOR_ID_REALTEK, 0x8171, rtl92se_hal_cfg)},
 	{RTL_PCI_DEVICE(PCI_VENDOR_ID_REALTEK, 0x8172, rtl92se_hal_cfg)},
@@ -438,7 +438,7 @@ MODULE_PARM_DESC(swlps, "Set to 1 to use SW control power save (default 0)\n");
 MODULE_PARM_DESC(fwlps, "Set to 1 to use FW control power save (default 1)\n");
 MODULE_PARM_DESC(debug, "Set debug level (0-5) (default 0)");
 
-static const SIMPLE_DEV_PM_OPS(rtlwifi_pm_ops, rtl_pci_suspend, rtl_pci_resume);
+static SIMPLE_DEV_PM_OPS(rtlwifi_pm_ops, rtl_pci_suspend, rtl_pci_resume);
 
 
 static struct pci_driver rtl92se_driver = {
