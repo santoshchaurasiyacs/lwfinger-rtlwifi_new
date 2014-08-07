@@ -10,15 +10,16 @@ SYMBOL_FILE := Module.symvers
 
 EXTRA_CFLAGS += -O2
 obj-m := rtlwifi.o
-PCI_MAIN_OBJS	:= base.o	\
-		rc.o	\
-		debug.o	\
-		regd.o	\
-		efuse.o	\
+PCI_MAIN_OBJS	:=	\
+		base.o	\
 		cam.o	\
-		ps.o	\
 		core.o	\
-		stats.o	\
+		debug.o	\
+		efuse.o	\
+		ps.o	\
+		rc.o	\
+		regd.o	\
+		stats.o
 
 obj-$(CONFIG_RTLWIFI_PCI)	+= rtl_pci.o
 rtl_pci-objs	:=		pci.o

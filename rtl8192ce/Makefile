@@ -13,15 +13,15 @@ obj-m := rtl8192ce.o
 
 
 PCI_92CE_HAL_OBJS:=	\
-	hw.o		\
-	table.o		\
-	sw.o		\
-	trx.o		\
-	led.o		\
+	dm.o		\
 	fw.o		\
+	hw.o		\
+	led.o		\
 	phy.o		\
 	rf.o		\
-	dm.o		\
+	sw.o		\
+	table.o		\
+	trx.o		\
 
 ####################################################
 

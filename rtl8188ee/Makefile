@@ -11,19 +11,18 @@ EXTRA_CFLAGS += -O2
 ####################################################
 obj-m := rtl8188ee.o
 
-
 PCI_88EE_HAL_OBJS:=	\
-	hw.o		\
-	table.o		\
-	sw.o		\
-	trx.o		\
-	led.o		\
-	fw.o		\
-	phy.o		\
-	rf.o		\
 	dm.o		\
+	fw.o		\
+	hw.o		\
+	led.o		\
+	phy.o		\
 	pwrseq.o	\
 	pwrseqcmd.o	\
+	rf.o		\
+	sw.o		\
+	table.o		\
+	trx.o		\
 
 ####################################################
 

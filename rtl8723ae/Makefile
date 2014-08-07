@@ -13,19 +13,19 @@ obj-m := rtl8723ae.o
 
 
 PCI_8723AE_HAL_OBJS:=	\
-	hw.o		\
-	table.o		\
-	sw.o		\
-	trx.o		\
-	led.o		\
-	fw.o		\
-	phy.o		\
-	rf.o		\
 	dm.o		\
+	fw.o		\
+	hal_btc.o	\
+	hal_bt_coexist.o\
+	hw.o		\
+	led.o		\
+	phy.o		\
 	pwrseq.o	\
 	pwrseqcmd.o	\
-	hal_btc.o	\
-	hal_bt_coexist.o	\
+	rf.o		\
+	sw.o		\
+	table.o		\
+	trx.o		\
 
 ####################################################
 
