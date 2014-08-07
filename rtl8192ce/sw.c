@@ -42,7 +42,7 @@
 #include "trx.h"
 #include "led.h"
 
-void rtl92c_init_aspm_vars(struct ieee80211_hw *hw)
+static void rtl92c_init_aspm_vars(struct ieee80211_hw *hw)
 {
 	struct rtl_pci *rtlpci = rtl_pcidev(rtl_pcipriv(hw));
 
@@ -194,7 +194,7 @@ bool rtl92c_get_btc_status(void)
 }
 
 
-struct rtl_hal_ops rtl8192ce_hal_ops = {
+static struct rtl_hal_ops rtl8192ce_hal_ops = {
 	.init_sw_vars = rtl92c_init_sw_vars,
 	.deinit_sw_vars = rtl92c_deinit_sw_vars,
 	.read_eeprom_info = rtl92ce_read_eeprom_info,
@@ -241,7 +241,7 @@ struct rtl_hal_ops rtl8192ce_hal_ops = {
 	.rx_command_packet = rtl92ce_rx_command_packet,
 };
 
-struct rtl_mod_params rtl92ce_mod_params = {
+static struct rtl_mod_params rtl92ce_mod_params = {
 	.sw_crypto = false,
 	.inactiveps = true,
 	.swctrl_lps = false,
@@ -249,7 +249,7 @@ struct rtl_mod_params rtl92ce_mod_params = {
 	.debug = DBG_EMERG,
 };
 
-struct rtl_hal_cfg rtl92ce_hal_cfg = {
+static struct rtl_hal_cfg rtl92ce_hal_cfg = {
 	.bar_id = 2,
 	.write_readback = true,
 	.name = "rtl92c_pci",
@@ -374,7 +374,7 @@ MODULE_PARM_DESC(swlps, "Set to 1 to use SW control power save (default 0)\n");
 MODULE_PARM_DESC(fwlps, "Set to 1 to use FW control power save (default 1)\n");
 MODULE_PARM_DESC(debug, "Set debug level (0-5) (default 0)");
 
-static const SIMPLE_DEV_PM_OPS(rtlwifi_pm_ops, rtl_pci_suspend, rtl_pci_resume);
+static SIMPLE_DEV_PM_OPS(rtlwifi_pm_ops, rtl_pci_suspend, rtl_pci_resume);
 
 
 static struct pci_driver rtl92ce_driver = {

@@ -1198,80 +1198,6 @@ void rtl92c_dm_init_rate_adaptive_mask(struct ieee80211_hw *hw)
 
 }
 
-void rtl92c_dm_refresh_rate_adaptive_mask(struct ieee80211_hw *hw)
-{
-	struct rtl_priv *rtlpriv = rtl_priv(hw);
-	struct rtl_hal *rtlhal = rtl_hal(rtl_priv(hw));
-	struct rtl_mac *mac = rtl_mac(rtl_priv(hw));
-	struct rate_adaptive *p_ra = &(rtlpriv->ra);
-	u32 low_rssithresh_for_ra, high_rssithresh_for_ra;
-	struct ieee80211_sta *sta = NULL;
-
-	if (is_hal_stop(rtlhal)) {
-		RT_TRACE(COMP_RATE, DBG_LOUD,
-			 (" driver is going to unload\n"));
-		return;
-	}
-
-	if (!rtlpriv->dm.useramask) {
-		RT_TRACE(COMP_RATE, DBG_LOUD,
-			 (" driver does not control rate adaptive mask\n"));
-		return;
-	}
-
-	if (mac->link_state == MAC80211_LINKED &&
-		mac->opmode == NL80211_IFTYPE_STATION) {
-
-		switch (p_ra->pre_ratr_state) {
-		case DM_RATR_STA_HIGH:
-			high_rssithresh_for_ra = 50;
-			low_rssithresh_for_ra = 20;
-			break;
-		case DM_RATR_STA_MIDDLE:
-			high_rssithresh_for_ra = 55;
-			low_rssithresh_for_ra = 20;
-			break;
-		case DM_RATR_STA_LOW:
-			high_rssithresh_for_ra = 50;
-			low_rssithresh_for_ra = 25;
-			break;
-		default:
-			high_rssithresh_for_ra = 50;
-			low_rssithresh_for_ra = 20;
-			break;
-		}
-
-		if (rtlpriv->dm.undecorated_smoothed_pwdb >
-		    (long)high_rssithresh_for_ra)
-			p_ra->ratr_state = DM_RATR_STA_HIGH;
-		else if (rtlpriv->dm.undecorated_smoothed_pwdb >
-			 (long)low_rssithresh_for_ra)
-			p_ra->ratr_state = DM_RATR_STA_MIDDLE;
-		else
-			p_ra->ratr_state = DM_RATR_STA_LOW;
-
-		if (p_ra->pre_ratr_state != p_ra->ratr_state) {
-			RT_TRACE(COMP_RATE, DBG_LOUD,
-				 ("RSSI = %ld\n",
-				  rtlpriv->dm.undecorated_smoothed_pwdb));
-			RT_TRACE(COMP_RATE, DBG_LOUD,
-				 ("RSSI_LEVEL = %d\n", p_ra->ratr_state));
-			RT_TRACE(COMP_RATE, DBG_LOUD,
-				 ("PreState = %d, CurState = %d\n",
-				  p_ra->pre_ratr_state, p_ra->ratr_state));
-
-			rcu_read_lock();
-			sta = rtl_find_sta(hw, mac->bssid);
-			if (sta)
-				rtlpriv->cfg->ops->update_rate_tbl(hw,
-					sta, p_ra->ratr_state);
-			rcu_read_unlock();
-
-			p_ra->pre_ratr_state = p_ra->ratr_state;
-		}
-	}
-}
-
 static void rtl92c_dm_init_dynamic_bb_powersaving(struct ieee80211_hw *hw)
 {
 	dm_pstable.pre_ccastate = CCA_MAX;
@@ -1279,51 +1205,6 @@ static void rtl92c_dm_init_dynamic_bb_powersaving(struct ieee80211_hw *hw)
 	dm_pstable.pre_rfstate = RF_MAX;
 	dm_pstable.cur_rfstate = RF_MAX;
 	dm_pstable.rssi_val_min = 0;
-}
-
-void rtl92c_dm_1r_cca(struct ieee80211_hw *hw)
-{
-	struct rtl_priv *rtlpriv = rtl_priv(hw);
-	struct rtl_phy *rtlphy = &(rtlpriv->phy);
-
-	if (dm_pstable.rssi_val_min != 0) {
-		if (dm_pstable.pre_ccastate == CCA_2R) {
-			if (dm_pstable.rssi_val_min >= 35)
-				dm_pstable.cur_ccasate = CCA_1R;
-			else
-				dm_pstable.cur_ccasate = CCA_2R;
-		} else {
-			if (dm_pstable.rssi_val_min <= 30)
-				dm_pstable.cur_ccasate = CCA_2R;
-			else
-				dm_pstable.cur_ccasate = CCA_1R;
-		}
-	} else {
-		dm_pstable.cur_ccasate = CCA_MAX;
-	}
-
-	if (dm_pstable.pre_ccastate != dm_pstable.cur_ccasate) {
-		if (dm_pstable.cur_ccasate == CCA_1R) {
-			if (get_rf_type(rtlphy) == RF_2T2R) {
-				rtl_set_bbreg(hw, ROFDM0_TRXPATHENABLE,
-					      MASKBYTE0, 0x13);
-				rtl_set_bbreg(hw, 0xe70, MASKBYTE3, 0x20);
-			} else {
-				rtl_set_bbreg(hw, ROFDM0_TRXPATHENABLE,
-					      MASKBYTE0, 0x23);
-				rtl_set_bbreg(hw, 0xe70, 0x7fc00000, 0x10c);
-			}
-		} else {
-			rtl_set_bbreg(hw, ROFDM0_TRXPATHENABLE, MASKBYTE0,
-				      0x33);
-			rtl_set_bbreg(hw, 0xe70, MASKBYTE3, 0x63);
-		}
-		dm_pstable.pre_ccastate = dm_pstable.cur_ccasate;
-	}
-
-	RT_TRACE(DBG_LOUD, DBG_LOUD, ("CCAStage = %s\n",
-					       (dm_pstable.cur_ccasate ==
-						0) ? "1RCCA" : "2RCCA"));
 }
 
 void rtl92c_dm_rf_saving(struct ieee80211_hw *hw, u8 bforce_in_normal)
@@ -1478,7 +1359,7 @@ void rtl92c_dm_watchdog(struct ieee80211_hw *hw)
 	}
 }
 
-bool rtl92c_bt_state_change(struct ieee80211_hw *hw)
+static bool rtl92c_bt_state_change(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_pci_priv *rtlpcipriv = rtl_pcipriv(hw);
@@ -1566,7 +1447,7 @@ bool rtl92c_bt_state_change(struct ieee80211_hw *hw)
 
 }
 
-bool rtl92c_bt_wifi_connect_change(struct ieee80211_hw *hw)
+static bool rtl92c_bt_wifi_connect_change(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	static bool b_media_connect;
@@ -1595,7 +1476,7 @@ bool rtl92c_bt_wifi_connect_change(struct ieee80211_hw *hw)
 	(((struct rtl_priv *)(_priv))->dm.entry_min_undecoratedsmoothed_pwdb) : \
 	(((struct rtl_priv *)(_priv))->dm.undecorated_smoothed_pwdb)
 
-u8 rtl92c_bt_rssi_state_change(struct ieee80211_hw *hw)
+static u8 rtl92c_bt_rssi_state_change(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_pci_priv *rtlpcipriv = rtl_pcipriv(hw);
