@@ -1325,7 +1325,7 @@ static void rtl88e_dm_update_rx_idle_ant(struct ieee80211_hw *hw,
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_efuse *rtlefuse = rtl_efuse(rtl_priv(hw));
 	struct rtl_dm *rtldm = rtl_dm(rtl_priv(hw));
-	struct fast_ant_trainning *pfat_table = &(rtldm->fat_table);
+	struct fast_ant_training *pfat_table = &(rtldm->fat_table);
 	u32 default_ant, optional_ant;
 
 	if (pfat_table->rx_idle_ant != ant) {
@@ -1368,7 +1368,7 @@ static void rtl88e_dm_update_tx_ant(struct ieee80211_hw *hw,
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_dm *rtldm = rtl_dm(rtl_priv(hw));
-	struct fast_ant_trainning *pfat_table = &(rtldm->fat_table);
+	struct fast_ant_training *pfat_table = &(rtldm->fat_table);
 	u8 target_ant;
 
 	if (ant == MAIN_ANT)
@@ -1435,7 +1435,7 @@ static void rtl88e_dm_trx_hw_antenna_div_init(struct ieee80211_hw *hw)
 static void rtl88e_dm_fast_training_init(struct ieee80211_hw *hw)
 {
 	struct rtl_dm *rtldm = rtl_dm(rtl_priv(hw));
-	struct fast_ant_trainning *pfat_table = &(rtldm->fat_table);
+	struct fast_ant_training *pfat_table = &(rtldm->fat_table);
 	u32 ant_combination = 2;
 	u32 value32, i;
 
@@ -1513,7 +1513,7 @@ void rtl88e_dm_set_tx_ant_by_tx_info(struct ieee80211_hw *hw,
 {
 	struct rtl_efuse *rtlefuse = rtl_efuse(rtl_priv(hw));
 	struct rtl_dm *rtldm = rtl_dm(rtl_priv(hw));
-	struct fast_ant_trainning *pfat_table = &(rtldm->fat_table);
+	struct fast_ant_training *pfat_table = &(rtldm->fat_table);
 
 	if ((rtlefuse->antenna_div_type == CG_TRX_HW_ANTDIV) ||
 	    (rtlefuse->antenna_div_type == CG_TRX_SMART_ANTDIV)) {
@@ -1528,7 +1528,7 @@ void rtl88e_dm_ant_sel_statistics(struct ieee80211_hw *hw,
 {
 	struct rtl_efuse *rtlefuse = rtl_efuse(rtl_priv(hw));
 	struct rtl_dm *rtldm = rtl_dm(rtl_priv(hw));
-	struct fast_ant_trainning *pfat_table = &(rtldm->fat_table);
+	struct fast_ant_training *pfat_table = &(rtldm->fat_table);
 
 	if (rtlefuse->antenna_div_type == CG_TRX_HW_ANTDIV) {
 		if (antsel_tr_mux == MAIN_ANT_CG_TRX) {
@@ -1555,7 +1555,7 @@ static void rtl88e_dm_hw_ant_div(struct ieee80211_hw *hw)
 	struct rtl_efuse *rtlefuse = rtl_efuse(rtl_priv(hw));
 	struct rtl_dm *rtldm = rtl_dm(rtl_priv(hw));
 	struct rtl_sta_info *drv_priv;
-	struct fast_ant_trainning *pfat_table = &(rtldm->fat_table);
+	struct fast_ant_training *pfat_table = &(rtldm->fat_table);
 	struct dig_t *dm_dig = &rtlpriv->dm_digtable;
 	u32 i, min_rssi = 0xff, ant_div_max_rssi = 0,
 		max_rssi = 0, local_min_rssi, local_max_rssi;
@@ -1665,7 +1665,7 @@ static void rtl88e_set_next_mac_address_target(struct ieee80211_hw *hw)
 	struct rtl_mac *mac = rtl_mac(rtl_priv(hw));
 	struct rtl_dm *rtldm = rtl_dm(rtl_priv(hw));
 	struct rtl_sta_info *drv_priv;
-	struct fast_ant_trainning *pfat_table = &(rtldm->fat_table);
+	struct fast_ant_training *pfat_table = &(rtldm->fat_table);
 	u32 value32, i, j = 0;
 
 	if (mac->link_state >= MAC80211_LINKED) {
@@ -1721,11 +1721,11 @@ static void rtl88e_set_next_mac_address_target(struct ieee80211_hw *hw)
 	}
 
 }
-static void rtl88e_dm_fast_ant_trainning(struct ieee80211_hw *hw)
+static void rtl88e_dm_fast_ant_training(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_dm *rtldm = rtl_dm(rtl_priv(hw));
-	struct fast_ant_trainning *pfat_table = &(rtldm->fat_table);
+	struct fast_ant_training *pfat_table = &(rtldm->fat_table);
 	u32 i, max_rssi = 0;
 	u8 target_ant = 2;
 	bool bpkt_filter_match = false;
@@ -1787,15 +1787,15 @@ static void rtl88e_dm_fast_ant_trainning(struct ieee80211_hw *hw)
 		rtl_set_bbreg(hw, DM_REG_TXAGC_A_1_MCS32_11N, BIT(16), 1);
 		rtl_set_bbreg(hw, DM_REG_IGI_A_11N, BIT(7), 1);
 
-		mod_timer(&rtlpriv->works.fast_antenna_trainning_timer,
+		mod_timer(&rtlpriv->works.fast_antenna_training_timer,
 				jiffies + MSECS(RTL_WATCH_DOG_TIME));
 	}
 
 }
-void rtl88e_dm_fast_antenna_trainning_callback(unsigned long data)
+void rtl88e_dm_fast_antenna_training_callback(unsigned long data)
 {
 	struct ieee80211_hw *hw = (struct ieee80211_hw *)data;
-	rtl88e_dm_fast_ant_trainning(hw);
+	rtl88e_dm_fast_ant_training(hw);
 }
 static void rtl88e_dm_antenna_diversity(struct ieee80211_hw *hw)
 {
@@ -1803,7 +1803,7 @@ static void rtl88e_dm_antenna_diversity(struct ieee80211_hw *hw)
 	struct rtl_mac *mac = rtl_mac(rtl_priv(hw));
 	struct rtl_efuse *rtlefuse = rtl_efuse(rtl_priv(hw));
 	struct rtl_dm *rtldm = rtl_dm(rtl_priv(hw));
-	struct fast_ant_trainning *pfat_table = &(rtldm->fat_table);
+	struct fast_ant_training *pfat_table = &(rtldm->fat_table);
 
 	if (mac->link_state < MAC80211_LINKED) {
 		RT_TRACE(COMP_DIG, DBG_LOUD, ("No Link\n"));
@@ -1842,7 +1842,7 @@ static void rtl88e_dm_antenna_diversity(struct ieee80211_hw *hw)
 		(rtlefuse->antenna_div_type == CGCS_RX_HW_ANTDIV))
 		rtl88e_dm_hw_ant_div(hw);
 	else if (rtlefuse->antenna_div_type == CG_TRX_SMART_ANTDIV)
-		rtl88e_dm_fast_ant_trainning(hw);
+		rtl88e_dm_fast_ant_training(hw);
 
 }
 

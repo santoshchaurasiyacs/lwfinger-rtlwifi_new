@@ -1449,7 +1449,7 @@ struct rtl_pstbl {
 
 #define ASSOCIATE_ENTRY_NUM	(32 + 1)
 
-struct fast_ant_trainning {
+struct fast_ant_training {
 	u8 bssid[6];
 	u8 antsel_rx_keep_0;
 	u8 antsel_rx_keep_1;
@@ -1563,7 +1563,7 @@ struct rtl_dm {
 	/* DulMac */
 	struct rtl_dig dm_digtable;
 	struct rtl_pstbl dm_pstable;
-	struct fast_ant_trainning fat_table;
+	struct fast_ant_training fat_table;
 
 	u8 linked_interval;
 
@@ -2096,7 +2096,7 @@ struct rtl_works {
 	struct timer_list watchdog_timer;
 	struct timer_list dualmac_easyconcurrent_retrytimer;
 	struct timer_list fw_clockoff_timer;
-	struct timer_list fast_antenna_trainning_timer;
+	struct timer_list fast_antenna_training_timer;
 	/*task */
 	struct tasklet_struct irq_tasklet;
 	struct tasklet_struct irq_prepare_bcn_tasklet;

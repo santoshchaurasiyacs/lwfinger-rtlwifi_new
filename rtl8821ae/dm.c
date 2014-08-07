@@ -3454,7 +3454,7 @@ void rtl8821ae_dm_set_tx_ant_by_tx_info(struct ieee80211_hw *hw,
 	struct rtl_efuse *rtlefuse = rtl_efuse(rtl_priv(hw));
 	struct rtl_hal *rtlhal = rtl_hal(rtl_priv(hw));
 	struct rtl_dm *rtldm = rtl_dm(rtl_priv(hw));
-	struct fast_ant_trainning *pfat_table = &(rtldm->fat_table);
+	struct fast_ant_training *pfat_table = &(rtldm->fat_table);
 
 	if (rtlhal->hw_type != HARDWARE_TYPE_RTL8812AE)
 		return;

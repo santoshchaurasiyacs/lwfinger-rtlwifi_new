@@ -198,9 +198,9 @@ int rtl88e_init_sw_vars(struct ieee80211_hw *hw)
 			    (unsigned long)hw);
 	}
 
-	init_timer(&rtlpriv->works.fast_antenna_trainning_timer);
-	setup_timer(&rtlpriv->works.fast_antenna_trainning_timer,
-		    rtl88e_dm_fast_antenna_trainning_callback,
+	init_timer(&rtlpriv->works.fast_antenna_training_timer);
+	setup_timer(&rtlpriv->works.fast_antenna_training_timer,
+		    rtl88e_dm_fast_antenna_training_callback,
 			(unsigned long)hw);
 	return err;
 }
@@ -217,7 +217,7 @@ void rtl88e_deinit_sw_vars(struct ieee80211_hw *hw)
 	if (rtlpriv->psc.low_power_enable)
 		del_timer_sync(&rtlpriv->works.fw_clockoff_timer);
 
-	del_timer_sync(&rtlpriv->works.fast_antenna_trainning_timer);
+	del_timer_sync(&rtlpriv->works.fast_antenna_training_timer);
 }
 
 /* get bt coexist status */

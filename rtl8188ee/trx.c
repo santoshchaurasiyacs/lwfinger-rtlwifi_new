@@ -422,7 +422,7 @@ static void _rtl88ee_smart_antenna(struct ieee80211_hw *hw,
 	struct rtl_dm *rtldm = rtl_dm(rtl_priv(hw));
 	struct rtl_efuse *rtlefuse = rtl_efuse(rtl_priv(hw));
 	u8 antsel_tr_mux;
-	struct fast_ant_trainning *pfat_table = &(rtldm->fat_table);
+	struct fast_ant_training *pfat_table = &(rtldm->fat_table);
 
 	if (rtlefuse->antenna_div_type == CG_TRX_SMART_ANTDIV) {
 		if (pfat_table->fat_state == FAT_TRAINING_STATE) {

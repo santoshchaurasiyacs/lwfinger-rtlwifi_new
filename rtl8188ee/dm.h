@@ -318,7 +318,7 @@ void rtl88e_dm_set_tx_ant_by_tx_info(struct ieee80211_hw *hw,
 	u8 *pdesc, u32 mac_id);
 void rtl88e_dm_ant_sel_statistics(struct ieee80211_hw *hw,
 	u8 antsel_tr_mux, u32 mac_id, u32 rx_pwdb_all);
-void rtl88e_dm_fast_antenna_trainning_callback(unsigned long data);
+void rtl88e_dm_fast_antenna_training_callback(unsigned long data);
 void rtl88e_dm_init(struct ieee80211_hw *hw);
 void rtl88e_dm_watchdog(struct ieee80211_hw *hw);
 void rtl88e_dm_write_dig(struct ieee80211_hw *hw);
