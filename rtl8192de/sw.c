@@ -40,7 +40,7 @@
 #include "trx.h"
 #include "led.h"
 
-void rtl92d_init_aspm_vars(struct ieee80211_hw *hw)
+static void rtl92d_init_aspm_vars(struct ieee80211_hw *hw)
 {
 	struct rtl_pci *rtlpci = rtl_pcidev(rtl_pcipriv(hw));
 
@@ -84,7 +84,7 @@ void rtl92d_init_aspm_vars(struct ieee80211_hw *hw)
 	rtlpci->const_support_pciaspm = 1;
 }
 
-int rtl92d_init_sw_vars(struct ieee80211_hw *hw)
+static int rtl92d_init_sw_vars(struct ieee80211_hw *hw)
 {
 	int err;
 	u8 tid;
@@ -193,7 +193,7 @@ int rtl92d_init_sw_vars(struct ieee80211_hw *hw)
 	return 0;
 }
 
-void rtl92d_deinit_sw_vars(struct ieee80211_hw *hw)
+static void rtl92d_deinit_sw_vars(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	u8 tid;
@@ -213,7 +213,7 @@ bool rtl92d_get_btc_status(void)
 }
 
 
-struct rtl_hal_ops rtl8192de_hal_ops = {
+static struct rtl_hal_ops rtl8192de_hal_ops = {
 	.init_sw_vars = rtl92d_init_sw_vars,
 	.deinit_sw_vars = rtl92d_deinit_sw_vars,
 	.read_eeprom_info = rtl92de_read_eeprom_info,
@@ -264,7 +264,7 @@ struct rtl_hal_ops rtl8192de_hal_ops = {
 	.rx_command_packet = rtl92de_rx_command_packet,
 };
 
-struct rtl_mod_params rtl92de_mod_params = {
+static struct rtl_mod_params rtl92de_mod_params = {
 	.sw_crypto = false,
 	.inactiveps = true,
 	.swctrl_lps = true,
@@ -272,7 +272,7 @@ struct rtl_mod_params rtl92de_mod_params = {
 	.debug = DBG_EMERG,
 };
 
-struct rtl_hal_cfg rtl92de_hal_cfg = {
+static struct rtl_hal_cfg rtl92de_hal_cfg = {
 	.bar_id = 2,
 	.write_readback = true,
 	.name = "rtl92d_pci",
@@ -367,7 +367,7 @@ struct rtl_hal_cfg rtl92de_hal_cfg = {
 	.maps[RTL_RC_HT_RATEMCS15] = DESC92D_RATEMCS15,
 };
 
-struct pci_device_id rtl92de_pci_ids[] = {
+static struct pci_device_id rtl92de_pci_ids[] = {
 	{RTL_PCI_DEVICE(PCI_VENDOR_ID_REALTEK, 0x8193, rtl92de_hal_cfg)},
 	{RTL_PCI_DEVICE(PCI_VENDOR_ID_REALTEK, 0x002B, rtl92de_hal_cfg)},
 	{},
@@ -392,7 +392,7 @@ MODULE_PARM_DESC(swlps, "Set to 1 to use SW control power save (default 0)\n");
 MODULE_PARM_DESC(fwlps, "Set to 1 to use FW control power save (default 1)\n");
 MODULE_PARM_DESC(debug, "Set debug level (0-5) (default 0)");
 
-static const SIMPLE_DEV_PM_OPS(rtlwifi_pm_ops, rtl_pci_suspend, rtl_pci_resume);
+static SIMPLE_DEV_PM_OPS(rtlwifi_pm_ops, rtl_pci_suspend, rtl_pci_resume);
 
 static struct pci_driver rtl92de_driver = {
 	.name = KBUILD_MODNAME,

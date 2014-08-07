@@ -39,6 +39,7 @@
 #include "fw.h"
 #include "led.h"
 #include "sw.h"
+#include "hw.h"
 
 u32 rtl92de_read_dword_dbi(struct ieee80211_hw *hw, u16 offset, u8 direct)
 {
@@ -369,49 +370,36 @@ void rtl92de_set_hw_reg(struct ieee80211_hw *hw, u8 variable, u8 *val)
 			break;
 		}
 	case HW_VAR_RCR: {
-			rtl_write_dword(rtlpriv, REG_RCR, ((u32 *) (val))[0]);
-			rtlpci->receive_config = ((u32 *) (val))[0];
-			break;
-		}
+		rtl_write_dword(rtlpriv, REG_RCR, ((u32 *) (val))[0]);
+		rtlpci->receive_config = ((u32 *) (val))[0];
+		break; }
 	case HW_VAR_RETRY_LIMIT: {
-			u8 retry_limit = ((u8 *) (val))[0];
+		u8 retry_limit = ((u8 *) (val))[0];
 
-			rtl_write_word(rtlpriv, REG_RL,
-				       retry_limit << RETRY_LIMIT_SHORT_SHIFT |
-				       retry_limit << RETRY_LIMIT_LONG_SHIFT);
-			break;
-		}
-	case HW_VAR_DUAL_TSF_RST: {
-			rtl_write_byte(rtlpriv, REG_DUAL_TSF_RST, (BIT(0) | BIT(1)));
-			break;
-		}
-	case HW_VAR_EFUSE_BYTES: {
-			rtlefuse->efuse_usedbytes = *((u16 *) val);
-			break;
-		}
-	case HW_VAR_EFUSE_USAGE: {
-			rtlefuse->efuse_usedpercentage = *((u8 *) val);
-			break;
-		}
-	case HW_VAR_IO_CMD: {
-			rtl92d_phy_set_io_cmd(hw, (*(enum io_type *)val));
-			break;
-		}
-	case HW_VAR_WPA_CONFIG: {
-			rtl_write_byte(rtlpriv, REG_SECCFG, *((u8 *) val));
-			break;
-		}
-	case HW_VAR_SET_RPWM: {
-			rtl92d_fill_h2c_cmd(hw, H2C_PWRM, 1, (u8 *) (val));
-			break;
-		}
-	case HW_VAR_H2C_FW_PWRMODE: {
-#if 0
-			u8 psmode = (*(u8 *) val);
-			rtl92c_set_fw_pwrmode_cmd(hw, (*(u8 *) val));
-#endif
-			break;
-		}
+		rtl_write_word(rtlpriv, REG_RL,
+			       retry_limit << RETRY_LIMIT_SHORT_SHIFT |
+			       retry_limit << RETRY_LIMIT_LONG_SHIFT);
+		break; }
+	case HW_VAR_DUAL_TSF_RST:
+		rtl_write_byte(rtlpriv, REG_DUAL_TSF_RST, (BIT(0) | BIT(1)));
+		break;
+	case HW_VAR_EFUSE_BYTES:
+		rtlefuse->efuse_usedbytes = *((u16 *) val);
+		break;
+	case HW_VAR_EFUSE_USAGE:
+		rtlefuse->efuse_usedpercentage = *((u8 *) val);
+		break;
+	case HW_VAR_IO_CMD:
+		rtl92d_phy_set_io_cmd(hw, (*(enum io_type *)val));
+		break;
+	case HW_VAR_WPA_CONFIG:
+		rtl_write_byte(rtlpriv, REG_SECCFG, *((u8 *) val));
+		break;
+	case HW_VAR_SET_RPWM:
+		rtl92d_fill_h2c_cmd(hw, H2C_PWRM, 1, (u8 *) (val));
+		break;
+	case HW_VAR_H2C_FW_PWRMODE:
+		break;
 	case HW_VAR_FW_PSMODE_STATUS: {
 			ppsc->fw_current_inpsmode = *((bool *) val);
 			break;
@@ -422,7 +410,7 @@ void rtl92de_set_hw_reg(struct ieee80211_hw *hw, u8 variable, u8 *val)
 			bool b_recover = false;
 
 			if (mstatus == RT_MEDIA_CONNECT) {
-				rtlpriv->cfg->ops->set_hw_reg(hw, HW_VAR_AID, 0);
+				rtlpriv->cfg->ops->set_hw_reg(hw, HW_VAR_AID, NULL);
 				tmp_regcr = rtl_read_byte(rtlpriv, REG_CR + 1);
 				rtl_write_byte(rtlpriv, REG_CR + 1,
 					       (tmp_regcr | BIT(0)));
@@ -1113,9 +1101,6 @@ int rtl92de_hw_init(struct ieee80211_hw *hw)
 	if (!rtlpriv->dm.supp_phymode_switch ||
 		(rtlpriv->dm.supp_phymode_switch && (!rtlhal->slave_of_dmsp))) {
 		if (ppsc->rfpwr_state == ERFON) {
-#if 0
-			rtl92d_dm_check_txpower_tracking_thermal_meter(hw);
-#endif
 			rtl92d_phy_lc_calibrate(hw);
 			/* 5G and 2.4G must wait sometime to let RF LO ready */
 			if (rtlhal->macphymode == DUALMAC_DUALPHY) {
@@ -1289,52 +1274,17 @@ void rtl92d_linked_set_reg(struct ieee80211_hw *hw)
 void rtl92de_set_qos(struct ieee80211_hw *hw, int aci)
 {
 	return;
-#if 0
-	struct rtl_priv *rtlpriv = rtl_priv(hw);
-	rtl92d_dm_init_edca_turbo(hw);
-	switch (aci) {
-	case AC1_BK:
-		rtl_write_dword(rtlpriv, REG_EDCA_BK_PARAM, 0xa44f);
-		break;
-	case AC0_BE:
-		/* rtl_write_dword(rtlpriv, REG_EDCA_BE_PARAM, u4b_ac_param); */
-		break;
-	case AC2_VI:
-		rtl_write_dword(rtlpriv, REG_EDCA_VI_PARAM, 0x5e4322);
-		break;
-	case AC3_VO:
-		rtl_write_dword(rtlpriv, REG_EDCA_VO_PARAM, 0x2f3222);
-		break;
-	default:
-		RT_ASSERT(false, ("invalid aci: %d !\n", aci));
-		break;
-	}
-#endif
 }
 
-u32 rtl92ce_get_txdma_status(struct ieee80211_hw *hw)
-{
-	struct rtl_priv *rtlpriv = rtl_priv(hw);
-	return rtl_read_dword(rtlpriv, REG_TXDMA_STATUS);
-}
-
-void rtl92de_clear_interrupt(struct ieee80211_hw *hw)
+static void rtl92de_clear_interrupt(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	u32 tmp;
 	tmp = rtl_read_dword(rtlpriv, REG_HISR);
-	/*printk("clear interrupt first:\n");
-	printk("0x%x = 0x%08x\n",REG_HISR, tmp);*/
 	rtl_write_dword(rtlpriv, REG_HISR, tmp);
 
 	tmp = rtl_read_dword(rtlpriv, REG_HISRE);
-	/*printk("0x%x = 0x%08x\n",REG_HISRE, tmp);*/
 	rtl_write_dword(rtlpriv, REG_HISRE, tmp);
-
-	/* tmp = rtl_read_dword(rtlpriv, REG_HSISR); */
-	/*printk("0x%x = 0x%08x\n",REG_HSISR, tmp);*/
-	/* rtl_write_dword(rtlpriv, REG_HSISR, tmp); */
-
 }
 
 void rtl92de_enable_interrupt(struct ieee80211_hw *hw)
@@ -1539,12 +1489,6 @@ void rtl92de_set_beacon_related_registers(struct ieee80211_hw *hw)
 	else
 		rtl_write_byte(rtlpriv, REG_RXTSF_OFFSET_OFDM, 0x20);
 	rtl_write_byte(rtlpriv, 0x606, 0x30);
-
-#if 0
-	rtlpci->reg_bcn_ctrl_val |= BIT(3);
-	rtl_write_byte(rtlpriv, REG_BCN_CTRL, (u8) rtlpci->reg_bcn_ctrl_val);
-#endif
-	/* rtl92de_enable_interrupt(hw); */
 }
 
 void rtl92de_set_beacon_interval(struct ieee80211_hw *hw)
@@ -1555,9 +1499,7 @@ void rtl92de_set_beacon_interval(struct ieee80211_hw *hw)
 
 	RT_TRACE(COMP_BEACON, DBG_DMESG,
 		 ("beacon_interval:%d\n", bcn_interval));
-	/* rtl92de_disable_interrupt(hw); */
 	rtl_write_word(rtlpriv, REG_BCN_INTERVAL, bcn_interval);
-	/* rtl92de_enable_interrupt(hw); */
 }
 
 void rtl92de_update_interrupt_mask(struct ieee80211_hw *hw,
@@ -1576,21 +1518,8 @@ void rtl92de_update_interrupt_mask(struct ieee80211_hw *hw,
 	rtl92de_enable_interrupt(hw);
 }
 
-u8 _rtl92c_get_chnl_group(u8 chnl)
-{
-	u8 group;
-
-	if (chnl < 3)
-		group = 0;
-	else if (chnl < 9)
-		group = 1;
-	else
-		group = 2;
-	return group;
-}
-
-void _rtl92de_readpowervalue_fromprom(struct txpower_info *pwrinfo,
-				 u8 *rom_content, bool autoLoadfail)
+static void _rtl92de_readpowervalue_fromprom(struct txpower_info *pwrinfo,
+					     u8 *rom_content, bool autoLoadfail)
 {
 	u32 rfpath, eeaddr, group, offset1, offset2;
 	u8 i;
@@ -1846,7 +1775,7 @@ static void _rtl92de_read_macphymode_from_prom(struct ieee80211_hw *hw,
 	}
 }
 
-void _rtl92de_read_macphymode(struct ieee80211_hw *hw)
+static void _rtl92de_read_macphymode(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_hal *rtlhal = rtl_hal(rtl_priv(hw));

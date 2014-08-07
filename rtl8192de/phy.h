@@ -106,6 +106,25 @@ enum rf_content {
 	radiod_txt = 3
 };
 
+static inline void rtl92d_acquire_cckandrw_pagea_ctl(struct ieee80211_hw *hw,
+				       unsigned long *flags)
+{
+	struct rtl_priv *rtlpriv = rtl_priv(hw);
+
+//	if (rtlpriv->rtlhal.interfaceindex == 1)
+		spin_lock_irqsave(&rtlpriv->locks.cck_and_rw_pagea_lock, *flags);
+}
+
+static inline void rtl92d_release_cckandrw_pagea_ctl(struct ieee80211_hw *hw,
+				       unsigned long *flags)
+{
+	struct rtl_priv *rtlpriv = rtl_priv(hw);
+
+//	if (rtlpriv->rtlhal.interfaceindex == 1)
+		spin_unlock_irqrestore(&rtlpriv->locks.cck_and_rw_pagea_lock,
+			*flags);
+}
+
 extern u32 rtl92d_phy_query_bb_reg(struct ieee80211_hw *hw,
 				u32 regaddr, u32 bitmask);
 extern void rtl92d_phy_set_bb_reg(struct ieee80211_hw *hw,
@@ -145,13 +164,10 @@ void rtl92d_update_bbrf_configuration(struct ieee80211_hw *hw);
 void rtl92d_phy_ap_calibrate(struct ieee80211_hw *hw, char delta);
 void rtl92d_phy_iq_calibrate(struct ieee80211_hw *hw);
 void rtl92d_phy_reset_iqk_result(struct ieee80211_hw *hw);
-void rtl92d_release_cckandrw_pagea_ctl(struct ieee80211_hw *hw,
-				unsigned long *flag);
-void rtl92d_acquire_cckandrw_pagea_ctl(struct ieee80211_hw *hw,
-				unsigned long *flag);
 u8 rtl92d_get_rightchnlplace_for_iqk(u8 chnl);
 void rtl92d_phy_reload_iqk_setting(struct ieee80211_hw *hw, u8 channel);
 void rtl92d_phy_iq_calibrate(struct ieee80211_hw *hw);
 void rtl92d_easy_concurrent_switch_to_dmdp(struct ieee80211_hw *hw);
 void rtl_dualmac_easyconcurrent(struct ieee80211_hw *hw);
+
 #endif

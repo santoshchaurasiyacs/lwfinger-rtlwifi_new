@@ -151,7 +151,7 @@ static const u8 cckswing_table_ch14[CCK_TABLE_SIZE][8] = {
 	{0x09, 0x08, 0x07, 0x04, 0x00, 0x00, 0x00, 0x00}	/* 32, -16.0dB */
 };
 
-void rtl92d_dm_diginit(struct ieee80211_hw *hw)
+static void rtl92d_dm_diginit(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_dig *rtl_dm_dig = &(rtlpriv->dm.dm_digtable);
@@ -179,7 +179,7 @@ void rtl92d_dm_diginit(struct ieee80211_hw *hw)
 	rtl_dm_dig->forbidden_igi = DM_DIG_FA_LOWER;
 }
 
-bool _rtl92d_dualmac_getparameter_from_buddy(struct ieee80211_hw *hw)
+static bool _rtl92d_dualmac_getparameter_from_buddy(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_priv *buddy_priv = rtlpriv->buddy_priv;
@@ -200,12 +200,12 @@ bool _rtl92d_dualmac_getparameter_from_buddy(struct ieee80211_hw *hw)
 		return false;
 }
 
-void rtl92d_dm_false_alarm_counter_statistics(struct ieee80211_hw *hw)
+static void rtl92d_dm_false_alarm_counter_statistics(struct ieee80211_hw *hw)
 {
 	u32 ret_value;
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct false_alarm_statistics *falsealm_cnt = &(rtlpriv->falsealm_cnt);
-	unsigned long flag;
+	unsigned long flag = 0;
 
 	/* hold ofdm counter */
 	rtl_set_bbreg(hw, ROFDM0_LSTF, BIT(31), 1);	/* hold page C counter */
@@ -230,13 +230,14 @@ void rtl92d_dm_false_alarm_counter_statistics(struct ieee80211_hw *hw)
 	    falsealm_cnt->cnt_sb_search_fail;
 
 	if (rtlpriv->rtlhal.current_bandtype != BAND_ON_5G) {
+		unsigned long flags = 0;
 		/* hold cck counter */
-		rtl92d_acquire_cckandrw_pagea_ctl(hw, &flag);
+		rtl92d_acquire_cckandrw_pagea_ctl(hw, &flags);
 		ret_value = rtl_get_bbreg(hw, RCCK0_FACOUNTERLOWER, BMASKBYTE0);
 		falsealm_cnt->cnt_cck_fail = ret_value;
 		ret_value = rtl_get_bbreg(hw, RCCK0_FACOUNTERUPPER, BMASKBYTE3);
 		falsealm_cnt->cnt_cck_fail += (ret_value & 0xff) << 8;
-		rtl92d_release_cckandrw_pagea_ctl(hw, &flag);
+		rtl92d_release_cckandrw_pagea_ctl(hw, &flags);
 	} else {
 		falsealm_cnt->cnt_cck_fail = 0;
 	}
@@ -277,7 +278,7 @@ void rtl92d_dm_false_alarm_counter_statistics(struct ieee80211_hw *hw)
 			falsealm_cnt->cnt_all));
 }
 
-void rtl92d_dm_false_alarm_counter_statistics_for_slaveofdmsp(
+static void rtl92d_dm_false_alarm_counter_statistics_for_slaveofdmsp(
 	struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
@@ -333,7 +334,7 @@ void rtl92d_dm_false_alarm_counter_statistics_for_slaveofdmsp(
 }
 
 
-void rtl92d_dm_find_minimum_rssi(struct ieee80211_hw *hw)
+static void rtl92d_dm_find_minimum_rssi(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_dig *rtl_dm_dig = &(rtlpriv->dm.dm_digtable);
@@ -406,7 +407,7 @@ void rtl92d_dm_find_minimum_rssi(struct ieee80211_hw *hw)
 			rtl_dm_dig->min_undecorated_pwdb_for_dm));
 }
 
-u8 _rtl92d_dm_initial_gain_minpwdb(struct ieee80211_hw *hw)
+static u8 _rtl92d_dm_initial_gain_minpwdb(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	long rssi_val_min = 0;
@@ -433,7 +434,7 @@ u8 _rtl92d_dm_initial_gain_minpwdb(struct ieee80211_hw *hw)
 	return (u8)rssi_val_min;
 }
 
-void rtl92d_dm_cck_packet_detection_thresh_dmsp(struct ieee80211_hw *hw)
+static void rtl92d_dm_cck_packet_detection_thresh_dmsp(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_dig *rtl_dm_dig = &(rtlpriv->dm.dm_digtable);
@@ -463,6 +464,7 @@ void rtl92d_dm_cck_packet_detection_thresh_dmsp(struct ieee80211_hw *hw)
 		RT_TRACE(COMP_EASY_CONCURRENT, DBG_LOUD,
 			("mac 1 connect,mac 0 disconnect case \n"));
 		if (rtlpriv->dmsp_ctl.changecckpdstate_for_anothermacofdmsp) {
+			unsigned long flag = 0;
 			RT_TRACE(COMP_EASY_CONCURRENT, DBG_EMERG,
 				("mac 0 set for mac1\n"));
 			if (rtlpriv->dmsp_ctl.curcckpdstate_for_anothermacofdmsp ==
@@ -528,11 +530,11 @@ void rtl92d_dm_cck_packet_detection_thresh_dmsp(struct ieee80211_hw *hw)
 		("CCKPDStage=%x\n", rtl_dm_dig->cur_cck_pd_state));
 }
 
-void rtl92d_dm_cck_packet_detection_thresh(struct ieee80211_hw *hw)
+static void rtl92d_dm_cck_packet_detection_thresh(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_dig *rtl_dm_dig = &(rtlpriv->dm.dm_digtable);
-	unsigned long flag;
+	unsigned long flag = 0;
 
 	if (rtlpriv->dm.supp_phymode_switch) {
 		if (rtlpriv->rtlhal.macphymode == DUALMAC_SINGLEPHY) {
@@ -579,7 +581,7 @@ void rtl92d_dm_cck_packet_detection_thresh(struct ieee80211_hw *hw)
 
 }
 
-void rtl92d_dm_write_dig_dmsp(struct ieee80211_hw *hw)
+static void rtl92d_dm_write_dig_dmsp(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_dig *rtl_dm_dig = &(rtlpriv->dm.dm_digtable);
@@ -676,7 +678,7 @@ void rtl92d_dm_write_dig(struct ieee80211_hw *hw)
 	}
 }
 
-void rtl92d_dm_dig(struct ieee80211_hw *hw)
+static void rtl92d_dm_dig(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_dig *rtl_dm_dig = &(rtlpriv->dm.dm_digtable);
@@ -799,7 +801,7 @@ void rtl92d_dm_dig(struct ieee80211_hw *hw)
 	RT_TRACE(COMP_DIG, DBG_LOUD, ("end\n"));
 }
 
-void rtl92d_dm_init_dynamic_txpower(struct ieee80211_hw *hw)
+static void rtl92d_dm_init_dynamic_txpower(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 
@@ -808,7 +810,7 @@ void rtl92d_dm_init_dynamic_txpower(struct ieee80211_hw *hw)
 	rtlpriv->dm.dynamic_txhighpower_lvl = TXHIGHPWRLEVEL_NORMAL;
 }
 
-void rtl92d_dm_dynamic_txpower(struct ieee80211_hw *hw)
+static void rtl92d_dm_dynamic_txpower(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_phy *rtlphy = &(rtlpriv->phy);
@@ -950,7 +952,7 @@ void rtl92d_dm_dynamic_txpower(struct ieee80211_hw *hw)
 	rtlpriv->dm.last_dtp_lvl = rtlpriv->dm.dynamic_txhighpower_lvl;
 }
 
-void rtl92d_dm_pwdb_monitor(struct ieee80211_hw *hw)
+static void rtl92d_dm_pwdb_monitor(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_sta_info *drv_priv;
@@ -1006,42 +1008,7 @@ void rtl92d_dm_init_edca_turbo(struct ieee80211_hw *hw)
 	rtlpriv->dm.is_cur_rdlstate = false;
 }
 
-void rtl92d_dm_interrupt_migration(struct ieee80211_hw *hw)
-{
-	struct rtl_priv *rtlpriv = rtl_priv(hw);
-	struct rtl_mac *mac = rtl_mac(rtlpriv);
-	bool bcurrent_int_mt, bcurrent_ac_int_disable;
-	bool int_mt_to_set = false;
-	bool ac_int_to_set = false;
-
-	/* Retrieve current interrupt migration
-	 * and Tx four ACs IMR settings first. */
-	rtlpriv->cfg->ops->get_hw_reg(hw, HW_VAR_INT_MIGRATION,
-				      (u8 *) (&bcurrent_int_mt));
-	rtlpriv->cfg->ops->get_hw_reg(hw, HW_VAR_INT_AC,
-				      (u8 *) (&bcurrent_ac_int_disable));
-
-	/* Currently we use busy traffic for reference
-	 * instead of RxIntOK counts to prevent non-linear
-	 * Rx statistics when interrupt migration is set before.*/
-	if (mac->link_state >= MAC80211_LINKED &&
-	    rtlpriv->link_info.higher_busytraffic) {
-		int_mt_to_set = true;
-
-		/* To check whether we should disable Tx interrupt or not. */
-		if (rtlpriv->link_info.higher_busyrxtraffic)
-			ac_int_to_set = true;
-	}
-	/* Update current settings. */
-	if (bcurrent_int_mt != int_mt_to_set)
-		rtlpriv->cfg->ops->set_hw_reg(hw, HW_VAR_INT_MIGRATION,
-				(u8 *) &int_mt_to_set);
-	if (bcurrent_ac_int_disable != ac_int_to_set)
-		rtlpriv->cfg->ops->set_hw_reg(hw, HW_VAR_INT_AC,
-				(u8 *) &ac_int_to_set);
-}
-
-void rtl92d_dm_check_edca_turbo(struct ieee80211_hw *hw)
+static void rtl92d_dm_check_edca_turbo(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_mac *mac = rtl_mac(rtl_priv(hw));
@@ -1141,7 +1108,7 @@ static void rtl92d_dm_txpower_tracking_callback_thermalmeter(
 	bool binteral_pa = false;
 	long ele_a = 0, ele_d, temp_cck, val_x, value32;
 	long val_y, ele_c = 0;
-	unsigned long flag;
+	unsigned long flag = 0;
 	char ofdm_index[2], cck_index = 0, cck_index_old = 0;
 	char ofdm_index_old[2] = {0, 0};
 	int i;
@@ -1601,14 +1568,6 @@ void rtl92d_dm_check_txpower_tracking_thermal_meter(struct ieee80211_hw *hw)
 	}
 }
 
-void rtl92c_dm_report_signalstrength(struct ieee80211_hw *hw)
-{
-	struct rtl_priv *rtlpriv = rtl_priv(hw);
-
-	rtl_write_byte(rtlpriv, REG_DUMMY,
-		       (u8) rtlpriv->dm.undecorated_smoothed_pwdb);
-}
-
 void rtl92d_dm_init_rate_adaptive_mask(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
@@ -1622,77 +1581,7 @@ void rtl92d_dm_init_rate_adaptive_mask(struct ieee80211_hw *hw)
 		rtlpriv->dm.useramask = false;
 }
 
-void rtl92d_dm_refresh_rate_adaptive_mask(struct ieee80211_hw *hw)
-{
-	struct rtl_priv *rtlpriv = rtl_priv(hw);
-	struct rtl_hal *rtlhal = rtl_hal(rtl_priv(hw));
-	struct rtl_mac *mac = rtl_mac(rtl_priv(hw));
-	struct rate_adaptive *p_ra = &(rtlpriv->ra);
-	u32 low_rssithresh_for_ra, high_rssithresh_for_ra;
-	struct ieee80211_sta *sta = NULL;
-
-	if (is_hal_stop(rtlhal)) {
-		RT_TRACE(COMP_RATE, DBG_LOUD,
-			 (" driver is going to unload\n"));
-		return;
-	}
-	if (!rtlpriv->dm.useramask) {
-		RT_TRACE(COMP_RATE, DBG_LOUD,
-			 (" driver does not control rate adaptive mask\n"));
-		return;
-	}
-	if (mac->opmode != NL80211_IFTYPE_STATION)
-		return;
-
-	if (mac->link_state == MAC80211_LINKED) {
-		switch (p_ra->pre_ratr_state) {
-		case DM_RATR_STA_HIGH:
-			high_rssithresh_for_ra = 50;
-			low_rssithresh_for_ra = 20;
-			break;
-		case DM_RATR_STA_MIDDLE:
-			high_rssithresh_for_ra = 55;
-			low_rssithresh_for_ra = 20;
-			break;
-		case DM_RATR_STA_LOW:
-			high_rssithresh_for_ra = 50;
-			low_rssithresh_for_ra = 25;
-			break;
-		default:
-			high_rssithresh_for_ra = 50;
-			low_rssithresh_for_ra = 20;
-			break;
-		}
-		if (rtlpriv->dm.undecorated_smoothed_pwdb >
-		    (long)high_rssithresh_for_ra)
-			p_ra->ratr_state = DM_RATR_STA_HIGH;
-		else if (rtlpriv->dm.undecorated_smoothed_pwdb >
-			 (long)low_rssithresh_for_ra)
-			p_ra->ratr_state = DM_RATR_STA_MIDDLE;
-		else
-			p_ra->ratr_state = DM_RATR_STA_LOW;
-
-		if (p_ra->pre_ratr_state != p_ra->ratr_state) {
-			RT_TRACE(COMP_RATE, DBG_LOUD, ("RSSI = %ld\n",
-					rtlpriv->dm.undecorated_smoothed_pwdb));
-			RT_TRACE(COMP_RATE, DBG_LOUD, ("RSSI_LEVEL = %d\n",
-					p_ra->ratr_state));
-			RT_TRACE(COMP_RATE, DBG_LOUD,
-					("PreState = %d, CurState = %d\n",
-					p_ra->pre_ratr_state, p_ra->ratr_state));
-
-			rcu_read_lock();
-			sta = rtl_find_sta(hw, mac->bssid);
-			if (sta)
-			rtlpriv->cfg->ops->update_rate_tbl(hw, sta, p_ra->ratr_state);
-			rcu_read_unlock();
-
-			p_ra->pre_ratr_state = p_ra->ratr_state;
-		}
-	}
-}
-
-bool _rtl92d_dm_dual_mac_check_switch_to_dmsp(struct ieee80211_hw *hw)
+static bool _rtl92d_dm_dual_mac_check_switch_to_dmsp(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_hal *rtlhal = rtl_hal(rtlpriv);
@@ -1764,7 +1653,7 @@ bool _rtl92d_dm_dual_mac_check_switch_to_dmsp(struct ieee80211_hw *hw)
 	return b_need_to_change;
 }
 
-void rtl92d_dm_easy_concurrent_switch_to_dmsp(struct ieee80211_hw *hw)
+static void rtl92d_dm_easy_concurrent_switch_to_dmsp(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_hal *rtlhal = rtl_hal(rtlpriv);

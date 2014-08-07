@@ -35,9 +35,9 @@
 #include "trx.h"
 #include "led.h"
 
-u8 _rtl92de_map_hwqueue_to_fwqueue(struct sk_buff *skb, u8 hw_queue)
+static u8 _rtl92de_map_hwqueue_to_fwqueue(struct sk_buff *skb, u8 hw_queue)
 {
-	u16 fc = rtl_get_fc(skb);
+	__le16 fc = cpu_to_le16(rtl_get_fc(skb));
 
 	if (unlikely(ieee80211_is_beacon(fc)))
 		return QSLT_BEACON;
@@ -366,7 +366,7 @@ static void _rtl92de_translate_rx_signal_stuff(struct ieee80211_hw *hw,
 	tmp_buf = skb->data + pstatus->rx_drvinfo_size + pstatus->rx_bufshift;
 	hdr = (struct ieee80211_hdr *)tmp_buf;
 	fc = le16_to_cpu(hdr->frame_control);
-	type = WLAN_FC_GET_TYPE(fc);
+	type = WLAN_FC_GET_TYPE(hdr->frame_control);
 	praddr = hdr->addr1;
 	/*psaddr = ieee80211_get_SA(hdr);*/
 
@@ -387,7 +387,7 @@ static void _rtl92de_translate_rx_signal_stuff(struct ieee80211_hw *hw,
 	packet_toself = packet_matchbssid &&
 	    (ether_addr_equal(praddr, rtlefuse->dev_addr));
 #endif
-	if (ieee80211_is_beacon(fc))
+	if (ieee80211_is_beacon(hdr->frame_control))
 		packet_beacon = true;
 	else
 		packet_beacon = false;
@@ -513,7 +513,7 @@ void rtl92de_tx_fill_desc(struct ieee80211_hw *hw,
 	struct rtl_ps_ctl *ppsc = rtl_psc(rtl_priv(hw));
 	u8 *pdesc = (u8 *) pdesc_tx;
 	u16 seq_number;
-	u16 fc = le16_to_cpu(hdr->frame_control);
+	__le16 fc = hdr->frame_control;
 	unsigned int buf_len = 0;
 	unsigned int skb_len = skb->len;
 	u8 fw_qsel = _rtl92de_map_hwqueue_to_fwqueue(skb, hw_queue);
@@ -659,7 +659,7 @@ void rtl92de_tx_fill_desc(struct ieee80211_hw *hw,
 	SET_TX_DESC_FIRST_SEG(pdesc, (firstseg ? 1 : 0));
 	SET_TX_DESC_LAST_SEG(pdesc, (lastseg ? 1 : 0));
 	SET_TX_DESC_TX_BUFFER_SIZE(pdesc, (u16) buf_len);
-	SET_TX_DESC_TX_BUFFER_ADDRESS(pdesc, cpu_to_le32(mapping));
+	SET_TX_DESC_TX_BUFFER_ADDRESS(pdesc, mapping);
 	if (rtlpriv->dm.useramask) {
 		SET_TX_DESC_RATE_ID(pdesc, ptcb_desc->ratr_index);
 		SET_TX_DESC_MACID(pdesc, ptcb_desc->mac_id);
@@ -697,7 +697,7 @@ void rtl92de_tx_fill_cmddesc(struct ieee80211_hw *hw,
 		    skb->data, skb->len, PCI_DMA_TODEVICE);
 
 	struct ieee80211_hdr *hdr = (struct ieee80211_hdr *)(skb->data);
-	u16 fc = le16_to_cpu(hdr->frame_control);
+	__le16 fc = hdr->frame_control;
 
 	if (pci_dma_mapping_error(rtlpci->pdev, mapping)) {
 		RT_TRACE(COMP_SEND, DBG_TRACE,
@@ -720,7 +720,7 @@ void rtl92de_tx_fill_cmddesc(struct ieee80211_hw *hw,
 	SET_TX_DESC_FIRST_SEG(pdesc, 1);
 	SET_TX_DESC_LAST_SEG(pdesc, 1);
 	SET_TX_DESC_TX_BUFFER_SIZE(pdesc, (u16) (skb->len));
-	SET_TX_DESC_TX_BUFFER_ADDRESS(pdesc, cpu_to_le32(mapping));
+	SET_TX_DESC_TX_BUFFER_ADDRESS(pdesc, mapping);
 	SET_TX_DESC_RATE_ID(pdesc, 7);
 	SET_TX_DESC_MACID(pdesc, 0);
 	SET_TX_DESC_OWN(pdesc, 1);

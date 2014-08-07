@@ -6,7 +6,8 @@ MODDESTDIR := /lib/modules/$(KVER)/kernel/drivers/net/wireless/
 PWD := $(shell pwd)
 
 EXTRA_CFLAGS += -O2
-#EXTRA_CFLAGS += -DRTK_FW_HDR
+
+ccflags-y += -D__CHECK_ENDIAN__
 
 ####################################################
 obj-m := rtl8192de.o

@@ -338,7 +338,7 @@ exit:
 
 }
 
-bool _rtl92d_check_fw_read_last_h2c(struct ieee80211_hw *hw, u8 boxnum)
+static bool _rtl92d_check_fw_read_last_h2c(struct ieee80211_hw *hw, u8 boxnum)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	u8 val_hmetfr;
@@ -350,7 +350,7 @@ bool _rtl92d_check_fw_read_last_h2c(struct ieee80211_hw *hw, u8 boxnum)
 	return result;
 }
 
-void _rtl92d_fill_h2c_command(struct ieee80211_hw *hw,
+static void _rtl92d_fill_h2c_command(struct ieee80211_hw *hw,
 			      u8 element_id, u32 cmd_len, u8 *p_cmdbuffer)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
@@ -565,7 +565,7 @@ void rtl92d_set_fw_pwrmode_cmd(struct ieee80211_hw *hw, u8 mode)
 	rtl92d_fill_h2c_cmd(hw, H2C_SETPWRMODE, 3, u1_h2c_set_pwrmode);
 }
 
-bool _rtl92d_cmd_send_packet(struct ieee80211_hw *hw, struct sk_buff *skb)
+static bool _rtl92d_cmd_send_packet(struct ieee80211_hw *hw, struct sk_buff *skb)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_pci *rtlpci = rtl_pcidev(rtl_pcipriv(hw));
@@ -596,7 +596,7 @@ bool _rtl92d_cmd_send_packet(struct ieee80211_hw *hw, struct sk_buff *skb)
 #define PROBERSP_PG		4	/*->5 */
 #define TOTAL_RESERVED_PKT_LEN	768
 
-u8 reserved_page_packet[TOTAL_RESERVED_PKT_LEN] = {
+static u8 reserved_page_packet[TOTAL_RESERVED_PKT_LEN] = {
 	/* page 0 beacon */
 	0x80, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF,
 	0xFF, 0xFF, 0x00, 0xE0, 0x4C, 0x76, 0x00, 0x42,
@@ -783,7 +783,7 @@ void rtl92d_set_fw_joinbss_report_cmd(struct ieee80211_hw *hw, u8 mstatus)
 	rtl92d_fill_h2c_cmd(hw, H2C_JOINBSSRPT, 1, u1_joinbssrpt_parm);
 }
 
-void rtl92d_set_p2p_ctw_period_cmd(struct ieee80211_hw *hw, u8 ctwindow)
+static void rtl92d_set_p2p_ctw_period_cmd(struct ieee80211_hw *hw, u8 ctwindow)
 {
 	u8 u1_ctwindow_period[1] = { ctwindow};
 
