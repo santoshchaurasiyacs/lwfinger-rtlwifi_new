@@ -763,7 +763,7 @@ void rtl8723e_set_fw_joinbss_report_cmd(struct ieee80211_hw *hw, u8 mstatus)
 	rtl8723e_fill_h2c_cmd(hw, H2C_JOINBSSRPT, 1, u1_joinbssrpt_parm);
 }
 
-void rtl8723e_set_p2p_ctw_period_cmd(struct ieee80211_hw *hw, u8 ctwindow)
+static void rtl8723e_set_p2p_ctw_period_cmd(struct ieee80211_hw *hw, u8 ctwindow)
 {
 	u8 u1_ctwindow_period[1] = { ctwindow};
 
