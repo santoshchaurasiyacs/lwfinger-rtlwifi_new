@@ -38,9 +38,10 @@
 #include "led.h"
 #include "dm.h"
 #include "fw.h"
+
 static u8 _rtl8723be_map_hwqueue_to_fwqueue(struct sk_buff *skb, u8 hw_queue)
 {
-	__le16 fc = cpu_to_le16(rtl_get_fc(skb));
+	__le16 fc = rtl_get_fc(skb);
 
 	if (unlikely(ieee80211_is_beacon(fc)))
 		return QSLT_BEACON;

@@ -66,7 +66,7 @@ static u8 _rtl_mac_to_hwqueue(struct ieee80211_hw *hw,
 		struct sk_buff *skb)
 {
 	struct rtl_hal *rtlhal = rtl_hal(rtl_priv(hw));
-	__le16 fc = cpu_to_le16(rtl_get_fc(skb));
+	__le16 fc = rtl_get_fc(skb);
 	u8 queue_index = skb_get_queue_mapping(skb);
 
 	if (unlikely(ieee80211_is_beacon(fc)))
@@ -642,7 +642,7 @@ static void _rtl_pci_tx_isr(struct ieee80211_hw *hw, int prio)
 		/* for sw LPS, just after NULL skb send out, we can
 		 * sure AP kown we are sleeped, our we should not let
 		 * rf to sleep*/
-		fc = cpu_to_le16(rtl_get_fc(skb));
+		fc = rtl_get_fc(skb);
 		if (ieee80211_is_nullfunc(fc)) {
 			if (ieee80211_has_pm(fc)) {
 				rtlpriv->mac80211.offchan_deley = true;
@@ -893,7 +893,7 @@ static void _rtl_pci_rx_interrupt(struct ieee80211_hw *hw)
 		 */
 
 		hdr = rtl_get_hdr(skb);
-		fc = cpu_to_le16(rtl_get_fc(skb));
+		fc = rtl_get_fc(skb);
 
 		if (!status.crc && !status.hwerror) {
 			memcpy(IEEE80211_SKB_RXCB(skb), &rx_status,
@@ -1596,7 +1596,7 @@ static bool rtl_pci_tx_chk_waitq_insert(struct ieee80211_hw *hw,
 #endif
 	struct rtl_sta_info *sta_entry = NULL;
 	u8 tid = rtl_get_tid(skb);
-	__le16 fc = cpu_to_le16(rtl_get_fc(skb));
+	__le16 fc = rtl_get_fc(skb);
 
 	if (!sta)
 		return false;
@@ -1653,7 +1653,7 @@ static int rtl_pci_tx(struct ieee80211_hw *hw,
 	u8 hw_queue = _rtl_mac_to_hwqueue(hw, skb);
 	unsigned long flags;
 	struct ieee80211_hdr *hdr = rtl_get_hdr(skb);
-	__le16 fc = cpu_to_le16(rtl_get_fc(skb));
+	__le16 fc = rtl_get_fc(skb);
 	u8 *pda_addr = hdr->addr1;
 	struct rtl_pci *rtlpci = rtl_pcidev(rtl_pcipriv(hw));
 	/*ssn */

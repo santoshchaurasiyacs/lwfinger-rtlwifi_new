@@ -41,7 +41,7 @@
 #include "fw.h"
 static u8 _rtl8821ae_map_hwqueue_to_fwqueue(struct sk_buff *skb, u8 hw_queue)
 {
-	__le16 fc = cpu_to_le16(rtl_get_fc(skb));
+	__le16 fc = rtl_get_fc(skb);
 
 	if (unlikely(ieee80211_is_beacon(fc)))
 		return QSLT_BEACON;
@@ -542,12 +542,12 @@ static void _rtl8821ae_translate_rx_signal_stuff(struct ieee80211_hw *hw,
 	packet_toself = packet_matchbssid &&
 	    (compare_ether_addr(praddr, rtlefuse->dev_addr));
 #else
-	packet_matchbssid = ((IEEE80211_FTYPE_CTL != type) &&
-	     (ether_addr_equal(mac->bssid, (fc & IEEE80211_FCTL_TODS) ?
-				  hdr->addr1 : (fc & IEEE80211_FCTL_FROMDS) ?
-				  hdr->addr2 : hdr->addr3)) &&
-				  (!pstatus->hwerror) &&
-				  (!pstatus->crc) && (!pstatus->icv));
+	packet_matchbssid = (!ieee80211_is_ctl(fc) &&
+			     (ether_addr_equal(mac->bssid, ieee80211_has_tods(fc) ?
+			      hdr->addr1 : ieee80211_has_fromds(fc) ?
+			      hdr->addr2 : hdr->addr3)) &&
+			      (!pstatus->hwerror) &&
+			      (!pstatus->crc) && (!pstatus->icv));
 
 	packet_toself = packet_matchbssid &&
 	    (ether_addr_equal(praddr, rtlefuse->dev_addr));
