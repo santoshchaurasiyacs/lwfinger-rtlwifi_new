@@ -633,7 +633,7 @@ bool rtl88ee_rx_query_desc(struct ieee80211_hw *hw,
 				return false;
 		}
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,16,0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,15,0))
 		if ((!_ieee80211_is_robust_mgmt_frame(hdr)) &&
 #else
 		if ((!ieee80211_is_robust_mgmt_frame(hdr)) &&

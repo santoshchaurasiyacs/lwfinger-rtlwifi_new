@@ -512,7 +512,7 @@ bool rtl8723e_rx_query_desc(struct ieee80211_hw *hw,
 				rtl_get_hdr(skb));
 				return false;
 		}
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,16,0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,15,0))
 		if ((!_ieee80211_is_robust_mgmt_frame(hdr)) &&
 #else
 		if ((!ieee80211_is_robust_mgmt_frame(hdr)) &&
