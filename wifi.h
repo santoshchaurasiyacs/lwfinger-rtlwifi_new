@@ -2046,6 +2046,8 @@ struct rtl_mod_params {
 	/* default: 0 = not using MSI interrupts mode */
 	/* submodules should set their own default value */
 	bool msi_support;
+	/* default 0: 1 means disable */
+	bool disable_watchdog;
 };
 
 struct rtl_hal_cfg {

@@ -1525,7 +1525,8 @@ void rtl_watchdog_wq_callback(void *data)
 	rtlpriv->link_info.higher_busyrxtraffic = higher_busyrxtraffic;
 
 	/* <3> DM */
-	rtlpriv->cfg->ops->dm_watchdog(hw);
+	if (!rtlpriv->cfg->mod_params->disable_watchdog)
+		rtlpriv->cfg->ops->dm_watchdog(hw);
 
 	/* <4> roaming */
 	if (mac->link_state == MAC80211_LINKED &&
