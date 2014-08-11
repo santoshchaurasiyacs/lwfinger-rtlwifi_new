@@ -407,6 +407,9 @@ static void _rtl_init_mac80211(struct ieee80211_hw *hw)
 	/* <5> set hw caps */
 	hw->flags = IEEE80211_HW_SIGNAL_DBM |
 	    IEEE80211_HW_RX_INCLUDES_FCS |
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(3, 4, 0))
+	    IEEE80211_HW_BEACON_FILTER |
+#endif
 	    IEEE80211_HW_AMPDU_AGGREGATION |
 	    IEEE80211_HW_REPORTS_TX_ACK_STATUS |
 	    IEEE80211_HW_CONNECTION_MONITOR |
@@ -471,8 +474,6 @@ static void _rtl_init_mac80211(struct ieee80211_hw *hw)
 		}
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 11, 0))
 		hw->wiphy->wowlan = &(rtlpriv->wowlan);
-#else
-		hw->wiphy->wowlan = rtlpriv->wowlan;
 #endif
 	}
 #endif
@@ -501,7 +502,11 @@ static void _rtl_init_deferred_work(struct ieee80211_hw *hw)
 		    rtl_easy_concurrent_retrytimer_callback, (unsigned long)hw);
 	/* <2> work queue */
 	rtlpriv->works.hw = hw;
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 37))
 	rtlpriv->works.rtl_wq = alloc_workqueue(rtlpriv->cfg->name, 0, 0);
+#else
+	rtlpriv->works.rtl_wq = create_workqueue(rtlpriv->cfg->name);
+#endif
 	INIT_DELAYED_WORK(&rtlpriv->works.watchdog_wq,
 			  (void *)rtl_watchdog_wq_callback);
 	INIT_DELAYED_WORK(&rtlpriv->works.ips_nic_off_wq,
@@ -682,6 +687,9 @@ static void _rtl_query_shortgi(struct ieee80211_hw *hw,
 	sgi_80 = sta->vht_cap.cap & IEEE80211_VHT_CAP_SHORT_GI_80;
 
 	if ((!(sta->ht_cap.ht_supported)) && (!(sta->vht_cap.vht_supported)))
+		return;
+#else
+	if ((!(sta->ht_cap.ht_supported))
 		return;
 #endif
 
@@ -931,7 +939,7 @@ void rtl_get_tcb_desc(struct ieee80211_hw *hw,
 	struct rtl_mac *rtlmac = rtl_mac(rtl_priv(hw));
 	struct ieee80211_hdr *hdr = rtl_get_hdr(skb);
 	struct ieee80211_rate *txrate;
-	__le16 fc = cpu_to_le16(rtl_get_fc(skb));
+	__le16 fc = rtl_get_fc(skb);
 
 	txrate = ieee80211_get_tx_rate(hw, info);
 	if (txrate != NULL)
@@ -1006,7 +1014,7 @@ bool rtl_tx_mgmt_proc(struct ieee80211_hw *hw, struct sk_buff *skb)
 {
 	struct rtl_mac *mac = rtl_mac(rtl_priv(hw));
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
-	__le16 fc = cpu_to_le16(rtl_get_fc(skb));
+	__le16 fc = rtl_get_fc(skb);
 
 	if (rtlpriv->dm.supp_phymode_switch &&
 		mac->link_state < MAC80211_LINKED &&
@@ -1035,7 +1043,7 @@ bool rtl_action_proc(struct ieee80211_hw *hw, struct sk_buff *skb, u8 is_tx)
 	struct rtl_mac *mac = rtl_mac(rtl_priv(hw));
 	struct ieee80211_hdr *hdr = rtl_get_hdr(skb);
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
-	__le16 fc = cpu_to_le16(rtl_get_fc(skb));
+	__le16 fc = rtl_get_fc(skb);
 	u8 *act = (u8 *) (((u8 *) skb->data + MAC80211_3ADDR_LEN));
 	u8 category;
 
@@ -1141,7 +1149,7 @@ u8 rtl_is_special_data(struct ieee80211_hw *hw, struct sk_buff *skb, u8 is_tx)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_ps_ctl *ppsc = rtl_psc(rtl_priv(hw));
-	__le16 fc = cpu_to_le16(rtl_get_fc(skb));
+	__le16 fc = rtl_get_fc(skb);
 	u16 ether_type;
 	u8 mac_hdr_len = ieee80211_get_hdrlen_from_skb(skb);
 	const struct iphdr *ip;

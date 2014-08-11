@@ -103,6 +103,8 @@ static void _rtl_rc_rate_set_series(struct rtl_priv *rtlpriv,
 				    bool not_data)
 {
 	struct rtl_mac *mac = rtl_mac(rtlpriv);
+	struct rtl_sta_info *sta_entry = NULL;
+	u8 wireless_mode = 0;
 	u8 sgi_20 = 0, sgi_40 = 0, sgi_80 = 0;
 
 	if (sta) {
@@ -111,9 +113,16 @@ static void _rtl_rc_rate_set_series(struct rtl_priv *rtlpriv,
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 8, 0))
 		sgi_80 = sta->vht_cap.cap & IEEE80211_VHT_CAP_SHORT_GI_80;
 #endif
+		sta_entry = (struct rtl_sta_info *) sta->drv_priv;
+		wireless_mode = sta_entry->wireless_mode;
 	}
 	rate->count = tries;
 	rate->idx = rix >= 0x00 ? rix : 0x00;
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 8, 0))
+	if (rtlpriv->rtlhal.hw_type == HARDWARE_TYPE_RTL8812AE &&
+	    wireless_mode == WIRELESS_MODE_AC_5G) 
+		rate->idx += 0x10;/*2NSS for 8812AE*/
+#endif
 
 	if (!not_data) {
 		if (txrc->short_preamble)
@@ -138,10 +147,13 @@ static void _rtl_rc_rate_set_series(struct rtl_priv *rtlpriv,
 
 		if (sgi_20 || sgi_40 || sgi_80)
 			rate->flags |= IEEE80211_TX_RC_SHORT_GI;
-		if (sta && sta->ht_cap.ht_supported)
+		if (sta && sta->ht_cap.ht_supported &&
+		    ((wireless_mode == WIRELESS_MODE_N_5G) ||
+		     (wireless_mode == WIRELESS_MODE_N_24G)))
 			rate->flags |= IEEE80211_TX_RC_MCS;
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 8, 0))
-		if (sta && sta->vht_cap.vht_supported)
+		if (sta && sta->vht_cap.vht_supported &&
+		    (wireless_mode == WIRELESS_MODE_AC_5G))
 			rate->flags |= IEEE80211_TX_RC_VHT_MCS;
 #endif
 	}

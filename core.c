@@ -621,11 +621,10 @@ static int rtl_op_config(struct ieee80211_hw *hw, u32 changed)
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 10, 0))
 		struct ieee80211_channel *channel = hw->conf.chandef.chan;
 		enum nl80211_chan_width width = hw->conf.chandef.width;
-		enum nl80211_channel_type channel_type = NL80211_CHAN_NO_HT;
 #else
 		struct ieee80211_channel *channel = hw->conf.channel;
-		enum nl80211_channel_type channel_type = hw->conf.channel_type;
 #endif
+		enum nl80211_channel_type channel_type = NL80211_CHAN_NO_HT;
 		u8 wide_chan = (u8) channel->hw_value;
 
 		/* channel_type is for 20&40M */
@@ -633,6 +632,8 @@ static int rtl_op_config(struct ieee80211_hw *hw, u32 changed)
 		if (width < NL80211_CHAN_WIDTH_80)
 			channel_type =
 				cfg80211_get_chandef_type(&(hw->conf.chandef));
+#else
+		channel_type = hw->conf.channel_type;
 #endif
 		if (mac->act_scanning)
 			mac->n_channels++;
@@ -1056,8 +1057,6 @@ static void rtl_op_bss_info_changed(struct ieee80211_hw *hw,
 				rcu_read_unlock();
 				goto out;
 			}
-			if (vif->type == NL80211_IFTYPE_STATION && sta)
-				rtlpriv->cfg->ops->update_rate_tbl(hw, sta, 0);
 			RT_TRACE(rtlpriv, COMP_EASY_CONCURRENT, DBG_LOUD,
 					"send PS STATIC frame\n");
 			if (rtlpriv->dm.supp_phymode_switch) {
@@ -1091,6 +1090,8 @@ static void rtl_op_bss_info_changed(struct ieee80211_hw *hw,
 			}
 #endif
 
+			if (vif->type == NL80211_IFTYPE_STATION && sta)
+				rtlpriv->cfg->ops->update_rate_tbl(hw, sta, 0);
 			rcu_read_unlock();
 
 			/* to avoid AP Disassociation caused by inactivity */

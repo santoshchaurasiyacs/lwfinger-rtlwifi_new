@@ -285,8 +285,6 @@ static struct rtl_mod_params rtl88ee_mod_params = {
 	.fwctrl_lps = false,
 	.msi_support = false,
 	.debug = DBG_EMERG,
-	.msi_support = true,
-	.debug = DBG_DMESG,
 };
 
 static struct rtl_hal_cfg rtl88ee_hal_cfg = {

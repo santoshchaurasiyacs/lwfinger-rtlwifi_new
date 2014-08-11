@@ -448,34 +448,34 @@ static void _rtl92s_dm_initial_gain_sta_beforeconnect(struct ieee80211_hw *hw)
 
 			if (digtable.backoff_enable_flag == true) {
 				if (falsealm_cnt->cnt_all > digtable.fa_highthresh) {
-					if ((digtable.backoff_val - 6) <
-						digtable.backoffval_range_min)
-						digtable.backoff_val =
-							digtable.backoffval_range_min;
+					if ((digtable.back_val - 6) <
+						digtable.back_range_min)
+						digtable.back_val =
+							digtable.back_range_min;
 					else
-						digtable.backoff_val -= 6;
+						digtable.back_val -= 6;
 				} else if (falsealm_cnt->cnt_all <
 						digtable.fa_lowthresh) {
-					if ((digtable.backoff_val + 6) >
-						digtable.backoffval_range_max)
-						digtable.backoff_val =
-							digtable.backoffval_range_max;
+					if ((digtable.back_val + 6) >
+						digtable.back_range_max)
+						digtable.back_val =
+							digtable.back_range_max;
 					else
-						digtable.backoff_val += 6;
+						digtable.back_val += 6;
 				}
 			} else {
-				digtable.backoff_val = DM_DIG_BACKOFF;
+				digtable.back_val = DM_DIG_BACKOFF;
 			}
 
-			if ((digtable.rssi_val + 10 - digtable.backoff_val) >
+			if ((digtable.rssi_val + 10 - digtable.back_val) >
 				digtable.rx_gain_max)
 				digtable.cur_igvalue = digtable.rx_gain_max;
-			else if ((digtable.rssi_val + 10 - digtable.backoff_val) <
+			else if ((digtable.rssi_val + 10 - digtable.back_val) <
 				digtable.rx_gain_min)
 				digtable.cur_igvalue = digtable.rx_gain_min;
 			else
 				digtable.cur_igvalue = digtable.rssi_val + 10 -
-						digtable.backoff_val;
+						digtable.back_val;
 
 			if (falsealm_cnt->cnt_all > 10000)
 				digtable.cur_igvalue = (digtable.cur_igvalue > 0x33) ?
@@ -495,7 +495,7 @@ static void _rtl92s_dm_initial_gain_sta_beforeconnect(struct ieee80211_hw *hw)
 		digtable.dig_ext_port_stage = DIG_EXT_PORT_STAGE_MAX;
 		rtl92s_phy_set_fw_cmd(hw, FW_CMD_DIG_ENABLE);
 
-		digtable.backoff_val = DM_DIG_BACKOFF;
+		digtable.back_val = DM_DIG_BACKOFF;
 		digtable.cur_igvalue = rtlpriv->phy.default_initialgain[0];
 		digtable.pre_igvalue = 0;
 		return;
@@ -680,13 +680,13 @@ static void _rtl92s_dm_init_dig(struct ieee80211_hw *hw)
 
 	/* for dig debug rssi value */
 	digtable.rssi_val = 50;
-	digtable.backoff_val = DM_DIG_BACKOFF;
+	digtable.back_val = DM_DIG_BACKOFF;
 	digtable.rx_gain_max = DM_DIG_MAX;
 
 	digtable.rx_gain_min = DM_DIG_MIN;
 
-	digtable.backoffval_range_max = DM_DIG_BACKOFF_MAX;
-	digtable.backoffval_range_min = DM_DIG_BACKOFF_MIN;
+	digtable.back_range_max = DM_DIG_BACKOFF_MAX;
+	digtable.back_range_min = DM_DIG_BACKOFF_MIN;
 }
 
 static void _rtl92s_dm_init_dynamic_txpower(struct ieee80211_hw *hw)

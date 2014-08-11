@@ -95,8 +95,8 @@
 					    *"phy_GetChnlGroup8812A" and
 					    * "Hal_ReadTxPowerInfo8812A"*/
 
-#define MAX_REGULATION_NUM			4
-#define MAX_RF_PATH_NUM	2
+#define MAX_REGULATION_NUM		4
+#define MAX_RF_PATH_NUM			2
 #define MAX_RATE_SECTION_NUM		6
 #define MAX_2_4G_BANDWITH_NUM		4
 #define MAX_5G_BANDWITH_NUM		4
@@ -2182,7 +2182,7 @@ struct dig_t {
 	u8 stop_dig;
 	u8 back_val;
 	u8 back_range_max;
-	u8 back_range_min;
+	s8 back_range_min;
 	u8 rx_gain_max;
 	u8 rx_gain_min;
 	u8 min_undec_pwdb_for_dm;
@@ -2210,9 +2210,6 @@ struct dig_t {
 	u8 cur_cs_ratiostate;
 	u8 pre_cs_ratiostate;
 	u8 backoff_enable_flag;
-	u8 backoff_val;
-	u8 backoffval_range_max;
-	u8 backoffval_range_min;
 	u8 dig_min_0;
 	u8 dig_min_1;
 	u8 bt30_cur_igi;

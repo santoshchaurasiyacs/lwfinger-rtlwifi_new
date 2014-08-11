@@ -352,9 +352,9 @@ static void rtl88e_dm_diginit(struct ieee80211_hw *hw)
 	dm_dig->fa_highthresh = DM_FALSEALARM_THRESH_HIGH;
 	dm_dig->rx_gain_max = DM_DIG_MAX;
 	dm_dig->rx_gain_min = DM_DIG_MIN;
-	dm_dig->backoff_val = DM_DIG_BACKOFF_DEFAULT;
-	dm_dig->backoffval_range_max = DM_DIG_BACKOFF_MAX;
-	dm_dig->backoffval_range_min = DM_DIG_BACKOFF_MIN;
+	dm_dig->back_val = DM_DIG_BACKOFF_DEFAULT;
+	dm_dig->back_range_max = DM_DIG_BACKOFF_MAX;
+	dm_dig->back_range_min = DM_DIG_BACKOFF_MIN;
 	dm_dig->pre_cck_cca_thres = 0xff;
 	dm_dig->cur_cck_cca_thres = 0x83;
 	dm_dig->forbidden_igi = DM_DIG_MIN;
@@ -747,7 +747,7 @@ void rtl88e_dm_write_dig(struct ieee80211_hw *hw)
 		 "cur_igvalue = 0x%x, "
 		  "pre_igvalue = 0x%x, backoff_val = %d\n",
 		  dm_dig->cur_igvalue, dm_dig->pre_igvalue,
-		  dm_dig->backoff_val);
+		  dm_dig->back_val);
 
 	if (dm_dig->cur_igvalue > 0x3f)
 		dm_dig->cur_igvalue = 0x3f;
