@@ -185,6 +185,7 @@ int rtl88e_init_sw_vars(struct ieee80211_hw *hw)
 		return 1;
 	}
 
+
 	/* for early mode */
 	rtlpriv->rtlhal.earlymode_enable = false;
 	rtlpriv->rtlhal.max_earlymode_num = 10;
@@ -284,6 +285,8 @@ static struct rtl_mod_params rtl88ee_mod_params = {
 	.fwctrl_lps = false,
 	.msi_support = false,
 	.debug = DBG_EMERG,
+	.msi_support = true,
+	.debug = DBG_DMESG,
 };
 
 static struct rtl_hal_cfg rtl88ee_hal_cfg = {

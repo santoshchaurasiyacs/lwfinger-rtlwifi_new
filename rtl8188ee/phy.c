@@ -727,7 +727,7 @@ static bool _rtl88e_phy_config_bb_with_pgheaderfile(struct ieee80211_hw *hw,
 								       phy_regarray_table_pg[i + 1],
 								       phy_regarray_table_pg[i + 2]);
 				continue;
-			} else{
+			} else {
 				if (!_rtl88e_check_condition(hw, phy_regarray_table_pg[i])) {
 					/*don't need the hw_body*/
 				    i += 2; /* skip the pair of expression*/

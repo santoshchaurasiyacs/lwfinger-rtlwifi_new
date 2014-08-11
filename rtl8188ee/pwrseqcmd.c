@@ -109,7 +109,7 @@ bool rtl_hal_pwrseqcmdparsing(struct rtl_priv *rtlpriv, u8 cut_version,
 
 					if (polling_count++ > max_polling_cnt) {
 						RT_TRACE(rtlpriv, COMP_INIT, DBG_LOUD,
-							"polling fail in pwrseqcmd\n");
+							 "polling fail in pwrseqcmd\n");
 						return false;
 					}
 				} while (!b_polling_bit);

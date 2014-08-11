@@ -269,15 +269,15 @@ static void _rtl88ee_query_rxphystatus(struct ieee80211_hw *hw,
 				/*VGA_idx = 2~0*/
 				rx_pwr_all = -48 + 2*(2-vga_idx);
 				break;
-		case 5:
+			case 5:
 				/*VGA_idx = 7~5*/
 				rx_pwr_all = -42 + 2*(7-vga_idx);
 				break;
-		case 4:
+			case 4:
 				/*VGA_idx = 7~4*/
 				rx_pwr_all = -36 + 2*(7-vga_idx);
 				break;
-		case 3:
+			case 3:
 				/*VGA_idx = 7~0*/
 				rx_pwr_all = -24 + 2*(7-vga_idx);
 				break;
@@ -446,6 +446,7 @@ static void _rtl88ee_smart_antenna(struct ieee80211_hw *hw,
 
 	}
 }
+
 static void _rtl88ee_translate_rx_signal_stuff(struct ieee80211_hw *hw,
 		struct sk_buff *skb, struct rtl_stats *pstatus,
 		u8 *pdesc, struct rx_fwinfo_88e *p_drvinfo)
@@ -456,30 +457,30 @@ static void _rtl88ee_translate_rx_signal_stuff(struct ieee80211_hw *hw,
 	u8 *tmp_buf;
 	u8 *praddr;
 	u8 *psaddr;
-	u16 fc, type;
+	__le16 fc;
 	bool packet_matchbssid, packet_toself, packet_beacon;
 
 	tmp_buf = skb->data + pstatus->rx_drvinfo_size + pstatus->rx_bufshift;
 
 	hdr = (struct ieee80211_hdr *)tmp_buf;
-	fc = le16_to_cpu(hdr->frame_control);
-	type = WLAN_FC_GET_TYPE(hdr->frame_control);
+	fc = hdr->frame_control;
 	praddr = hdr->addr1;
 	psaddr = ieee80211_get_SA(hdr);
 	memcpy(pstatus->psaddr, psaddr, ETH_ALEN);
 
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(3, 5, 0))
-	packet_matchbssid = ((IEEE80211_FTYPE_CTL != type) &&
-	     (compare_ether_addr(mac->bssid, (fc & IEEE80211_FCTL_TODS) ?
-				  hdr->addr1 : (fc & IEEE80211_FCTL_FROMDS) ?
-				  hdr->addr2 : hdr->addr3)) && (!pstatus->hwerror) &&
+	packet_matchbssid = (!ieee80211_is_ctl(fc) &&
+	     (compare_ether_addr(mac->bssid, ieee80211_has_tods(fc) ?
+				  hdr->addr1 : ieee80211_has_fromds(fc) ?
+				  hdr->addr2 : hdr->addr3)) &&
+				  (!pstatus->hwerror) &&
 				  (!pstatus->crc) && (!pstatus->icv));
 	packet_toself = packet_matchbssid &&
 	    (compare_ether_addr(praddr, rtlefuse->dev_addr));
 #else
-	packet_matchbssid = ((IEEE80211_FTYPE_CTL != type) &&
-	     (ether_addr_equal(mac->bssid, (fc & IEEE80211_FCTL_TODS) ?
-				  hdr->addr1 : (fc & IEEE80211_FCTL_FROMDS) ?
+	packet_matchbssid = ((!ieee80211_is_ctl(fc)) &&
+	     (ether_addr_equal(mac->bssid, ieee80211_has_tods(fc) ?
+				  hdr->addr1 : ieee80211_has_fromds(fc) ?
 				  hdr->addr2 : hdr->addr3)) && (!pstatus->hwerror) &&
 				  (!pstatus->crc) && (!pstatus->icv));
 
@@ -636,7 +637,7 @@ bool rtl88ee_rx_query_desc(struct ieee80211_hw *hw,
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,15,0))
 		if ((!_ieee80211_is_robust_mgmt_frame(hdr)) &&
 #else
-		if ((!ieee80211_is_robust_mgmt_frame(hdr)) &&
+		if ((!_ieee80211_is_robust_mgmt_frame(hdr)) &&
 #endif
 		    (ieee80211_has_protected(hdr->frame_control)))
 			rx_status->flag |= RX_FLAG_DECRYPTED;

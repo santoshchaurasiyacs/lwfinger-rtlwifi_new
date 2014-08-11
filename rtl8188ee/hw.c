@@ -1710,7 +1710,7 @@ static void _rtl8188e_read_power_value_fromprom(struct ieee80211_hw *hw,
 
 	if (autoload_fail) {
 		RT_TRACE(rtlpriv, COMP_INIT, DBG_LOUD,
-			"auto load fail : Use Default value!\n");
+			 "auto load fail : Use Default value!\n");
 		for (rfPath = 0 ; rfPath < MAX_RF_PATH ; rfPath++) {
 			/* 2.4G default value */
 			for (group = 0 ; group < MAX_CHNL_GROUP_24G; group++) {
@@ -2042,8 +2042,8 @@ static void _rtl88ee_read_adapter_info(struct ieee80211_hw *hw)
 		(hwinfo[EEPROM_RF_BOARD_OPTION_88E] & 0x18) >> 3;
 	if (hwinfo[EEPROM_RF_BOARD_OPTION_88E] == 0xFF)
 		rtlefuse->antenna_div_cfg = 0;
-	if (rtlpcipriv->btcoexist.eeprom_bt_coexist != 0
-		&& rtlpcipriv->btcoexist.eeprom_bt_ant_num == ANT_X1)
+	if (rtlpcipriv->btcoexist.eeprom_bt_coexist != 0 &&
+	    rtlpcipriv->btcoexist.eeprom_bt_ant_num == ANT_X1)
 		rtlefuse->antenna_div_cfg = 0;
 
 	rtlefuse->antenna_div_type = hwinfo[EEPROM_RF_ANTENNA_OPT_88E];
@@ -2675,7 +2675,6 @@ void rtl8188ee_bt_reg_init(struct ieee80211_hw *hw)
 	/* 0:Disable BT control A-MPDU, 1:Enable BT control A-MPDU. */
 	rtlpcipriv->btcoexist.reg_bt_sco = 0;
 }
-
 
 void rtl8188ee_bt_hw_init(struct ieee80211_hw *hw)
 {
