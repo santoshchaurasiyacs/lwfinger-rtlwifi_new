@@ -407,34 +407,32 @@ static void _rtl92ee_translate_rx_signal_stuff(struct ieee80211_hw *hw,
 	u8 *tmp_buf;
 	u8 *praddr;
 	u8 *psaddr;
-	u16 fc;
-	u16 type;
+	__le16 fc;
 	bool packet_matchbssid, packet_toself, packet_beacon;
 
 	tmp_buf = skb->data + pstatus->rx_drvinfo_size +
 		  pstatus->rx_bufshift + 24;
 
 	hdr = (struct ieee80211_hdr *)tmp_buf;
-	fc = le16_to_cpu(hdr->frame_control);
-	type = WLAN_FC_GET_TYPE(hdr->frame_control);
+	fc = hdr->frame_control;
 	praddr = hdr->addr1;
 	psaddr = ieee80211_get_SA(hdr);
 	memcpy(pstatus->psaddr, psaddr, ETH_ALEN);
 
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(3, 5, 0))
-	packet_matchbssid = ((IEEE80211_FTYPE_CTL != type) &&
-	     (compare_ether_addr(mac->bssid, (fc & IEEE80211_FCTL_TODS) ?
-				  hdr->addr1 : (fc & IEEE80211_FCTL_FROMDS) ?
+	packet_matchbssid = (!ieee80211_is_ctl(fc) &&
+	     (compare_ether_addr(mac->bssid, ieee80211_has_tods(fc) ?
+				  hdr->addr1 : ieee80211_has_fromds(fc)  ?
 				  hdr->addr2 : hdr->addr3)) && (!pstatus->hwerror) &&
 				  (!pstatus->crc) && (!pstatus->icv));
 	packet_toself = packet_matchbssid &&
 	    (compare_ether_addr(praddr, rtlefuse->dev_addr));
 #else
-	packet_matchbssid = ((IEEE80211_FTYPE_CTL != type) &&
+	packet_matchbssid = (!ieee80211_is_ctl(fc) &&
 			       (ether_addr_equal(mac->bssid,
-						(fc & IEEE80211_FCTL_TODS) ?
+						ieee80211_has_tods(fc) ?
 						hdr->addr1 :
-						(fc & IEEE80211_FCTL_FROMDS) ?
+						ieee80211_has_fromds(fc) ?
 						hdr->addr2 : hdr->addr3)) &&
 				(!pstatus->hwerror) && (!pstatus->crc) &&
 				(!pstatus->icv));
@@ -443,7 +441,7 @@ static void _rtl92ee_translate_rx_signal_stuff(struct ieee80211_hw *hw,
 			 (ether_addr_equal(praddr, rtlefuse->dev_addr));
 #endif
 
-	if (ieee80211_is_beacon(hdr->frame_control))
+	if (ieee80211_is_beacon(fc))
 		packet_beacon = true;
 	else
 		packet_beacon = false;
