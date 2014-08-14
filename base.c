@@ -211,7 +211,8 @@ static void _rtl_init_hw_ht_capab(struct ieee80211_hw *hw,
 	 *highest supported RX rate
 	 */
 	if (rtlpriv->dm.supp_phymode_switch) {
-		RT_TRACE(rtlpriv, COMP_INIT, DBG_EMERG, "Support phy mode switch\n");
+		RT_TRACE(rtlpriv, COMP_INIT, DBG_EMERG,
+			 "Support phy mode switch\n");
 
 		ht_cap->mcs.rx_mask[0] = 0xFF;
 		ht_cap->mcs.rx_mask[1] = 0xFF;
@@ -220,9 +221,9 @@ static void _rtl_init_hw_ht_capab(struct ieee80211_hw *hw,
 		ht_cap->mcs.rx_highest = cpu_to_le16(MAX_BIT_RATE_40MHZ_MCS15);
 	} else {
 		if (get_rf_type(rtlphy) == RF_1T2R ||
-				get_rf_type(rtlphy) == RF_2T2R) {
-
-			RT_TRACE(rtlpriv, COMP_INIT, DBG_DMESG, "1T2R or 2T2R\n");
+		    get_rf_type(rtlphy) == RF_2T2R) {
+			RT_TRACE(rtlpriv, COMP_INIT, DBG_DMESG,
+				 "1T2R or 2T2R\n");
 
 			ht_cap->mcs.rx_mask[0] = 0xFF;
 			ht_cap->mcs.rx_mask[1] = 0xFF;
@@ -474,6 +475,17 @@ static void _rtl_init_mac80211(struct ieee80211_hw *hw)
 		}
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 11, 0))
 		hw->wiphy->wowlan = &(rtlpriv->wowlan);
+#else /* LINUX_VERSION_CODE < KERNEL_VERSION(3,11,0) */
+		if (rtlpriv->psc.wo_wlan_mode & WAKE_ON_MAGIC_PACKET)
+			hw->wiphy->wowlan.flags = WIPHY_WOWLAN_MAGIC_PKT;
+		if (rtlpriv->psc.wo_wlan_mode & WAKE_ON_PATTERN_MATCH) {
+			hw->wiphy->wowlan.n_patterns =
+				MAX_SUPPORT_WOL_PATTERN_NUM;
+			hw->wiphy->wowlan.pattern_min_len =
+				MIN_WOL_PATTERN_SIZE;
+			hw->wiphy->wowlan.pattern_max_len =
+				MAX_WOL_PATTERN_SIZE;
+		}
 #endif
 	}
 #endif
@@ -685,13 +697,13 @@ static void _rtl_query_shortgi(struct ieee80211_hw *hw,
 	sgi_20 = sta->ht_cap.cap & IEEE80211_HT_CAP_SGI_20;
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 8, 0))
 	sgi_80 = sta->vht_cap.cap & IEEE80211_VHT_CAP_SHORT_GI_80;
-
-	if ((!(sta->ht_cap.ht_supported)) && (!(sta->vht_cap.vht_supported)))
-		return;
-#else
-	if ((!(sta->ht_cap.ht_supported))
-		return;
 #endif
+
+	if (!(sta->ht_cap.ht_supported))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 8, 0))
+	    && (!(sta->vht_cap.vht_supported))
+#endif
+		return;
 
 	if (!sgi_40 && !sgi_20)
 		return;
@@ -849,29 +861,25 @@ static void _rtl_query_bandwidth_mode(struct ieee80211_hw *hw,
 
 	tcb_desc->packet_bw = HT_CHANNEL_WIDTH_20_40;
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 8, 0))
 	if (rtlpriv->rtlhal.hw_type == HARDWARE_TYPE_RTL8812AE ||
 	    rtlpriv->rtlhal.hw_type == HARDWARE_TYPE_RTL8821AE) {
 		if (mac->opmode == NL80211_IFTYPE_AP ||
 		    mac->opmode == NL80211_IFTYPE_ADHOC ||
 		    mac->opmode == NL80211_IFTYPE_MESH_POINT) {
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 8, 0))
 			if (!(sta->vht_cap.vht_supported))
 				return;
 		} else if (mac->opmode == NL80211_IFTYPE_STATION) {
 			if (!mac->bw_80 ||
 			    !(sta->vht_cap.vht_supported))
 				return;
-#else
-			if (!(sta->ht_cap.ht_supported) ||
-			    !(sta->ht_cap.cap & IEEE80211_HT_CAP_SUP_WIDTH_20_40))
-				return;
-#endif
 		}
 		if (tcb_desc->hw_rate <=
 			rtlpriv->cfg->maps[RTL_RC_HT_RATEMCS15])
 			return;
 		tcb_desc->packet_bw = HT_CHANNEL_WIDTH_80;
 	}
+#endif
 }
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 8, 0))
@@ -1076,7 +1084,7 @@ bool rtl_action_proc(struct ieee80211_hw *hw, struct sk_buff *skb, u8 is_tx)
 				rcu_read_lock();
 				sta = rtl_find_sta(hw, hdr->addr3);
 				if (sta == NULL) {
-					RT_TRACE(rtlpriv, (COMP_SEND | COMP_RECV),
+					RT_TRACE(rtlpriv, COMP_SEND | COMP_RECV,
 						 DBG_EMERG, "sta is NULL\n");
 					rcu_read_unlock();
 					return true;
@@ -1542,7 +1550,8 @@ void rtl_watchdog_wq_callback(void *data)
 		if ((rtlpriv->link_info.bcn_rx_inperiod +
 			rtlpriv->link_info.num_rx_inperiod) == 0) {
 			rtlpriv->link_info.roam_times++;
-			RT_TRACE(rtlpriv, COMP_ERR, DBG_DMESG, "AP off for %d s\n",
+			RT_TRACE(rtlpriv, COMP_ERR, DBG_DMESG,
+				 "AP off for %d s\n",
 				(rtlpriv->link_info.roam_times * 2));
 
 			/* if we can't recv beacon for 10s,

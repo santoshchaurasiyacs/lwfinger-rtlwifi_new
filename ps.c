@@ -108,8 +108,7 @@ bool rtl_ps_set_rf_state(struct ieee80211_hw *hw,
 			spin_unlock(&rtlpriv->locks.rf_ps_lock);
 
 			RT_TRACE(rtlpriv, COMP_ERR, DBG_WARNING,
-				 "RF Change in progress!"
-				  "Wait to set..state_toset(%d).\n",
+				 "RF Change in progress! Wait to set..state_toset(%d).\n",
 				  state_toset);
 
 			/* Set RF after the previous action is done.  */
@@ -343,8 +342,7 @@ static bool rtl_get_fwlps_doze(struct ieee80211_hw *hw)
 
 	if (ps_timediff < 2000) {
 		RT_TRACE(rtlpriv, COMP_POWER, DBG_LOUD,
-			 "Delay enter Fw LPS for DHCP, ARP,"
-			  " or EAPOL exchanging state.\n");
+			 "Delay enter Fw LPS for DHCP, ARP, or EAPOL exchanging state.\n");
 		return false;
 	}
 
@@ -759,8 +757,8 @@ static void rtl_p2p_noa_ie(struct ieee80211_hw *hw, void *data, unsigned int len
 			find_p2p_ps_ie = true;
 			if ((noa_len - 2) % 13 != 0) {
 				RT_TRACE(rtlpriv, COMP_INIT, DBG_LOUD,
-					 "P2P notice of absence: "
-					  "invalid length.%d\n", noa_len);
+					 "P2P notice of absence: invalid length.%d\n",
+					 noa_len);
 				return;
 			} else {
 				noa_num = (noa_len - 2) / 13;
@@ -856,8 +854,8 @@ static void rtl_p2p_action_ie(struct ieee80211_hw *hw, void *data, unsigned int 
 			find_p2p_ps_ie = true;
 			if ((noa_len - 2) % 13 != 0) {
 				RT_TRACE(rtlpriv, COMP_FW, DBG_LOUD,
-					 "P2P notice of absence: "
-					  "invalid length.%d\n", noa_len);
+					 "P2P notice of absence: invalid length.%d\n",
+					 noa_len);
 				return;
 			} else {
 				noa_num = (noa_len - 2) / 13;
@@ -973,14 +971,14 @@ void rtl_p2p_ps_cmd(struct ieee80211_hw *hw , u8 p2p_ps_state)
 	}
 	RT_TRACE(rtlpriv, COMP_FW, DBG_LOUD, "ctwindow %x oppps %x\n",
 				     p2pinfo->ctwindow , p2pinfo->opp_ps);
-	RT_TRACE(rtlpriv, COMP_FW, DBG_LOUD, "count %x duration %x index %x interval %x"
-				     " start time %x noa num %x\n",
-				     p2pinfo->noa_count_type[0],
-				     p2pinfo->noa_duration[0],
-				     p2pinfo->noa_index,
-				     p2pinfo->noa_interval[0],
-				     p2pinfo->noa_start_time[0],
-				     p2pinfo->noa_num);
+	RT_TRACE(rtlpriv, COMP_FW, DBG_LOUD,
+		 "count %x duration %x index %x interval %x start time %x noa num %x\n",
+		p2pinfo->noa_count_type[0],
+		p2pinfo->noa_duration[0],
+		p2pinfo->noa_index,
+		p2pinfo->noa_interval[0],
+		p2pinfo->noa_start_time[0],
+		p2pinfo->noa_num);
 	RT_TRACE(rtlpriv, COMP_FW, DBG_LOUD, "end\n");
 }
 
