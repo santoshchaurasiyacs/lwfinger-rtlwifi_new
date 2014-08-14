@@ -90,8 +90,9 @@ void rtl8812ae_sw_led_on(struct ieee80211_hw *hw, struct rtl_led *pled)
 		break;
 	}
 
-	RT_TRACE(rtlpriv, COMP_LED, DBG_LOUD, "In SwLedOn, LedAddr:%X LEDPIN=%d\n",
-					ledreg, pled->ledpin);
+	RT_TRACE(rtlpriv, COMP_LED, DBG_LOUD,
+		 "In SwLedOn, LedAddr:%X LEDPIN=%d\n",
+		 ledreg, pled->ledpin);
 
 	ledcfg =  rtl_read_byte(rtlpriv, ledreg);
 	ledcfg |= BIT(5); /*Set 0x4c[21]*/
@@ -163,8 +164,9 @@ void rtl8812ae_sw_led_off(struct ieee80211_hw *hw, struct rtl_led *pled)
 		break;
 	}
 
-	RT_TRACE(rtlpriv, COMP_LED, DBG_LOUD, "In SwLedOff,LedAddr:%X LEDPIN=%d\n",
-					ledreg, pled->ledpin);
+	RT_TRACE(rtlpriv, COMP_LED, DBG_LOUD,
+		 "In SwLedOff,LedAddr:%X LEDPIN=%d\n",
+		 ledreg, pled->ledpin);
 	/*Open-drain arrangement for controlling the LED*/
 	if (pcipriv->ledctl.led_opendrain == true) {
 

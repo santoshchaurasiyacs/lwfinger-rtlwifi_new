@@ -207,8 +207,7 @@ static void _rtl8821ae_get_txpower_writeval_by_regulatory(struct ieee80211_hw *h
 			    + ((index < 2) ? powerBase0[rf] : powerBase1[rf]);
 
 			RTPRINT(rtlpriv, FPHY, PHY_TXPWR,
-				"RTK better performance, "
-				 "writeVal(%c) = 0x%x\n",
+				"RTK better performance, writeVal(%c) = 0x%x\n",
 				 ((rf == 0) ? 'A' : 'B'), writeVal);
 			break;
 		case 1:
@@ -236,8 +235,7 @@ static void _rtl8821ae_get_txpower_writeval_by_regulatory(struct ieee80211_hw *h
 						      powerBase1[rf]);
 
 			RTPRINT(rtlpriv, FPHY, PHY_TXPWR,
-				"Realtek regulatory, 20MHz, "
-				 "writeVal(%c) = 0x%x\n",
+				"Realtek regulatory, 20MHz, writeVal(%c) = 0x%x\n",
 				 ((rf == 0) ? 'A' : 'B'), writeVal);
 
 			break;
@@ -246,8 +244,7 @@ static void _rtl8821ae_get_txpower_writeval_by_regulatory(struct ieee80211_hw *h
 			    ((index < 2) ? powerBase0[rf] : powerBase1[rf]);
 
 			RTPRINT(rtlpriv, FPHY, PHY_TXPWR,
-				"Better regulatory, "
-				 "writeVal(%c) = 0x%x\n",
+				"Better regulatory, writeVal(%c) = 0x%x\n",
 				 ((rf == 0) ? 'A' : 'B'), writeVal);
 			break;
 		case 3:
@@ -255,15 +252,13 @@ static void _rtl8821ae_get_txpower_writeval_by_regulatory(struct ieee80211_hw *h
 
 			if (rtlphy->current_chan_bw == HT_CHANNEL_WIDTH_20_40) {
 				RTPRINT(rtlpriv, FPHY, PHY_TXPWR,
-					"customer's limit, 40MHz "
-					 "rf(%c) = 0x%x\n",
+					"customer's limit, 40MHz rf(%c) = 0x%x\n",
 					 ((rf == 0) ? 'A' : 'B'),
 					 rtlefuse->pwrgroup_ht40[rf][channel -
 								     1]);
 			} else {
 				RTPRINT(rtlpriv, FPHY, PHY_TXPWR,
-					"customer's limit, 20MHz "
-					 "rf(%c) = 0x%x\n",
+					"customer's limit, 20MHz rf(%c) = 0x%x\n",
 					 ((rf == 0) ? 'A' : 'B'),
 					 rtlefuse->pwrgroup_ht20[rf][channel -
 								     1]);
@@ -317,8 +312,7 @@ static void _rtl8821ae_get_txpower_writeval_by_regulatory(struct ieee80211_hw *h
 			    + ((index < 2) ? powerBase0[rf] : powerBase1[rf]);
 
 			RTPRINT(rtlpriv, FPHY, PHY_TXPWR,
-				"RTK better performance, writeVal "
-				 "rf(%c) = 0x%x\n",
+				"RTK better performance, writeVal rf(%c) = 0x%x\n",
 				 ((rf == 0) ? 'A' : 'B'), writeVal);
 			break;
 		}

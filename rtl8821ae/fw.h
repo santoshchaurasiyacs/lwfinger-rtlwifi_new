@@ -335,7 +335,7 @@ void rtl8821ae_set_fw_related_for_wowlan(struct ieee80211_hw *hw,
 
 #endif
 void rtl8821ae_fill_h2c_cmd(struct ieee80211_hw *hw, u8 element_id,
-			 u32 cmd_len, u8 *p_cmdbuffer);
+			    u32 cmd_len, u8 *cmdbuffer);
 void rtl8821ae_firmware_selfreset(struct ieee80211_hw *hw);
 void rtl8821ae_set_fw_pwrmode_cmd(struct ieee80211_hw *hw, u8 mode);
 void rtl8821ae_set_fw_media_status_rpt_cmd(struct ieee80211_hw *hw,

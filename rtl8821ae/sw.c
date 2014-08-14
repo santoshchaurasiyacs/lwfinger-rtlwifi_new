@@ -203,6 +203,9 @@ int rtl8821ae_init_sw_vars(struct ieee80211_hw *hw)
 		 (u32)(IMR_RXFOVW |
 				IMR_TXFOVW |
 				0);
+	rtlpci->sys_irq_mask = (u32) (HSIMR_PDN_INT_EN	|
+				      HSIMR_RON_INT_EN	|
+				      0);
 	/* for WOWLAN */
 	/* if kernel >= 3.11, revise this var,
 	 * remember revise 'rtl_wowlan_support' at the same time */

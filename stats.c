@@ -211,11 +211,9 @@ static void rtl_process_pwdb(struct ieee80211_hw *hw, struct rtl_stats *pstatus)
 	/* adhoc or ap mode */
 	if (sta) {
 		drv_priv = (struct rtl_sta_info *) sta->drv_priv;
-		undec_sm_pwdb =
-			drv_priv->rssi_stat.undec_sm_pwdb;
+		undec_sm_pwdb = drv_priv->rssi_stat.undec_sm_pwdb;
 	} else {
-		undec_sm_pwdb =
-			rtlpriv->dm.undec_sm_pwdb;
+		undec_sm_pwdb = rtlpriv->dm.undec_sm_pwdb;
 	}
 
 	if (undec_sm_pwdb < 0)

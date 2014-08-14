@@ -1555,10 +1555,10 @@ u8 rtl8821ae_hw_rate_to_mrate(
 	case DESC_RATEVHT2SS_MCS9:
 		ret_rate = MGN_VHT2SS_MCS9;
 	break;
-
 	default:
 		RT_TRACE(rtlpriv, COMP_POWER_TRACKING, DBG_LOUD,
-			"HwRateToMRate8812(): Non supported Rate [%x]!!!\n", rate);
+			 "HwRateToMRate8812(): Non supported Rate [%x]!!!\n",
+			 rate);
 	break;
 	}
 	return ret_rate;
@@ -1781,8 +1781,9 @@ void rtl8812ae_dm_txpwr_track_set_pwr(struct ieee80211_hw *hw,
 
 					rtldm->modify_txagc_flag_path_a = false;
 
-					RT_TRACE(rtlpriv, COMP_POWER_TRACKING, DBG_LOUD,
-						"******Path_A pDM_Odm->Modify_TxAGC_Flag = FALSE\n");
+					RT_TRACE(rtlpriv, COMP_POWER_TRACKING,
+						 DBG_LOUD,
+						 "******Path_A pDM_Odm->Modify_TxAGC_Flag = FALSE\n");
 				}
 			}
 		}
@@ -3115,7 +3116,8 @@ static void rtl8821ae_dm_dynamic_atc_switch(struct ieee80211_hw *hw)
 		}
 
 		RT_TRACE(rtlpriv, COMP_DIG, DBG_LOUD, "No link!!\n");
-		RT_TRACE(rtlpriv, COMP_DIG, DBG_LOUD, "atc_status = %d\n", rtldm->atc_status);
+		RT_TRACE(rtlpriv, COMP_DIG, DBG_LOUD,
+			 "atc_status = %d\n", rtldm->atc_status);
 
 		if (rtldm->crystal_cap != rtlpriv->efuse.crystalcap) {
 			rtldm->crystal_cap = rtlpriv->efuse.crystalcap;
@@ -3185,8 +3187,9 @@ static void rtl8821ae_dm_dynamic_atc_switch(struct ieee80211_hw *hw)
 			} else
 				rtldm->cfo_threshold = CFO_THRESHOLD_XTAL;
 		}
-		RT_TRACE(rtlpriv, COMP_DIG, DBG_LOUD, "Dynamic threshold = %d\n",
-			rtldm->cfo_threshold);
+		RT_TRACE(rtlpriv, COMP_DIG, DBG_LOUD,
+			 "Dynamic threshold = %d\n",
+			 rtldm->cfo_threshold);
 
 		/* 2.Calculate Xtal offset*/
 		if (cfo_ave > rtldm->cfo_threshold && rtldm->crystal_cap < 0x3f)
@@ -3262,7 +3265,7 @@ void rtl8821ae_dm_watchdog(struct ieee80211_hw *hw)
 	}
 
 	rtlpriv->dm.dbginfo.num_qry_beacon_pkt = 0;
-	RT_TRACE(rtlpriv, COMP_DIG, DBG_DMESG, "\n\n");
+	RT_TRACE(rtlpriv, COMP_DIG, DBG_DMESG, "\n");
 }
 
 void rtl8821ae_dm_set_tx_ant_by_tx_info(struct ieee80211_hw *hw,
@@ -3276,8 +3279,6 @@ void rtl8821ae_dm_set_tx_ant_by_tx_info(struct ieee80211_hw *hw,
 	if (rtlhal->hw_type != HARDWARE_TYPE_RTL8812AE)
 		return;
 
-	if ((rtlefuse->antenna_div_type == CG_TRX_HW_ANTDIV) ||
-		(rtlefuse->antenna_div_type == CG_TRX_HW_ANTDIV)) {
+	if (rtlefuse->antenna_div_type == CG_TRX_HW_ANTDIV)
 		SET_TX_DESC_TX_ANT(pdesc, pfat_table->antsel_a[mac_id]);
-	}
 }
