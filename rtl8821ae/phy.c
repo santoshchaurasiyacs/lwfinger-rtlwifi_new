@@ -5080,6 +5080,7 @@ bool rtl8821ae_phy_set_io_cmd(struct ieee80211_hw *hw, enum io_type iotype)
 static void rtl8821ae_phy_set_io(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
+	struct dig_t *dm_digtable = &rtlpriv->dm_digtable;
 	struct rtl_phy *rtlphy = &(rtlpriv->phy);
 
 	RT_TRACE(rtlpriv, COMP_CMD, DBG_TRACE,
@@ -5095,9 +5096,9 @@ static void rtl8821ae_phy_set_io(struct ieee80211_hw *hw)
 	case IO_CMD_PAUSE_BAND0_DM_BY_SCAN:
 		if (rtlpriv->mac80211.opmode == NL80211_IFTYPE_ADHOC)
 			_rtl8821ae_stop_tx_beacon(hw);
-		rtlphy->initgain_backup.xaagccore1 = dm_digtable.cur_igvalue;
+		rtlphy->initgain_backup.xaagccore1 = dm_digtable->cur_igvalue;
 		rtl8821ae_dm_write_dig(hw, 0x17);
-		rtlphy->initgain_backup.cca = dm_digtable.cur_cck_cca_thres;
+		rtlphy->initgain_backup.cca = dm_digtable->cur_cck_cca_thres;
 		rtl8821ae_dm_write_cck_cca_thres(hw, 0x40);
 		break;
 	case IO_CMD_PAUSE_BAND1_DM_BY_SCAN:

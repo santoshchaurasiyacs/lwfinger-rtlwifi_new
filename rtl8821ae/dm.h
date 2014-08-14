@@ -331,7 +331,6 @@ enum pwr_track_control_method {
 	(((struct rtl_priv *)(_priv))->dm.entry_min_undec_sm_pwdb) : \
 	(((struct rtl_priv *)(_priv))->dm.undec_sm_pwdb)
 
-extern struct dig_t dm_digtable;
 void rtl8821ae_dm_set_tx_ant_by_tx_info(struct ieee80211_hw *hw,
 						u8 *pdesc, u32 mac_id);
 void rtl8821ae_dm_ant_sel_statistics(struct ieee80211_hw *hw,

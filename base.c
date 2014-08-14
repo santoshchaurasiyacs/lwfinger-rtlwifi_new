@@ -699,9 +699,10 @@ static void _rtl_query_shortgi(struct ieee80211_hw *hw,
 	sgi_80 = sta->vht_cap.cap & IEEE80211_VHT_CAP_SHORT_GI_80;
 #endif
 
-	if (!(sta->ht_cap.ht_supported))
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 8, 0))
-	    && (!(sta->vht_cap.vht_supported))
+	if ((!sta->ht_cap.ht_supported) && (!sta->vht_cap.vht_supported))
+#else
+	if (!sta->ht_cap.ht_supported)
 #endif
 		return;
 
