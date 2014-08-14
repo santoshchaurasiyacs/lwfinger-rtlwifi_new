@@ -237,8 +237,7 @@ static void rtl92c_dm_false_alarm_counter_statistics(struct ieee80211_hw *hw)
 	rtl_set_bbreg(hw, RCCK0_FALSEALARMREPORT, 0x0000c000, 2);
 
 	RT_TRACE(rtlpriv, COMP_DIG, DBG_TRACE,
-		 "cnt_parity_fail = %d, cnt_rate_illegal = %d, "
-		  "cnt_crc8_fail = %d, cnt_mcs_fail = %d\n",
+		 "cnt_parity_fail = %d, cnt_rate_illegal = %d, cnt_crc8_fail = %d, cnt_mcs_fail = %d\n",
 		  falsealm_cnt->cnt_parity_fail,
 		  falsealm_cnt->cnt_rate_illegal,
 		  falsealm_cnt->cnt_crc8_fail, falsealm_cnt->cnt_mcs_fail);
@@ -358,8 +357,7 @@ static void rtl92c_dm_initial_gain_multi_sta(struct ieee80211_hw *hw)
 	}
 
 	RT_TRACE(rtlpriv, COMP_DIG, DBG_TRACE,
-		 "curmultista_cstate = "
-		  "%x dig_ext_port_stage %x\n",
+		 "curmultista_cstate = %x dig_ext_port_stage %x\n",
 		  dm_digtable->curmultista_cstate,
 		  dm_digtable->dig_ext_port_stage);
 }
@@ -370,8 +368,7 @@ static void rtl92c_dm_initial_gain_sta(struct ieee80211_hw *hw)
 	struct dig_t *dm_digtable = &rtlpriv->dm_digtable;
 
 	RT_TRACE(rtlpriv, COMP_DIG, DBG_TRACE,
-		 "presta_cstate = %x,"
-		  " cursta_cstate = %x\n",
+		 "presta_cstate = %x, cursta_cstate = %x\n",
 		  dm_digtable->presta_cstate,
 		  dm_digtable->cursta_cstate);
 
@@ -598,8 +595,7 @@ void rtl92c_dm_write_dig(struct ieee80211_hw *hw)
 	struct dig_t *dm_digtable = &rtlpriv->dm_digtable;
 
 	RT_TRACE(rtlpriv, COMP_DIG, DBG_LOUD,
-		 "cur_igvalue = 0x%x, "
-		  "pre_igvalue = 0x%x, back_val = %d\n",
+		 "cur_igvalue = 0x%x, pre_igvalue = 0x%x, back_val = %d\n",
 		  dm_digtable->cur_igvalue, dm_digtable->pre_igvalue,
 		  dm_digtable->back_val);
 	dm_digtable->cur_igvalue += 2;
@@ -737,8 +733,7 @@ static void rtl92c_dm_txpower_tracking_callback_thermalmeter(struct ieee80211_hw
 	thermalvalue = (u8) rtl_get_rfreg(hw, RF90_PATH_A, RF_T_METER, 0x1f);
 
 	RT_TRACE(rtlpriv, COMP_POWER_TRACKING, DBG_LOUD,
-		 "Readback Thermal Meter = 0x%x pre thermal meter 0x%x "
-		  "eeprom_thermalmeter 0x%x\n",
+		 "Readback Thermal Meter = 0x%x pre thermal meter 0x%x eeprom_thermalmeter 0x%x\n",
 		  thermalvalue, rtlpriv->dm.thermalvalue,
 		  rtlefuse->eeprom_thermalmeter);
 
@@ -758,8 +753,7 @@ static void rtl92c_dm_txpower_tracking_callback_thermalmeter(struct ieee80211_hw
 				ofdm_index_old[0] = (u8) i;
 
 				RT_TRACE(rtlpriv, COMP_POWER_TRACKING, DBG_LOUD,
-					 "Initial pathA ele_d reg0x%x = 0x%lx, "
-					  "ofdm_index=0x%x\n",
+					 "Initial pathA ele_d reg0x%x = 0x%lx, ofdm_index=0x%x\n",
 					  ROFDM0_XATXIQIMBALANCE,
 					  ele_d, ofdm_index_old[0]);
 				break;
@@ -776,8 +770,7 @@ static void rtl92c_dm_txpower_tracking_callback_thermalmeter(struct ieee80211_hw
 
 					RT_TRACE(rtlpriv, COMP_POWER_TRACKING,
 						 DBG_LOUD,
-						 "Initial pathB ele_d reg0x%x = "
-						  "0x%lx, ofdm_index=0x%x\n",
+						 "Initial pathB ele_d reg0x%x = 0x%lx, ofdm_index=0x%x\n",
 						  ROFDM0_XBTXIQIMBALANCE, ele_d,
 						  ofdm_index_old[1]);
 					break;
@@ -797,8 +790,7 @@ static void rtl92c_dm_txpower_tracking_callback_thermalmeter(struct ieee80211_hw
 
 					RT_TRACE(rtlpriv, COMP_POWER_TRACKING,
 						 DBG_LOUD,
-						 "Initial reg0x%x = 0x%lx, "
-						  "cck_index=0x%x, ch 14 %d\n",
+						 "Initial reg0x%x = 0x%lx, cck_index=0x%x, ch 14 %d\n",
 						  RCCK0_TXFILTER2, temp_cck,
 						  cck_index_old,
 						  rtlpriv->dm.cck_inch14);
@@ -813,8 +805,7 @@ static void rtl92c_dm_txpower_tracking_callback_thermalmeter(struct ieee80211_hw
 
 					RT_TRACE(rtlpriv, COMP_POWER_TRACKING,
 						 DBG_LOUD,
-						 "Initial reg0x%x = 0x%lx, "
-						  "cck_index=0x%x, ch14 %d\n",
+						 "Initial reg0x%x = 0x%lx, cck_index=0x%x, ch14 %d\n",
 						  RCCK0_TXFILTER2, temp_cck,
 						  cck_index_old,
 						  rtlpriv->dm.cck_inch14);
@@ -846,9 +837,7 @@ static void rtl92c_dm_txpower_tracking_callback_thermalmeter(struct ieee80211_hw
 		    (rtlpriv->dm.thermalvalue_iqk - thermalvalue);
 
 		RT_TRACE(rtlpriv, COMP_POWER_TRACKING, DBG_LOUD,
-			 "Readback Thermal Meter = 0x%x pre thermal meter 0x%x "
-			  "eeprom_thermalmeter 0x%x delta 0x%x "
-			  "delta_lck 0x%x delta_iqk 0x%x\n",
+			 "Readback Thermal Meter = 0x%x pre thermal meter 0x%x eeprom_thermalmeter 0x%x delta 0x%x delta_lck 0x%x delta_iqk 0x%x\n",
 			  thermalvalue, rtlpriv->dm.thermalvalue,
 			  rtlefuse->eeprom_thermalmeter, delta, delta_lck,
 			  delta_iqk);
@@ -871,16 +860,13 @@ static void rtl92c_dm_txpower_tracking_callback_thermalmeter(struct ieee80211_hw
 
 			if (is2t) {
 				RT_TRACE(rtlpriv, COMP_POWER_TRACKING, DBG_LOUD,
-					 "temp OFDM_A_index=0x%x, "
-					  "OFDM_B_index=0x%x,"
-					  "cck_index=0x%x\n",
+					 "temp OFDM_A_index=0x%x, OFDM_B_index=0x%x,cck_index=0x%x\n",
 					  rtlpriv->dm.ofdm_index[0],
 					  rtlpriv->dm.ofdm_index[1],
 					  rtlpriv->dm.cck_index);
 			} else {
 				RT_TRACE(rtlpriv, COMP_POWER_TRACKING, DBG_LOUD,
-					 "temp OFDM_A_index=0x%x,"
-					  "cck_index=0x%x\n",
+					 "temp OFDM_A_index=0x%x,cck_index=0x%x\n",
 					  rtlpriv->dm.ofdm_index[0],
 					  rtlpriv->dm.cck_index);
 			}
@@ -945,15 +931,12 @@ static void rtl92c_dm_txpower_tracking_callback_thermalmeter(struct ieee80211_hw
 
 			if (is2t) {
 				RT_TRACE(rtlpriv, COMP_POWER_TRACKING, DBG_LOUD,
-					 "new OFDM_A_index=0x%x, "
-					  "OFDM_B_index=0x%x,"
-					  "cck_index=0x%x\n",
+					 "new OFDM_A_index=0x%x, OFDM_B_index=0x%x,cck_index=0x%x\n",
 					  ofdm_index[0], ofdm_index[1],
 					  cck_index);
 			} else {
 				RT_TRACE(rtlpriv, COMP_POWER_TRACKING, DBG_LOUD,
-					 "new OFDM_A_index=0x%x,"
-					  "cck_index=0x%x\n",
+					 "new OFDM_A_index=0x%x,cck_index=0x%x\n",
 					  ofdm_index[0], cck_index);
 			}
 		}
