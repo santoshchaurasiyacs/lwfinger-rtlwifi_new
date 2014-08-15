@@ -576,8 +576,8 @@ void rtl92ee_set_hw_reg(struct ieee80211_hw *hw, u8 variable, u8 *val)
 				break;
 			default:
 				RT_TRACE(rtlpriv, COMP_ERR, DBG_WARNING,
-					 "HW_VAR_ACM_CTRL acm set "
-					  "failed: eACI is %d\n", acm);
+					 "HW_VAR_ACM_CTRL acm set failed: eACI is %d\n",
+					 acm);
 				break;
 			}
 		} else {
@@ -1392,8 +1392,8 @@ static int _rtl92ee_set_media_status(struct ieee80211_hw *hw,
 		_rtl92ee_disable_bcn_sub_func(hw);
 	} else {
 		RT_TRACE(rtlpriv, COMP_ERR, DBG_WARNING,
-			 "Set HW_VAR_MEDIA_STATUS: "
-			  "No such media status(%x).\n", mode);
+			 "Set HW_VAR_MEDIA_STATUS: No such media status(%x).\n",
+			 mode);
 	}
 
 	rtl_write_byte(rtlpriv, (MSR), bt_msr | mode);
@@ -2215,7 +2215,7 @@ static void rtl92ee_update_hal_rate_mask(struct ieee80211_hw *hw,
 	struct rtl_sta_info *sta_entry = NULL;
 	u32 ratr_bitmap;
 	u8 ratr_index;
-	u8 b_curtxbw_40mhz = (sta->ht_cap.cap & IEEE80211_HT_CAP_SUP_WIDTH_20_40)
+	u8 curtxbw_40mhz = (sta->ht_cap.cap & IEEE80211_HT_CAP_SUP_WIDTH_20_40)
 			     ? 1 : 0;
 	u8 b_curshortgi_40mhz = (sta->ht_cap.cap & IEEE80211_HT_CAP_SGI_40) ?
 				1 : 0;
@@ -2230,7 +2230,7 @@ static void rtl92ee_update_hal_rate_mask(struct ieee80211_hw *hw,
 	wirelessmode = sta_entry->wireless_mode;
 	if (mac->opmode == NL80211_IFTYPE_STATION ||
 	    mac->opmode == NL80211_IFTYPE_MESH_POINT)
-		b_curtxbw_40mhz = mac->bw_40;
+		curtxbw_40mhz = mac->bw_40;
 	else if (mac->opmode == NL80211_IFTYPE_AP ||
 		 mac->opmode == NL80211_IFTYPE_ADHOC)
 		macid = sta->aid + 1;
@@ -2261,13 +2261,13 @@ static void rtl92ee_update_hal_rate_mask(struct ieee80211_hw *hw,
 			ratr_bitmap &= 0x00000ff5;
 		break;
 	case WIRELESS_MODE_N_24G:
-		if (b_curtxbw_40mhz)
+		if (curtxbw_40mhz)
 			ratr_index = RATR_INX_WIRELESS_NGB;
 		else
 			ratr_index = RATR_INX_WIRELESS_NB;
 
 		if (rtlphy->rf_type == RF_1T1R) {
-			if (b_curtxbw_40mhz) {
+			if (curtxbw_40mhz) {
 				if (rssi_level == 1)
 					ratr_bitmap &= 0x000f0000;
 				else if (rssi_level == 2)
@@ -2283,7 +2283,7 @@ static void rtl92ee_update_hal_rate_mask(struct ieee80211_hw *hw,
 					ratr_bitmap &= 0x000ff005;
 			}
 		} else {
-			if (b_curtxbw_40mhz) {
+			if (curtxbw_40mhz) {
 				if (rssi_level == 1)
 					ratr_bitmap &= 0x0f8f0000;
 				else if (rssi_level == 2)
@@ -2300,8 +2300,8 @@ static void rtl92ee_update_hal_rate_mask(struct ieee80211_hw *hw,
 			}
 		}
 
-		if ((b_curtxbw_40mhz && b_curshortgi_40mhz) ||
-		    (!b_curtxbw_40mhz && b_curshortgi_20mhz)) {
+		if ((curtxbw_40mhz && b_curshortgi_40mhz) ||
+		    (!curtxbw_40mhz && b_curshortgi_20mhz)) {
 
 			if (macid == 0)
 				b_shortgi = true;
@@ -2327,7 +2327,7 @@ static void rtl92ee_update_hal_rate_mask(struct ieee80211_hw *hw,
 				       (ratr_index << 28);
 	rate_mask[0] = macid;
 	rate_mask[1] = ratr_index | (b_shortgi ? 0x80 : 0x00);
-	rate_mask[2] = b_curtxbw_40mhz;
+	rate_mask[2] = curtxbw_40mhz;
 	rate_mask[3] = (u8)(ratr_bitmap & 0x000000ff);
 	rate_mask[4] = (u8)((ratr_bitmap & 0x0000ff00) >> 8);
 	rate_mask[5] = (u8)((ratr_bitmap & 0x00ff0000) >> 16);
@@ -2446,9 +2446,7 @@ void rtl92ee_set_key(struct ieee80211_hw *hw, u32 key_index,
 								     p_macaddr);
 					if (entry_id >=  TOTAL_CAM_ENTRY) {
 						RT_TRACE(rtlpriv, COMP_SEC, DBG_EMERG,
-							 "Can not find free "
-							  "hw security cam "
-							  "entry\n");
+							 "Can not find free hw security cam entry\n");
 						return;
 					}
 				} else {

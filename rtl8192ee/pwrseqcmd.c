@@ -55,9 +55,7 @@ bool rtl_hal_pwrseqcmdparsing(struct rtl_priv *rtlpriv, u8 cut_version,
 	do {
 		pwr_cfg_cmd = pwrcfgcmd[ary_idx];
 		RT_TRACE(rtlpriv, COMP_INIT, DBG_TRACE,
-			 "offset(%#x),cut_msk(%#x), fab_msk(%#x),"
-			  "interface_msk(%#x), base(%#x), cmd(%#x), "
-			  "msk(%#x), value(%#x)\n",
+			 "offset(%#x),cut_msk(%#x), fab_msk(%#x),interface_msk(%#x), base(%#x), cmd(%#x), msk(%#x), value(%#x)\n",
 			  GET_PWR_CFG_OFFSET(pwr_cfg_cmd),
 			  GET_PWR_CFG_CUT_MASK(pwr_cfg_cmd),
 			  GET_PWR_CFG_FAB_MASK(pwr_cfg_cmd),

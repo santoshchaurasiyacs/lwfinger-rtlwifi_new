@@ -260,8 +260,7 @@ static void rtl92ee_dm_false_alarm_counter_statistics(struct ieee80211_hw *hw)
 
 
 	RT_TRACE(rtlpriv, COMP_DIG, DBG_TRACE,
-		 "cnt_parity_fail = %d, cnt_rate_illegal = %d, "
-		  "cnt_crc8_fail = %d, cnt_mcs_fail = %d\n",
+		 "cnt_parity_fail = %d, cnt_rate_illegal = %d, cnt_crc8_fail = %d, cnt_mcs_fail = %d\n",
 		  falsealm_cnt->cnt_parity_fail,
 		  falsealm_cnt->cnt_rate_illegal,
 		  falsealm_cnt->cnt_crc8_fail, falsealm_cnt->cnt_mcs_fail);
@@ -644,7 +643,7 @@ static void rtl92ee_dm_check_edca_turbo(struct ieee80211_hw *hw)
 	u32 edca_be_ul = 0x5ea42b;
 	u32 edca_be_dl = 0x5ea42b; /*not sure*/
 	u32 edca_be = 0x5ea42b;
-	bool b_is_cur_rdlstate;
+	bool is_cur_rdlstate;
 	bool b_edca_turbo_on = false;
 
 	if (rtlpriv->dm.dbginfo.num_non_be_pkt > 0x100)
@@ -663,12 +662,12 @@ static void rtl92ee_dm_check_edca_turbo(struct ieee80211_hw *hw)
 		goto dm_CheckEdcaTurbo_EXIT;
 
 	if (b_edca_turbo_on) {
-		b_is_cur_rdlstate = (cur_rxok_cnt > cur_txok_cnt * 4) ?
+		is_cur_rdlstate = (cur_rxok_cnt > cur_txok_cnt * 4) ?
 				    true : false;
 
-		edca_be = b_is_cur_rdlstate ? edca_be_dl : edca_be_ul;
+		edca_be = is_cur_rdlstate ? edca_be_dl : edca_be_ul;
 		rtl_write_dword(rtlpriv , REG_EDCA_BE_PARAM , edca_be);
-		rtlpriv->dm.is_cur_rdlstate = b_is_cur_rdlstate;
+		rtlpriv->dm.is_cur_rdlstate = is_cur_rdlstate;
 		rtlpriv->dm.bcurrent_turbo_edca = true;
 	} else {
 		if (rtlpriv->dm.bcurrent_turbo_edca) {
@@ -854,8 +853,7 @@ static void rtl92ee_dm_dynamic_atc_switch(struct ieee80211_hw *hw)
 		if (rtlpriv->cfg->ops->get_btc_status()) {
 			if (!rtlpriv->btcoexist.btc_ops->btc_is_bt_disabled(rtlpriv)) {
 				RT_TRACE(rtlpriv, COMP_BT_COEXIST, DBG_LOUD,
-					"odm_DynamicATCSwitch(): "
-					"Disable CFO tracking for BT!!\n");
+					"odm_DynamicATCSwitch(): Disable CFO tracking for BT!!\n");
 				return;
 			}
 		}

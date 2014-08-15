@@ -203,7 +203,7 @@ enum rtl8192e_c2h_evt {
 
 int rtl92ee_download_fw(struct ieee80211_hw *hw, bool buse_wake_on_wlan_fw);
 void rtl92ee_fill_h2c_cmd(struct ieee80211_hw *hw, u8 element_id,
-			  u32 cmd_len, u8 *p_cmdbuffer);
+			  u32 cmd_len, u8 *cmdbuffer);
 void rtl92ee_firmware_selfreset(struct ieee80211_hw *hw);
 void rtl92ee_set_fw_pwrmode_cmd(struct ieee80211_hw *hw, u8 mode);
 void rtl92ee_set_fw_media_status_rpt_cmd(struct ieee80211_hw *hw, u8 mstatus);

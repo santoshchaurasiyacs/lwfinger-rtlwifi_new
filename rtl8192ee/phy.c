@@ -791,8 +791,7 @@ static bool _rtl92ee_phy_config_bb_with_headerfile(struct ieee80211_hw *hw,
 					}
 				}
 				RT_TRACE(rtlpriv, COMP_INIT, DBG_TRACE,
-				"The agctab_array_table[0] is "
-				 "%x Rtl818EEPHY_REGArray[1] is %x\n",
+				"The agctab_array_table[0] is %x Rtl818EEPHY_REGArray[1] is %x\n",
 				array[i],
 				array[i + 1]);
 		}
@@ -1051,8 +1050,7 @@ void rtl92ee_phy_get_hw_reg_originalvalue(struct ieee80211_hw *hw)
 		(u8) rtl_get_bbreg(hw, ROFDM0_XDAGCCORE1, MASKBYTE0);
 
 	RT_TRACE(rtlpriv, COMP_INIT, DBG_TRACE,
-		 "Default initial gain (c50=0x%x, "
-		  "c58=0x%x, c60=0x%x, c68=0x%x\n",
+		 "Default initial gain (c50=0x%x, c58=0x%x, c60=0x%x, c68=0x%x\n",
 		  rtlphy->default_initialgain[0],
 		  rtlphy->default_initialgain[1],
 		  rtlphy->default_initialgain[2],
@@ -1899,8 +1897,7 @@ u8 rtl92ee_phy_sw_chnl(struct ieee80211_hw *hw)
 	if (!(is_hal_stop(rtlhal)) && !(RT_CANNOT_IO(hw))) {
 		rtl92ee_phy_sw_chnl_callback(hw);
 		RT_TRACE(rtlpriv, COMP_CHAN, DBG_LOUD,
-			 "sw_chnl_inprogress false schdule "
-			 "workitem current channel %d\n",
+			 "sw_chnl_inprogress false schdule workitem current channel %d\n",
 			 rtlphy->current_channel);
 		rtlphy->sw_chnl_inprogress = false;
 	} else {
@@ -3085,7 +3082,7 @@ bool rtl92ee_phy_set_io_cmd(struct ieee80211_hw *hw, enum io_type iotype)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_phy *rtlphy = &(rtlpriv->phy);
-	bool b_postprocessing = false;
+	bool postprocessing = false;
 
 	RT_TRACE(rtlpriv, COMP_CMD, DBG_TRACE,
 		 "-->IO Cmd(%#x), set_io_inprogress(%d)\n",
@@ -3095,12 +3092,12 @@ bool rtl92ee_phy_set_io_cmd(struct ieee80211_hw *hw, enum io_type iotype)
 		case IO_CMD_RESUME_DM_BY_SCAN:
 			RT_TRACE(rtlpriv, COMP_CMD, DBG_TRACE,
 				 "[IO CMD] Resume DM after scan.\n");
-			b_postprocessing = true;
+			postprocessing = true;
 			break;
 		case IO_CMD_PAUSE_BAND0_DM_BY_SCAN:
 			RT_TRACE(rtlpriv, COMP_CMD, DBG_TRACE,
 				 "[IO CMD] Pause DM before scan.\n");
-			b_postprocessing = true;
+			postprocessing = true;
 			break;
 		default:
 			RT_TRACE(rtlpriv, COMP_ERR, DBG_LOUD,
@@ -3108,7 +3105,7 @@ bool rtl92ee_phy_set_io_cmd(struct ieee80211_hw *hw, enum io_type iotype)
 			break;
 		}
 	} while (false);
-	if (b_postprocessing && !rtlphy->set_io_inprogress) {
+	if (postprocessing && !rtlphy->set_io_inprogress) {
 		rtlphy->set_io_inprogress = true;
 		rtlphy->current_io_type = iotype;
 	} else {
@@ -3223,18 +3220,16 @@ static bool _rtl92ee_phy_set_rf_power_state(struct ieee80211_hw *hw,
 				continue;
 			} else {
 				RT_TRACE(rtlpriv, COMP_ERR, DBG_WARNING,
-					 "eRf Off/Sleep: %d times "
-					  "TcbBusyQueue[%d] =%d before "
-					  "doze!\n", (i + 1), queue_id,
-					  skb_queue_len(&ring->queue));
+					 "eRf Off/Sleep: %d times TcbBusyQueue[%d] =%d before doze!\n",
+					 (i + 1), queue_id,
+					 skb_queue_len(&ring->queue));
 
 				udelay(10);
 				i++;
 			}
 			if (i >= MAX_DOZE_WAITING_TIMES_9x) {
 				RT_TRACE(rtlpriv, COMP_ERR, DBG_WARNING,
-					 "\n ERFSLEEP: %d times "
-					  "TcbBusyQueue[%d] = %d !\n",
+					 "\n ERFSLEEP: %d times TcbBusyQueue[%d] = %d !\n",
 					  MAX_DOZE_WAITING_TIMES_9x,
 					  queue_id,
 					  skb_queue_len(&ring->queue));
@@ -3268,17 +3263,15 @@ static bool _rtl92ee_phy_set_rf_power_state(struct ieee80211_hw *hw,
 				continue;
 			} else {
 				RT_TRACE(rtlpriv, COMP_ERR, DBG_WARNING,
-					 "eRf Off/Sleep: %d times "
-					  "TcbBusyQueue[%d] =%d before "
-					  "doze!\n", (i + 1), queue_id,
-					  skb_queue_len(&ring->queue));
+					 "eRf Off/Sleep: %d times TcbBusyQueue[%d] =%d before doze!\n",
+					 (i + 1), queue_id,
+					 skb_queue_len(&ring->queue));
 				udelay(10);
 				i++;
 			}
 			if (i >= MAX_DOZE_WAITING_TIMES_9x) {
 				RT_TRACE(rtlpriv, COMP_ERR, DBG_WARNING,
-					 "\n ERFSLEEP: %d times "
-					  "TcbBusyQueue[%d] = %d !\n",
+					 "\n ERFSLEEP: %d times TcbBusyQueue[%d] = %d !\n",
 					  MAX_DOZE_WAITING_TIMES_9x,
 					  queue_id,
 					  skb_queue_len(&ring->queue));
