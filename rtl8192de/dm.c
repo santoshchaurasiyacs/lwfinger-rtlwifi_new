@@ -230,14 +230,13 @@ static void rtl92d_dm_false_alarm_counter_statistics(struct ieee80211_hw *hw)
 	    falsealm_cnt->cnt_sb_search_fail;
 
 	if (rtlpriv->rtlhal.current_bandtype != BAND_ON_5G) {
-		unsigned long flags = 0;
 		/* hold cck counter */
-		rtl92d_acquire_cckandrw_pagea_ctl(hw, &flags);
+		rtl92d_acquire_cckandrw_pagea_ctl(hw, &flag);
 		ret_value = rtl_get_bbreg(hw, RCCK0_FACOUNTERLOWER, BMASKBYTE0);
 		falsealm_cnt->cnt_cck_fail = ret_value;
 		ret_value = rtl_get_bbreg(hw, RCCK0_FACOUNTERUPPER, BMASKBYTE3);
 		falsealm_cnt->cnt_cck_fail += (ret_value & 0xff) << 8;
-		rtl92d_release_cckandrw_pagea_ctl(hw, &flags);
+		rtl92d_release_cckandrw_pagea_ctl(hw, &flag);
 	} else {
 		falsealm_cnt->cnt_cck_fail = 0;
 	}
@@ -264,12 +263,10 @@ static void rtl92d_dm_false_alarm_counter_statistics(struct ieee80211_hw *hw)
 		rtl_set_bbreg(hw, RCCK0_FALSEALARMREPORT, 0x0000c000, 2);
 		rtl92d_release_cckandrw_pagea_ctl(hw, &flag);
 	}
-	RT_TRACE(rtlpriv, COMP_DIG, DBG_LOUD, "Cnt_Fast_Fsync_fail = %x, "
-			"Cnt_SB_Search_fail = %x\n",
+	RT_TRACE(rtlpriv, COMP_DIG, DBG_LOUD, "Cnt_Fast_Fsync_fail = %x, Cnt_SB_Search_fail = %x\n",
 			falsealm_cnt->cnt_fast_fsync_fail,
 			falsealm_cnt->cnt_sb_search_fail);
-	RT_TRACE(rtlpriv, COMP_DIG, DBG_LOUD, "Cnt_Parity_Fail = %x, "
-			"Cnt_Rate_Illegal = %x, Cnt_Crc8_fail = %x, Cnt_Mcs_fail = %x\n",
+	RT_TRACE(rtlpriv, COMP_DIG, DBG_LOUD, "Cnt_Parity_Fail = %x, Cnt_Rate_Illegal = %x, Cnt_Crc8_fail = %x, Cnt_Mcs_fail = %x\n",
 			falsealm_cnt->cnt_parity_fail, falsealm_cnt->cnt_rate_illegal,
 			falsealm_cnt->cnt_crc8_fail, falsealm_cnt->cnt_mcs_fail);
 	RT_TRACE(rtlpriv, COMP_DIG, DBG_LOUD,
@@ -323,8 +320,7 @@ static void rtl92d_dm_false_alarm_counter_statistics_for_slaveofdmsp(
 		"cnt_fast_fsync_fail = %x, cnt_sb_search_fail = %x\n",
 		falsealm_cnt->cnt_fast_fsync_fail, falsealm_cnt->cnt_sb_search_fail);
 	RT_TRACE(rtlpriv, COMP_DIG, DBG_LOUD,
-		"cnt_parity_fail = %x, cnt_rate_illegal = %x,"
-		"cnt_crc8_fail = %x, Cnt_Mcs_fail = %x\n",
+		"cnt_parity_fail = %x, cnt_rate_illegal = %x,cnt_crc8_fail = %x, Cnt_Mcs_fail = %x\n",
 		falsealm_cnt->cnt_parity_fail, falsealm_cnt->cnt_rate_illegal,
 		falsealm_cnt->cnt_crc8_fail, falsealm_cnt->cnt_mcs_fail);
 	RT_TRACE(rtlpriv, COMP_DIG, DBG_LOUD,
@@ -660,8 +656,7 @@ void rtl92d_dm_write_dig(struct ieee80211_hw *hw)
 			return;
 		}
 	}
-	RT_TRACE(rtlpriv, COMP_DIG, DBG_LOUD, "cur_igvalue = 0x%x, "
-		  "pre_igvalue = 0x%x, backoff_val = %d\n",
+	RT_TRACE(rtlpriv, COMP_DIG, DBG_LOUD, "cur_igvalue = 0x%x, pre_igvalue = 0x%x, backoff_val = %d\n",
 		  rtl_dm_dig->cur_igvalue, rtl_dm_dig->pre_igvalue,
 		  rtl_dm_dig->backoff_val);
 	if (rtl_dm_dig->dig_enable_flag == false) {
@@ -1151,9 +1146,9 @@ static void rtl92d_dm_txpower_tracking_callback_thermalmeter(
 	RT_TRACE(rtlpriv, COMP_POWER_TRACKING, DBG_LOUD, "\n");
 	thermalvalue = (u8) rtl_get_rfreg(hw, RF90_PATH_A, RF_T_METER, 0xf800);
 	RT_TRACE(rtlpriv, COMP_POWER_TRACKING, DBG_LOUD,
-		 "Readback Thermal Meter = 0x%x pre thermal meter 0x%x "
-		  "eeprom_thermalmeter 0x%x\n", thermalvalue,
-		  rtlpriv->dm.thermalvalue, rtlefuse->eeprom_thermalmeter);
+		 "Readback Thermal Meter = 0x%x pre thermal meter 0x%x eeprom_thermalmeter 0x%x\n",
+		 thermalvalue,
+		 rtlpriv->dm.thermalvalue, rtlefuse->eeprom_thermalmeter);
 	rtl92d_phy_ap_calibrate(hw, (thermalvalue -
 				     rtlefuse->eeprom_thermalmeter));
 	if (is2t)
@@ -1168,8 +1163,8 @@ static void rtl92d_dm_txpower_tracking_callback_thermalmeter(
 				ofdm_index_old[0] = (u8) i;
 
 				RT_TRACE(rtlpriv, COMP_POWER_TRACKING, DBG_LOUD,
-					 "Initial pathA ele_d reg0x%x = 0x%lx, "
-					  "ofdm_index=0x%x\n", ROFDM0_XATxIQIMBALANCE,
+					 "Initial pathA ele_d reg0x%x = 0x%lx, ofdm_index=0x%x\n",
+					 ROFDM0_XATxIQIMBALANCE,
 					  ele_d, ofdm_index_old[0]);
 				break;
 			}
@@ -1181,8 +1176,7 @@ static void rtl92d_dm_txpower_tracking_callback_thermalmeter(
 				if (ele_d == (ofdmswing_table[i] & BMASKOFDM_D)) {
 					ofdm_index_old[1] = (u8) i;
 					RT_TRACE(rtlpriv, COMP_POWER_TRACKING, DBG_LOUD,
-						 "Initial pathB ele_d reg0x%x = "
-						  "0x%lx, ofdm_index=0x%x\n",
+						 "Initial pathB ele_d reg0x%x = 0x%lx, ofdm_index=0x%x\n",
 						  ROFDM0_XBTxIQIMBALANCE, ele_d,
 						  ofdm_index_old[1]);
 					break;
@@ -1201,8 +1195,7 @@ static void rtl92d_dm_txpower_tracking_callback_thermalmeter(
 						   (void *)&cckswing_table_ch14[i][2], 4) == 0) {
 						cck_index_old = (u8) i;
 						RT_TRACE(rtlpriv, COMP_POWER_TRACKING, DBG_LOUD,
-							 "Initial reg0x%x = 0x%lx, "
-							  "cck_index=0x%x, ch 14 %d\n",
+							 "Initial reg0x%x = 0x%lx, cck_index=0x%x, ch 14 %d\n",
 							  RCCK0_TXFILTER2,
 							  temp_cck, cck_index_old,
 							  rtlpriv->dm.cck_inch14);
@@ -1213,8 +1206,7 @@ static void rtl92d_dm_txpower_tracking_callback_thermalmeter(
 							(void *)&cckswing_table_ch1ch13[i][2], 4) == 0) {
 						cck_index_old = (u8) i;
 						RT_TRACE(rtlpriv, COMP_POWER_TRACKING, DBG_LOUD,
-							 "Initial reg0x%x = 0x%lx, "
-							  "cck_index=0x%x, ch14 %d\n",
+							 "Initial reg0x%x = 0x%lx, cck_index=0x%x, ch14 %d\n",
 							  RCCK0_TXFILTER2,
 							  temp_cck, cck_index_old,
 							  rtlpriv->dm.cck_inch14);
@@ -1281,9 +1273,7 @@ static void rtl92d_dm_txpower_tracking_callback_thermalmeter(
 			(thermalvalue - rtlpriv->dm.thermalvalue_rxgain) :
 			(rtlpriv->dm.thermalvalue_rxgain - thermalvalue);
 		RT_TRACE(rtlpriv, COMP_POWER_TRACKING, DBG_LOUD,
-			 "Readback Thermal Meter = 0x%x pre thermal meter 0x%x "
-			  "eeprom_thermalmeter 0x%x delta 0x%x "
-			  "delta_lck 0x%x delta_iqk 0x%x\n",
+			 "Readback Thermal Meter = 0x%x pre thermal meter 0x%x eeprom_thermalmeter 0x%x delta 0x%x delta_lck 0x%x delta_iqk 0x%x\n",
 			  thermalvalue, rtlpriv->dm.thermalvalue,
 			  rtlefuse->eeprom_thermalmeter, delta, delta_lck,
 			  delta_iqk);
@@ -1360,8 +1350,7 @@ static void rtl92d_dm_txpower_tracking_callback_thermalmeter(
 			}
 			if (is2t) {
 				RT_TRACE(rtlpriv, COMP_POWER_TRACKING, DBG_LOUD,
-					 "temp OFDM_A_index=0x%x, OFDM_B_index=0x%x,"
-					  "cck_index=0x%x\n", rtlpriv->dm.ofdm_index[0],
+					 "temp OFDM_A_index=0x%x, OFDM_B_index=0x%x,cck_index=0x%x\n", rtlpriv->dm.ofdm_index[0],
 					  rtlpriv->dm.ofdm_index[1], rtlpriv->dm.cck_index);
 			} else {
 				RT_TRACE(rtlpriv, COMP_POWER_TRACKING, DBG_LOUD,
@@ -1386,8 +1375,7 @@ static void rtl92d_dm_txpower_tracking_callback_thermalmeter(
 			}
 			if (is2t) {
 				RT_TRACE(rtlpriv, COMP_POWER_TRACKING, DBG_LOUD,
-					 "new OFDM_A_index=0x%x, OFDM_B_index=0x%x,"
-					  "cck_index=0x%x\n", ofdm_index[0], ofdm_index[1],
+					 "new OFDM_A_index=0x%x, OFDM_B_index=0x%x,cck_index=0x%x\n", ofdm_index[0], ofdm_index[1],
 					  cck_index);
 			} else {
 				RT_TRACE(rtlpriv, COMP_POWER_TRACKING, DBG_LOUD,
@@ -1427,9 +1415,7 @@ static void rtl92d_dm_txpower_tracking_callback_thermalmeter(
 			}
 
 			RT_TRACE(rtlpriv, COMP_POWER_TRACKING, DBG_LOUD,
-				 "TxPwrTracking for interface %d path A: X = 0x%lx, "
-				 "Y = 0x%lx ele_A = 0x%lx ele_C = 0x%lx ele_D = 0x%lx "
-				 "0xe94 = 0x%lx 0xe9c = 0x%lx\n", rtlhal->interfaceindex,
+				 "TxPwrTracking for interface %d path A: X = 0x%lx, Y = 0x%lx ele_A = 0x%lx ele_C = 0x%lx ele_D = 0x%lx 0xe94 = 0x%lx 0xe9c = 0x%lx\n", rtlhal->interfaceindex,
 				 val_x, val_y, ele_a, ele_c, ele_d, val_x, val_y);
 
 			if (rtlhal->current_bandtype == BAND_ON_2_4G) {
@@ -1505,9 +1491,7 @@ static void rtl92d_dm_txpower_tracking_callback_thermalmeter(
 					rtl_set_bbreg(hw, ROFDM0_ECCATHRESHOLD, BIT(28), 0x00);
 				}
 				RT_TRACE(rtlpriv, COMP_POWER_TRACKING, DBG_LOUD,
-					 "TxPwrTracking path B: X = 0x%lx, Y = 0x%lx "
-					 "ele_A = 0x%lx ele_C = 0x%lx ele_D = 0x%lx "
-					 "0xeb4 = 0x%lx 0xebc = 0x%lx\n",
+					 "TxPwrTracking path B: X = 0x%lx, Y = 0x%lx ele_A = 0x%lx ele_C = 0x%lx ele_D = 0x%lx 0xeb4 = 0x%lx 0xebc = 0x%lx\n",
 					  val_x, val_y, ele_a, ele_c,
 					  ele_d, val_x, val_y);
 			}

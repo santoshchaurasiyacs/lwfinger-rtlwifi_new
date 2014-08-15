@@ -342,8 +342,8 @@ void rtl92de_set_hw_reg(struct ieee80211_hw *hw, u8 variable, u8 *val)
 					break;
 				default:
 					RT_TRACE(rtlpriv, COMP_ERR, DBG_WARNING,
-						 "HW_VAR_ACM_CTRL acm set "
-						  "failed: eACI is %d\n", acm);
+						 "HW_VAR_ACM_CTRL acm set failed: eACI is %d\n",
+						 acm);
 					break;
 				}
 			} else {
@@ -364,8 +364,8 @@ void rtl92de_set_hw_reg(struct ieee80211_hw *hw, u8 variable, u8 *val)
 				}
 			}
 			RT_TRACE(rtlpriv, COMP_QOS, DBG_TRACE,
-				 "SetHwReg8190pci(): [HW_VAR_ACM_CTRL] "
-				  "Write 0x%X\n", acm_ctrl);
+				 "SetHwReg8190pci(): [HW_VAR_ACM_CTRL] Write 0x%X\n",
+				 acm_ctrl);
 			rtl_write_byte(rtlpriv, REG_ACMHWCTRL, acm_ctrl);
 			break;
 		}
@@ -535,8 +535,7 @@ void rtl92de_set_hw_reg(struct ieee80211_hw *hw, u8 variable, u8 *val)
 			 break;
 		}
 	default: {
-			RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG, "switch case "
-								"not process\n");
+			RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG, "switch case not process\n");
 			break;
 		}
 	}
@@ -559,8 +558,8 @@ static bool _rtl92de_llt_write(struct ieee80211_hw *hw, u32 address, u32 data)
 		}
 		if (count > POLLING_LLT_THRESHOLD) {
 			RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG,
-				 "Failed to polling write LLT done at "
-				  "address %d!\n", address);
+				 "Failed to polling write LLT done at address %d!\n",
+				 address);
 			status = false;
 			break;
 		}
@@ -972,8 +971,7 @@ int rtl92de_hw_init(struct ieee80211_hw *hw)
 	spin_unlock_irqrestore(&globalmutex_for_power_and_efuse, flags);
 	if (err) {
 		RT_TRACE(rtlpriv, COMP_ERR, DBG_WARNING,
-			 "Failed to download FW. Init HW "
-			  "without FW now..\n");
+			 "Failed to download FW. Init HW without FW now..\n");
 		err = 1;
 		rtlhal->fw_ready = false;
 	} else {
@@ -2005,10 +2003,10 @@ static void rtl92de_update_hal_rate_table(struct ieee80211_hw *hw,
 	/*u8 mimo_ps = IEEE80211_SMPS_OFF;*/
 	u16 shortgi_rate;
 	u32 tmp_ratr_value;
-	u8 b_curtxbw_40mhz = mac->bw_40;
-	u8 b_curshortgi_40mhz = (sta->ht_cap.cap & IEEE80211_HT_CAP_SGI_40) ?
+	u8 curtxbw_40mhz = mac->bw_40;
+	u8 curshortgi_40mhz = (sta->ht_cap.cap & IEEE80211_HT_CAP_SGI_40) ?
 							1 : 0;
-	u8 b_curshortgi_20mhz = (sta->ht_cap.cap & IEEE80211_HT_CAP_SGI_20) ?
+	u8 curshortgi_20mhz = (sta->ht_cap.cap & IEEE80211_HT_CAP_SGI_20) ?
 							1 : 0;
 	enum wireless_mode wirelessmode = mac->mode;
 
@@ -2062,8 +2060,8 @@ static void rtl92de_update_hal_rate_table(struct ieee80211_hw *hw,
 		break;
 	}
 	ratr_value &= 0x0FFFFFFF;
-	if (b_nmode && ((b_curtxbw_40mhz && b_curshortgi_40mhz) ||
-			(!b_curtxbw_40mhz && b_curshortgi_20mhz))) {
+	if (b_nmode && ((curtxbw_40mhz && curshortgi_40mhz) ||
+			(!curtxbw_40mhz && curshortgi_20mhz))) {
 		ratr_value |= 0x10000000;
 		tmp_ratr_value = (ratr_value >> 12);
 		for (shortgi_rate = 15; shortgi_rate > 0; shortgi_rate--) {
@@ -2088,14 +2086,14 @@ static void rtl92de_update_hal_rate_mask(struct ieee80211_hw *hw,
 	struct rtl_sta_info *sta_entry = NULL;
 	u32 ratr_bitmap;
 	u8 ratr_index;
-	u8 b_curtxbw_40mhz = (sta->ht_cap.cap & IEEE80211_HT_CAP_SUP_WIDTH_20_40)
+	u8 curtxbw_40mhz = (sta->ht_cap.cap & IEEE80211_HT_CAP_SUP_WIDTH_20_40)
 							? 1 : 0;
-	u8 b_curshortgi_40mhz = (sta->ht_cap.cap & IEEE80211_HT_CAP_SGI_40) ?
+	u8 curshortgi_40mhz = (sta->ht_cap.cap & IEEE80211_HT_CAP_SGI_40) ?
 							1 : 0;
-	u8 b_curshortgi_20mhz = (sta->ht_cap.cap & IEEE80211_HT_CAP_SGI_20) ?
+	u8 curshortgi_20mhz = (sta->ht_cap.cap & IEEE80211_HT_CAP_SGI_20) ?
 							1 : 0;
 	enum wireless_mode wirelessmode = 0;
-	bool b_shortgi = false;
+	bool shortgi = false;
 	u32 value[2];
 	u8 macid = 0;
 	u8 mimo_ps = IEEE80211_SMPS_OFF;
@@ -2104,7 +2102,7 @@ static void rtl92de_update_hal_rate_mask(struct ieee80211_hw *hw,
 	mimo_ps = sta_entry->mimo_ps;
 	wirelessmode = sta_entry->wireless_mode;
 	if (mac->opmode == NL80211_IFTYPE_STATION)
-		b_curtxbw_40mhz = mac->bw_40;
+		curtxbw_40mhz = mac->bw_40;
 	else if (mac->opmode == NL80211_IFTYPE_AP ||
 		mac->opmode == NL80211_IFTYPE_ADHOC)
 		macid = sta->aid + 1;
@@ -2148,7 +2146,7 @@ static void rtl92de_update_hal_rate_mask(struct ieee80211_hw *hw,
 		if (rtlphy->rf_type == RF_1T2R ||
 			rtlphy->rf_type == RF_1T1R ||
 			(mimo_ps == IEEE80211_SMPS_STATIC)) {
-			if (b_curtxbw_40mhz) {
+			if (curtxbw_40mhz) {
 				if (rssi_level == 1)
 					ratr_bitmap &= 0x000f0000;
 				else if (rssi_level == 2)
@@ -2164,7 +2162,7 @@ static void rtl92de_update_hal_rate_mask(struct ieee80211_hw *hw,
 					ratr_bitmap &= 0x000ff005;
 			}
 		} else {
-			if (b_curtxbw_40mhz) {
+			if (curtxbw_40mhz) {
 				if (rssi_level == 1)
 					ratr_bitmap &= 0x0f0f0000;
 				else if (rssi_level == 2)
@@ -2180,13 +2178,13 @@ static void rtl92de_update_hal_rate_mask(struct ieee80211_hw *hw,
 					ratr_bitmap &= 0x0f0ff005;
 			}
 		}
-		if ((b_curtxbw_40mhz && b_curshortgi_40mhz) ||
-		    (!b_curtxbw_40mhz && b_curshortgi_20mhz)) {
+		if ((curtxbw_40mhz && curshortgi_40mhz) ||
+		    (!curtxbw_40mhz && curshortgi_20mhz)) {
 
 			if (macid == 0)
-				b_shortgi = true;
+				shortgi = true;
 			else if (macid == 1)
-				b_shortgi = false;
+				shortgi = false;
 		}
 		break;
 	default:
@@ -2201,7 +2199,7 @@ static void rtl92de_update_hal_rate_mask(struct ieee80211_hw *hw,
 	sta_entry->ratr_index = ratr_index;
 
 	value[0] = (ratr_bitmap & 0x0fffffff) | (ratr_index << 28);
-	value[1] = macid | (b_shortgi ? 0x20 : 0x00) | 0x80;
+	value[1] = macid | (shortgi ? 0x20 : 0x00) | 0x80;
 	RT_TRACE(rtlpriv, COMP_RATR, DBG_DMESG,
 		 "ratr_bitmap :%x value0:%x value1:%x\n",
 		  ratr_bitmap, value[0], value[1]);
@@ -2338,8 +2336,7 @@ void rtl92de_set_key(struct ieee80211_hw *hw, u32 key_index,
 			enc_algo = CAM_AES;
 			break;
 		default:
-			RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG, "switch case "
-						"not process\n");
+			RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG, "switch case not process\n");
 			enc_algo = CAM_TKIP;
 			break;
 		}

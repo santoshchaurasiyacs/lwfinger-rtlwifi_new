@@ -281,7 +281,7 @@ struct phy_sts_cck_8192d {
 struct h2c_cmd_8192c {
 	u8 element_id;
 	u32 cmd_len;
-	u8 *p_cmdbuffer;
+	u8 *cmdbuffer;
 };
 
 struct txpower_info {

@@ -137,7 +137,7 @@ enum rtl8192d_h2c_cmd {
 
 int rtl92d_download_fw(struct ieee80211_hw *hw);
 void rtl92d_fill_h2c_cmd(struct ieee80211_hw *hw, u8 element_id,
-			 u32 cmd_len, u8 *p_cmdbuffer);
+			 u32 cmd_len, u8 *cmdbuffer);
 void rtl92d_firmware_selfreset(struct ieee80211_hw *hw);
 void rtl92d_set_fw_pwrmode_cmd(struct ieee80211_hw *hw, u8 mode);
 void rtl92d_set_fw_rsvdpagepkt(struct ieee80211_hw *hw, bool b_dl_finished);
