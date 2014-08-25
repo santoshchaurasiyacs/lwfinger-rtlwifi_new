@@ -315,7 +315,7 @@ void rtl92de_set_hw_reg(struct ieee80211_hw *hw, u8 variable, u8 *val)
 	case HW_VAR_AC_PARAM: {
 			u8 e_aci = *((u8 *) val);
 			rtl92d_dm_init_edca_turbo(hw);
-			if (rtlpci->acm_method != eAcmWay2_SW)
+			if (rtlpci->acm_method != EACMWAY2_SW)
 				rtlpriv->cfg->ops->set_hw_reg(hw, HW_VAR_ACM_CTRL,
 							      (u8 *) (&e_aci));
 			break;

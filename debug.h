@@ -106,7 +106,8 @@
 #define COMP_MAC80211			BIT(26)
 #define COMP_REGD			BIT(27)
 #define COMP_CHAN			BIT(28)
-#define COMP_EASY_CONCURRENT		BIT(29)
+#define COMP_USB			BIT(29)
+#define COMP_EASY_CONCURRENT		BIT(29) /* Reuse of this bit is OK */
 #define COMP_BT_COEXIST			BIT(30)
 #define COMP_IQK			BIT(31)
 

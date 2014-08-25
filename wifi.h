@@ -35,6 +35,7 @@
 #include <linux/firmware.h>
 #include <linux/version.h>
 #include <linux/etherdevice.h>
+#include <linux/usb.h>
 #include <net/mac80211.h>
 #include "debug.h"
 
@@ -65,6 +66,8 @@
 #define AC_MAX				4
 #define QOS_QUEUE_NUM			4
 #define RTL_MAC80211_NUM_QUEUE		5
+#define REALTEK_USB_VENQT_MAX_BUF_SIZE		254
+#define RTL_USB_MAX_RX_COUNT			100
 
 #define QBSS_LOAD_SIZE			5
 #define MAX_WMMELE_LENGTH		64
@@ -662,7 +665,7 @@ enum rtl_led_pin {
 enum acm_method {
 	eAcmWay0_SwAndHw = 0,
 	eAcmWay1_HW = 1,
-	eAcmWay2_SW = 2,
+	EACMWAY2_SW = 2,
 };
 
 enum macphy_mode {
@@ -1178,6 +1181,7 @@ struct rtl_phy {
 struct rtl_priv;
 struct rtl_io {
 	struct device *dev;
+	struct mutex bb_mutex;
 
 	/*PCI MEM map */
 	unsigned long pci_mem_end;	/*shared mem end        */
@@ -1189,11 +1193,12 @@ struct rtl_io {
 	void (*write8_async)(struct rtl_priv *rtlpriv, u32 addr, u8 val);
 	void (*write16_async)(struct rtl_priv *rtlpriv, u32 addr, u16 val);
 	void (*write32_async)(struct rtl_priv *rtlpriv, u32 addr, u32 val);
+	void (*writeN_sync)(struct rtl_priv *rtlpriv, u32 addr, void *buf,
+			    u16 len);
 
 	u8 (*read8_sync)(struct rtl_priv *rtlpriv, u32 addr);
 	u16 (*read16_sync)(struct rtl_priv *rtlpriv, u32 addr);
 	u32 (*read32_sync)(struct rtl_priv *rtlpriv, u32 addr);
-
 };
 
 struct rtl_mac {
@@ -1210,6 +1215,7 @@ struct rtl_mac {
 	enum nl80211_iftype opmode;
 
 	/*Probe Beacon management */
+	struct rtl_tid_data tids[MAX_TID_COUNT];
 	enum rtl_link_state link_state;
 
 	int n_channels;
@@ -1699,6 +1705,7 @@ struct rtl_ps_ctl {
 	/*for LPS */
 	enum rt_psmode dot11_psmode;	/*Power save mode configured. */
 	bool swctrl_lps;
+	bool leisure_ps;
 	bool fwctrl_lps;
 	u8 fwctrl_psmode;
 	/*For Fw control LPS mode */
@@ -1903,9 +1910,10 @@ struct proxim {
 struct rtl_hal_ops {
 	int (*init_sw_vars)(struct ieee80211_hw *hw);
 	void (*deinit_sw_vars)(struct ieee80211_hw *hw);
+	void (*read_chip_version)(struct ieee80211_hw *hw);
 	void (*read_eeprom_info)(struct ieee80211_hw *hw);
 	void (*interrupt_recognized)(struct ieee80211_hw *hw,
-				      u32 *inta, u32 *intb);
+				     u32 *inta, u32 *intb);
 	int (*hw_init)(struct ieee80211_hw *hw);
 	void (*hw_disable)(struct ieee80211_hw *hw);
 	void (*hw_suspend)(struct ieee80211_hw *hw);
@@ -1968,6 +1976,7 @@ struct rtl_hal_ops {
 			 u8 *macaddr, bool is_group, u8 enc_algo,
 			 bool is_wepkey, bool clear_all);
 	void (*init_sw_leds)(struct ieee80211_hw *hw);
+	void (*deinit_sw_leds)(struct ieee80211_hw *hw);
 	 u32 (*get_bbreg)(struct ieee80211_hw *hw, u32 regaddr, u32 bitmask);
 	void (*set_bbreg)(struct ieee80211_hw *hw, u32 regaddr, u32 bitmask,
 			   u32 data);
@@ -2050,6 +2059,29 @@ struct rtl_mod_params {
 	bool disable_watchdog;
 };
 
+struct rtl_hal_usbint_cfg {
+	/* data - rx */
+	u32 in_ep_num;
+	u32 rx_urb_num;
+	u32 rx_max_size;
+
+	/* op - rx */
+	void (*usb_rx_hdl)(struct ieee80211_hw *, struct sk_buff *);
+	void (*usb_rx_segregate_hdl)(struct ieee80211_hw *, struct sk_buff *,
+				     struct sk_buff_head *);
+
+	/* tx */
+	void (*usb_tx_cleanup)(struct ieee80211_hw *, struct sk_buff *);
+	int (*usb_tx_post_hdl)(struct ieee80211_hw *, struct urb *,
+			       struct sk_buff *);
+	struct sk_buff *(*usb_tx_aggregate_hdl)(struct ieee80211_hw *,
+						struct sk_buff_head *);
+
+	/* endpoint mapping */
+	int (*usb_endpoint_mapping)(struct ieee80211_hw *hw);
+	u16 (*usb_mq_to_hwq)(__le16 fc, u16 mac80211_queue_index);
+};
+
 struct rtl_hal_cfg {
 	u8 bar_id;
 	bool write_readback;
@@ -2058,6 +2090,7 @@ struct rtl_hal_cfg {
 	char *alt_fw_name;
 	struct rtl_hal_ops *ops;
 	struct rtl_mod_params *mod_params;
+	struct rtl_hal_usbint_cfg *usb_interface_cfg;
 
 	/*this map used for some registers or vars
 	   defined int HAL but used in MAIN */
@@ -2078,6 +2111,7 @@ struct rtl_locks {
 	spinlock_t lps_lock;
 	spinlock_t waitq_lock;
 	spinlock_t entry_list_lock;
+	spinlock_t usb_lock;
 
 	/*FW clock change */
 	spinlock_t fw_ps_lock;
@@ -2112,6 +2146,9 @@ struct rtl_works {
 	struct delayed_work ps_work;
 	struct delayed_work ps_rfon_wq;
 	struct delayed_work fwevt_wq;
+
+	struct work_struct lps_change_work;
+	struct work_struct fill_h2c_cmd;
 };
 
 struct rtl_debug {
@@ -2315,6 +2352,10 @@ struct rtl_priv {
 	/* tables for dm */
 	struct dig_t dm_digtable;
 	struct ps_t dm_pstable;
+	__le32 *usb_data;
+	int usb_data_index;
+	bool enter_ps;	/* true when entering PS */
+	u8 rate_mask[5];
 
 	/* intel Proximity, should be alloc mem
 	 * in intel Proximity module and can only
