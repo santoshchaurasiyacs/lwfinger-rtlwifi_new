@@ -973,12 +973,12 @@ void rtl_p2p_ps_cmd(struct ieee80211_hw *hw , u8 p2p_ps_state)
 				     p2pinfo->ctwindow , p2pinfo->opp_ps);
 	RT_TRACE(rtlpriv, COMP_FW, DBG_LOUD,
 		 "count %x duration %x index %x interval %x start time %x noa num %x\n",
-		p2pinfo->noa_count_type[0],
-		p2pinfo->noa_duration[0],
-		p2pinfo->noa_index,
-		p2pinfo->noa_interval[0],
-		p2pinfo->noa_start_time[0],
-		p2pinfo->noa_num);
+		 p2pinfo->noa_count_type[0],
+		 p2pinfo->noa_duration[0],
+		 p2pinfo->noa_index,
+		 p2pinfo->noa_interval[0],
+		 p2pinfo->noa_start_time[0],
+		 p2pinfo->noa_num);
 	RT_TRACE(rtlpriv, COMP_FW, DBG_LOUD, "end\n");
 }
 

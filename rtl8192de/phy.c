@@ -220,11 +220,12 @@ void rtl92d_phy_set_bb_reg(struct ieee80211_hw *hw,
 	u8 dbi_direct = 0;
 	u32 originalvalue, bitshift;
 
-	RT_TRACE(rtlpriv, COMP_RF, DBG_TRACE, "regaddr(%#x), bitmask(%#x), data(%#x)\n",
+	RT_TRACE(rtlpriv, COMP_RF, DBG_TRACE,
+		 "regaddr(%#x), bitmask(%#x), data(%#x)\n",
 		 regaddr, bitmask, data);
 	if (rtlhal->during_mac1init_radioa)
 		dbi_direct = BIT(3);
-	else if (rtlhal->during_mac0init_radiob)/* mac0 use phy1 wirte radio_b. */
+	else if (rtlhal->during_mac0init_radiob)/* mac0 use phy1 write radio_b. */
 		dbi_direct = BIT(3) | BIT(2);
 	if (bitmask != BMASKDWORD) {
 		if (rtlhal->during_mac1init_radioa || rtlhal->during_mac0init_radiob)
@@ -2287,7 +2288,8 @@ static void _rtl92d_phy_patha_fill_iqk_matrix(struct ieee80211_hw *hw,
 		if ((val_x & 0x00000200) != 0)
 			val_x = val_x | 0xFFFFFC00;
 		tx0_a = (val_x * oldval_0) >> 8;
-		RTPRINT(rtlpriv, FINIT, INIT_IQK, "X = 0x%x, tx0_a = 0x%x, oldval_0 0x%x\n",
+		RTPRINT(rtlpriv, FINIT, INIT_IQK,
+			"X = 0x%x, tx0_a = 0x%x, oldval_0 0x%x\n",
 			val_x, tx0_a, oldval_0);
 		rtl_set_bbreg(hw, ROFDM0_XATxIQIMBALANCE, 0x3FF, tx0_a);
 		rtl_set_bbreg(hw, ROFDM0_ECCATHRESHOLD, BIT(24),
@@ -3254,22 +3256,22 @@ bool rtl92d_phy_set_rf_power_state(struct ieee80211_hw *hw,
 
 			if (i >= MAX_DOZE_WAITING_TIMES_9x) {
 				RT_TRACE(rtlpriv, COMP_ERR, DBG_WARNING,
-					 "\nERFOFF: %d times TcbBusyQueue[%d] = %d !\n",
+					 "\nERFOFF: %d times TcbBusyQueue[%d] = %d\n",
 					  MAX_DOZE_WAITING_TIMES_9x, queue_id,
 					  skb_queue_len(&ring->queue));
 				break;
 			}
 		}
-		RT_TRACE(rtlpriv, COMP_POWER, DBG_DMESG, "Set rfsleep awaked:%d ms\n",
-			  jiffies_to_msecs(jiffies - ppsc->last_awake_jiffies));
-		RT_TRACE(rtlpriv, COMP_POWER, DBG_DMESG, "sleep awaked:%d ms state_inap:%x\n",
+		RT_TRACE(rtlpriv, COMP_POWER, DBG_DMESG,
+			 "sleep awakened:%d ms state_inap:%x\n",
 			 jiffies_to_msecs(jiffies -
 				  ppsc->last_awake_jiffies), rtlpriv->psc.state_inap);
 		ppsc->last_sleep_jiffies = jiffies;
 		_rtl92d_phy_set_rfsleep(hw);
 		break;
 	default:
-		RT_TRACE(rtlpriv, COMP_ERR, DBG_LOUD, "switch case not process\n");
+		RT_TRACE(rtlpriv, COMP_ERR, DBG_LOUD,
+			 "switch case not process\n");
 		bresult = false;
 		break;
 	}
@@ -4006,17 +4008,15 @@ static void _rtl92d_dualmac_reconfig_mgntinfo_foranothermac(struct ieee80211_hw 
 		buddy_priv->cfg->ops->set_hw_reg(buddy_hw, HW_VAR_AMPDU_MIN_SPACE,
 				&buddy_priv->mac80211.current_ampdu_density);
 		buddy_priv->cfg->ops->set_network_type(buddy_hw, buddy_priv->mac80211.vif->type);
-		printk("&&&&&&&&&%s():slot_time is %d\n", __func__, buddy_priv->mac80211.slot_time);
+		pr_info("&&&&&&&&&%s():slot_time is %d\n", __func__,
+			buddy_priv->mac80211.slot_time);
 		buddy_priv->cfg->ops->set_hw_reg(buddy_hw, HW_VAR_SLOT_TIME,
 					      (u8 *) (&buddy_priv->mac80211.slot_time));
 	} else {
 		RT_TRACE(rtlpriv, COMP_EASY_CONCURRENT, DBG_LOUD,
-			"buddy adapter AP case \n");
-#ifdef MERGE_TODO
-#endif
+			 "buddy adapter AP case \n");
 	}
 }
-
 
 void rtl_dualmac_easyconcurrent(struct ieee80211_hw *hw)
 {

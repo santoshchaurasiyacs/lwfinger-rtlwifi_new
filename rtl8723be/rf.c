@@ -224,9 +224,8 @@ static void _rtl8723be_get_txpower_writeval_by_regulatory(
 			    + ((index < 2) ? powerBase0[rf] : powerBase1[rf]);
 
 			RTPRINT(rtlpriv, FPHY, PHY_TXPWR,
-				"RTK better performance, "
-				 "writeVal(%c) = 0x%x\n",
-				 ((rf == 0) ? 'A' : 'B'), writeVal);
+				"RTK better performance, writeVal(%c) = 0x%x\n",
+				((rf == 0) ? 'A' : 'B'), writeVal);
 			break;
 		case 1:
 			if (rtlphy->pwrgroup_cnt == 1) {
@@ -253,9 +252,8 @@ static void _rtl8723be_get_txpower_writeval_by_regulatory(
 						      powerBase1[rf]);
 
 			RTPRINT(rtlpriv, FPHY, PHY_TXPWR,
-				"Realtek regulatory, 20MHz, "
-				 "writeVal(%c) = 0x%x\n",
-				 ((rf == 0) ? 'A' : 'B'), writeVal);
+				"Realtek regulatory, 20MHz, writeVal(%c) = 0x%x\n",
+				((rf == 0) ? 'A' : 'B'), writeVal);
 
 			break;
 		case 2:
@@ -263,27 +261,22 @@ static void _rtl8723be_get_txpower_writeval_by_regulatory(
 			    ((index < 2) ? powerBase0[rf] : powerBase1[rf]);
 
 			RTPRINT(rtlpriv, FPHY, PHY_TXPWR,
-				"Better regulatory, "
-				 "writeVal(%c) = 0x%x\n",
-				 ((rf == 0) ? 'A' : 'B'), writeVal);
+				"Better regulatory, writeVal(%c) = 0x%x\n",
+				((rf == 0) ? 'A' : 'B'), writeVal);
 			break;
 		case 3:
 			chnlgroup = 0;
 
 			if (rtlphy->current_chan_bw == HT_CHANNEL_WIDTH_20_40) {
 				RTPRINT(rtlpriv, FPHY, PHY_TXPWR,
-					"customer's limit, 40MHz "
-					 "rf(%c) = 0x%x\n",
-					 ((rf == 0) ? 'A' : 'B'),
-					 rtlefuse->pwrgroup_ht40[rf][channel -
-								     1]);
+					"customer's limit, 40MHz rf(%c) = 0x%x\n",
+					((rf == 0) ? 'A' : 'B'),
+					rtlefuse->pwrgroup_ht40[rf][channel - 1]);
 			} else {
 				RTPRINT(rtlpriv, FPHY, PHY_TXPWR,
-					"customer's limit, 20MHz "
-					 "rf(%c) = 0x%x\n",
-					 ((rf == 0) ? 'A' : 'B'),
-					 rtlefuse->pwrgroup_ht20[rf][channel -
-								     1]);
+					"customer's limit, 20MHz rf(%c) = 0x%x\n",
+					((rf == 0) ? 'A' : 'B'),
+					rtlefuse->pwrgroup_ht20[rf][channel - 1]);
 			}
 
 			if (index < 2)
@@ -341,9 +334,8 @@ static void _rtl8723be_get_txpower_writeval_by_regulatory(
 			    + ((index < 2) ? powerBase0[rf] : powerBase1[rf]);
 
 			RTPRINT(rtlpriv, FPHY, PHY_TXPWR,
-				"RTK better performance, writeVal "
-				 "rf(%c) = 0x%x\n",
-				 ((rf == 0) ? 'A' : 'B'), writeVal);
+				"RTK better performance, writeVal rf(%c) = 0x%x\n",
+				((rf == 0) ? 'A' : 'B'), writeVal);
 			break;
 		}
 

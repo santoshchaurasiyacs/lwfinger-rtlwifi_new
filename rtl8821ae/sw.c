@@ -218,6 +218,7 @@ int rtl8821ae_init_sw_vars(struct ieee80211_hw *hw)
 	rtlpriv->psc.inactiveps = rtlpriv->cfg->mod_params->inactiveps;
 	rtlpriv->psc.swctrl_lps = rtlpriv->cfg->mod_params->swctrl_lps;
 	rtlpriv->psc.fwctrl_lps = rtlpriv->cfg->mod_params->fwctrl_lps;
+	rtlpci->msi_support = rtlpriv->cfg->mod_params->msi_support;
 	if (rtlpriv->cfg->mod_params->disable_watchdog)
 		pr_info("watchdog disabled\n");
 	rtlpriv->psc.reg_fwctrl_lps = 3;
@@ -485,21 +486,4 @@ static struct pci_driver rtl8821ae_driver = {
 	.driver.pm = &rtlwifi_pm_ops,
 };
 
-static int __init rtl8821ae_module_init(void)
-{
-	int ret;
-
-	ret = pci_register_driver(&rtl8821ae_driver);
-	if (ret)
-		RT_ASSERT(false, ": No device found\n");
-
-	return ret;
-}
-
-static void __exit rtl8821ae_module_exit(void)
-{
-	pci_unregister_driver(&rtl8821ae_driver);
-}
-
-module_init(rtl8821ae_module_init);
-module_exit(rtl8821ae_module_exit);
+module_pci_driver(rtl8821ae_driver);

@@ -350,8 +350,7 @@ void rtl8723e_set_hw_reg(struct ieee80211_hw *hw, u8 variable, u8 *val)
 					break;
 				default:
 					RT_TRACE(rtlpriv, COMP_ERR, DBG_WARNING,
-						 "HW_VAR_ACM_CTRL acm set "
-						  "failed: eACI is %d\n", acm);
+						 "HW_VAR_ACM_CTRL acm set failed: eACI is %d\n", acm);
 					break;
 				}
 			} else {
@@ -373,8 +372,8 @@ void rtl8723e_set_hw_reg(struct ieee80211_hw *hw, u8 variable, u8 *val)
 			}
 
 			RT_TRACE(rtlpriv, COMP_QOS, DBG_TRACE,
-				 "SetHwReg8190pci(): [HW_VAR_ACM_CTRL] "
-				  "Write 0x%X\n", acm_ctrl);
+				 "SetHwReg8190pci(): [HW_VAR_ACM_CTRL] Write 0x%X\n",
+				 acm_ctrl);
 			rtl_write_byte(rtlpriv, REG_ACMHWCTRL, acm_ctrl);
 			break;
 		}
@@ -567,8 +566,8 @@ static bool _rtl8723e_llt_write(struct ieee80211_hw *hw, u32 address, u32 data)
 
 		if (count > POLLING_LLT_THRESHOLD) {
 			RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG,
-				 "Failed to polling write LLT done at "
-				  "address %d!\n", address);
+				 "Failed to polling write LLT done at address %d!\n",
+				 address);
 			status = false;
 			break;
 		}
@@ -952,8 +951,7 @@ int rtl8723e_hw_init(struct ieee80211_hw *hw)
 	err = rtl8723e_download_fw(hw);
 	if (err) {
 		RT_TRACE(rtlpriv, COMP_ERR, DBG_WARNING,
-			 "Failed to download FW. Init HW "
-			  "without FW now..\n");
+			 "Failed to download FW. Init HW without FW now..\n");
 		err = 1;
 		rtlhal->fw_ready = false;
 		return err;
@@ -1083,14 +1081,12 @@ static enum version_8723e _rtl8723e_read_chip_version(struct ieee80211_hw *hw)
 			break;
 	case VERSION_NORMAL_UMC_CHIP_8723_1T1R_A_CUT:
 		RT_TRACE(rtlpriv, COMP_INIT, DBG_TRACE,
-			 "Chip Version ID: "
-			 "VERSION_NORMAL_UMC_CHIP_8723_1T1R_A_CUT.\n");
-			break;
+			 "Chip Version ID: VERSION_NORMAL_UMC_CHIP_8723_1T1R_A_CUT.\n");
+		break;
 	case VERSION_NORMAL_UMC_CHIP_8723_1T1R_B_CUT:
 		RT_TRACE(rtlpriv, COMP_INIT, DBG_TRACE,
-			 "Chip Version ID: "
-			 "VERSION_NORMAL_UMC_CHIP_8723_1T1R_B_CUT.\n");
-			break;
+			 "Chip Version ID: VERSION_NORMAL_UMC_CHIP_8723_1T1R_B_CUT.\n");
+		break;
 	default:
 		RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG,
 			 "Chip Version ID: Unknown. Bug?\n");
@@ -1169,8 +1165,9 @@ static int _rtl8723e_set_media_status(struct ieee80211_hw *hw,
 		_rtl8723e_resume_tx_beacon(hw);
 		_rtl8723e_disable_bcn_sub_func(hw);
 	} else {
-		RT_TRACE(rtlpriv, COMP_ERR, DBG_WARNING, "Set HW_VAR_MEDIA_STATUS: "
-			  "No such media status(%x).\n", mode);
+		RT_TRACE(rtlpriv, COMP_ERR, DBG_WARNING,
+			 "Set HW_VAR_MEDIA_STATUS: No such media status(%x).\n",
+			 mode);
 	}
 
 	rtl_write_byte(rtlpriv, (MSR), bt_msr | mode);
@@ -1495,11 +1492,11 @@ static void _rtl8723e_read_txpower_info_from_hwpg(struct ieee80211_hw *hw,
 
 		for (i = 0; i < 14; i++) {
 			RTPRINT(rtlpriv, FINIT, INIT_TxPower,
-				"RF(%d)-Ch(%d) [CCK / HT40_1S / HT40_2S] = "
-				 "[0x%x / 0x%x / 0x%x]\n", rf_path, i,
-				 rtlefuse->txpwrlevel_cck[rf_path][i],
-				 rtlefuse->txpwrlevel_ht40_1s[rf_path][i],
-				 rtlefuse->txpwrlevel_ht40_2s[rf_path][i]);
+				"RF(%d)-Ch(%d) [CCK / HT40_1S / HT40_2S] = [0x%x / 0x%x / 0x%x]\n",
+				rf_path, i,
+				rtlefuse->txpwrlevel_cck[rf_path][i],
+				rtlefuse->txpwrlevel_ht40_1s[rf_path][i],
+				rtlefuse->txpwrlevel_ht40_2s[rf_path][i]);
 		}
 	}
 
@@ -1990,10 +1987,10 @@ static void rtl8723e_update_hal_rate_table(struct ieee80211_hw *hw,
 	/*u8 mimo_ps = IEEE80211_SMPS_OFF;*/
 	u16 shortgi_rate;
 	u32 tmp_ratr_value;
-	u8 b_curtxbw_40mhz = mac->bw_40;
-	u8 b_curshortgi_40mhz = (sta->ht_cap.cap & IEEE80211_HT_CAP_SGI_40) ?
+	u8 curtxbw_40mhz = mac->bw_40;
+	u8 curshortgi_40mhz = (sta->ht_cap.cap & IEEE80211_HT_CAP_SGI_40) ?
 				1 : 0;
-	u8 b_curshortgi_20mhz = (sta->ht_cap.cap & IEEE80211_HT_CAP_SGI_20) ?
+	u8 curshortgi_20mhz = (sta->ht_cap.cap & IEEE80211_HT_CAP_SGI_20) ?
 				1 : 0;
 	enum wireless_mode wirelessmode = mac->mode;
 
@@ -2052,9 +2049,9 @@ static void rtl8723e_update_hal_rate_table(struct ieee80211_hw *hw,
 	else
 		ratr_value &= 0x0FFFFFFF;
 
-	if (b_nmode && ((b_curtxbw_40mhz &&
-			 b_curshortgi_40mhz) || (!b_curtxbw_40mhz &&
-						 b_curshortgi_20mhz))) {
+	if (b_nmode && ((curtxbw_40mhz &&
+			 curshortgi_40mhz) || (!curtxbw_40mhz &&
+						 curshortgi_20mhz))) {
 
 		ratr_value |= 0x10000000;
 		tmp_ratr_value = (ratr_value >> 12);
@@ -2084,14 +2081,14 @@ static void rtl8723e_update_hal_rate_mask(struct ieee80211_hw *hw,
 	struct rtl_sta_info *sta_entry = NULL;
 	u32 ratr_bitmap;
 	u8 ratr_index;
-	u8 b_curtxbw_40mhz = (sta->ht_cap.cap & IEEE80211_HT_CAP_SUP_WIDTH_20_40)
+	u8 curtxbw_40mhz = (sta->ht_cap.cap & IEEE80211_HT_CAP_SUP_WIDTH_20_40)
 				? 1 : 0;
-	u8 b_curshortgi_40mhz = (sta->ht_cap.cap & IEEE80211_HT_CAP_SGI_40) ?
+	u8 curshortgi_40mhz = (sta->ht_cap.cap & IEEE80211_HT_CAP_SGI_40) ?
 				1 : 0;
-	u8 b_curshortgi_20mhz = (sta->ht_cap.cap & IEEE80211_HT_CAP_SGI_20) ?
+	u8 curshortgi_20mhz = (sta->ht_cap.cap & IEEE80211_HT_CAP_SGI_20) ?
 				1 : 0;
 	enum wireless_mode wirelessmode = 0;
-	bool b_shortgi = false;
+	bool shortgi = false;
 	u8 rate_mask[5];
 	u8 macid = 0;
 	/*u8 mimo_ps = IEEE80211_SMPS_OFF;*/
@@ -2099,7 +2096,7 @@ static void rtl8723e_update_hal_rate_mask(struct ieee80211_hw *hw,
 	sta_entry = (struct rtl_sta_info *) sta->drv_priv;
 	wirelessmode = sta_entry->wireless_mode;
 	if (mac->opmode == NL80211_IFTYPE_STATION)
-		b_curtxbw_40mhz = mac->bw_40;
+		curtxbw_40mhz = mac->bw_40;
 	else if (mac->opmode == NL80211_IFTYPE_AP ||
 		mac->opmode == NL80211_IFTYPE_ADHOC)
 		macid = sta->aid + 1;
@@ -2148,7 +2145,7 @@ static void rtl8723e_update_hal_rate_mask(struct ieee80211_hw *hw,
 		} else {*/
 		if (rtlphy->rf_type == RF_1T2R ||
 		    rtlphy->rf_type == RF_1T1R) {
-			if (b_curtxbw_40mhz) {
+			if (curtxbw_40mhz) {
 				if (rssi_level == 1)
 					ratr_bitmap &= 0x000f0000;
 				else if (rssi_level == 2)
@@ -2164,7 +2161,7 @@ static void rtl8723e_update_hal_rate_mask(struct ieee80211_hw *hw,
 					ratr_bitmap &= 0x000ff005;
 			}
 		} else {
-			if (b_curtxbw_40mhz) {
+			if (curtxbw_40mhz) {
 				if (rssi_level == 1)
 					ratr_bitmap &= 0x0f0f0000;
 				else if (rssi_level == 2)
@@ -2182,13 +2179,13 @@ static void rtl8723e_update_hal_rate_mask(struct ieee80211_hw *hw,
 		}
 		/*}*/
 
-		if ((b_curtxbw_40mhz && b_curshortgi_40mhz) ||
-		    (!b_curtxbw_40mhz && b_curshortgi_20mhz)) {
+		if ((curtxbw_40mhz && curshortgi_40mhz) ||
+		    (!curtxbw_40mhz && curshortgi_20mhz)) {
 
 			if (macid == 0)
-				b_shortgi = true;
+				shortgi = true;
 			else if (macid == 1)
-				b_shortgi = false;
+				shortgi = false;
 		}
 		break;
 	default:
@@ -2206,13 +2203,13 @@ static void rtl8723e_update_hal_rate_mask(struct ieee80211_hw *hw,
 		 "ratr_bitmap :%x\n", ratr_bitmap);
 	*(u32 *) &rate_mask = EF4BYTE((ratr_bitmap & 0x0fffffff) |
 				       (ratr_index << 28));
-	rate_mask[4] = macid | (b_shortgi ? 0x20 : 0x00) | 0x80;
-	RT_TRACE(rtlpriv, COMP_RATR, DBG_DMESG, "Rate_index:%x, "
-						 "ratr_val:%x, %x:%x:%x:%x:%x\n",
-						 ratr_index, ratr_bitmap,
-						 rate_mask[0], rate_mask[1],
-						 rate_mask[2], rate_mask[3],
-						 rate_mask[4]);
+	rate_mask[4] = macid | (shortgi ? 0x20 : 0x00) | 0x80;
+	RT_TRACE(rtlpriv, COMP_RATR, DBG_DMESG,
+		 "Rate_index:%x, ratr_val:%x, %x:%x:%x:%x:%x\n",
+		  ratr_index, ratr_bitmap,
+		  rate_mask[0], rate_mask[1],
+		  rate_mask[2], rate_mask[3],
+		  rate_mask[4]);
 	rtl8723e_fill_h2c_cmd(hw, H2C_RA_MASK, 5, rate_mask);
 }
 
@@ -2386,8 +2383,7 @@ void rtl8723e_set_key(struct ieee80211_hw *hw, u32 key_index,
 					entry_id = rtl_cam_get_free_entry(hw, p_macaddr);
 					if (entry_id >=  TOTAL_CAM_ENTRY) {
 						RT_TRACE(rtlpriv, COMP_SEC, DBG_EMERG,
-								"Can not find free "
-								"hw security cam entry\n");
+							 "Can not find free hw security cam entry\n");
 						return;
 					}
 				} else {

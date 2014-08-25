@@ -501,43 +501,41 @@ void rtl92de_set_hw_reg(struct ieee80211_hw *hw, u8 variable, u8 *val)
 			break;
 		}
 	case HW_VAR_FW_LPS_ACTION:{
-			bool b_enter_fwlps = *((bool *) val);
-			u8 rpwm_val, fw_pwrmode;
-			bool fw_current_inps;
+		bool b_enter_fwlps = *((bool *) val);
+		u8 rpwm_val, fw_pwrmode;
+		bool fw_current_inps;
 
-			if (b_enter_fwlps) {
-					rpwm_val = 0x02;	/* RF off */
-					fw_current_inps = true;
-					rtlpriv->cfg->ops->set_hw_reg(hw,
-							HW_VAR_FW_PSMODE_STATUS,
-							(u8 *) (&fw_current_inps));
-					rtlpriv->cfg->ops->set_hw_reg(hw,
-							HW_VAR_H2C_FW_PWRMODE,
-							(u8 *) (&ppsc->fwctrl_psmode));
+		if (b_enter_fwlps) {
+				rpwm_val = 0x02;	/* RF off */
+				fw_current_inps = true;
+				rtlpriv->cfg->ops->set_hw_reg(hw,
+						HW_VAR_FW_PSMODE_STATUS,
+						(u8 *) (&fw_current_inps));
+				rtlpriv->cfg->ops->set_hw_reg(hw,
+						HW_VAR_H2C_FW_PWRMODE,
+						(u8 *) (&ppsc->fwctrl_psmode));
 
-					rtlpriv->cfg->ops->set_hw_reg(hw,
-							HW_VAR_SET_RPWM,
-							(u8 *) (&rpwm_val));
-			} else {
-					rpwm_val = 0x0C;	/* RF on */
-					fw_pwrmode = FW_PS_ACTIVE_MODE;
-					fw_current_inps = false;
-					rtlpriv->cfg->ops->set_hw_reg(hw, HW_VAR_SET_RPWM,
-							(u8 *) (&rpwm_val));
-					rtlpriv->cfg->ops->set_hw_reg(hw,
-							HW_VAR_H2C_FW_PWRMODE,
-							(u8 *) (&fw_pwrmode));
+				rtlpriv->cfg->ops->set_hw_reg(hw,
+						HW_VAR_SET_RPWM,
+						(u8 *) (&rpwm_val));
+		} else {
+				rpwm_val = 0x0C;	/* RF on */
+				fw_pwrmode = FW_PS_ACTIVE_MODE;
+				fw_current_inps = false;
+				rtlpriv->cfg->ops->set_hw_reg(hw, HW_VAR_SET_RPWM,
+						(u8 *) (&rpwm_val));
+				rtlpriv->cfg->ops->set_hw_reg(hw,
+						HW_VAR_H2C_FW_PWRMODE,
+						(u8 *) (&fw_pwrmode));
 
-					rtlpriv->cfg->ops->set_hw_reg(hw,
-							HW_VAR_FW_PSMODE_STATUS,
-							(u8 *) (&fw_current_inps));
-			}
-			 break;
+				rtlpriv->cfg->ops->set_hw_reg(hw,
+						HW_VAR_FW_PSMODE_STATUS,
+						(u8 *) (&fw_current_inps));
 		}
-	default: {
-			RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG, "switch case not process\n");
-			break;
-		}
+		break; }
+	default:
+		RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG, "switch case not process\n");
+		break;
 	}
 
 }

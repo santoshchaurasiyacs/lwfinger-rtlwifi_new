@@ -146,6 +146,7 @@ static void _rtl8821ae_set_fw_clock_on(struct ieee80211_hw *hw,
 		} else {
 			rtlhal->fw_clk_change_in_progress = false;
 			spin_unlock_bh(&rtlpriv->locks.fw_ps_lock);
+			goto change_done;
 		}
 	}
 change_done:
@@ -359,8 +360,8 @@ static void _rtl8821ae_download_rsvd_page(struct ieee80211_hw *hw,
 	} while (!(bcnvalid_reg & BIT(0)) && dlbcn_count < 5);
 
 	if (!(bcnvalid_reg & BIT(0)))
-		RT_TRACE(rtlpriv, COMP_INIT, DBG_LOUD, "Download RSVD page failed!\n");
-
+		RT_TRACE(rtlpriv, COMP_INIT, DBG_LOUD,
+			 "Download RSVD page failed!\n");
 	if (bcnvalid_reg & BIT(0) && rtlhal->enter_pnp_sleep) {
 		rtl_write_byte(rtlpriv, REG_TDECTRL + 2, bcnvalid_reg | BIT(0));
 		_rtl8821ae_return_beacon_queue_skb(hw);
@@ -1234,7 +1235,8 @@ void rtl8821ae_enable_hw_security_config(struct ieee80211_hw *hw)
 		  rtlpriv->sec.group_enc_algorithm);
 
 	if (rtlpriv->cfg->mod_params->sw_crypto || rtlpriv->sec.use_sw_sec) {
-		RT_TRACE(rtlpriv, COMP_SEC, DBG_DMESG, "not open hw encryption\n");
+		RT_TRACE(rtlpriv, COMP_SEC, DBG_DMESG,
+			 "not open hw encryption\n");
 		return;
 	}
 
@@ -1441,7 +1443,8 @@ static void _rtl8821ae_get_wakeup_reason(struct ieee80211_hw *hw)
 
 	fw_reason = rtl_read_byte(rtlpriv, REG_MCUTST_WOWLAN);
 
-	RT_TRACE(rtlpriv, COMP_POWER, DBG_LOUD, "WOL Read 0x1c7 = %02X\n", fw_reason);
+	RT_TRACE(rtlpriv, COMP_POWER, DBG_LOUD, "WOL Read 0x1c7 = %02X\n",
+		 fw_reason);
 
 	ppsc->wakeup_reason = 0;
 
@@ -1830,7 +1833,8 @@ static bool _rtl8821ae_wowlan_initialize_adapter(struct ieee80211_hw *hw)
 	 * We should check wake packet bit before disable wowlan by H2C or
 	 * Fw will clear the bit. */
 	tmp = rtl_read_byte(rtlpriv, REG_FTISR + 3);
-	RT_TRACE(rtlpriv, COMP_POWER, DBG_LOUD, "Read REG_FTISR 0x13f = %#X\n", tmp);
+	RT_TRACE(rtlpriv, COMP_POWER, DBG_LOUD,
+		 "Read REG_FTISR 0x13f = %#X\n", tmp);
 
 	/* Set the WoWLAN related function control disable. */
 	rtl8821ae_set_fw_wowlan_mode(hw, false);
@@ -1961,7 +1965,8 @@ int rtl8821ae_hw_init(struct ieee80211_hw *hw)
 	tmp_u1b = rtl_read_byte(rtlpriv, REG_CR);
 	if (tmp_u1b != 0 && tmp_u1b != 0xEA) {
 		rtlhal->mac_func_enable = true;
-		RT_TRACE(rtlpriv, COMP_INIT, DBG_LOUD, " MAC has already power on.\n");
+		RT_TRACE(rtlpriv, COMP_INIT, DBG_LOUD,
+			 "MAC has already power on.\n");
 	} else {
 		rtlhal->mac_func_enable = false;
 		rtlhal->fw_ps_state = FW_PS_STATE_ALL_ON_8821AE;
@@ -2006,7 +2011,7 @@ int rtl8821ae_hw_init(struct ieee80211_hw *hw)
 	err = rtl8821ae_download_fw(hw, false);
 	if (err) {
 		RT_TRACE(rtlpriv, COMP_ERR, DBG_WARNING,
-			 "Failed to download FW. Init HW without FW now..\n");
+			 "Failed to download FW. Init HW without FW now\n");
 		err = 1;
 		rtlhal->fw_ready = false;
 		return err;
@@ -2099,7 +2104,8 @@ static enum version_8821ae _rtl8821ae_read_chip_version(struct ieee80211_hw *hw)
 	u32 value32;
 
 	value32 = rtl_read_dword(rtlpriv, REG_SYS_CFG);
-	RT_TRACE(rtlpriv, COMP_INIT, DBG_LOUD, "ReadChipVersion8812A 0xF0 = 0x%x\n", value32);
+	RT_TRACE(rtlpriv, COMP_INIT, DBG_LOUD,
+		 "ReadChipVersion8812A 0xF0 = 0x%x\n", value32);
 
 
 
@@ -2108,7 +2114,8 @@ static enum version_8821ae _rtl8821ae_read_chip_version(struct ieee80211_hw *hw)
 	else if (rtlhal->hw_type == HARDWARE_TYPE_RTL8821AE)
 		rtlphy->rf_type = RF_1T1R;
 
-	RT_TRACE(rtlpriv, COMP_INIT, DBG_LOUD, "RF_Type is %x!!\n", rtlphy->rf_type);
+	RT_TRACE(rtlpriv, COMP_INIT, DBG_LOUD,
+		 "RF_Type is %x!!\n", rtlphy->rf_type);
 
 
 	if (value32 & TRP_VAUX_EN) {
@@ -2151,43 +2158,43 @@ static enum version_8821ae _rtl8821ae_read_chip_version(struct ieee80211_hw *hw)
 	switch (version) {
 	case VERSION_TEST_CHIP_1T1R_8812:
 		RT_TRACE(rtlpriv, COMP_INIT, DBG_LOUD,
-			"Chip Version ID: VERSION_TEST_CHIP_1T1R_8812.\n");
+			 "Chip Version ID: VERSION_TEST_CHIP_1T1R_8812\n");
 		break;
 	case VERSION_TEST_CHIP_2T2R_8812:
 		RT_TRACE(rtlpriv, COMP_INIT, DBG_LOUD,
-			 "Chip Version ID: VERSION_TEST_CHIP_2T2R_8812.\n");
+			 "Chip Version ID: VERSION_TEST_CHIP_2T2R_8812\n");
 		break;
 	case VERSION_NORMAL_TSMC_CHIP_1T1R_8812:
 		RT_TRACE(rtlpriv, COMP_INIT, DBG_LOUD,
-			 "Chip Version ID:VERSION_NORMAL_TSMC_CHIP_1T1R_8812.\n");
+			 "Chip Version ID:VERSION_NORMAL_TSMC_CHIP_1T1R_8812\n");
 		break;
 	case VERSION_NORMAL_TSMC_CHIP_2T2R_8812:
 		RT_TRACE(rtlpriv, COMP_INIT, DBG_LOUD,
-			 "Chip Version ID: VERSION_NORMAL_TSMC_CHIP_2T2R_8812.\n");
+			 "Chip Version ID: VERSION_NORMAL_TSMC_CHIP_2T2R_8812\n");
 		break;
 	case VERSION_NORMAL_TSMC_CHIP_1T1R_8812_C_CUT:
 		RT_TRACE(rtlpriv, COMP_INIT, DBG_LOUD,
-			 "Chip Version ID: VERSION_NORMAL_TSMC_CHIP_1T1R_8812 C CUT.\n");
+			 "Chip Version ID: VERSION_NORMAL_TSMC_CHIP_1T1R_8812 C CUT\n");
 		break;
 	case VERSION_NORMAL_TSMC_CHIP_2T2R_8812_C_CUT:
 		RT_TRACE(rtlpriv, COMP_INIT, DBG_LOUD,
-			 "Chip Version ID: VERSION_NORMAL_TSMC_CHIP_2T2R_8812 C CUT.\n");
+			 "Chip Version ID: VERSION_NORMAL_TSMC_CHIP_2T2R_8812 C CUT\n");
 		break;
 	case VERSION_TEST_CHIP_8821:
 		RT_TRACE(rtlpriv, COMP_INIT, DBG_LOUD,
-			 "Chip Version ID: VERSION_TEST_CHIP_8821.\n");
+			 "Chip Version ID: VERSION_TEST_CHIP_8821\n");
 		break;
 	case VERSION_NORMAL_TSMC_CHIP_8821:
 		RT_TRACE(rtlpriv, COMP_INIT, DBG_LOUD,
-			 "Chip Version ID: VERSION_NORMAL_TSMC_CHIP_8821 A CUT.\n");
+			 "Chip Version ID: VERSION_NORMAL_TSMC_CHIP_8821 A CUT\n");
 		break;
 	case VERSION_NORMAL_TSMC_CHIP_8821_B_CUT:
 		RT_TRACE(rtlpriv, COMP_INIT, DBG_LOUD,
-			 "Chip Version ID: VERSION_NORMAL_TSMC_CHIP_8821 B CUT.\n");
+			 "Chip Version ID: VERSION_NORMAL_TSMC_CHIP_8821 B CUT\n");
 		break;
 	default:
 		RT_TRACE(rtlpriv, COMP_INIT, DBG_LOUD,
-			"Chip Version ID: Unknow (0x%X).\n", version);
+			 "Chip Version ID: Unknow (0x%X)\n", version);
 		break;
 	}
 
@@ -2702,8 +2709,7 @@ static void _rtl8821ae_read_power_value_fromprom(struct ieee80211_hw *hw,
 
 	RT_TRACE(rtlpriv, COMP_INIT, DBG_LOUD,
 		 "hal_ReadPowerValueFromPROM8821ae(): hwinfo[0x%x]=0x%x\n",
-					(eeAddr+1),
-					hwinfo[eeAddr+1]);
+		 (eeAddr+1), hwinfo[eeAddr+1]);
 	if (0xFF == hwinfo[eeAddr+1])  /*YJ,add,120316*/
 		autoload_fail = true;
 
@@ -3146,7 +3152,8 @@ static void _rtl8821ae_read_rfe_type(struct ieee80211_hw *hw, u8 *hwinfo,
 		rtlhal->rfe_type = 0x04;
 	}
 
-	RT_TRACE(rtlpriv, COMP_INIT, DBG_LOUD, "RFE Type: 0x%2x\n", rtlhal->rfe_type);
+	RT_TRACE(rtlpriv, COMP_INIT, DBG_LOUD,
+		 "RFE Type: 0x%2x\n", rtlhal->rfe_type);
 }
 
 static void _rtl8812ae_read_bt_coexist_info_from_hwpg(struct ieee80211_hw *hw,
@@ -4158,21 +4165,25 @@ void rtl8821ae_set_key(struct ieee80211_hw *hw, u32 key_index,
 
 		if (rtlpriv->sec.key_len[key_index] == 0) {
 			RT_TRACE(rtlpriv, COMP_SEC, DBG_DMESG,
-				 "delete one entry, entry_id is %d\n", entry_id);
+				 "delete one entry, entry_id is %d\n",
+				 entry_id);
 			if (mac->opmode == NL80211_IFTYPE_AP)
 				rtl_cam_del_entry(hw, p_macaddr);
 			rtl_cam_delete_one_entry(hw, p_macaddr, entry_id);
 		} else {
-			RT_TRACE(rtlpriv, COMP_SEC, DBG_DMESG, "add one entry\n");
+			RT_TRACE(rtlpriv, COMP_SEC, DBG_DMESG,
+				 "add one entry\n");
 			if (is_pairwise) {
-				RT_TRACE(rtlpriv, COMP_SEC, DBG_DMESG, "set Pairwiase key\n");
+				RT_TRACE(rtlpriv, COMP_SEC, DBG_DMESG,
+					 "set Pairwise key\n");
 
 				rtl_cam_add_one_entry(hw, macaddr, key_index,
 						      entry_id, enc_algo,
 						      CAM_CONFIG_NO_USEDK,
 						      rtlpriv->sec.key_buf[key_index]);
 			} else {
-				RT_TRACE(rtlpriv, COMP_SEC, DBG_DMESG, "set group key\n");
+				RT_TRACE(rtlpriv, COMP_SEC, DBG_DMESG,
+					 "set group key\n");
 
 				if (mac->opmode == NL80211_IFTYPE_ADHOC) {
 					rtl_cam_add_one_entry(hw,

@@ -351,7 +351,8 @@ static void _rtl8821ae_fill_h2c_command(struct ieee80211_hw *hw,
 		spin_lock_irqsave(&rtlpriv->locks.h2c_lock, flag);
 		if (rtlhal->h2c_setinprogress) {
 			RT_TRACE(rtlpriv, COMP_CMD, DBG_LOUD,
-				 "H2C set in progress! Wait to set..element_id(%d).\n", element_id);
+				 "H2C set in progress! Wait to set..element_id(%d).\n",
+				 element_id);
 
 			while (rtlhal->h2c_setinprogress) {
 				spin_unlock_irqrestore(&rtlpriv->locks.h2c_lock,
@@ -429,7 +430,8 @@ static void _rtl8821ae_fill_h2c_command(struct ieee80211_hw *hw,
 				wait_h2c_limmit--;
 				if (wait_h2c_limmit == 0) {
 					RT_TRACE(rtlpriv, COMP_CMD, DBG_LOUD,
-						 "Waiting too long for FW read clear HMEBox(%d)!\n", boxnum);
+						 "Waiting too long for FW read clear HMEBox(%d)!\n",
+						 boxnum);
 					break;
 				}
 
@@ -457,7 +459,7 @@ static void _rtl8821ae_fill_h2c_command(struct ieee80211_hw *hw,
 		boxcontent[0] = element_id;
 		RT_TRACE(rtlpriv, COMP_CMD, DBG_LOUD,
 			 "Write element_id box_reg(%4x) = %2x\n",
-			  box_reg, element_id);
+			 box_reg, element_id);
 
 		switch (cmd_len) {
 		case 1:
@@ -523,7 +525,8 @@ void rtl8821ae_fill_h2c_cmd(struct ieee80211_hw *hw,
 	u32 tmp_cmdbuf[2];
 
 	if (rtlhal->fw_ready == false) {
-		RT_ASSERT(false, "return H2C cmd because of Fw download fail!!!\n");
+		RT_ASSERT(false,
+			  "return H2C cmd because of Fw download fail!!!\n");
 		return;
 	}
 
@@ -563,8 +566,8 @@ void rtl8821ae_firmware_selfreset(struct ieee80211_hw *hw)
 	u1b_tmp = rtl_read_byte(rtlpriv, REG_SYS_FUNC_EN+1);
 	rtl_write_byte(rtlpriv, REG_SYS_FUNC_EN+1, (u1b_tmp | BIT(2)));
 
-	RT_TRACE(rtlpriv, COMP_INIT, DBG_LOUD, "_8051Reset8812ae(): 8051 reset success .\n");
-
+	RT_TRACE(rtlpriv, COMP_INIT, DBG_LOUD,
+		 "_8051Reset8812ae(): 8051 reset success .\n");
 }
 
 void rtl8821ae_set_fw_pwrmode_cmd(struct ieee80211_hw *hw, u8 mode)
@@ -1868,11 +1871,12 @@ static void _rtl8821ae_c2h_content_parsing(struct ieee80211_hw *hw,
 		break;
 
 	case C2H_8812_BT_INFO:
-		RT_TRACE(rtlpriv, COMP_FW, DBG_LOUD, "[C2H], C2H_8812_BT_INFO!!\n");
+		RT_TRACE(rtlpriv, COMP_FW, DBG_LOUD,
+			 "[C2H], C2H_8812_BT_INFO!!\n");
 		if (rtlpriv->cfg->ops->get_btc_status())
 			rtlpriv->btcoexist.btc_ops->btc_btinfo_notify(rtlpriv,
-									tmp_buf,
-									c2h_cmd_len);
+								      tmp_buf,
+								      c2h_cmd_len);
 
 		break;
 

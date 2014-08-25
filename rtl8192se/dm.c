@@ -34,7 +34,6 @@
 #include "dm.h"
 #include "fw.h"
 
-struct dig_t digtable;
 static const u32 edca_setting_dl[PEER_MAX] = {
 	0xa44f,		/* 0 UNKNOWN */
 	0x5ea44f,	/* 1 REALTEK_90 */
@@ -166,9 +165,9 @@ static void _rtl92s_dm_txpowertracking_callback_thermalmeter(
 	thermalvalue = (u8)rtl_get_rfreg(hw, RF90_PATH_A, RF_T_METER, 0x1f);
 
 	RT_TRACE(rtlpriv, COMP_POWER_TRACKING, DBG_LOUD,
-		 "Readback Thermal Meter = 0x%x pre thermal meter 0x%x "
-		  "eeprom_thermalmeter 0x%x\n", thermalvalue,
-		  rtlpriv->dm.thermalvalue, rtlefuse->eeprom_thermalmeter);
+		 "Readback Thermal Meter = 0x%x pre thermal meter 0x%x eeprom_thermalmeter 0x%x\n",
+		 thermalvalue, rtlpriv->dm.thermalvalue,
+		 rtlefuse->eeprom_thermalmeter);
 
 	if (thermalvalue) {
 		rtlpriv->dm.thermalvalue = thermalvalue;
@@ -294,10 +293,10 @@ static void _rtl92s_dm_refresh_rateadaptive_mask(struct ieee80211_hw *hw)
 		}
 
 		if (p_ra->pre_ratr_state != p_ra->ratr_state) {
-			RT_TRACE(rtlpriv, COMP_RATE, DBG_LOUD, "RSSI = %ld "
-				"RSSI_LEVEL = %d PreState = %d, CurState = %d\n",
-				rtlpriv->dm.undec_sm_pwdb, p_ra->ratr_state,
-				p_ra->pre_ratr_state, p_ra->ratr_state);
+			RT_TRACE(rtlpriv, COMP_RATE, DBG_LOUD,
+				 "RSSI = %ld RSSI_LEVEL = %d PreState = %d, CurState = %d\n",
+				 rtlpriv->dm.undec_sm_pwdb, p_ra->ratr_state,
+				 p_ra->pre_ratr_state, p_ra->ratr_state);
 
 			rcu_read_lock();
 			sta = rtl_find_sta(hw, mac->bssid);
@@ -436,53 +435,54 @@ static void _rtl92s_dm_false_alarm_counter_statistics(struct ieee80211_hw *hw)
 static void _rtl92s_dm_initial_gain_sta_beforeconnect(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
+	struct dig_t *digtable = &rtlpriv->dm_digtable;
 	struct false_alarm_statistics *falsealm_cnt = &(rtlpriv->falsealm_cnt);
 	static u8 initialized, force_write;
 	u8 initial_gain = 0;
 
-	if ((digtable.pre_sta_cstate == digtable.cursta_cstate) ||
-		(digtable.cursta_cstate == DIG_STA_BEFORE_CONNECT)) {
-		if (digtable.cursta_cstate == DIG_STA_BEFORE_CONNECT) {
+	if ((digtable->pre_sta_cstate == digtable->cursta_cstate) ||
+		(digtable->cursta_cstate == DIG_STA_BEFORE_CONNECT)) {
+		if (digtable->cursta_cstate == DIG_STA_BEFORE_CONNECT) {
 			if (rtlpriv->psc.rfpwr_state != ERFON)
 				return;
 
-			if (digtable.backoff_enable_flag == true) {
-				if (falsealm_cnt->cnt_all > digtable.fa_highthresh) {
-					if ((digtable.back_val - 6) <
-						digtable.back_range_min)
-						digtable.back_val =
-							digtable.back_range_min;
+			if (digtable->backoff_enable_flag == true) {
+				if (falsealm_cnt->cnt_all > digtable->fa_highthresh) {
+					if ((digtable->back_val - 6) <
+						digtable->back_range_min)
+						digtable->back_val =
+							digtable->back_range_min;
 					else
-						digtable.back_val -= 6;
+						digtable->back_val -= 6;
 				} else if (falsealm_cnt->cnt_all <
-						digtable.fa_lowthresh) {
-					if ((digtable.back_val + 6) >
-						digtable.back_range_max)
-						digtable.back_val =
-							digtable.back_range_max;
+						digtable->fa_lowthresh) {
+					if ((digtable->back_val + 6) >
+						digtable->back_range_max)
+						digtable->back_val =
+							digtable->back_range_max;
 					else
-						digtable.back_val += 6;
+						digtable->back_val += 6;
 				}
 			} else {
-				digtable.back_val = DM_DIG_BACKOFF;
+				digtable->back_val = DM_DIG_BACKOFF;
 			}
 
-			if ((digtable.rssi_val + 10 - digtable.back_val) >
-				digtable.rx_gain_max)
-				digtable.cur_igvalue = digtable.rx_gain_max;
-			else if ((digtable.rssi_val + 10 - digtable.back_val) <
-				digtable.rx_gain_min)
-				digtable.cur_igvalue = digtable.rx_gain_min;
+			if ((digtable->rssi_val + 10 - digtable->back_val) >
+				digtable->rx_gain_max)
+				digtable->cur_igvalue = digtable->rx_gain_max;
+			else if ((digtable->rssi_val + 10 - digtable->back_val) <
+				digtable->rx_gain_min)
+				digtable->cur_igvalue = digtable->rx_gain_min;
 			else
-				digtable.cur_igvalue = digtable.rssi_val + 10 -
-						digtable.back_val;
+				digtable->cur_igvalue = digtable->rssi_val + 10 -
+						digtable->back_val;
 
 			if (falsealm_cnt->cnt_all > 10000)
-				digtable.cur_igvalue = (digtable.cur_igvalue > 0x33) ?
-						digtable.cur_igvalue : 0x33;
+				digtable->cur_igvalue = (digtable->cur_igvalue > 0x33) ?
+						digtable->cur_igvalue : 0x33;
 
 			if (falsealm_cnt->cnt_all > 16000)
-				digtable.cur_igvalue = digtable.rx_gain_max;
+				digtable->cur_igvalue = digtable->rx_gain_max;
 		/* connected -> connected or disconnected -> disconnected  */
 		} else {
 			/* Firmware control DIG, do nothing in driver dm */
@@ -492,30 +492,30 @@ static void _rtl92s_dm_initial_gain_sta_beforeconnect(struct ieee80211_hw *hw)
 		 * disconnected or beforeconnect->(dis)connected */
 	} else {
 		/* Enable FW DIG */
-		digtable.dig_ext_port_stage = DIG_EXT_PORT_STAGE_MAX;
+		digtable->dig_ext_port_stage = DIG_EXT_PORT_STAGE_MAX;
 		rtl92s_phy_set_fw_cmd(hw, FW_CMD_DIG_ENABLE);
 
-		digtable.back_val = DM_DIG_BACKOFF;
-		digtable.cur_igvalue = rtlpriv->phy.default_initialgain[0];
-		digtable.pre_igvalue = 0;
+		digtable->back_val = DM_DIG_BACKOFF;
+		digtable->cur_igvalue = rtlpriv->phy.default_initialgain[0];
+		digtable->pre_igvalue = 0;
 		return;
 	}
 
 	/* Forced writing to prevent from fw-dig overwriting. */
-	if (digtable.pre_igvalue != rtl_get_bbreg(hw, ROFDM0_XAAGCCORE1, MASKBYTE0))
+	if (digtable->pre_igvalue != rtl_get_bbreg(hw, ROFDM0_XAAGCCORE1, MASKBYTE0))
 		force_write = 1;
 
-	if ((digtable.pre_igvalue != digtable.cur_igvalue) ||
+	if ((digtable->pre_igvalue != digtable->cur_igvalue) ||
 		!initialized || force_write) {
 		/* Disable FW DIG */
 		rtl92s_phy_set_fw_cmd(hw, FW_CMD_DIG_DISABLE);
 
-		initial_gain = (u8)digtable.cur_igvalue;
+		initial_gain = (u8)digtable->cur_igvalue;
 
 		/* Set initial gain. */
 		rtl_set_bbreg(hw, ROFDM0_XAAGCCORE1, MASKBYTE0, initial_gain);
 		rtl_set_bbreg(hw, ROFDM0_XBAGCCORE1, MASKBYTE0, initial_gain);
-		digtable.pre_igvalue = digtable.cur_igvalue;
+		digtable->pre_igvalue = digtable->cur_igvalue;
 		initialized = 1;
 		force_write = 0;
 	}
@@ -525,6 +525,7 @@ static void _rtl92s_dm_initial_gain_sta_beforeconnect(struct ieee80211_hw *hw)
 static void _rtl92s_dm_ctrl_initgain_bytwoport(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
+	struct dig_t *digtable = &rtlpriv->dm_digtable;
 
 	if (rtlpriv->mac80211.act_scanning)
 		return;
@@ -532,16 +533,16 @@ static void _rtl92s_dm_ctrl_initgain_bytwoport(struct ieee80211_hw *hw)
 	/* Decide the current status and if modify initial gain or not */
 	if (rtlpriv->mac80211.link_state >= MAC80211_LINKED ||
 		rtlpriv->mac80211.opmode == NL80211_IFTYPE_ADHOC)
-		digtable.cursta_cstate = DIG_STA_CONNECT;
+		digtable->cursta_cstate = DIG_STA_CONNECT;
 	else
-		digtable.cursta_cstate = DIG_STA_DISCONNECT;
+		digtable->cursta_cstate = DIG_STA_DISCONNECT;
 
-	digtable.rssi_val = rtlpriv->dm.undec_sm_pwdb;
+	digtable->rssi_val = rtlpriv->dm.undec_sm_pwdb;
 
 	/* Change dig mode to rssi */
-	if (digtable.cursta_cstate != DIG_STA_DISCONNECT) {
-		if (digtable.dig_twoport_algorithm == DIG_TWO_PORT_ALGO_FALSE_ALARM) {
-			digtable.dig_twoport_algorithm = DIG_TWO_PORT_ALGO_RSSI;
+	if (digtable->cursta_cstate != DIG_STA_DISCONNECT) {
+		if (digtable->dig_twoport_algorithm == DIG_TWO_PORT_ALGO_FALSE_ALARM) {
+			digtable->dig_twoport_algorithm = DIG_TWO_PORT_ALGO_RSSI;
 			rtl92s_phy_set_fw_cmd(hw, FW_CMD_DIG_MODE_SS);
 		}
 	}
@@ -549,12 +550,13 @@ static void _rtl92s_dm_ctrl_initgain_bytwoport(struct ieee80211_hw *hw)
 	_rtl92s_dm_false_alarm_counter_statistics(hw);
 	_rtl92s_dm_initial_gain_sta_beforeconnect(hw);
 
-	digtable.pre_sta_cstate = digtable.cursta_cstate;
+	digtable->pre_sta_cstate = digtable->cursta_cstate;
 }
 
 static void	_rtl92s_dm_ctrl_initgain_byrssi(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
+	struct dig_t *digtable = &rtlpriv->dm_digtable;
 	struct rtl_phy *rtlphy = &(rtlpriv->phy);
 
 	/* 2T2R TP issue */
@@ -564,7 +566,7 @@ static void	_rtl92s_dm_ctrl_initgain_byrssi(struct ieee80211_hw *hw)
 	if (!rtlpriv->dm.dm_initialgain_enable)
 		return;
 
-	if (digtable.dig_enable_flag == false)
+	if (digtable->dig_enable_flag == false)
 		return;
 
 	_rtl92s_dm_ctrl_initgain_bytwoport(hw);
@@ -643,50 +645,51 @@ static void _rtl92s_dm_dynamic_txpower(struct ieee80211_hw *hw)
 static void _rtl92s_dm_init_dig(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
+	struct dig_t *digtable = &rtlpriv->dm_digtable;
 
 	/* Disable DIG scheme now.*/
-	digtable.dig_enable_flag = true;
-	digtable.backoff_enable_flag = true;
+	digtable->dig_enable_flag = true;
+	digtable->backoff_enable_flag = true;
 
 	if ((rtlpriv->dm.dm_type == DM_TYPE_BYDRIVER) &&
 		(hal_get_firmwareverison(rtlpriv) >= 0x3c))
-		digtable.dig_algorithm = DIG_ALGO_BY_TOW_PORT;
+		digtable->dig_algorithm = DIG_ALGO_BY_TOW_PORT;
 	else
-		digtable.dig_algorithm = DIG_ALGO_BEFORE_CONNECT_BY_RSSI_AND_ALARM;
+		digtable->dig_algorithm = DIG_ALGO_BEFORE_CONNECT_BY_RSSI_AND_ALARM;
 
-	digtable.dig_twoport_algorithm = DIG_TWO_PORT_ALGO_RSSI;
-	digtable.dig_ext_port_stage = DIG_EXT_PORT_STAGE_MAX;
-	/* off=by real rssi value, on=by digtable.rssi_val for new dig */
-	digtable.dig_dbgmode = DM_DBG_OFF;
-	digtable.dig_slgorithm_switch = 0;
+	digtable->dig_twoport_algorithm = DIG_TWO_PORT_ALGO_RSSI;
+	digtable->dig_ext_port_stage = DIG_EXT_PORT_STAGE_MAX;
+	/* off=by real rssi value, on=by digtable->rssi_val for new dig */
+	digtable->dig_dbgmode = DM_DBG_OFF;
+	digtable->dig_slgorithm_switch = 0;
 
 	/* 2007/10/04 MH Define init gain threshol. */
-	digtable.dig_state = DM_STA_DIG_MAX;
-	digtable.dig_highpwrstate = DM_STA_DIG_MAX;
+	digtable->dig_state = DM_STA_DIG_MAX;
+	digtable->dig_highpwrstate = DM_STA_DIG_MAX;
 
-	digtable.cursta_cstate = DIG_STA_DISCONNECT;
-	digtable.pre_sta_cstate = DIG_STA_DISCONNECT;
-	digtable.cur_ap_cstate = DIG_AP_DISCONNECT;
-	digtable.pre_ap_cstate = DIG_AP_DISCONNECT;
+	digtable->cursta_cstate = DIG_STA_DISCONNECT;
+	digtable->pre_sta_cstate = DIG_STA_DISCONNECT;
+	digtable->cur_ap_cstate = DIG_AP_DISCONNECT;
+	digtable->pre_ap_cstate = DIG_AP_DISCONNECT;
 
-	digtable.rssi_lowthresh = DM_DIG_THRESH_LOW;
-	digtable.rssi_highthresh = DM_DIG_THRESH_HIGH;
+	digtable->rssi_lowthresh = DM_DIG_THRESH_LOW;
+	digtable->rssi_highthresh = DM_DIG_THRESH_HIGH;
 
-	digtable.fa_lowthresh = DM_FALSEALARM_THRESH_LOW;
-	digtable.fa_highthresh = DM_FALSEALARM_THRESH_HIGH;
+	digtable->fa_lowthresh = DM_FALSEALARM_THRESH_LOW;
+	digtable->fa_highthresh = DM_FALSEALARM_THRESH_HIGH;
 
-	digtable.rssi_highpower_lowthresh = DM_DIG_HIGH_PWR_THRESH_LOW;
-	digtable.rssi_highpower_highthresh = DM_DIG_HIGH_PWR_THRESH_HIGH;
+	digtable->rssi_highpower_lowthresh = DM_DIG_HIGH_PWR_THRESH_LOW;
+	digtable->rssi_highpower_highthresh = DM_DIG_HIGH_PWR_THRESH_HIGH;
 
 	/* for dig debug rssi value */
-	digtable.rssi_val = 50;
-	digtable.back_val = DM_DIG_BACKOFF;
-	digtable.rx_gain_max = DM_DIG_MAX;
+	digtable->rssi_val = 50;
+	digtable->back_val = DM_DIG_BACKOFF;
+	digtable->rx_gain_max = DM_DIG_MAX;
 
-	digtable.rx_gain_min = DM_DIG_MIN;
+	digtable->rx_gain_min = DM_DIG_MIN;
 
-	digtable.back_range_max = DM_DIG_BACKOFF_MAX;
-	digtable.back_range_min = DM_DIG_BACKOFF_MIN;
+	digtable->back_range_max = DM_DIG_BACKOFF_MAX;
+	digtable->back_range_min = DM_DIG_BACKOFF_MIN;
 }
 
 static void _rtl92s_dm_init_dynamic_txpower(struct ieee80211_hw *hw)

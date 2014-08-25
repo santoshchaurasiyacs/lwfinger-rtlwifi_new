@@ -227,7 +227,8 @@ static void _rtl92d_get_txpower_writeval_by_regulatory(struct ieee80211_hw *hw,
 			writeval = rtlphy->mcs_txpwrlevel_origoffset[chnlgroup][index +
 					(rf ? 8 : 0)] + ((index < 2) ? powerbase0[rf] :
 					powerbase1[rf]);
-			RTPRINT(rtlpriv, FPHY, PHY_TXPWR, "RTK better performance, writeval(%c) = 0x%x\n",
+			RTPRINT(rtlpriv, FPHY, PHY_TXPWR,
+				"RTK better performance, writeval(%c) = 0x%x\n",
 				((rf == 0) ? 'A' : 'B'), writeval);
 			break;
 		case 1:
@@ -242,20 +243,23 @@ static void _rtl92d_get_txpower_writeval_by_regulatory(struct ieee80211_hw *hw,
 				writeval = rtlphy->mcs_txpwrlevel_origoffset[chnlgroup][index +
 						(rf ? 8 : 0)] + ((index < 2) ? powerbase0[rf] :
 						powerbase1[rf]);
-				RTPRINT(rtlpriv, FPHY, PHY_TXPWR, "Realtek regulatory, 20MHz, writeval(%c) = 0x%x\n",
+				RTPRINT(rtlpriv, FPHY, PHY_TXPWR,
+					"Realtek regulatory, 20MHz, writeval(%c) = 0x%x\n",
 					((rf == 0) ? 'A' : 'B'),
 					writeval);
 			}
 			break;
 		case 2:
 			writeval = ((index < 2) ? powerbase0[rf] : powerbase1[rf]);
-			RTPRINT(rtlpriv, FPHY, PHY_TXPWR, "Better regulatory, writeval(%c) = 0x%x\n",
+			RTPRINT(rtlpriv, FPHY, PHY_TXPWR,
+				"Better regulatory, writeval(%c) = 0x%x\n",
 				((rf == 0) ? 'A' : 'B'), writeval);
 			break;
 		case 3:
 			chnlgroup = 0;
 			if (rtlphy->current_chan_bw == HT_CHANNEL_WIDTH_20_40) {
-				RTPRINT(rtlpriv, FPHY, PHY_TXPWR, "customer's limit, 40MHz rf(%c) = 0x%x\n",
+				RTPRINT(rtlpriv, FPHY, PHY_TXPWR,
+					"customer's limit, 40MHz rf(%c) = 0x%x\n",
 					((rf == 0) ? 'A' : 'B'),
 					rtlefuse->pwrgroup_ht40[rf][channel - 1]);
 			} else {

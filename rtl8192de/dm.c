@@ -266,13 +266,14 @@ static void rtl92d_dm_false_alarm_counter_statistics(struct ieee80211_hw *hw)
 	RT_TRACE(rtlpriv, COMP_DIG, DBG_LOUD, "Cnt_Fast_Fsync_fail = %x, Cnt_SB_Search_fail = %x\n",
 			falsealm_cnt->cnt_fast_fsync_fail,
 			falsealm_cnt->cnt_sb_search_fail);
-	RT_TRACE(rtlpriv, COMP_DIG, DBG_LOUD, "Cnt_Parity_Fail = %x, Cnt_Rate_Illegal = %x, Cnt_Crc8_fail = %x, Cnt_Mcs_fail = %x\n",
-			falsealm_cnt->cnt_parity_fail, falsealm_cnt->cnt_rate_illegal,
-			falsealm_cnt->cnt_crc8_fail, falsealm_cnt->cnt_mcs_fail);
 	RT_TRACE(rtlpriv, COMP_DIG, DBG_LOUD,
-			"Cnt_Ofdm_fail = %x, " "Cnt_Cck_fail = %x, Cnt_all = %x\n",
-			falsealm_cnt->cnt_ofdm_fail, falsealm_cnt->cnt_cck_fail,
-			falsealm_cnt->cnt_all);
+		 "Cnt_Parity_Fail = %x, Cnt_Rate_Illegal = %x, Cnt_Crc8_fail = %x, Cnt_Mcs_fail = %x\n",
+		 falsealm_cnt->cnt_parity_fail, falsealm_cnt->cnt_rate_illegal,
+		 falsealm_cnt->cnt_crc8_fail, falsealm_cnt->cnt_mcs_fail);
+	RT_TRACE(rtlpriv, COMP_DIG, DBG_LOUD,
+		 "Cnt_Ofdm_fail = %x, " "Cnt_Cck_fail = %x, Cnt_all = %x\n",
+		 falsealm_cnt->cnt_ofdm_fail, falsealm_cnt->cnt_cck_fail,
+		 falsealm_cnt->cnt_all);
 }
 
 static void rtl92d_dm_false_alarm_counter_statistics_for_slaveofdmsp(

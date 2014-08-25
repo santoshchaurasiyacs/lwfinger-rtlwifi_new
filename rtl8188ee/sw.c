@@ -50,8 +50,7 @@ static void rtl88e_init_aspm_vars(struct ieee80211_hw *hw)
 	/*close ASPM for AMD defaultly */
 	rtlpci->const_amdpci_aspm = 0;
 
-	/*
-	 * ASPM PS mode.
+	/* ASPM PS mode.
 	 * 0 - Disable ASPM,
 	 * 1 - Enable ASPM without Clock Req,
 	 * 2 - Enable ASPM with Clock Req,
@@ -67,8 +66,7 @@ static void rtl88e_init_aspm_vars(struct ieee80211_hw *hw)
 	/*Setting for PCI-E bridge */
 	rtlpci->const_hostpci_aspm_setting = 0x02;
 
-	/*
-	 * In Hw/Sw Radio Off situation.
+	/* In Hw/Sw Radio Off situation.
 	 * 0 - Default,
 	 * 1 - From ASPM setting without low Mac Pwr,
 	 * 2 - From ASPM setting with low Mac Pwr,
@@ -77,8 +75,7 @@ static void rtl88e_init_aspm_vars(struct ieee80211_hw *hw)
 	 */
 	rtlpci->const_hwsw_rfoff_d3 = 0;
 
-	/*
-	 * This setting works for those device with
+	/* This setting works for those device with
 	 * backdoor ASPM setting such as EPHY setting.
 	 * 0 - Not support ASPM,
 	 * 1 - Support ASPM,
@@ -283,7 +280,7 @@ static struct rtl_mod_params rtl88ee_mod_params = {
 	.inactiveps = false,
 	.swctrl_lps = false,
 	.fwctrl_lps = false,
-	.msi_support = false,
+	.msi_support = true,
 	.debug = DBG_EMERG,
 };
 
@@ -411,7 +408,7 @@ MODULE_PARM_DESC(swenc, "Set to 1 for software crypto (default 0)\n");
 MODULE_PARM_DESC(ips, "Set to 0 to not use link power save (default 1)\n");
 MODULE_PARM_DESC(swlps, "Set to 1 to use SW control power save (default 0)\n");
 MODULE_PARM_DESC(fwlps, "Set to 1 to use FW control power save (default 1)\n");
-MODULE_PARM_DESC(msi, "Set to 1 to use MSI interrupts mode (default 0)\n");
+MODULE_PARM_DESC(msi, "Set to 1 to use MSI interrupts mode (default 1)\n");
 MODULE_PARM_DESC(debug, "Set debug level (0-5) (default 0)");
 MODULE_PARM_DESC(disable_watchdog, "Set to 1 to disable the watchdog (default 0)\n");
 
@@ -422,25 +419,7 @@ static struct pci_driver rtl88ee_driver = {
 	.id_table = rtl88ee_pci_ids,
 	.probe = rtl_pci_probe,
 	.remove = rtl_pci_disconnect,
-
 	.driver.pm = &rtlwifi_pm_ops,
 };
 
-static int __init rtl88ee_module_init(void)
-{
-	int ret;
-
-	ret = pci_register_driver(&rtl88ee_driver);
-	if (ret)
-		RT_ASSERT(false, ": No device found\n");
-
-	return ret;
-}
-
-static void __exit rtl88ee_module_exit(void)
-{
-	pci_unregister_driver(&rtl88ee_driver);
-}
-
-module_init(rtl88ee_module_init);
-module_exit(rtl88ee_module_exit);
+module_pci_driver(rtl88ee_driver);

@@ -255,7 +255,8 @@ int rtl92d_download_fw(struct ieee80211_hw *hw)
 	pfwdata = (u8 *) rtlhal->pfirmware;
 	rtlhal->fw_version = (u16) GET_FIRMWARE_HDR_VERSION(pfwheader);
 	rtlhal->fw_subversion = (u16) GET_FIRMWARE_HDR_SUB_VER(pfwheader);
-	RT_TRACE(rtlpriv, COMP_INIT, DBG_DMESG, " FirmwareVersion(%d),FirmwareSubVersion(%d), Signature(%#x)\n",
+	RT_TRACE(rtlpriv, COMP_INIT, DBG_DMESG,
+		 "FirmwareVersion(%d),FirmwareSubVersion(%d), Signature(%#x)\n",
 		 rtlhal->fw_version,	rtlhal->fw_subversion,
 		 GET_FIRMWARE_HDR_SIGNATURE(pfwheader));
 
@@ -435,7 +436,7 @@ static void _rtl92d_fill_h2c_command(struct ieee80211_hw *hw,
 			wait_h2c_limmit--;
 			if (wait_h2c_limmit == 0) {
 				RT_TRACE(rtlpriv, COMP_CMD, DBG_LOUD,
-					 "Wating too long for FW read clear HMEBox(%d)!\n",
+					 "Waiting too long for FW read clear HMEBox(%d)!\n",
 					 boxnum);
 				break;
 			}
@@ -443,7 +444,7 @@ static void _rtl92d_fill_h2c_command(struct ieee80211_hw *hw,
 			isfw_read = _rtl92d_check_fw_read_last_h2c(hw, boxnum);
 			u1b_tmp = rtl_read_byte(rtlpriv, 0x1BF);
 			RT_TRACE(rtlpriv, COMP_CMD, DBG_LOUD,
-				 "Wating for FW read clear HMEBox(%d)!!! 0x1BF = %2x\n",
+				 "Waiting for FW read clear HMEBox(%d)!!! 0x1BF = %2x\n",
 				 boxnum, u1b_tmp);
 		}
 		if (!isfw_read) {

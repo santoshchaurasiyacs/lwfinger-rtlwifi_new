@@ -169,7 +169,7 @@ enum dbgp_flag_e {
 #define RT_ASSERT(_exp, fmt, ...)					\
 do {									\
 	if (!(_exp)) {							\
-		printk(KERN_DEBUG KBUILD_MODNAME ":%s(): " fmt,		\
+		pr_info(KBUILD_MODNAME ":%s(): " fmt,			\
 		       __func__, ##__VA_ARGS__);			\
 	}								\
 } while (0)
@@ -178,7 +178,7 @@ do {									\
 do {									\
 	if (unlikely(((comp) & rtlpriv->dbg.global_debugcomponents) &&	\
 		     ((level) <= rtlpriv->dbg.global_debuglevel))) {	\
-		printk(KERN_DEBUG KBUILD_MODNAME ":%s():<%lx-%x> " fmt,	\
+		pr_info(KBUILD_MODNAME ":%s():<%lx-%x> " fmt,		\
 		       __func__, in_interrupt(), in_atomic(),		\
 		       ##__VA_ARGS__);					\
 	}								\
@@ -187,7 +187,7 @@ do {									\
 #define RTPRINT(rtlpriv, dbgtype, dbgflag, fmt, ...)			\
 do {									\
 	if (unlikely(rtlpriv->dbg.dbgp_type[dbgtype] & dbgflag)) {	\
-		printk(KERN_DEBUG KBUILD_MODNAME ": " fmt,		\
+		pr_info(KBUILD_MODNAME ": " fmt,			\
 		       ##__VA_ARGS__);					\
 	}								\
 } while (0)
@@ -199,18 +199,18 @@ do {									\
 			(_level <= rtlpriv->dbg.global_debuglevel)))	{ \
 			int __i;					\
 			u8 *ptr = (u8 *)_hexdata;			\
-			printk(KERN_DEBUG "%s: ", KBUILD_MODNAME);	\
-			printk(KERN_DEBUG "In process \"%s\" (pid %i):", \
+			pr_debug("%s: ", KBUILD_MODNAME);		\
+			pr_debug("In process \"%s\" (pid %i):",		\
 					current->comm,	\
 					current->pid); \
-			printk(_titlestring);		\
+			pr_cont(_titlestring);		\
 			for (__i = 0; __i < (int)_hexdatalen; __i++) {	\
-				printk("%02X%s", ptr[__i], (((__i + 1) % 4) \
+				pr_cont("%02X%s", ptr[__i], (((__i + 1) % 4) \
 							== 0)?"  ":" ");\
 				if (((__i + 1) % 16) == 0)	\
-					printk("\n");	\
+					pr_cont("\n");	\
 			}				\
-			printk(KERN_DEBUG "\n");			\
+			pr_debug("\n");			\
 		} \
 	} while (0)
 

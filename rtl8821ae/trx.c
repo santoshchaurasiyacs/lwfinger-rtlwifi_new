@@ -709,12 +709,12 @@ bool rtl8821ae_rx_query_desc(struct ieee80211_hw *hw,
 	status->vht_nss = rtl8821ae_get_rx_vht_nss(hw, pdesc);
 	status->is_cck = RX_HAL_IS_CCK_RATE(status->rate);
 
-	RT_TRACE(rtlpriv, COMP_RXDESC, DBG_LOUD, "rx_packet_bw"
-		"=%s,is_ht %d, is_vht %d, vht_nss=%d,is_short_gi %d.\n",
-		(status->rx_packet_bw == 2) ? "80M" :
-		(status->rx_packet_bw == 1) ? "40M" : "20M",
-		status->is_ht, status->is_vht, status->vht_nss,
-		status->is_short_gi);
+	RT_TRACE(rtlpriv, COMP_RXDESC, DBG_LOUD,
+		 "rx_packet_bw=%s,is_ht %d, is_vht %d, vht_nss=%d,is_short_gi %d.\n",
+		 (status->rx_packet_bw == 2) ? "80M" :
+		 (status->rx_packet_bw == 1) ? "40M" : "20M",
+		 status->is_ht, status->is_vht, status->vht_nss,
+		 status->is_short_gi);
 
 	if (GET_RX_STATUS_DESC_RPT_SEL(pdesc))
 		status->packet_report_type = C2H_PACKET;
@@ -732,7 +732,8 @@ bool rtl8821ae_rx_query_desc(struct ieee80211_hw *hw,
 
 	if (status->wake_match)
 		RT_TRACE(rtlpriv, COMP_RXDESC, DBG_LOUD,
-		"GGGGGGGGGGGGGet Wakeup Packet!! WakeMatch=%d\n", status->wake_match);
+			 "GGGGGGGGGGGGGet Wakeup Packet!! WakeMatch=%d\n",
+			 status->wake_match);
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,10,0))
 	rx_status->freq = hw->conf.chandef.chan->center_freq;
 	rx_status->band = hw->conf.chandef.chan->band;
@@ -829,9 +830,9 @@ static u8 rtl8821ae_bw_mapping(struct ieee80211_hw *hw, struct rtl_tcb_desc *ptc
 	struct rtl_phy *rtlphy = &(rtlpriv->phy);
 	u8 bw_setting_of_desc = 0;
 
-	RT_TRACE(rtlpriv, COMP_SEND, DBG_TRACE, "rtl8821ae_bw_mapping,"
-		"current_chan_bw %d, packet_bw %d\n",
-		rtlphy->current_chan_bw, ptcb_desc->packet_bw);
+	RT_TRACE(rtlpriv, COMP_SEND, DBG_TRACE,
+		 "rtl8821ae_bw_mapping, current_chan_bw %d, packet_bw %d\n",
+		 rtlphy->current_chan_bw, ptcb_desc->packet_bw);
 
 	if (rtlphy->current_chan_bw == HT_CHANNEL_WIDTH_80) {
 		if (ptcb_desc->packet_bw == HT_CHANNEL_WIDTH_80)
@@ -873,8 +874,7 @@ static u8 rtl8821ae_sc_mapping(struct ieee80211_hw *hw, struct rtl_tcb_desc *ptc
 					VHT_DATA_SC_40_UPPER_OF_80MHZ;
 			else
 				RT_TRACE(rtlpriv, COMP_SEND, DBG_LOUD,
-				"rtl8821ae_sc_mapping: "
-				"Not Correct Primary40MHz Setting\n");
+					 "rtl8821ae_sc_mapping: Not Correct Primary40MHz Setting\n");
 		} else {
 			if ((mac->cur_40_prime_sc ==
 				HAL_PRIME_CHNL_OFFSET_LOWER)
@@ -902,8 +902,7 @@ static u8 rtl8821ae_sc_mapping(struct ieee80211_hw *hw, struct rtl_tcb_desc *ptc
 					VHT_DATA_SC_20_UPPERST_OF_80MHZ;
 			else
 				RT_TRACE(rtlpriv, COMP_SEND, DBG_LOUD,
-				"rtl8821ae_sc_mapping: "
-				"Not Correct Primary40MHz Setting\n");
+					 "rtl8821ae_sc_mapping: Not Correct Primary40MHz Setting\n");
 		}
 	} else if (rtlphy->current_chan_bw == HT_CHANNEL_WIDTH_20_40) {
 		if (ptcb_desc->packet_bw == HT_CHANNEL_WIDTH_20_40) {
@@ -955,16 +954,6 @@ void rtl8821ae_tx_fill_desc(struct ieee80211_hw *hw,
 			   cpu_to_le16(IEEE80211_FCTL_MOREFRAGS)) == 0);
 	dma_addr_t mapping;
 	u8 short_gi = 0;
-
-#if 0
-	static unsigned long last_packet_jiffies = jiffies;
-
-	if (ieee80211_is_data_qos(fc)) {
-		printk("packet delta time is %d\n",
-		jiffies_to_usecs(jiffies - last_packet_jiffies));
-		last_packet_jiffies = jiffies;
-	}
-#endif
 
 	seq_number = (le16_to_cpu(hdr->seq_ctrl) & IEEE80211_SCTL_SEQ) >> 4;
 	rtl_get_tcb_desc(hw, info, sta, skb, ptcb_desc);

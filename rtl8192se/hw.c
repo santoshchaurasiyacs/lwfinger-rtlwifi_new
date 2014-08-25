@@ -2071,10 +2071,10 @@ static void rtl92se_update_hal_rate_table(struct ieee80211_hw *hw,
 	/*u8 mimo_ps = IEEE80211_SMPS_OFF;*/
 	u16 shortgi_rate = 0;
 	u32 tmp_ratr_value = 0;
-	u8 b_curtxbw_40mhz = mac->bw_40;
-	u8 b_curshortgi_40mhz = (sta->ht_cap.cap & IEEE80211_HT_CAP_SGI_40) ?
+	u8 curtxbw_40mhz = mac->bw_40;
+	u8 curshortgi_40mhz = (sta->ht_cap.cap & IEEE80211_HT_CAP_SGI_40) ?
 				1 : 0;
-	u8 b_curshortgi_20mhz = (sta->ht_cap.cap & IEEE80211_HT_CAP_SGI_20) ?
+	u8 curshortgi_20mhz = (sta->ht_cap.cap & IEEE80211_HT_CAP_SGI_20) ?
 				1 : 0;
 	enum wireless_mode wirelessmode = mac->mode;
 
@@ -2105,12 +2105,12 @@ static void rtl92se_update_hal_rate_table(struct ieee80211_hw *hw,
 
 			if (get_rf_type(rtlphy) == RF_1T2R ||
 			    get_rf_type(rtlphy) == RF_1T1R) {
-				if (b_curtxbw_40mhz)
+				if (curtxbw_40mhz)
 					ratr_mask = 0x000ff015;
 				else
 					ratr_mask = 0x000ff005;
 			} else {
-				if (b_curtxbw_40mhz)
+				if (curtxbw_40mhz)
 					ratr_mask = 0x0f0ff015;
 				else
 					ratr_mask = 0x0f0ff005;
@@ -2133,10 +2133,9 @@ static void rtl92se_update_hal_rate_table(struct ieee80211_hw *hw,
 	else if (rtlpriv->rtlhal.version == VERSION_8192S_ACUT)
 		ratr_value &= 0x0FFFFFF0;
 
-	if (b_nmode && ((b_curtxbw_40mhz &&
-			 b_curshortgi_40mhz) || (!b_curtxbw_40mhz &&
-						 b_curshortgi_20mhz))) {
-
+	if (b_nmode && ((curtxbw_40mhz &&
+	    curshortgi_40mhz) || (!curtxbw_40mhz &&
+	    curshortgi_20mhz))) {
 		ratr_value |= 0x10000000;
 		tmp_ratr_value = (ratr_value >> 12);
 
@@ -2171,14 +2170,14 @@ static void rtl92se_update_hal_rate_mask(struct ieee80211_hw *hw,
 	struct rtl_sta_info *sta_entry = NULL;
 	u32 ratr_bitmap;
 	u8 ratr_index = 0;
-	u8 b_curtxbw_40mhz = (sta->ht_cap.cap & IEEE80211_HT_CAP_SUP_WIDTH_20_40)
+	u8 curtxbw_40mhz = (sta->ht_cap.cap & IEEE80211_HT_CAP_SUP_WIDTH_20_40)
 				? 1 : 0;
-	u8 b_curshortgi_40mhz = (sta->ht_cap.cap & IEEE80211_HT_CAP_SGI_40) ?
+	u8 curshortgi_40mhz = (sta->ht_cap.cap & IEEE80211_HT_CAP_SGI_40) ?
 				1 : 0;
-	u8 b_curshortgi_20mhz = (sta->ht_cap.cap & IEEE80211_HT_CAP_SGI_20) ?
+	u8 curshortgi_20mhz = (sta->ht_cap.cap & IEEE80211_HT_CAP_SGI_20) ?
 				1 : 0;
 	enum wireless_mode wirelessmode = 0;
-	bool b_shortgi = false;
+	bool shortgi = false;
 	u32 ratr_value = 0;
 	u8 shortgi_rate = 0;
 	u32 mask = 0;
@@ -2190,7 +2189,7 @@ static void rtl92se_update_hal_rate_mask(struct ieee80211_hw *hw,
 	sta_entry = (struct rtl_sta_info *) sta->drv_priv;
 	wirelessmode = sta_entry->wireless_mode;
 	if (mac->opmode == NL80211_IFTYPE_STATION)
-		b_curtxbw_40mhz = mac->bw_40;
+		curtxbw_40mhz = mac->bw_40;
 	else if (mac->opmode == NL80211_IFTYPE_AP ||
 		mac->opmode == NL80211_IFTYPE_ADHOC)
 		macid = sta->aid + 1;
@@ -2250,7 +2249,7 @@ static void rtl92se_update_hal_rate_mask(struct ieee80211_hw *hw,
 			} else if (rssi_level == 5) {
 				ratr_bitmap &= 0x000ff000;
 			} else {
-				if (b_curtxbw_40mhz)
+				if (curtxbw_40mhz)
 					ratr_bitmap &= 0x000ff015;
 				else
 					ratr_bitmap &= 0x000ff005;
@@ -2263,7 +2262,7 @@ static void rtl92se_update_hal_rate_mask(struct ieee80211_hw *hw,
 			} else if (rssi_level == 5) {
 				ratr_bitmap &= 0x0f8ff000;
 			} else {
-				if (b_curtxbw_40mhz)
+				if (curtxbw_40mhz)
 					ratr_bitmap &= 0x0f8ff015;
 				else
 					ratr_bitmap &= 0x0f8ff005;
@@ -2271,12 +2270,12 @@ static void rtl92se_update_hal_rate_mask(struct ieee80211_hw *hw,
 		}
 		/*}*/
 
-		if ((b_curtxbw_40mhz && b_curshortgi_40mhz) ||
-		    (!b_curtxbw_40mhz && b_curshortgi_20mhz)) {
+		if ((curtxbw_40mhz && curshortgi_40mhz) ||
+		    (!curtxbw_40mhz && curshortgi_20mhz)) {
 			if (macid == 0)
-				b_shortgi = true;
+				shortgi = true;
 			else if (macid == 1)
-				b_shortgi = false;
+				shortgi = false;
 		}
 		break;
 	default:
@@ -2296,7 +2295,7 @@ static void rtl92se_update_hal_rate_mask(struct ieee80211_hw *hw,
 	else if (rtlpriv->rtlhal.version == VERSION_8192S_ACUT)
 		ratr_bitmap &= 0x0FFFFFF0;
 
-	if (b_shortgi) {
+	if (shortgi) {
 		ratr_bitmap |= 0x10000000;
 		/* Get MAX MCS available. */
 		ratr_value = (ratr_bitmap >> 12);

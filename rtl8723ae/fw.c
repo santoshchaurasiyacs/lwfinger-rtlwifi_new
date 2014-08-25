@@ -168,9 +168,8 @@ static int _rtl8723e_fw_free_to_go(struct ieee80211_hw *hw)
 		value32 = rtl_read_dword(rtlpriv, REG_MCUFWDL);
 		if (value32 & WINTINI_RDY) {
 			RT_TRACE(rtlpriv, COMP_FW, DBG_TRACE,
-				 "Polling FW ready success!! "
-				 "REG_MCUFWDL:0x%08x .\n",
-				  value32);
+				 "Polling FW ready success!! REG_MCUFWDL:0x%08x .\n",
+				 value32);
 			err = 0;
 			goto exit;
 		}
@@ -250,7 +249,7 @@ static bool _rtl8723e_check_fw_read_last_h2c(struct ieee80211_hw *hw,
 }
 
 static void _rtl8723e_fill_h2c_command(struct ieee80211_hw *hw,
-			      u8 element_id, u32 cmd_len, u8 *p_cmdbuffer)
+			      u8 element_id, u32 cmd_len, u8 *cmdbuffer)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_hal *rtlhal = rtl_hal(rtl_priv(hw));
@@ -273,8 +272,8 @@ static void _rtl8723e_fill_h2c_command(struct ieee80211_hw *hw,
 		spin_lock_irqsave(&rtlpriv->locks.h2c_lock, flag);
 		if (rtlhal->h2c_setinprogress) {
 			RT_TRACE(rtlpriv, COMP_CMD, DBG_LOUD,
-				 "H2C set in progress! Wait to set.."
-				  "element_id(%d).\n", element_id);
+				 "H2C set in progress! Wait to set..element_id(%d).\n",
+				 element_id);
 
 			while (rtlhal->h2c_setinprogress) {
 				spin_unlock_irqrestore(&rtlpriv->locks.h2c_lock,
@@ -302,8 +301,7 @@ static void _rtl8723e_fill_h2c_command(struct ieee80211_hw *hw,
 		wait_writeh2c_limmit--;
 		if (wait_writeh2c_limmit == 0) {
 			RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG,
-				 "Write H2C fail because no trigger "
-				  "for FW INT!\n");
+				 "Write H2C fail because no trigger for FW INT!\n");
 			break;
 		}
 
@@ -337,8 +335,8 @@ static void _rtl8723e_fill_h2c_command(struct ieee80211_hw *hw,
 			wait_h2c_limmit--;
 			if (wait_h2c_limmit == 0) {
 				RT_TRACE(rtlpriv, COMP_CMD, DBG_LOUD,
-					 "Wating too long for FW read "
-					  "clear HMEBox(%d)!\n", boxnum);
+					 "Wating too long for FW read clear HMEBox(%d)!\n",
+					 boxnum);
 				break;
 			}
 
@@ -348,14 +346,14 @@ static void _rtl8723e_fill_h2c_command(struct ieee80211_hw *hw,
 								boxnum);
 			u1b_tmp = rtl_read_byte(rtlpriv, 0x1BF);
 			RT_TRACE(rtlpriv, COMP_CMD, DBG_LOUD,
-				 "Wating for FW read clear HMEBox(%d)!!! "
-				  "0x1BF = %2x\n", boxnum, u1b_tmp);
+				 "Waiting for FW read clear HMEBox(%d)!!! 0x1BF = %2x\n",
+				 boxnum, u1b_tmp);
 		}
 
 		if (!isfw_read) {
 			RT_TRACE(rtlpriv, COMP_CMD, DBG_LOUD,
-				 "Write H2C register BOX[%d] fail!!!!! "
-				  "Fw do not read.\n", boxnum);
+				 "Write H2C register BOX[%d] fail!!!!! Fw do not read.\n",
+				 boxnum);
 			break;
 		}
 
@@ -370,7 +368,7 @@ static void _rtl8723e_fill_h2c_command(struct ieee80211_hw *hw,
 		case 1:
 			boxcontent[0] &= ~(BIT(7));
 			memcpy((u8 *) (boxcontent) + 1,
-			       p_cmdbuffer + buf_index, 1);
+			       cmdbuffer + buf_index, 1);
 
 			for (idx = 0; idx < 4; idx++) {
 				rtl_write_byte(rtlpriv, box_reg + idx,
@@ -380,7 +378,7 @@ static void _rtl8723e_fill_h2c_command(struct ieee80211_hw *hw,
 		case 2:
 			boxcontent[0] &= ~(BIT(7));
 			memcpy((u8 *) (boxcontent) + 1,
-			       p_cmdbuffer + buf_index, 2);
+			       cmdbuffer + buf_index, 2);
 
 			for (idx = 0; idx < 4; idx++) {
 				rtl_write_byte(rtlpriv, box_reg + idx,
@@ -390,7 +388,7 @@ static void _rtl8723e_fill_h2c_command(struct ieee80211_hw *hw,
 		case 3:
 			boxcontent[0] &= ~(BIT(7));
 			memcpy((u8 *) (boxcontent) + 1,
-			       p_cmdbuffer + buf_index, 3);
+			       cmdbuffer + buf_index, 3);
 
 			for (idx = 0; idx < 4; idx++) {
 				rtl_write_byte(rtlpriv, box_reg + idx,
@@ -400,9 +398,9 @@ static void _rtl8723e_fill_h2c_command(struct ieee80211_hw *hw,
 		case 4:
 			boxcontent[0] |= (BIT(7));
 			memcpy((u8 *) (boxextcontent),
-			       p_cmdbuffer + buf_index, 2);
+			       cmdbuffer + buf_index, 2);
 			memcpy((u8 *) (boxcontent) + 1,
-			       p_cmdbuffer + buf_index + 2, 2);
+			       cmdbuffer + buf_index + 2, 2);
 
 			for (idx = 0; idx < 2; idx++) {
 				rtl_write_byte(rtlpriv, box_extreg + idx,
@@ -417,9 +415,9 @@ static void _rtl8723e_fill_h2c_command(struct ieee80211_hw *hw,
 		case 5:
 			boxcontent[0] |= (BIT(7));
 			memcpy((u8 *) (boxextcontent),
-			       p_cmdbuffer + buf_index, 2);
+			       cmdbuffer + buf_index, 2);
 			memcpy((u8 *) (boxcontent) + 1,
-			       p_cmdbuffer + buf_index + 2, 3);
+			       cmdbuffer + buf_index + 2, 3);
 
 			for (idx = 0; idx < 2; idx++) {
 				rtl_write_byte(rtlpriv, box_extreg + idx,
@@ -456,19 +454,19 @@ static void _rtl8723e_fill_h2c_command(struct ieee80211_hw *hw,
 }
 
 void rtl8723e_fill_h2c_cmd(struct ieee80211_hw *hw,
-			 u8 element_id, u32 cmd_len, u8 *p_cmdbuffer)
+			 u8 element_id, u32 cmd_len, u8 *cmdbuffer)
 {
 	struct rtl_hal *rtlhal = rtl_hal(rtl_priv(hw));
 	u32 tmp_cmdbuf[2];
 
 	if (rtlhal->fw_ready == false) {
-		RT_ASSERT(false, "return H2C cmd because of Fw "
-				  "download fail!!!\n");
+		RT_ASSERT(false,
+			  "return H2C cmd because of Fw download fail!!!\n");
 		return;
 	}
 
 	memset(tmp_cmdbuf, 0, 8);
-	memcpy(tmp_cmdbuf, p_cmdbuffer, cmd_len);
+	memcpy(tmp_cmdbuf, cmdbuffer, cmd_len);
 	_rtl8723e_fill_h2c_command(hw,
 			element_id, cmd_len, (u8 *) &tmp_cmdbuf);
 

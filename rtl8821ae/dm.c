@@ -787,13 +787,6 @@ static void rtl8821ae_dm_check_rssi_monitor(struct ieee80211_hw *hw)
 					tmp_entry_max_pwdb)
 				tmp_entry_max_pwdb =
 					drv_priv->rssi_stat.undec_sm_pwdb;
-
-			/*h2c_parameter[2] =
-				(u8) (rtlpriv->dm.undec_sm_pwdb & 0xFF);
-			h2c_parameter[1] = 0x20;
-			h2c_parameter[0] =  drv_priv->rssi_stat;
-			rtl8821ae_fill_h2c_cmd(hw,
-				H2C_RSSI_REPORT, 3, h2c_parameter);*/
 		}
 		spin_unlock_bh(&rtlpriv->locks.entry_list_lock);
 
@@ -801,7 +794,8 @@ static void rtl8821ae_dm_check_rssi_monitor(struct ieee80211_hw *hw)
 		if (tmp_entry_max_pwdb != 0) {
 			rtlpriv->dm.entry_max_undec_sm_pwdb =
 				tmp_entry_max_pwdb;
-			RTPRINT(rtlpriv, FDM, DM_PWDB, "EntryMaxPWDB = 0x%lx(%ld)\n",
+			RTPRINT(rtlpriv, FDM, DM_PWDB,
+				"EntryMaxPWDB = 0x%lx(%ld)\n",
 				tmp_entry_max_pwdb, tmp_entry_max_pwdb);
 		} else {
 			rtlpriv->dm.entry_max_undec_sm_pwdb = 0;
@@ -810,8 +804,9 @@ static void rtl8821ae_dm_check_rssi_monitor(struct ieee80211_hw *hw)
 		if (tmp_entry_min_pwdb != 0xff) {
 			rtlpriv->dm.entry_min_undec_sm_pwdb =
 				tmp_entry_min_pwdb;
-			RTPRINT(rtlpriv, FDM, DM_PWDB, "EntryMinPWDB = 0x%lx(%ld)\n",
-					tmp_entry_min_pwdb, tmp_entry_min_pwdb);
+			RTPRINT(rtlpriv, FDM, DM_PWDB,
+				"EntryMinPWDB = 0x%lx(%ld)\n",
+				tmp_entry_min_pwdb, tmp_entry_min_pwdb);
 		} else {
 			rtlpriv->dm.entry_min_undec_sm_pwdb = 0;
 		}
@@ -898,7 +893,8 @@ static void rtl8821ae_dm_dig(struct ieee80211_hw *hw)
 
 
 	if (mac->act_scanning) {
-		RT_TRACE(rtlpriv, COMP_DIG, DBG_LOUD, "Return: In Scan Progress\n");
+		RT_TRACE(rtlpriv, COMP_DIG, DBG_LOUD,
+			 "Return: In Scan Progress\n");
 		return;
 	}
 
@@ -2043,13 +2039,13 @@ void rtl8812ae_dm_txpower_tracking_callback_thermalmeter(
 			/*Record delta swing for mix mode power tracking*/
 
 			RT_TRACE(rtlpriv, COMP_POWER_TRACKING, DBG_LOUD,
-			"******Temp is lower and pDM_Odm->Aboslute_OFDMSwingIdx[ODM_RF_PATH_B] = %d\n",
-			rtldm->aboslute_ofdm_swing_idx[RF90_PATH_B]);
+				 "******Temp is lower and pDM_Odm->Aboslute_OFDMSwingIdx[ODM_RF_PATH_B] = %d\n",
+				 rtldm->aboslute_ofdm_swing_idx[RF90_PATH_B]);
 		}
 
 		for (p = RF90_PATH_A; p < MAX_PATH_NUM_8812A; p++) {
 			RT_TRACE(rtlpriv, COMP_POWER_TRACKING, DBG_LOUD,
-				"\n\n============================= [Path-%c]Calculating PowerIndexOffset =============================\n",
+				"============================= [Path-%c]Calculating PowerIndexOffset =============================\n",
 				(p == RF90_PATH_A ? 'A' : 'B'));
 
 			if (rtldm->delta_power_index[p] ==
@@ -2065,11 +2061,11 @@ void rtl8812ae_dm_txpower_tracking_callback_thermalmeter(
 				times Power Tracking*/
 
 			RT_TRACE(rtlpriv, COMP_POWER_TRACKING, DBG_LOUD,
-				"[Path-%c] PowerIndexOffset(%d) =DeltaPowerIndex(%d) -DeltaPowerIndexLast(%d)\n",
-				(p == RF90_PATH_A ? 'A' : 'B'),
-				rtldm->power_index_offset[p],
-				rtldm->delta_power_index[p] ,
-				rtldm->delta_power_index_last[p]);
+				 "[Path-%c] PowerIndexOffset(%d) =DeltaPowerIndex(%d) -DeltaPowerIndexLast(%d)\n",
+				 (p == RF90_PATH_A ? 'A' : 'B'),
+				 rtldm->power_index_offset[p],
+				 rtldm->delta_power_index[p] ,
+				 rtldm->delta_power_index_last[p]);
 
 			rtldm->ofdm_index[p] =
 					rtldm->bb_swing_idx_ofdm_base[p] +
@@ -2462,8 +2458,9 @@ void rtl8821ae_dm_txpwr_track_set_pwr(struct ieee80211_hw *hw,
 
 					rtldm->modify_txagc_flag_path_a = false;
 
-					RT_TRACE(rtlpriv, COMP_POWER_TRACKING, DBG_LOUD,
-						"******Path_A pDM_Odm->Modify_TxAGC_Flag= FALSE\n");
+					RT_TRACE(rtlpriv, COMP_POWER_TRACKING,
+						 DBG_LOUD,
+						 "******Path_A pDM_Odm->Modify_TxAGC_Flag= FALSE\n");
 				}
 			}
 		}

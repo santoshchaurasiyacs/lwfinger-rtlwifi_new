@@ -29,7 +29,6 @@
 
 #include "pwrseq.h"
 
-
 /*
 *	Description:
 *		This routine deal with the Power Configuration CMDs
@@ -55,18 +54,15 @@ bool rtl_hal_pwrseqcmdparsing(struct rtl_priv *rtlpriv, u8 cut_version,
 	do {
 		pwr_cfg_cmd = pwrcfgcmd[ary_idx];
 		RT_TRACE(rtlpriv, COMP_INIT, DBG_TRACE,
-			"rtl_hal_pwrseqcmdparsing(): "
-			"offset(%#x),cut_msk(%#x), fab_msk(%#x),"
-			"interface_msk(%#x), base(%#x), "
-			"cmd(%#x), msk(%#x), value(%#x)\n",
-			GET_PWR_CFG_OFFSET(pwr_cfg_cmd),
-			GET_PWR_CFG_CUT_MASK(pwr_cfg_cmd),
-			GET_PWR_CFG_FAB_MASK(pwr_cfg_cmd),
-			GET_PWR_CFG_INTF_MASK(pwr_cfg_cmd),
-			GET_PWR_CFG_BASE(pwr_cfg_cmd),
-			GET_PWR_CFG_CMD(pwr_cfg_cmd),
-			GET_PWR_CFG_MASK(pwr_cfg_cmd),
-			GET_PWR_CFG_VALUE(pwr_cfg_cmd));
+			 "rtl_hal_pwrseqcmdparsing(): offset(%#x),cut_msk(%#x), fab_msk(%#x),interface_msk(%#x), base(%#x), cmd(%#x), msk(%#x), value(%#x)\n",
+			 GET_PWR_CFG_OFFSET(pwr_cfg_cmd),
+			 GET_PWR_CFG_CUT_MASK(pwr_cfg_cmd),
+			 GET_PWR_CFG_FAB_MASK(pwr_cfg_cmd),
+			 GET_PWR_CFG_INTF_MASK(pwr_cfg_cmd),
+			 GET_PWR_CFG_BASE(pwr_cfg_cmd),
+			 GET_PWR_CFG_CMD(pwr_cfg_cmd),
+			 GET_PWR_CFG_MASK(pwr_cfg_cmd),
+			 GET_PWR_CFG_VALUE(pwr_cfg_cmd));
 
 		if ((GET_PWR_CFG_FAB_MASK(pwr_cfg_cmd)&fab_version) &&
 		    (GET_PWR_CFG_CUT_MASK(pwr_cfg_cmd)&cut_version) &&
@@ -74,14 +70,12 @@ bool rtl_hal_pwrseqcmdparsing(struct rtl_priv *rtlpriv, u8 cut_version,
 			switch (GET_PWR_CFG_CMD(pwr_cfg_cmd)) {
 			case PWR_CMD_READ:
 				RT_TRACE(rtlpriv, COMP_INIT, DBG_TRACE,
-					 "rtl_hal_pwrseqcmdparsing(): "
-					  "PWR_CMD_READ\n");
+					 "rtl_hal_pwrseqcmdparsing(): PWR_CMD_READ\n");
 				break;
 
 			case PWR_CMD_WRITE:
 				RT_TRACE(rtlpriv, COMP_INIT, DBG_TRACE,
-					 "rtl_hal_pwrseqcmdparsing(): "
-					  "PWR_CMD_WRITE\n");
+					 "rtl_hal_pwrseqcmdparsing(): PWR_CMD_WRITE\n");
 				offset = GET_PWR_CFG_OFFSET(pwr_cfg_cmd);
 
 				/*Read the value from system register*/
@@ -98,8 +92,7 @@ bool rtl_hal_pwrseqcmdparsing(struct rtl_priv *rtlpriv, u8 cut_version,
 
 			case PWR_CMD_POLLING:
 				RT_TRACE(rtlpriv, COMP_INIT, DBG_TRACE,
-					 "rtl_hal_pwrseqcmdparsing(): "
-					  "PWR_CMD_POLLING\n");
+					 "rtl_hal_pwrseqcmdparsing(): PWR_CMD_POLLING\n");
 				b_polling_bit = false;
 				offset = GET_PWR_CFG_OFFSET(pwr_cfg_cmd);
 
@@ -125,8 +118,7 @@ bool rtl_hal_pwrseqcmdparsing(struct rtl_priv *rtlpriv, u8 cut_version,
 
 			case PWR_CMD_DELAY:
 				RT_TRACE(rtlpriv, COMP_INIT, DBG_TRACE,
-					"rtl_hal_pwrseqcmdparsing(): "
-					"PWR_CMD_DELAY\n");
+					"rtl_hal_pwrseqcmdparsing(): PWR_CMD_DELAY\n");
 				if (GET_PWR_CFG_VALUE(pwr_cfg_cmd) ==
 				    PWRSEQ_DELAY_US)
 					udelay(GET_PWR_CFG_OFFSET(pwr_cfg_cmd));
@@ -136,15 +128,13 @@ bool rtl_hal_pwrseqcmdparsing(struct rtl_priv *rtlpriv, u8 cut_version,
 
 			case PWR_CMD_END:
 				RT_TRACE(rtlpriv, COMP_INIT, DBG_TRACE,
-					 "rtl_hal_pwrseqcmdparsing(): "
-					  "PWR_CMD_END\n");
+					 "rtl_hal_pwrseqcmdparsing(): PWR_CMD_END\n");
 				return true;
 				break;
 
 			default:
 				RT_ASSERT(false,
-					  "rtl_hal_pwrseqcmdparsing(): "
-					   "Unknown CMD!!\n");
+					  "rtl_hal_pwrseqcmdparsing(): Unknown CMD!!\n");
 				break;
 			}
 

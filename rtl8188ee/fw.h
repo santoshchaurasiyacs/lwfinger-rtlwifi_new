@@ -296,7 +296,7 @@ enum rtl8192c_h2c_cmd {
 int rtl88e_download_fw(struct ieee80211_hw *hw,
 				bool buse_wake_on_wlan_fw);
 void rtl88e_fill_h2c_cmd(struct ieee80211_hw *hw, u8 element_id,
-			 u32 cmd_len, u8 *p_cmdbuffer);
+			 u32 cmd_len, u8 *cmdbuffer);
 void rtl88e_firmware_selfreset(struct ieee80211_hw *hw);
 void rtl88e_set_fw_pwrmode_cmd(struct ieee80211_hw *hw, u8 mode);
 void rtl88e_set_fw_joinbss_report_cmd(struct ieee80211_hw *hw, u8 mstatus);
