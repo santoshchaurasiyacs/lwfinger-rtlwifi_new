@@ -24,6 +24,9 @@ PCI_MAIN_OBJS	:=	\
 obj-$(CONFIG_RTLWIFI_PCI)	+= rtl_pci.o
 rtl_pci-objs	:=		pci.o
 
+obj-$(CONFIG_RTLWIFI_USB)	+= rtl_usb.o
+rtl_usb-objs	:=		usb.o
+
 rtlwifi-objs += $(PCI_MAIN_OBJS)
 
 ccflags-y += -D__CHECK_ENDIAN__
@@ -54,6 +57,7 @@ all:
 	+@make -C rtl8821ae/
 install: all
 	@find /lib/modules/$(shell uname -r) -name "rtl_pci.ko" -exec rm {} \;
+	@find /lib/modules/$(shell uname -r) -name "rtl_usb.ko" -exec rm {} \;
 	@find /lib/modules/$(shell uname -r) -name "rtlwifi.ko" -exec rm {} \;
 	@find /lib/modules/$(shell uname -r) -name "btcoexist.ko" -exec rm {} \;
 	@find /lib/modules/$(shell uname -r) -name "rtl8188ee.ko" -exec rm {} \;
@@ -77,6 +81,7 @@ install: all
 	$(shell mkdir $(MODDESTDIR)/rtl8723be)
 	$(shell mkdir $(MODDESTDIR)/rtl8821ae)
 	@install -p -m 644 rtl_pci.ko $(MODDESTDIR)	
+	@install -p -m 644 rtl_usb.ko $(MODDESTDIR)	
 	@install -p -m 644 rtlwifi.ko $(MODDESTDIR)	
 	@install -p -m 644 ./btcoexist/btcoexist.ko $(MODDESTDIR)/btcoexist
 	@install -p -m 644 ./rtl8192se/rtl8192se.ko $(MODDESTDIR)/rtl8192se
