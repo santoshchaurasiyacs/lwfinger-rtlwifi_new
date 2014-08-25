@@ -868,15 +868,6 @@ static void rtl88e_dm_check_edca_turbo(struct ieee80211_hw *hw)
 		rtlpriv->dm.bcurrent_turbo_edca = false;
 		return;
 	}
-/* DEAD_CODE
-	if ((!mac->ht_enable) && (!rtlpcipriv->btcoexist.bt_coexistence)) {
-		if (!(edca_be_ul & 0xffff0000))
-			edca_be_ul | = 0x005e0000;
-
-		if (!(edca_be_dl & 0xffff0000))
-			edca_be_dl | = 0x005e0000;
-	}
-*/
 	if ((bt_change_edca) || ((!rtlpriv->dm.is_any_nonbepkts) &&
 	     (!rtlpriv->dm.disable_framebursting))) {
 
@@ -978,24 +969,6 @@ static void rtl88e_dm_txpower_tracking_callback_thermalmeter(
 			break;
 		}
 	}
-/* DEAD_CODE
-	if (is2t) {
-		ele_d = rtl_get_bbreg(hw, ROFDM0_XBTXIQIMBALANCE,
-				      MASKDWORD) & MASKOFDM_D;
-		for (i = 0; i < OFDM_TABLE_LENGTH; i++) {
-			if (ele_d == (ofdmswing_table[i] & MASKOFDM_D)) {
-				ofdm_index_old[1] = (u8) i;
-
-				RT_TRACE(rtlpriv, COMP_POWER_TRACKING,
-					 DBG_LOUD,
-					 "Initial pathB ele_d reg0x%x = "
-					  "0x%lx, ofdm_index = 0x%x\n",
-					  ROFDM0_XBTXIQIMBALANCE, ele_d,
-					  ofdm_index_old[1]);
-				break;
-			}
-		}
-	}*/
 
 	/*2.Query CCK default setting From 0xa24*/
 	temp_cck = rtl_get_bbreg(hw, RCCK0_TXFILTER2, MASKDWORD) & MASKCCK;
@@ -1469,20 +1442,8 @@ static void rtl88e_dm_fast_training_init(struct ieee80211_hw *hw)
 	/*OFDM Setting*/
 	rtl_set_bbreg(hw, DM_REG_ANTDIV_PARA1_11N, MASKDWORD, 0x000000a0);
 	/*antenna mapping table*/
-	/*if (ant_combination == 2) {*/
 	rtl_set_bbreg(hw, DM_REG_ANT_MAPPING1_11N, MASKBYTE0, 1);
 	rtl_set_bbreg(hw, DM_REG_ANT_MAPPING1_11N, MASKBYTE1, 2);
-	/* DEAD_CODE
-	} else if (ant_combination == 7) {
-		rtl_set_bbreg(hw, DM_REG_ANT_MAPPING1_11N, MASKBYTE0, 1);
-		rtl_set_bbreg(hw, DM_REG_ANT_MAPPING1_11N, MASKBYTE1, 2);
-		rtl_set_bbreg(hw, DM_REG_ANT_MAPPING1_11N, MASKBYTE2, 2);
-		rtl_set_bbreg(hw, DM_REG_ANT_MAPPING1_11N, MASKBYTE3, 3);
-		rtl_set_bbreg(hw, DM_REG_ANT_MAPPING2_11N, MASKBYTE0, 4);
-		rtl_set_bbreg(hw, DM_REG_ANT_MAPPING2_11N, MASKBYTE1, 5);
-		rtl_set_bbreg(hw, DM_REG_ANT_MAPPING2_11N, MASKBYTE2, 6);
-		rtl_set_bbreg(hw, DM_REG_ANT_MAPPING2_11N, MASKBYTE3, 7);
-	}*/
 
 	/*TX Setting*/
 	rtl_set_bbreg(hw, DM_REG_TX_ANT_CTRL_11N, BIT(21), 1);

@@ -2096,10 +2096,6 @@ static void rtl92se_update_hal_rate_table(struct ieee80211_hw *hw,
 	case WIRELESS_MODE_N_24G:
 	case WIRELESS_MODE_N_5G:
 		b_nmode = 1;
-		/* DEAD_CODE
-		if (mimo_ps == IEEE80211_SMPS_STATIC) {
-			ratr_value &= 0x0007F005;
-		} else */
 		{
 			u32 ratr_mask;
 
