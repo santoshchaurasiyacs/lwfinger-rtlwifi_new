@@ -28,8 +28,8 @@
  *****************************************************************************/
 
 #include <linux/firmware.h>
-#include "core.h"
 #include "wifi.h"
+#include "core.h"
 #include "pci.h"
 #include "base.h"
 #include "ps.h"

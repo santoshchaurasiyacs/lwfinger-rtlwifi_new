@@ -37,8 +37,14 @@ all:
 	+@make -C btcoexist/
 	@cp $(SYMBOL_FILE) rtl8188ee/
 	+@make -C rtl8188ee/
+	@cp $(SYMBOL_FILE) rtl8192c/
+	+@make -C rtl8192c/
 	@cp $(SYMBOL_FILE) rtl8192ce/
+	@cp rtl8192c/$(SYMBOL_FILE) rtl8192ce/
 	+@make -C rtl8192ce/
+	@cp $(SYMBOL_FILE) rtl8192cu/
+	@cp rtl8192c/$(SYMBOL_FILE) rtl8192cu/
+	+@make -C rtl8192cu/
 	@cp $(SYMBOL_FILE) rtl8192de/
 	+@make -C rtl8192de/
 	@cp $(SYMBOL_FILE) rtl8192ee/
@@ -59,6 +65,7 @@ install: all
 	@find /lib/modules/$(shell uname -r) -name "rtl_pci.ko" -exec rm {} \;
 	@find /lib/modules/$(shell uname -r) -name "rtl_usb.ko" -exec rm {} \;
 	@find /lib/modules/$(shell uname -r) -name "rtlwifi.ko" -exec rm {} \;
+	@find /lib/modules/$(shell uname -r) -name "rtl8192c_common.ko" -exec rm {} \;
 	@find /lib/modules/$(shell uname -r) -name "btcoexist.ko" -exec rm {} \;
 	@find /lib/modules/$(shell uname -r) -name "rtl8188ee.ko" -exec rm {} \;
 	@find /lib/modules/$(shell uname -r) -name "rtl8192ce.ko" -exec rm {} \;
@@ -73,6 +80,7 @@ install: all
 	$(shell mkdir $(MODDESTDIR))
 	$(shell mkdir $(MODDESTDIR)/btcoexist)
 	$(shell mkdir $(MODDESTDIR)/rtl8188ee)
+	$(shell mkdir $(MODDESTDIR)/rtl8192c)
 	$(shell mkdir $(MODDESTDIR)/rtl8192ce)
 	$(shell mkdir $(MODDESTDIR)/rtl8192de)
 	$(shell mkdir $(MODDESTDIR)/rtl8192ee)
@@ -85,6 +93,7 @@ install: all
 	@install -p -m 644 rtlwifi.ko $(MODDESTDIR)	
 	@install -p -m 644 ./btcoexist/btcoexist.ko $(MODDESTDIR)/btcoexist
 	@install -p -m 644 ./rtl8192se/rtl8192se.ko $(MODDESTDIR)/rtl8192se
+	@install -p -m 644 ./rtl8192c/rtl8192c-common.ko $(MODDESTDIR)/rtl8192c
 	@install -p -m 644 ./rtl8192ce/rtl8192ce.ko $(MODDESTDIR)/rtl8192ce
 	@install -p -m 644 ./rtl8192de/rtl8192de.ko $(MODDESTDIR)/rtl8192de
 	@install -p -m 644 ./rtl8723ae/rtl8723ae.ko $(MODDESTDIR)/rtl8723ae
@@ -122,6 +131,7 @@ clean:
 	@find -name "tags" -exec rm {} \;
 	@rm -fr $(CLR_MODULE_FILES)
 	@make -C btcoexist/ clean
+	@make -C rtl8192c/ clean
 	@make -C rtl8192ce/ clean
 	@make -C rtl8192se/ clean
 	@make -C rtl8192de/ clean

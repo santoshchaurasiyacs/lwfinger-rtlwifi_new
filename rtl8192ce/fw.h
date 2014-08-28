@@ -40,40 +40,6 @@
 	((_pfwhdr->signature&0xFFF0) == 0x92C0 ||\
 	(_pfwhdr->signature&0xFFF0) == 0x88C0)
 
-struct rtl92c_firmware_header {
-	u16 signature;
-	u8 category;
-	u8 function;
-	u16 version;
-	u8 subversion;
-	u8 rsvd1;
-	u8 month;
-	u8 date;
-	u8 hour;
-	u8 minute;
-	u16 ramcodeSize;
-	u16 rsvd2;
-	u32 svnindex;
-	u32 rsvd3;
-	u32 rsvd4;
-	u32 rsvd5;
-};
-
-enum rtl8192c_h2c_cmd {
-	H2C_AP_OFFLOAD = 0,
-	H2C_SETPWRMODE = 1,
-	H2C_JOINBSSRPT = 2,
-	H2C_RSVDPAGE = 3,
-	H2C_RSSI_REPORT = 5,
-	H2C_RA_MASK = 6,
-	H2C_MACID_PS_MODE = 7,
-	H2C_P2P_PS_OFFLOAD = 8,
-	H2C_P2P_PS_CTW_CMD = 32,
-	MAX_H2CCMD
-};
-
-#define pagenum_128(_len)		(u32)(((_len)>>7) + ((_len)&0x7F ? 1:0))
-
 #define SET_H2CCMD_PWRMODE_PARM_MODE(__ph2ccmd, __val)			\
 	SET_BITS_TO_LE_1BYTE(__ph2ccmd, 0, 8, __val)
 #define SET_H2CCMD_PWRMODE_PARM_SMART_PS(__ph2ccmd, __val)		\

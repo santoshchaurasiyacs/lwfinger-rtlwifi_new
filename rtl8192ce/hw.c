@@ -41,6 +41,8 @@
 #include "fw.h"
 #include "led.h"
 #include "hw.h"
+#include "../rtl8192c/phy_common.h"
+#include "../rtl8192c/dm_common.h"
 
 #define LLT_CONFIG	5
 
@@ -149,7 +151,6 @@ void rtl92ce_get_hw_reg(struct ieee80211_hw *hw, u8 variable, u8 *val)
 void rtl92ce_set_hw_reg(struct ieee80211_hw *hw, u8 variable, u8 *val)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
-	struct rtl_pci_priv *rtlpcipriv = rtl_pcipriv(hw);
 	struct rtl_pci *rtlpci = rtl_pcidev(rtl_pcipriv(hw));
 	struct rtl_mac *mac = rtl_mac(rtl_priv(hw));
 	struct rtl_hal *rtlhal = rtl_hal(rtl_priv(hw));
@@ -277,8 +278,8 @@ void rtl92ce_set_hw_reg(struct ieee80211_hw *hw, u8 variable, u8 *val)
 			u8 *p_regtoset = NULL;
 			u8 index = 0;
 
-			if ((rtlpcipriv->btcoexist.bt_coexistence) &&
-			    (rtlpcipriv->btcoexist.bt_coexist_type ==
+			if ((rtlpriv->btcoexist.bt_coexistence) &&
+			    (rtlpriv->btcoexist.bt_coexist_type ==
 					BT_CSR_BC4))
 				p_regtoset = regtoset_bt;
 			else
@@ -684,7 +685,6 @@ static void _rtl92ce_gen_refresh_led_state(struct ieee80211_hw *hw)
 static bool _rtl92ce_init_mac(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
-	struct rtl_pci_priv *rtlpcipriv = rtl_pcipriv(hw);
 	struct rtl_pci *rtlpci = rtl_pcidev(rtl_pcipriv(hw));
 	struct rtl_hal *rtlhal = rtl_hal(rtl_priv(hw));
 
@@ -693,7 +693,7 @@ static bool _rtl92ce_init_mac(struct ieee80211_hw *hw)
 	u16 retry;
 
 	rtl_write_byte(rtlpriv, REG_RSV_CTRL, 0x00);
-	if (rtlpcipriv->btcoexist.bt_coexistence) {
+	if (rtlpriv->btcoexist.bt_coexistence) {
 		u32 value32;
 		value32 = rtl_read_dword(rtlpriv, REG_APS_FSMCO);
 		value32 |= (SOP_ABG | SOP_AMB | XOP_BTCK);
@@ -702,7 +702,7 @@ static bool _rtl92ce_init_mac(struct ieee80211_hw *hw)
 	rtl_write_byte(rtlpriv, REG_SPS0_CTRL, 0x2b);
 	rtl_write_byte(rtlpriv, REG_AFE_XTAL_CTRL, 0x0F);
 
-	if (rtlpcipriv->btcoexist.bt_coexistence) {
+	if (rtlpriv->btcoexist.bt_coexistence) {
 		u32 u4b_tmp = rtl_read_dword(rtlpriv, REG_AFE_XTAL_CTRL);
 
 		u4b_tmp &= (~0x00024800);
@@ -739,7 +739,7 @@ static bool _rtl92ce_init_mac(struct ieee80211_hw *hw)
 	rtl_write_byte(rtlpriv, REG_SYS_ISO_CTRL + 1, 0x82);
 	udelay(2);
 
-	if (rtlpcipriv->btcoexist.bt_coexistence) {
+	if (rtlpriv->btcoexist.bt_coexistence) {
 		bytetmp = rtl_read_byte(rtlpriv, REG_AFE_XTAL_CTRL+2) & 0xfd;
 		rtl_write_byte(rtlpriv, REG_AFE_XTAL_CTRL+2, bytetmp);
 	}
@@ -811,7 +811,6 @@ static void _rtl92ce_hw_configure(struct ieee80211_hw *hw)
 {
 	struct rtl_pci *rtlpci = rtl_pcidev(rtl_pcipriv(hw));
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
-	struct rtl_pci_priv *rtlpcipriv = rtl_pcipriv(hw);
 	u8 reg_bw_opmode;
 	u32 reg_ratr, reg_prsr;
 
@@ -843,8 +842,8 @@ static void _rtl92ce_hw_configure(struct ieee80211_hw *hw)
 	rtl_write_dword(rtlpriv, REG_RARFRC, 0x01000000);
 	rtl_write_dword(rtlpriv, REG_RARFRC + 4, 0x07060504);
 
-	if ((rtlpcipriv->btcoexist.bt_coexistence) &&
-	    (rtlpcipriv->btcoexist.bt_coexist_type == BT_CSR_BC4))
+	if ((rtlpriv->btcoexist.bt_coexistence) &&
+	    (rtlpriv->btcoexist.bt_coexist_type == BT_CSR_BC4))
 		rtl_write_dword(rtlpriv, REG_AGGLEN_LMT, 0x97427431);
 	else
 		rtl_write_dword(rtlpriv, REG_AGGLEN_LMT, 0xb972a841);
@@ -863,8 +862,8 @@ static void _rtl92ce_hw_configure(struct ieee80211_hw *hw)
 	rtl_write_byte(rtlpriv, REG_PIFS, 0x1C);
 	rtl_write_byte(rtlpriv, REG_AGGR_BREAK_TIME, 0x16);
 
-	if ((rtlpcipriv->btcoexist.bt_coexistence) &&
-	    (rtlpcipriv->btcoexist.bt_coexist_type == BT_CSR_BC4)) {
+	if ((rtlpriv->btcoexist.bt_coexistence) &&
+	    (rtlpriv->btcoexist.bt_coexist_type == BT_CSR_BC4)) {
 		rtl_write_word(rtlpriv, REG_NAV_PROT_LEN, 0x0020);
 		rtl_write_word(rtlpriv, REG_PROT_MODE_CTRL, 0x0402);
 	} else {
@@ -872,8 +871,8 @@ static void _rtl92ce_hw_configure(struct ieee80211_hw *hw)
 		rtl_write_word(rtlpriv, REG_NAV_PROT_LEN, 0x0020);
 	}
 
-	if ((rtlpcipriv->btcoexist.bt_coexistence) &&
-	     (rtlpcipriv->btcoexist.bt_coexist_type == BT_CSR_BC4))
+	if ((rtlpriv->btcoexist.bt_coexistence) &&
+	     (rtlpriv->btcoexist.bt_coexist_type == BT_CSR_BC4))
 		rtl_write_dword(rtlpriv, REG_FAST_EDCA_CTRL, 0x03086666);
 	else
 		rtl_write_dword(rtlpriv, REG_FAST_EDCA_CTRL, 0x086666);
@@ -1342,7 +1341,6 @@ void rtl92ce_disable_interrupt(struct ieee80211_hw *hw)
 static void _rtl92ce_poweroff_adapter(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
-	struct rtl_pci_priv *rtlpcipriv = rtl_pcipriv(hw);
 	struct rtl_hal *rtlhal = rtl_hal(rtl_priv(hw));
 	u8 u1b_tmp;
 	u32 u4b_tmp;
@@ -1361,9 +1359,9 @@ static void _rtl92ce_poweroff_adapter(struct ieee80211_hw *hw)
 	rtl_write_byte(rtlpriv, REG_MCUFWDL, 0x00);
 	rtl_write_dword(rtlpriv, REG_GPIO_PIN_CTRL, 0x00000000);
 	u1b_tmp = rtl_read_byte(rtlpriv, REG_GPIO_PIN_CTRL);
-	if ((rtlpcipriv->btcoexist.bt_coexistence) &&
-	     ((rtlpcipriv->btcoexist.bt_coexist_type == BT_CSR_BC4) ||
-	     (rtlpcipriv->btcoexist.bt_coexist_type == BT_CSR_BC8))) {
+	if ((rtlpriv->btcoexist.bt_coexistence) &&
+	     ((rtlpriv->btcoexist.bt_coexist_type == BT_CSR_BC4) ||
+	     (rtlpriv->btcoexist.bt_coexist_type == BT_CSR_BC8))) {
 		rtl_write_dword(rtlpriv, REG_GPIO_PIN_CTRL,
 			0x00F30000 | (u1b_tmp << 8));
 	} else {
@@ -1375,7 +1373,7 @@ static void _rtl92ce_poweroff_adapter(struct ieee80211_hw *hw)
 	rtl_write_byte(rtlpriv, REG_AFE_PLL_CTRL, 0x80);
 	if (!IS_81xxC_VENDOR_UMC_B_CUT(rtlhal->version))
 	   rtl_write_byte(rtlpriv, REG_SPS0_CTRL, 0x23);
-	if (rtlpcipriv->btcoexist.bt_coexistence) {
+	if (rtlpriv->btcoexist.bt_coexistence) {
 		u4b_tmp = rtl_read_dword(rtlpriv, REG_AFE_XTAL_CTRL);
 		u4b_tmp |= 0x03824800;
 		rtl_write_dword(rtlpriv, REG_AFE_XTAL_CTRL, u4b_tmp);
@@ -1472,19 +1470,6 @@ void rtl92ce_update_interrupt_mask(struct ieee80211_hw *hw,
 	rtl92ce_enable_interrupt(hw);
 }
 
-static u8 _rtl92c_get_chnl_group(u8 chnl)
-{
-	u8 group;
-
-	if (chnl < 3)
-		group = 0;
-	else if (chnl < 9)
-		group = 1;
-	else
-		group = 2;
-	return group;
-}
-
 static void _rtl92ce_read_txpower_info_from_hwpg(
 						struct ieee80211_hw *hw,
 						 bool autoload_fail,
@@ -1521,9 +1506,9 @@ static void _rtl92ce_read_txpower_info_from_hwpg(
 			tempval = hwinfo[EEPROM_TXPOWERHT40_2SDIFF + i];
 		else
 			tempval = EEPROM_DEFAULT_HT40_2SDIFF;
-		rtlefuse->eeprom_chnlarea_txpwr_ht40_2sdiif[RF90_PATH_A][i] =
+		rtlefuse->eeprom_chnlarea_txpwr_ht40_2sdif[RF90_PATH_A][i] =
 		    (tempval & 0xf);
-		rtlefuse->eeprom_chnlarea_txpwr_ht40_2sdiif[RF90_PATH_B][i] =
+		rtlefuse->eeprom_chnlarea_txpwr_ht40_2sdif[RF90_PATH_B][i] =
 		    ((tempval & 0xf0) >> 4);
 	}
 
@@ -1547,7 +1532,7 @@ static void _rtl92ce_read_txpower_info_from_hwpg(
 				"RF(%d) EEPROM HT40 2S Diff Area(%d) = 0x%x\n",
 				 rf_path, i,
 				 rtlefuse->
-				 eeprom_chnlarea_txpwr_ht40_2sdiif[rf_path]
+				 eeprom_chnlarea_txpwr_ht40_2sdif[rf_path]
 				 [i]);
 
 	for (rf_path = 0; rf_path < 2; rf_path++) {
@@ -1563,14 +1548,14 @@ static void _rtl92ce_read_txpower_info_from_hwpg(
 			if ((rtlefuse->
 			     eeprom_chnlarea_txpwr_ht40_1s[rf_path][index] -
 			     rtlefuse->
-			     eeprom_chnlarea_txpwr_ht40_2sdiif[rf_path][index])
+			     eeprom_chnlarea_txpwr_ht40_2sdif[rf_path][index])
 			    > 0) {
 				rtlefuse->txpwrlevel_ht40_2s[rf_path][i] =
 				    rtlefuse->
 				    eeprom_chnlarea_txpwr_ht40_1s[rf_path]
 				    [index] -
 				    rtlefuse->
-				    eeprom_chnlarea_txpwr_ht40_2sdiif[rf_path]
+				    eeprom_chnlarea_txpwr_ht40_2sdif[rf_path]
 				    [index];
 			} else {
 				rtlefuse->txpwrlevel_ht40_2s[rf_path][i] = 0;
@@ -1879,7 +1864,6 @@ static void rtl92ce_update_hal_rate_table(struct ieee80211_hw *hw,
 		struct ieee80211_sta *sta)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
-	struct rtl_pci_priv *rtlpcipriv = rtl_pcipriv(hw);
 	struct rtl_phy *rtlphy = &(rtlpriv->phy);
 	struct rtl_mac *mac = rtl_mac(rtl_priv(hw));
 	struct rtl_hal *rtlhal = rtl_hal(rtl_priv(hw));
@@ -1941,12 +1925,12 @@ static void rtl92ce_update_hal_rate_table(struct ieee80211_hw *hw,
 		break;
 	}
 
-	if ((rtlpcipriv->btcoexist.bt_coexistence) &&
-	     (rtlpcipriv->btcoexist.bt_coexist_type == BT_CSR_BC4) &&
-	     (rtlpcipriv->btcoexist.bt_cur_state) &&
-	     (rtlpcipriv->btcoexist.bt_ant_isolation) &&
-	     ((rtlpcipriv->btcoexist.bt_service == BT_SCO) ||
-	     (rtlpcipriv->btcoexist.bt_service == BT_BUSY)))
+	if ((rtlpriv->btcoexist.bt_coexistence) &&
+	     (rtlpriv->btcoexist.bt_coexist_type == BT_CSR_BC4) &&
+	     (rtlpriv->btcoexist.bt_cur_state) &&
+	     (rtlpriv->btcoexist.bt_ant_isolation) &&
+	     ((rtlpriv->btcoexist.bt_service == BT_SCO) ||
+	     (rtlpriv->btcoexist.bt_service == BT_BUSY)))
 		ratr_value &= 0x0fffcfc0;
 	else
 		ratr_value &= 0x0FFFFFFF;
@@ -2340,66 +2324,66 @@ void rtl92ce_set_key(struct ieee80211_hw *hw, u32 key_index,
 
 static void rtl8192ce_bt_var_init(struct ieee80211_hw *hw)
 {
-	struct rtl_pci_priv *rtlpcipriv = rtl_pcipriv(hw);
+	struct rtl_priv *rtlpriv = rtl_priv(hw);
 
-	rtlpcipriv->btcoexist.bt_coexistence =
-						rtlpcipriv->btcoexist.eeprom_bt_coexist;
-	rtlpcipriv->btcoexist.bt_ant_num =
-						rtlpcipriv->btcoexist.eeprom_bt_ant_num;
-	rtlpcipriv->btcoexist.bt_coexist_type =
-						rtlpcipriv->btcoexist.eeprom_bt_type;
+	rtlpriv->btcoexist.bt_coexistence =
+						rtlpriv->btcoexist.eeprom_bt_coexist;
+	rtlpriv->btcoexist.bt_ant_num =
+						rtlpriv->btcoexist.eeprom_bt_ant_num;
+	rtlpriv->btcoexist.bt_coexist_type =
+						rtlpriv->btcoexist.eeprom_bt_type;
 
-	if (rtlpcipriv->btcoexist.reg_bt_iso == 2)
-		rtlpcipriv->btcoexist.bt_ant_isolation =
-				rtlpcipriv->btcoexist.eeprom_bt_ant_isolation;
+	if (rtlpriv->btcoexist.reg_bt_iso == 2)
+		rtlpriv->btcoexist.bt_ant_isolation =
+				rtlpriv->btcoexist.eeprom_bt_ant_isolation;
 	else
-		rtlpcipriv->btcoexist.bt_ant_isolation =
-				rtlpcipriv->btcoexist.reg_bt_iso;
+		rtlpriv->btcoexist.bt_ant_isolation =
+				rtlpriv->btcoexist.reg_bt_iso;
 
-	rtlpcipriv->btcoexist.bt_radio_shared_type =
-					rtlpcipriv->btcoexist.eeprom_bt_radio_shared;
+	rtlpriv->btcoexist.bt_radio_shared_type =
+					rtlpriv->btcoexist.eeprom_bt_radio_shared;
 
-	if (rtlpcipriv->btcoexist.bt_coexistence) {
+	if (rtlpriv->btcoexist.bt_coexistence) {
 
-		if (rtlpcipriv->btcoexist.reg_bt_sco == 1)
-			rtlpcipriv->btcoexist.bt_service = BT_OTHER_ACTION;
-		else if (rtlpcipriv->btcoexist.reg_bt_sco == 2)
-			rtlpcipriv->btcoexist.bt_service = BT_SCO;
-		else if (rtlpcipriv->btcoexist.reg_bt_sco == 4)
-			rtlpcipriv->btcoexist.bt_service = BT_BUSY;
-		else if (rtlpcipriv->btcoexist.reg_bt_sco == 5)
-			rtlpcipriv->btcoexist.bt_service = BT_OTHERBUSY;
+		if (rtlpriv->btcoexist.reg_bt_sco == 1)
+			rtlpriv->btcoexist.bt_service = BT_OTHER_ACTION;
+		else if (rtlpriv->btcoexist.reg_bt_sco == 2)
+			rtlpriv->btcoexist.bt_service = BT_SCO;
+		else if (rtlpriv->btcoexist.reg_bt_sco == 4)
+			rtlpriv->btcoexist.bt_service = BT_BUSY;
+		else if (rtlpriv->btcoexist.reg_bt_sco == 5)
+			rtlpriv->btcoexist.bt_service = BT_OTHERBUSY;
 		else
-			rtlpcipriv->btcoexist.bt_service = BT_IDLE;
+			rtlpriv->btcoexist.bt_service = BT_IDLE;
 
-		rtlpcipriv->btcoexist.bt_edca_ul = 0;
-		rtlpcipriv->btcoexist.bt_edca_dl = 0;
-		rtlpcipriv->btcoexist.bt_rssi_state = 0xff;
+		rtlpriv->btcoexist.bt_edca_ul = 0;
+		rtlpriv->btcoexist.bt_edca_dl = 0;
+		rtlpriv->btcoexist.bt_rssi_state = 0xff;
 	}
 }
 
 void rtl8192ce_read_bt_coexist_info_from_hwpg(struct ieee80211_hw *hw,
 					      bool auto_load_fail, u8 *hwinfo)
 {
-	struct rtl_pci_priv *rtlpcipriv = rtl_pcipriv(hw);
+	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	u8 value;
 
 	if (!auto_load_fail) {
-		rtlpcipriv->btcoexist.eeprom_bt_coexist =
+		rtlpriv->btcoexist.eeprom_bt_coexist =
 						((hwinfo[RF_OPTION1] & 0xe0) >> 5);
 		value = hwinfo[RF_OPTION4];
-		rtlpcipriv->btcoexist.eeprom_bt_type = ((value & 0xe) >> 1);
-		rtlpcipriv->btcoexist.eeprom_bt_ant_num = (value & 0x1);
-		rtlpcipriv->btcoexist.eeprom_bt_ant_isolation =
+		rtlpriv->btcoexist.eeprom_bt_type = ((value & 0xe) >> 1);
+		rtlpriv->btcoexist.eeprom_bt_ant_num = (value & 0x1);
+		rtlpriv->btcoexist.eeprom_bt_ant_isolation =
 			((value & 0x10) >> 4);
-		rtlpcipriv->btcoexist.eeprom_bt_radio_shared =
+		rtlpriv->btcoexist.eeprom_bt_radio_shared =
 			((value & 0x20) >> 5);
 	} else {
-		rtlpcipriv->btcoexist.eeprom_bt_coexist = 0;
-		rtlpcipriv->btcoexist.eeprom_bt_type = BT_2WIRE;
-		rtlpcipriv->btcoexist.eeprom_bt_ant_num = ANT_X2;
-		rtlpcipriv->btcoexist.eeprom_bt_ant_isolation = 0;
-		rtlpcipriv->btcoexist.eeprom_bt_radio_shared = BT_RADIO_SHARED;
+		rtlpriv->btcoexist.eeprom_bt_coexist = 0;
+		rtlpriv->btcoexist.eeprom_bt_type = BT_2WIRE;
+		rtlpriv->btcoexist.eeprom_bt_ant_num = ANT_X2;
+		rtlpriv->btcoexist.eeprom_bt_ant_isolation = 0;
+		rtlpriv->btcoexist.eeprom_bt_radio_shared = BT_RADIO_SHARED;
 	}
 
 	rtl8192ce_bt_var_init(hw);
@@ -2407,14 +2391,14 @@ void rtl8192ce_read_bt_coexist_info_from_hwpg(struct ieee80211_hw *hw,
 
 void rtl8192ce_bt_reg_init(struct ieee80211_hw *hw)
 {
-	struct rtl_pci_priv *rtlpcipriv = rtl_pcipriv(hw);
+	struct rtl_priv *rtlpriv = rtl_priv(hw);
 
 	/* 0:Low, 1:High, 2:From Efuse. */
-	rtlpcipriv->btcoexist.reg_bt_iso = 2;
+	rtlpriv->btcoexist.reg_bt_iso = 2;
 	/* 0:Idle, 1:None-SCO, 2:SCO, 3:From Counter. */
-	rtlpcipriv->btcoexist.reg_bt_sco = 3;
+	rtlpriv->btcoexist.reg_bt_sco = 3;
 	/* 0:Disable BT control A-MPDU, 1:Enable BT control A-MPDU. */
-	rtlpcipriv->btcoexist.reg_bt_sco = 0;
+	rtlpriv->btcoexist.reg_bt_sco = 0;
 }
 
 
@@ -2422,24 +2406,22 @@ void rtl8192ce_bt_hw_init(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_phy *rtlphy = &(rtlpriv->phy);
-	struct rtl_pci_priv *rtlpcipriv = rtl_pcipriv(hw);
-
 	u8 u1_tmp;
 
-	if (rtlpcipriv->btcoexist.bt_coexistence &&
-	    ((rtlpcipriv->btcoexist.bt_coexist_type == BT_CSR_BC4) ||
-	      rtlpcipriv->btcoexist.bt_coexist_type == BT_CSR_BC8)) {
+	if (rtlpriv->btcoexist.bt_coexistence &&
+	    ((rtlpriv->btcoexist.bt_coexist_type == BT_CSR_BC4) ||
+	      rtlpriv->btcoexist.bt_coexist_type == BT_CSR_BC8)) {
 
-		if (rtlpcipriv->btcoexist.bt_ant_isolation) {
+		if (rtlpriv->btcoexist.bt_ant_isolation) {
 			rtl_write_byte(rtlpriv, REG_GPIO_MUXCFG, 0xa0);
 		}
 
 		u1_tmp = rtl_read_byte(rtlpriv, 0x4fd) &
 					BIT_OFFSET_LEN_MASK_32(0, 1);
 		u1_tmp = u1_tmp |
-			 ((rtlpcipriv->btcoexist.bt_ant_isolation == 1) ?
+			 ((rtlpriv->btcoexist.bt_ant_isolation == 1) ?
 			 0 : BIT_OFFSET_LEN_MASK_32(1, 1)) |
-			 ((rtlpcipriv->btcoexist.bt_service == BT_SCO) ?
+			 ((rtlpriv->btcoexist.bt_service == BT_SCO) ?
 			 0 : BIT_OFFSET_LEN_MASK_32(2, 1));
 		rtl_write_byte(rtlpriv, 0x4fd, u1_tmp);
 

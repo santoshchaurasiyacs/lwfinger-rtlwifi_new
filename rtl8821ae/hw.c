@@ -3468,7 +3468,6 @@ static void rtl8821ae_update_hal_rate_table(struct ieee80211_hw *hw,
 		struct ieee80211_sta *sta)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
-	struct rtl_pci_priv *rtlpcipriv = rtl_pcipriv(hw);
 	struct rtl_phy *rtlphy = &(rtlpriv->phy);
 	struct rtl_mac *mac = rtl_mac(rtl_priv(hw));
 	struct rtl_hal *rtlhal = rtl_hal(rtl_priv(hw));
@@ -3529,12 +3528,12 @@ static void rtl8821ae_update_hal_rate_table(struct ieee80211_hw *hw,
 		break;
 	}
 
-	if ((rtlpcipriv->btcoexist.bt_coexistence) &&
-	     (rtlpcipriv->btcoexist.bt_coexist_type == BT_CSR_BC4) &&
-	     (rtlpcipriv->btcoexist.bt_cur_state) &&
-	     (rtlpcipriv->btcoexist.bt_ant_isolation) &&
-	     ((rtlpcipriv->btcoexist.bt_service == BT_SCO) ||
-	     (rtlpcipriv->btcoexist.bt_service == BT_BUSY)))
+	if ((rtlpriv->btcoexist.bt_coexistence) &&
+	     (rtlpriv->btcoexist.bt_coexist_type == BT_CSR_BC4) &&
+	     (rtlpriv->btcoexist.bt_cur_state) &&
+	     (rtlpriv->btcoexist.bt_ant_isolation) &&
+	     ((rtlpriv->btcoexist.bt_service == BT_SCO) ||
+	     (rtlpriv->btcoexist.bt_service == BT_BUSY)))
 		ratr_value &= 0x0fffcfc0;
 	else
 		ratr_value &= 0x0FFFFFFF;
@@ -4209,14 +4208,14 @@ void rtl8821ae_set_key(struct ieee80211_hw *hw, u32 key_index,
 
 void rtl8821ae_bt_reg_init(struct ieee80211_hw *hw)
 {
-	struct rtl_pci_priv *rtlpcipriv = rtl_pcipriv(hw);
+	struct rtl_priv *rtlpriv = rtl_priv(hw);
 
 	/* 0:Low, 1:High, 2:From Efuse. */
-	rtlpcipriv->btcoexist.reg_bt_iso = 2;
+	rtlpriv->btcoexist.reg_bt_iso = 2;
 	/* 0:Idle, 1:None-SCO, 2:SCO, 3:From Counter. */
-	rtlpcipriv->btcoexist.reg_bt_sco = 3;
+	rtlpriv->btcoexist.reg_bt_sco = 3;
 	/* 0:Disable BT control A-MPDU, 1:Enable BT control A-MPDU. */
-	rtlpcipriv->btcoexist.reg_bt_sco = 0;
+	rtlpriv->btcoexist.reg_bt_sco = 0;
 }
 
 

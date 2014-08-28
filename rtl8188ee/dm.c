@@ -834,7 +834,6 @@ void rtl88e_dm_init_edca_turbo(struct ieee80211_hw *hw)
 static void rtl88e_dm_check_edca_turbo(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
-	struct rtl_pci_priv *rtlpcipriv = rtl_pcipriv(hw);
 	struct rtl_mac *mac = rtl_mac(rtl_priv(hw));
 
 	static u64 last_txok_cnt = 0;
@@ -847,20 +846,20 @@ static void rtl88e_dm_check_edca_turbo(struct ieee80211_hw *hw)
 	u32 edca_be_dl = 0x5ea42b;
 	bool bt_change_edca = false;
 
-	if ((last_bt_edca_ul != rtlpcipriv->btcoexist.bt_edca_ul) ||
-	    (last_bt_edca_dl != rtlpcipriv->btcoexist.bt_edca_dl)) {
+	if ((last_bt_edca_ul != rtlpriv->btcoexist.bt_edca_ul) ||
+	    (last_bt_edca_dl != rtlpriv->btcoexist.bt_edca_dl)) {
 		rtlpriv->dm.bcurrent_turbo_edca = false;
-		last_bt_edca_ul = rtlpcipriv->btcoexist.bt_edca_ul;
-		last_bt_edca_dl = rtlpcipriv->btcoexist.bt_edca_dl;
+		last_bt_edca_ul = rtlpriv->btcoexist.bt_edca_ul;
+		last_bt_edca_dl = rtlpriv->btcoexist.bt_edca_dl;
 	}
 
-	if (rtlpcipriv->btcoexist.bt_edca_ul != 0) {
-		edca_be_ul = rtlpcipriv->btcoexist.bt_edca_ul;
+	if (rtlpriv->btcoexist.bt_edca_ul != 0) {
+		edca_be_ul = rtlpriv->btcoexist.bt_edca_ul;
 		bt_change_edca = true;
 	}
 
-	if (rtlpcipriv->btcoexist.bt_edca_dl != 0) {
-		edca_be_ul = rtlpcipriv->btcoexist.bt_edca_dl;
+	if (rtlpriv->btcoexist.bt_edca_dl != 0) {
+		edca_be_ul = rtlpriv->btcoexist.bt_edca_dl;
 		bt_change_edca = true;
 	}
 
