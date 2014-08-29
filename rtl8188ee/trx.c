@@ -637,7 +637,7 @@ bool rtl88ee_rx_query_desc(struct ieee80211_hw *hw,
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,15,0))
 		if ((!_ieee80211_is_robust_mgmt_frame(hdr)) &&
 #else
-		if ((!_ieee80211_is_robust_mgmt_frame(hdr)) &&
+		if ((!ieee80211_is_robust_mgmt_frame(hdr)) &&
 #endif
 		    (ieee80211_has_protected(hdr->frame_control)))
 			rx_status->flag |= RX_FLAG_DECRYPTED;

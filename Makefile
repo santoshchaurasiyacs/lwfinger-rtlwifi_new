@@ -21,10 +21,10 @@ PCI_MAIN_OBJS	:=	\
 		regd.o	\
 		stats.o
 
-obj-$(CONFIG_RTLWIFI_PCI)	+= rtl_pci.o
+obj-m	+= rtl_pci.o
 rtl_pci-objs	:=		pci.o
 
-obj-$(CONFIG_RTLWIFI_USB)	+= rtl_usb.o
+obj-m	+= rtl_usb.o
 rtl_usb-objs	:=		usb.o
 
 rtlwifi-objs += $(PCI_MAIN_OBJS)

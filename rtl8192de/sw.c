@@ -413,4 +413,30 @@ spinlock_t globalmutex_for_poweron_and_poweroff;
 spinlock_t globalmutex_for_fwdownload;
 spinlock_t globalmutex_for_power_and_efuse;
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,4,0))
 module_pci_driver(rtl92de_driver);
+#else
+static int __init rtl92de_module_init(void)
+{
+	int ret = 0;
+
+	spin_lock_init(&globalmutex_for_poweron_and_poweroff);
+	spin_lock_init(&globalmutex_for_fwdownload);
+	spin_lock_init(&globalmutex_for_power_and_efuse);
+
+	ret = pci_register_driver(&rtl92de_driver);
+	if (ret)
+		RT_ASSERT(false, ": No device found\n");
+
+	return ret;
+}
+
+static void __exit rtl92de_module_exit(void)
+{
+	pci_unregister_driver(&rtl92de_driver);
+}
+
+module_init(rtl92de_module_init);
+module_exit(rtl92de_module_exit);
+#endif
+

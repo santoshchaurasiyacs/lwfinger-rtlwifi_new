@@ -1,3 +1,27 @@
+/******************************************************************************
+ *
+ * Copyright(c) 2012  Realtek Corporation.
+ *
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of version 2 of the GNU General Public License as
+ * published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+ * more details.
+ *
+ * The full GNU General Public License is included in this distribution in the
+ * file called LICENSE.
+ *
+ * Contact Information:
+ * wlanfae <wlanfae@realtek.com>
+ * Realtek Corporation, No. 2, Innovation Road II, Hsinchu Science Park,
+ * Hsinchu 300, Taiwan.
+ *
+ * Larry Finger <Larry.Finger@lwfinger.net>
+ *
+ *****************************************************************************/
 /***************************************************************
  * Description:
  *
@@ -11,7 +35,6 @@
  * include files
  **************************************************************/
 #include "halbt_precomp.h"
-#if 1
 /**************************************************************
  * Global variables, these are static variables
  **************************************************************/
@@ -1140,18 +1163,6 @@ static void halbtc8723b2ant_sw_mechanism1(struct btc_coexist *btcoexist,
 				   bool shrink_rx_lpf, bool low_penalty_ra,
 				   bool limited_dig, bool bt_lna_constrain)
 {
-	/*
-	u32	wifi_bw;
-
-	btcoexist->btc_get(btcoexist, BTC_GET_U4_WIFI_BW, &wifi_bw);
-
-	if (BTC_WIFI_BW_HT40 != wifi_bw)  //only shrink RF Rx LPF for HT40
-	{
-		if (shrink_rx_lpf)
-			shrink_rx_lpf = false;
-	}
-	*/
-
 	halbtc8723b2ant_rf_shrink(btcoexist, NORMAL_EXEC, shrink_rx_lpf);
 	halbtc8723b2ant_low_penalty_ra(btcoexist, NORMAL_EXEC, low_penalty_ra);
 }
@@ -1161,7 +1172,6 @@ static void halbtc8723b2ant_sw_mechanism2(struct btc_coexist *btcoexist,
 				   bool sw_dac_swing, u32 dac_swing_lvl)
 {
 	halbtc8723b2ant_agc_table(btcoexist, NORMAL_EXEC, agc_table_shift);
-	/*halbtc8723b2ant_adc_backoff(btcoexist, NORMAL_EXEC, adc_backoff);*/
 	halbtc8723b2ant_dac_swing(btcoexist, NORMAL_EXEC, sw_dac_swing,
 				  dac_swing_lvl);
 }
@@ -4054,5 +4064,3 @@ void ex_halbtc8723b2ant_periodical(struct btc_coexist *btcoexist)
 #endif
 }
 
-
-#endif

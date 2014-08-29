@@ -3630,6 +3630,7 @@ static u8 _rtl8821ae_mrate_idx_to_arfr_id(
 	return ret;
 }
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 8, 0))
 static u32 _rtl8821ae_rate_to_bitmap_2ssvht(__le16 vht_rate)
 {
 
@@ -3660,6 +3661,7 @@ static u32 _rtl8821ae_rate_to_bitmap_2ssvht(__le16 vht_rate)
 
 	return rate_bitmap;
 }
+#endif
 
 static u32 _rtl8821ae_set_ra_vht_ratr_bitmap(struct ieee80211_hw *hw,
 				     enum wireless_mode wirelessmode,

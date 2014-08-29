@@ -2450,6 +2450,9 @@ struct rtl_bt_coexist {
 	u8 lps_counter;
 };
 
+#ifndef cfg80211_pkt_pattern
+#define cfg80211_pkt_pattern cfg80211_wowlan_trig_pkt_pattern
+#endif
 
 struct rtl_priv {
 	struct ieee80211_hw *hw;

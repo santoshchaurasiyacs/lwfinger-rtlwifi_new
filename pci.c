@@ -38,7 +38,6 @@
 #include <linux/export.h>
 #endif
 #include "efuse.h"
-#include <linux/export.h>
 #include <linux/kmemleak.h>
 #include <linux/module.h>
 

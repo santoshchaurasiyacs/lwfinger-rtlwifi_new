@@ -27,11 +27,15 @@
  *
  *****************************************************************************/
 
-#include <linux/export.h>
+#include "../wifi.h"
 #include "dm_common.h"
 #include "phy_common.h"
 #include "../pci.h"
 #include "../base.h"
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,2,0))
+#include <linux/export.h>
+#endif
+#include <linux/module.h>
 
 #define BT_RSSI_STATE_NORMAL_POWER	BIT_OFFSET_LEN_MASK_32(0, 1)
 #define BT_RSSI_STATE_AMDPU_OFF		BIT_OFFSET_LEN_MASK_32(1, 1)

@@ -36,6 +36,9 @@
 
 #include "btcoexist/rtl_btc.h"
 #include <linux/firmware.h>
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,2,0))
+#include <linux/export.h>
+#endif
 
 void rtl_addr_delay(u32 addr)
 {
