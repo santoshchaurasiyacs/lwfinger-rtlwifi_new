@@ -2,13 +2,9 @@
 #define __RTL_COMPAT_H__
 
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,8,0))
 #define RX_FLAG_MACTIME_MPDU RX_FLAG_MACTIME_START
-#endif
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,7,0))
 #define IEEE80211_KEY_FLAG_SW_MGMT IEEE80211_KEY_FLAG_SW_MGMT_TX
-#endif
 
 struct ieee80211_mgmt_compat {
 	__le16 frame_control;

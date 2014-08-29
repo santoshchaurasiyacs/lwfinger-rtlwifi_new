@@ -32,9 +32,7 @@
 #include "../rtl8192ce/def.h"
 #include "dm_common.h"
 #include "phy_common.h"
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,2,0)) 
 #include <linux/export.h>
-#endif
 
 u32 rtl92c_phy_query_bb_reg(struct ieee80211_hw *hw, u32 regaddr, u32 bitmask)
 {

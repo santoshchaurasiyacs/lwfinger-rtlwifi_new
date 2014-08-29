@@ -3911,12 +3911,8 @@ static void _rtl92d_dualmac_reconfig_mgntinfo_forselfmac(struct ieee80211_hw *hw
 	struct rtl_mac *mac = &(rtlpriv->mac80211);
 	struct ieee80211_sta *sta = NULL;
 	u8 indexforchannel;
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,10,0))
 	enum nl80211_channel_type channel_type =
 		cfg80211_get_chandef_type(&(hw->conf.chandef));  /*added by binxia*/;
-#else
-	enum nl80211_channel_type channel_type = hw->conf.channel_type;
-#endif
 
 	for (indexforchannel = 0; indexforchannel < 46; indexforchannel++)
 			rtlphy->iqk_matrix_regsetting[indexforchannel].iqk_done = false;
@@ -3973,12 +3969,8 @@ static void _rtl92d_dualmac_reconfig_mgntinfo_foranothermac(struct ieee80211_hw 
 	struct rtl_mac *buddy_mac = &(buddy_priv->mac80211);
 	struct ieee80211_sta *sta = NULL;
 	u8 indexforchannel;
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,10,0))
 	enum nl80211_channel_type buddy_hw_channel_type =
 		cfg80211_get_chandef_type(&(buddy_hw->conf.chandef));
-#else
-	enum nl80211_channel_type buddy_hw_channel_type = buddy_hw->conf.channel_type;
-#endif
 
 	for (indexforchannel = 0; indexforchannel < 46; indexforchannel++)
 			rtlphy->iqk_matrix_regsetting[indexforchannel].iqk_done = false;

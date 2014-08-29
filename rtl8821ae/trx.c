@@ -78,11 +78,7 @@ static int _rtl8821ae_rate_mapping(struct ieee80211_hw *hw,
 	int rate_idx;
 
 	if (false == isht) {
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,10,0))
 		if (IEEE80211_BAND_2GHZ == hw->conf.chandef.chan->band) {
-#else
-		if (IEEE80211_BAND_2GHZ == hw->conf.channel->band) {
-#endif
 			switch (desc_rate) {
 			case DESC_RATE1M:
 				rate_idx = 0;
@@ -533,15 +529,6 @@ static void _rtl8821ae_translate_rx_signal_stuff(struct ieee80211_hw *hw,
 	psaddr = ieee80211_get_SA(hdr);
 	memcpy(pstatus->psaddr, psaddr, ETH_ALEN);
 
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(3, 5, 0))
-	packet_matchbssid = ((IEEE80211_FTYPE_CTL != type) &&
-	     (compare_ether_addr(mac->bssid, (fc & IEEE80211_FCTL_TODS) ?
-				  hdr->addr1 : (fc & IEEE80211_FCTL_FROMDS) ?
-				  hdr->addr2 : hdr->addr3)) && (!pstatus->hwerror) &&
-				  (!pstatus->crc) && (!pstatus->icv));
-	packet_toself = packet_matchbssid &&
-	    (compare_ether_addr(praddr, rtlefuse->dev_addr));
-#else
 	packet_matchbssid = (!ieee80211_is_ctl(fc) &&
 			     (ether_addr_equal(mac->bssid, ieee80211_has_tods(fc) ?
 			      hdr->addr1 : ieee80211_has_fromds(fc) ?
@@ -551,7 +538,6 @@ static void _rtl8821ae_translate_rx_signal_stuff(struct ieee80211_hw *hw,
 
 	packet_toself = packet_matchbssid &&
 	    (ether_addr_equal(praddr, rtlefuse->dev_addr));
-#endif
 
 	if (ieee80211_is_beacon(hdr->frame_control))
 		packet_beacon = true;
@@ -734,13 +720,8 @@ bool rtl8821ae_rx_query_desc(struct ieee80211_hw *hw,
 		RT_TRACE(rtlpriv, COMP_RXDESC, DBG_LOUD,
 			 "GGGGGGGGGGGGGet Wakeup Packet!! WakeMatch=%d\n",
 			 status->wake_match);
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,10,0))
 	rx_status->freq = hw->conf.chandef.chan->center_freq;
 	rx_status->band = hw->conf.chandef.chan->band;
-#else
-	rx_status->freq = hw->conf.channel->center_freq;
-	rx_status->band = hw->conf.channel->band;
-#endif
 
 	hdr = (struct ieee80211_hdr *)(skb->data + status->rx_drvinfo_size
 			+ status->rx_bufshift);
@@ -752,26 +733,16 @@ bool rtl8821ae_rx_query_desc(struct ieee80211_hw *hw,
 	if (status->rx_packet_bw == HT_CHANNEL_WIDTH_20_40)
 		rx_status->flag |= RX_FLAG_40MHZ;
 	else if (status->rx_packet_bw == HT_CHANNEL_WIDTH_80)
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 15, 0))
 		rx_status->vht_flag |= RX_VHT_FLAG_80MHZ;
-#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 8, 0))
-		rx_status->flag |= RX_FLAG_80MHZ;
-#else
-		;
-#endif
 	if (status->is_ht)
 		rx_status->flag |= RX_FLAG_HT;
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 8, 0))
 	if (status->is_vht)
 		rx_status->flag |= RX_FLAG_VHT;
-#endif
 
 	if (status->is_short_gi)
 		rx_status->flag |= RX_FLAG_SHORT_GI;
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 8, 0))
 	rx_status->vht_nss = status->vht_nss;
-#endif
 	rx_status->flag |= RX_FLAG_MACTIME_MPDU;
 
 	/* hw will set status->decrypted true, if it finds the
@@ -789,11 +760,7 @@ bool rtl8821ae_rx_query_desc(struct ieee80211_hw *hw,
 				return false;
 		}
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,15,0))
 		if ((!_ieee80211_is_robust_mgmt_frame(hdr)) &&
-#else
-		if ((!ieee80211_is_robust_mgmt_frame(hdr)) &&
-#endif
 		    (ieee80211_has_protected(hdr->frame_control)))
 			rx_status->flag |= RX_FLAG_DECRYPTED;
 		else

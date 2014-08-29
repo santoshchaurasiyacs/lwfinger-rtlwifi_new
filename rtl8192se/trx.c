@@ -77,11 +77,7 @@ static int _rtl92se_rate_mapping(struct ieee80211_hw *hw,
 	int rate_idx;
 
 	if (false == isht) {
-		#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,10,0))
 		if (IEEE80211_BAND_2GHZ == hw->conf.chandef.chan->band) {
-#else
-		if (IEEE80211_BAND_2GHZ == hw->conf.channel->band) {
-#endif
 			switch (desc_rate) {
 			case DESC92S_RATE1M:
 				rate_idx = 0;
@@ -390,27 +386,14 @@ static void _rtl92se_translate_rx_signal_stuff(struct ieee80211_hw *hw,
 	praddr = hdr->addr1;
 	/*psaddr = ieee80211_get_SA(hdr);*/
 
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(3, 5, 0))
-	packet_matchbssid = ((IEEE80211_FTYPE_CTL != type) &&
-	     (compare_ether_addr(mac->bssid, (fc & IEEE80211_FCTL_TODS) ?
-				  hdr->addr1 : (fc & IEEE80211_FCTL_FROMDS) ?
-				  hdr->addr2 : hdr->addr3)) && (!pstatus->hwerror) &&
-				  (!pstatus->crc) && (!pstatus->icv));
-#else
 	packet_matchbssid = ((IEEE80211_FTYPE_CTL != type) &&
 	     (ether_addr_equal(mac->bssid, (fc & IEEE80211_FCTL_TODS) ?
 			hdr->addr1 : (fc & IEEE80211_FCTL_FROMDS) ?
 			hdr->addr2 : hdr->addr3)) && (!pstatus->hwerror) &&
 			(!pstatus->crc) && (!pstatus->icv));
-#endif
 
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(3, 5, 0))
-	packet_toself = packet_matchbssid &&
-	    (compare_ether_addr(praddr, rtlefuse->dev_addr));
-#else
 	packet_toself = packet_matchbssid &&
 	    (ether_addr_equal(praddr, rtlefuse->dev_addr));
-#endif
 
 	if (ieee80211_is_beacon(hdr->frame_control))
 		packet_beacon = true;
@@ -457,13 +440,8 @@ bool rtl92se_rx_query_desc(struct ieee80211_hw *hw, struct rtl_stats *status,
 	if (status->hwerror)
 		return false;
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,10,0))
 	rx_status->freq = hw->conf.chandef.chan->center_freq;
 	rx_status->band = hw->conf.chandef.chan->band;
-#else
-	rx_status->freq = hw->conf.channel->center_freq;
-	rx_status->band = hw->conf.channel->band;
-#endif
 
 	hdr = (struct ieee80211_hdr *)(skb->data + status->rx_drvinfo_size
 				+ status->rx_bufshift);
@@ -493,11 +471,7 @@ bool rtl92se_rx_query_desc(struct ieee80211_hw *hw, struct rtl_stats *status,
 				rtl_get_hdr(skb));
 				return false;
 		}
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,15,0))
 		if ((!_ieee80211_is_robust_mgmt_frame(hdr)) &&
-#else
-		if ((!ieee80211_is_robust_mgmt_frame(hdr)) &&
-#endif
 		    (ieee80211_has_protected(hdr->frame_control)))
 			rx_status->flag |= RX_FLAG_DECRYPTED;
 		else

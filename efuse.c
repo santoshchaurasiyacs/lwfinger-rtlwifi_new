@@ -28,9 +28,7 @@
  *****************************************************************************/
 #include "wifi.h"
 #include "efuse.h"
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,2,0))
 #include <linux/export.h>
-#endif
 
 static const u8 MAX_PGPKT_SIZE = 9;
 static const u8 PGPKT_DATA_SIZE = 8;

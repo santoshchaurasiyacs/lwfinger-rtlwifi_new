@@ -34,9 +34,7 @@
 #include "base.h"
 #include "ps.h"
 #include "efuse.h"
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,2,0))
 #include <linux/export.h>
-#endif
 #include "efuse.h"
 #include <linux/kmemleak.h>
 #include <linux/module.h>
@@ -580,11 +578,7 @@ static void _rtl_pci_tx_chk_waitq(struct ieee80211_hw *hw)
 				_rtl_pci_update_earlymode_info(hw, skb,
 							       &tcb_desc, tid);
 
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,7,0))
-			rtlpriv->intf_ops->adapter_tx(hw, skb, &tcb_desc);
-#else
 			rtlpriv->intf_ops->adapter_tx(hw, NULL, skb, &tcb_desc);
-#endif
 		}
 	}
 }
@@ -1586,20 +1580,11 @@ int rtl_pci_reset_trx_ring(struct ieee80211_hw *hw)
 	return 0;
 }
 
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,7,0))
-static bool rtl_pci_tx_chk_waitq_insert(struct ieee80211_hw *hw,
-					struct sk_buff *skb)
-#else
 static bool rtl_pci_tx_chk_waitq_insert(struct ieee80211_hw *hw,
 					struct ieee80211_sta *sta,
 					struct sk_buff *skb)
-#endif
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,7,0))
-	struct ieee80211_tx_info *info = IEEE80211_SKB_CB(skb);
-	struct ieee80211_sta *sta = info->control.sta;
-#endif
 	struct rtl_sta_info *sta_entry = NULL;
 	u8 tid = rtl_get_tid(skb);
 	__le16 fc = rtl_get_fc(skb);
@@ -1634,22 +1619,14 @@ static bool rtl_pci_tx_chk_waitq_insert(struct ieee80211_hw *hw,
 	return true;
 }
 
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,7,0))
-int rtl_pci_tx(struct ieee80211_hw *hw, struct sk_buff *skb,
-	       struct rtl_tcb_desc *ptcb_desc)
-#else
 static int rtl_pci_tx(struct ieee80211_hw *hw,
 		      struct ieee80211_sta *sta,
 		      struct sk_buff *skb,
 		      struct rtl_tcb_desc *ptcb_desc)
-#endif
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_sta_info *sta_entry = NULL;
 	struct ieee80211_tx_info *info = IEEE80211_SKB_CB(skb);
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,7,0))
-	struct ieee80211_sta *sta = info->control.sta;
-#endif
 	struct rtl8192_tx_ring *ring;
 	struct rtl_tx_desc *pdesc;
 	struct rtl_tx_buffer_desc *ptx_bd_desc = NULL;

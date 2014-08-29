@@ -78,11 +78,7 @@ static int _rtl92ee_rate_mapping(struct ieee80211_hw *hw,
 	int rate_idx;
 
 	if (false == isht) {
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,10,0))
 		if (IEEE80211_BAND_2GHZ == hw->conf.chandef.chan->band) {
-#else
-		if (IEEE80211_BAND_2GHZ == hw->conf.channel->band) {
-#endif
 			switch (desc_rate) {
 			case DESC92C_RATE1M:
 				rate_idx = 0;
@@ -419,15 +415,6 @@ static void _rtl92ee_translate_rx_signal_stuff(struct ieee80211_hw *hw,
 	psaddr = ieee80211_get_SA(hdr);
 	memcpy(pstatus->psaddr, psaddr, ETH_ALEN);
 
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(3, 5, 0))
-	packet_matchbssid = (!ieee80211_is_ctl(fc) &&
-	     (compare_ether_addr(mac->bssid, ieee80211_has_tods(fc) ?
-				  hdr->addr1 : ieee80211_has_fromds(fc)  ?
-				  hdr->addr2 : hdr->addr3)) && (!pstatus->hwerror) &&
-				  (!pstatus->crc) && (!pstatus->icv));
-	packet_toself = packet_matchbssid &&
-	    (compare_ether_addr(praddr, rtlefuse->dev_addr));
-#else
 	packet_matchbssid = (!ieee80211_is_ctl(fc) &&
 			       (ether_addr_equal(mac->bssid,
 						ieee80211_has_tods(fc) ?
@@ -439,7 +426,6 @@ static void _rtl92ee_translate_rx_signal_stuff(struct ieee80211_hw *hw,
 
 	packet_toself = packet_matchbssid &&
 			 (ether_addr_equal(praddr, rtlefuse->dev_addr));
-#endif
 
 	if (ieee80211_is_beacon(fc))
 		packet_beacon = true;
@@ -552,13 +538,8 @@ bool rtl92ee_rx_query_desc(struct ieee80211_hw *hw,
 		RT_TRACE(rtlpriv, COMP_RXDESC , DBG_LOUD,
 			 "GGGGGGGGGGGGGet Wakeup Packet!! WakeMatch=%d\n",
 			 status->wake_match);
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,10,0))
 	rx_status->freq = hw->conf.chandef.chan->center_freq;
 	rx_status->band = hw->conf.chandef.chan->band;
-#else
-	rx_status->freq = hw->conf.channel->center_freq;
-	rx_status->band = hw->conf.channel->band;
-#endif
 
 	hdr = (struct ieee80211_hdr *)(skb->data + status->rx_drvinfo_size +
 				       status->rx_bufshift + 24);
@@ -589,11 +570,7 @@ bool rtl92ee_rx_query_desc(struct ieee80211_hw *hw,
 				return false;
 		}
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,15,0))
 		if ((!_ieee80211_is_robust_mgmt_frame(hdr)) &&
-#else
-		if ((!ieee80211_is_robust_mgmt_frame(hdr)) &&
-#endif
 		    (ieee80211_has_protected(hdr->frame_control)))
 			rx_status->flag |= RX_FLAG_DECRYPTED;
 		else

@@ -30,9 +30,7 @@
 #include "wifi.h"
 #include "cam.h"
 #include <linux/moduleparam.h>
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,2,0)) 
 #include <linux/export.h>
-#endif
 
 #ifndef GET_INODE_DATA
 	#define GET_INODE_DATA(__node)		PDE_DATA(__node)
@@ -105,11 +103,7 @@ static int rtl_proc_get_mac_0(struct seq_file *m, void *v)
 
 static int dl_proc_open_mac_0(struct inode *inode, struct file *file)
 {
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 10, 0))
 	return single_open(file, rtl_proc_get_mac_0, GET_INODE_DATA(inode));
-#else
-	return single_open(file, rtl_proc_get_mac_0, inode);
-#endif
 }
 
 static const struct file_operations file_ops_mac_0 = {
@@ -139,11 +133,7 @@ static int rtl_proc_get_mac_1(struct seq_file *m, void *v)
 
 static int dl_proc_open_mac_1(struct inode *inode, struct file *file)
 {
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 10, 0))
 	return single_open(file, rtl_proc_get_mac_1, GET_INODE_DATA(inode));
-#else
-	return single_open(file, rtl_proc_get_mac_1, inode);
-#endif
 }
 
 static const struct file_operations file_ops_mac_1 = {
@@ -173,11 +163,7 @@ static int rtl_proc_get_mac_2(struct seq_file *m, void *v)
 
 static int dl_proc_open_mac_2(struct inode *inode, struct file *file)
 {
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 10, 0))
 	return single_open(file, rtl_proc_get_mac_2, GET_INODE_DATA(inode));
-#else
-	return single_open(file, rtl_proc_get_mac_2, inode);
-#endif
 }
 
 static const struct file_operations file_ops_mac_2 = {
@@ -207,11 +193,7 @@ static int rtl_proc_get_mac_3(struct seq_file *m, void *v)
 
 static int dl_proc_open_mac_3(struct inode *inode, struct file *file)
 {
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 10, 0))
 	return single_open(file, rtl_proc_get_mac_3, GET_INODE_DATA(inode));
-#else
-	return single_open(file, rtl_proc_get_mac_3, inode);
-#endif
 }
 
 static const struct file_operations file_ops_mac_3 = {
@@ -241,11 +223,7 @@ static int rtl_proc_get_mac_4(struct seq_file *m, void *v)
 
 static int dl_proc_open_mac_4(struct inode *inode, struct file *file)
 {
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 10, 0))
 	return single_open(file, rtl_proc_get_mac_4, GET_INODE_DATA(inode));
-#else
-	return single_open(file, rtl_proc_get_mac_4, inode);
-#endif
 }
 
 static const struct file_operations file_ops_mac_4 = {
@@ -275,11 +253,7 @@ static int rtl_proc_get_mac_5(struct seq_file *m, void *v)
 
 static int dl_proc_open_mac_5(struct inode *inode, struct file *file)
 {
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 10, 0))
 	return single_open(file, rtl_proc_get_mac_5, GET_INODE_DATA(inode));
-#else
-	return single_open(file, rtl_proc_get_mac_5, inode);
-#endif
 }
 
 static const struct file_operations file_ops_mac_5 = {
@@ -309,11 +283,7 @@ static int rtl_proc_get_mac_6(struct seq_file *m, void *v)
 
 static int dl_proc_open_mac_6(struct inode *inode, struct file *file)
 {
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 10, 0))
 	return single_open(file, rtl_proc_get_mac_6, GET_INODE_DATA(inode));
-#else
-	return single_open(file, rtl_proc_get_mac_6, inode);
-#endif
 }
 
 static const struct file_operations file_ops_mac_6 = {
@@ -343,11 +313,7 @@ static int rtl_proc_get_mac_7(struct seq_file *m, void *v)
 
 static int dl_proc_open_mac_7(struct inode *inode, struct file *file)
 {
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 10, 0))
 	return single_open(file, rtl_proc_get_mac_7, GET_INODE_DATA(inode));
-#else
-	return single_open(file, rtl_proc_get_mac_7, inode);
-#endif
 }
 
 static const struct file_operations file_ops_mac_7 = {
@@ -376,11 +342,7 @@ static int rtl_proc_get_bb_8(struct seq_file *m, void *v)
 
 static int dl_proc_open_bb_8(struct inode *inode, struct file *file)
 {
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 10, 0))
 	return single_open(file, rtl_proc_get_bb_8, GET_INODE_DATA(inode));
-#else
-	return single_open(file, rtl_proc_get_bb_8, inode);
-#endif
 }
 
 static const struct file_operations file_ops_bb_8 = {
@@ -409,11 +371,7 @@ static int rtl_proc_get_bb_9(struct seq_file *m, void *v)
 
 static int dl_proc_open_bb_9(struct inode *inode, struct file *file)
 {
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 10, 0))
 	return single_open(file, rtl_proc_get_bb_9, GET_INODE_DATA(inode));
-#else
-	return single_open(file, rtl_proc_get_bb_9, inode);
-#endif
 }
 
 static const struct file_operations file_ops_bb_9 = {
@@ -442,11 +400,7 @@ static int rtl_proc_get_bb_a(struct seq_file *m, void *v)
 
 static int dl_proc_open_bb_a(struct inode *inode, struct file *file)
 {
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 10, 0))
 	return single_open(file, rtl_proc_get_bb_a, GET_INODE_DATA(inode));
-#else
-	return single_open(file, rtl_proc_get_bb_a, inode);
-#endif
 }
 
 static const struct file_operations file_ops_bb_a = {
@@ -475,11 +429,7 @@ static int rtl_proc_get_bb_b(struct seq_file *m, void *v)
 
 static int dl_proc_open_bb_b(struct inode *inode, struct file *file)
 {
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 10, 0))
 	return single_open(file, rtl_proc_get_bb_b, GET_INODE_DATA(inode));
-#else
-	return single_open(file, rtl_proc_get_bb_b, inode);
-#endif
 }
 
 static const struct file_operations file_ops_bb_b = {
@@ -508,11 +458,7 @@ static int rtl_proc_get_bb_c(struct seq_file *m, void *v)
 
 static int dl_proc_open_bb_c(struct inode *inode, struct file *file)
 {
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 10, 0))
 	return single_open(file, rtl_proc_get_bb_c, GET_INODE_DATA(inode));
-#else
-	return single_open(file, rtl_proc_get_bb_c, inode);
-#endif
 }
 
 static const struct file_operations file_ops_bb_c = {
@@ -541,11 +487,7 @@ static int rtl_proc_get_bb_d(struct seq_file *m, void *v)
 
 static int dl_proc_open_bb_d(struct inode *inode, struct file *file)
 {
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 10, 0))
 	return single_open(file, rtl_proc_get_bb_d, GET_INODE_DATA(inode));
-#else
-	return single_open(file, rtl_proc_get_bb_d, inode);
-#endif
 }
 
 static const struct file_operations file_ops_bb_d = {
@@ -574,11 +516,7 @@ static int rtl_proc_get_bb_e(struct seq_file *m, void *v)
 
 static int dl_proc_open_bb_e(struct inode *inode, struct file *file)
 {
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 10, 0))
 	return single_open(file, rtl_proc_get_bb_e, GET_INODE_DATA(inode));
-#else
-	return single_open(file, rtl_proc_get_bb_e, inode);
-#endif
 }
 
 static const struct file_operations file_ops_bb_e = {
@@ -607,11 +545,7 @@ static int rtl_proc_get_bb_f(struct seq_file *m, void *v)
 
 static int dl_proc_open_bb_f(struct inode *inode, struct file *file)
 {
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 10, 0))
 	return single_open(file, rtl_proc_get_bb_f, GET_INODE_DATA(inode));
-#else
-	return single_open(file, rtl_proc_get_bb_f, inode);
-#endif
 }
 
 static const struct file_operations file_ops_bb_f = {
@@ -640,11 +574,7 @@ static int rtl_proc_get_reg_rf_a(struct seq_file *m, void *v)
 
 static int dl_proc_open_rf_a(struct inode *inode, struct file *file)
 {
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 10, 0))
 	return single_open(file, rtl_proc_get_reg_rf_a, GET_INODE_DATA(inode));
-#else
-	return single_open(file, rtl_proc_get_reg_rf_a, inode);
-#endif
 }
 
 static const struct file_operations file_ops_rf_a = {
@@ -673,11 +603,7 @@ static int rtl_proc_get_reg_rf_b(struct seq_file *m, void *v)
 
 static int dl_proc_open_rf_b(struct inode *inode, struct file *file)
 {
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 10, 0))
 	return single_open(file, rtl_proc_get_reg_rf_b, GET_INODE_DATA(inode));
-#else
-	return single_open(file, rtl_proc_get_reg_rf_b, inode);
-#endif
 }
 
 static const struct file_operations file_ops_rf_b = {
@@ -733,11 +659,7 @@ static int rtl_proc_get_cam_register_1(struct seq_file *m, void *v)
 static int dl_proc_open_cam_1(struct inode *inode, struct file *file)
 {
 	return single_open(file, rtl_proc_get_cam_register_1,
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 10, 0))
 			   GET_INODE_DATA(inode));
-#else
-			   inode);
-#endif
 }
 
 static const struct file_operations file_ops_cam_1 = {
@@ -791,11 +713,7 @@ static int rtl_proc_get_cam_register_2(struct seq_file *m, void *v)
 static int dl_proc_open_cam_2(struct inode *inode, struct file *file)
 {
 	return single_open(file, rtl_proc_get_cam_register_2,
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 10, 0))
 			   GET_INODE_DATA(inode));
-#else
-			   inode);
-#endif
 }
 
 static const struct file_operations file_ops_cam_2 = {
@@ -848,11 +766,7 @@ static int rtl_proc_get_cam_register_3(struct seq_file *m, void *v)
 static int dl_proc_open_cam_3(struct inode *inode, struct file *file)
 {
 	return single_open(file, rtl_proc_get_cam_register_3,
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 10, 0))
 			   GET_INODE_DATA(inode));
-#else
-			   inode);
-#endif
 }
 
 static const struct file_operations file_ops_cam_3 = {

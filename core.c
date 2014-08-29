@@ -36,9 +36,7 @@
 
 #include "btcoexist/rtl_btc.h"
 #include <linux/firmware.h>
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,2,0))
 #include <linux/export.h>
-#endif
 
 void rtl_addr_delay(u32 addr)
 {
@@ -207,13 +205,9 @@ static void rtl_op_stop(struct ieee80211_hw *hw)
 
 
 
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,7,0))
-static void rtl_op_tx(struct ieee80211_hw *hw, struct sk_buff *skb)
-#else
 static void rtl_op_tx(struct ieee80211_hw *hw,
 		      struct ieee80211_tx_control *control,
 		      struct sk_buff *skb)
-#endif
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_hal *rtlhal = rtl_hal(rtl_priv(hw));
@@ -229,13 +223,8 @@ static void rtl_op_tx(struct ieee80211_hw *hw,
 
 
 
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,7,0))
-	if (!rtlpriv->intf_ops->waitq_insert(hw, skb))
-		rtlpriv->intf_ops->adapter_tx(hw, skb, &tcb_desc);
-#else
-if (!rtlpriv->intf_ops->waitq_insert(hw, control->sta, skb))
+	if (!rtlpriv->intf_ops->waitq_insert(hw, control->sta, skb))
 		rtlpriv->intf_ops->adapter_tx(hw, control->sta, skb, &tcb_desc);
-#endif
 	return;
 
 err_free:
@@ -257,9 +246,7 @@ static int rtl_op_add_interface(struct ieee80211_hw *hw,
 	}
 
 /*This flag is not defined before kernel 3.4*/
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,4,0))
 	vif->driver_flags |= IEEE80211_VIF_BEACON_FILTER;
-#endif
 
 	rtl_ips_nic_on(hw);
 
@@ -588,9 +575,7 @@ static int rtl_op_resume(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_hal *rtlhal = rtl_hal(rtlpriv);
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 1, 0))
 	struct rtl_mac *mac = rtl_mac(rtl_priv(hw));
-#endif
 	struct timeval ts;
 
 	RT_TRACE(rtlpriv, COMP_POWER, DBG_DMESG, "\n");
@@ -605,9 +590,7 @@ static int rtl_op_resume(struct ieee80211_hw *hw)
 
 	rtl_op_start(hw);
 	device_set_wakeup_enable(wiphy_dev(hw->wiphy), false);
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 1, 0))
 	ieee80211_resume_disconnect(mac->vif);
-#endif
 	rtlhal->wake_from_pnp_sleep = false;
 	return 0;
 }
@@ -681,23 +664,15 @@ static int rtl_op_config(struct ieee80211_hw *hw, u32 changed)
 
 	if (changed & IEEE80211_CONF_CHANGE_CHANNEL &&
 		rtlpriv->proximity.proxim_on == false) {
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 10, 0))
 		struct ieee80211_channel *channel = hw->conf.chandef.chan;
 		enum nl80211_chan_width width = hw->conf.chandef.width;
-#else
-		struct ieee80211_channel *channel = hw->conf.channel;
-#endif
 		enum nl80211_channel_type channel_type = NL80211_CHAN_NO_HT;
 		u8 wide_chan = (u8) channel->hw_value;
 
 		/* channel_type is for 20&40M */
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 10, 0))
 		if (width < NL80211_CHAN_WIDTH_80)
 			channel_type =
 				cfg80211_get_chandef_type(&(hw->conf.chandef));
-#else
-		channel_type = hw->conf.channel_type;
-#endif
 		if (mac->act_scanning)
 			mac->n_channels++;
 
@@ -718,7 +693,6 @@ static int rtl_op_config(struct ieee80211_hw *hw, u32 changed)
 		 *it here based on UPPER & LOWER
 		 */
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 10, 0))
 		if (width >= NL80211_CHAN_WIDTH_80) {
 			if (width == NL80211_CHAN_WIDTH_80) {
 				u32 center_freq = hw->conf.chandef.center_freq1;
@@ -759,9 +733,7 @@ static int rtl_op_config(struct ieee80211_hw *hw, u32 changed)
 					}
 				}
 			}
-		} else
-#endif
-		{
+		} else {
 			switch (channel_type) {
 			case NL80211_CHAN_HT20:
 			case NL80211_CHAN_NO_HT:
@@ -940,10 +912,8 @@ static int rtl_op_sta_add(struct ieee80211_hw *hw,
 			sta_entry->wireless_mode = WIRELESS_MODE_A;
 			if (sta->ht_cap.ht_supported == true)
 				sta_entry->wireless_mode = WIRELESS_MODE_N_5G;
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 8, 0))
 			if (sta->vht_cap.vht_supported == true)
 				sta_entry->wireless_mode = WIRELESS_MODE_AC_5G;
-#endif
 
 			if (vif->type == NL80211_IFTYPE_ADHOC)
 				sta_entry->wireless_mode = WIRELESS_MODE_A;
@@ -1007,14 +977,9 @@ static int _rtl_get_hal_qnum(u16 queue)
  *for mac80211 VO=0, VI=1, BE=2, BK=3
  *for rtl819x  BE=0, BK=1, VI=2, VO=3
  */
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,2,0))
 static int rtl_op_conf_tx(struct ieee80211_hw *hw,
 			  struct ieee80211_vif *vif, u16 queue,
 			  const struct ieee80211_tx_queue_params *param)
-#else
-static int rtl_op_conf_tx(struct ieee80211_hw *hw, u16 queue,
-			  const struct ieee80211_tx_queue_params *param)
-#endif
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_mac *mac = rtl_mac(rtl_priv(hw));
@@ -1144,14 +1109,12 @@ static void rtl_op_bss_info_changed(struct ieee80211_hw *hw,
 					mac->mode = WIRELESS_MODE_N_5G;
 			}
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 8, 0))
 			if (sta->vht_cap.vht_supported) {
 				if (rtlhal->current_bandtype == BAND_ON_5G)
 					mac->mode = WIRELESS_MODE_AC_5G;
 				else
 					mac->mode = WIRELESS_MODE_AC_24G;
 			}
-#endif
 
 			if (vif->type == NL80211_IFTYPE_STATION && sta)
 				rtlpriv->cfg->ops->update_rate_tbl(hw, sta, 0);
@@ -1290,14 +1253,12 @@ static void rtl_op_bss_info_changed(struct ieee80211_hw *hw,
 				mac->mode = WIRELESS_MODE_N_5G;
 		}
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 8, 0))
 		if (sta->vht_cap.vht_supported) {
 			if (rtlhal->current_bandtype == BAND_ON_5G)
 				mac->mode = WIRELESS_MODE_AC_5G;
 			else
 				mac->mode = WIRELESS_MODE_AC_24G;
 		}
-#endif
 
 		/* just station need it, because ibss & ap mode will
 		 * set in sta_add, and will be NULL here */
@@ -1318,10 +1279,8 @@ static void rtl_op_bss_info_changed(struct ieee80211_hw *hw,
 			 * */
 		}
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 8, 0))
 		if (sta->vht_cap.vht_supported)
 			mac->vht_enable = true;
-#endif
 
 		if (changed & BSS_CHANGED_BASIC_RATES) {
 			/* for 5G must << RATE_6M_INDEX=4,
@@ -1341,11 +1300,7 @@ out:
 	mutex_unlock(&rtlpriv->locks.conf_mutex);
 }
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,2,0))
 static u64 rtl_op_get_tsf(struct ieee80211_hw *hw, struct ieee80211_vif *vif)
-#else
-static u64 rtl_op_get_tsf(struct ieee80211_hw *hw)
-#endif
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	u64 tsf;
@@ -1354,12 +1309,8 @@ static u64 rtl_op_get_tsf(struct ieee80211_hw *hw)
 	return tsf;
 }
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,2,0))
 static void rtl_op_set_tsf(struct ieee80211_hw *hw,
 			   struct ieee80211_vif *vif, u64 tsf)
-#else
-static void rtl_op_set_tsf(struct ieee80211_hw *hw, u64 tsf)
-#endif
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_mac *mac = rtl_mac(rtl_priv(hw));
@@ -1369,11 +1320,7 @@ static void rtl_op_set_tsf(struct ieee80211_hw *hw, u64 tsf)
 	rtlpriv->cfg->ops->set_hw_reg(hw, HW_VAR_CORRECT_TSF, (u8 *) (&bibss));
 }
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,2,0))
 static void rtl_op_reset_tsf(struct ieee80211_hw *hw, struct ieee80211_vif *vif)
-#else
-static void rtl_op_reset_tsf(struct ieee80211_hw *hw)
-#endif
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	u8 tmp = 0;
@@ -1411,13 +1358,9 @@ static int rtl_op_ampdu_action(struct ieee80211_hw *hw,
 			 "IEEE80211_AMPDU_TX_START: TID:%d\n", tid);
 		return rtl_tx_agg_start(hw, vif, sta, tid, ssn);
 		break;
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,9,0))
 	case IEEE80211_AMPDU_TX_STOP_CONT:
 	case IEEE80211_AMPDU_TX_STOP_FLUSH:
 	case IEEE80211_AMPDU_TX_STOP_FLUSH_CONT:
-#else
-	case IEEE80211_AMPDU_TX_STOP:
-#endif
 		RT_TRACE(rtlpriv, COMP_MAC80211, DBG_TRACE,
 			 "IEEE80211_AMPDU_TX_STOP: TID:%d\n", tid);
 		return rtl_tx_agg_stop(hw, vif, sta, tid);
@@ -1743,22 +1686,14 @@ static void rtl_op_rfkill_poll(struct ieee80211_hw *hw)
  * maybe send after offchannel or rf sleep, this may cause
  * dis-association by AP */
 static void rtl_op_flush(struct ieee80211_hw *hw,
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 16, 0))
 			 struct ieee80211_vif *vif,
-#endif
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 10, 0))
 			 u32 queues,
-#endif
 			 bool drop)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 
 	if (rtlpriv->intf_ops->flush)
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 10, 0))
 		rtlpriv->intf_ops->flush(hw, queues, drop);
-#else
-		rtlpriv->intf_ops->flush(hw, 0, drop);
-#endif
 }
 
 const struct ieee80211_ops rtl_ops = {

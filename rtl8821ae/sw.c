@@ -486,26 +486,4 @@ static struct pci_driver rtl8821ae_driver = {
 	.driver.pm = &rtlwifi_pm_ops,
 };
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,4,0))
 module_pci_driver(rtl8821ae_driver);
-#else
-static int __init rtl8821ae_module_init(void)
-{
-	int ret;
-
-	/* printk("==========>rtl8821ae_module_init().\n"); */
-	ret = pci_register_driver(&rtl8821ae_driver);
-	if (ret)
-		RT_ASSERT(false, ": No device found\n");
-
-	return ret;
-}
-
-static void __exit rtl8821ae_module_exit(void)
-{
-	pci_unregister_driver(&rtl8821ae_driver);
-}
-
-module_init(rtl8821ae_module_init);
-module_exit(rtl8821ae_module_exit);
-#endif

@@ -33,9 +33,7 @@
 #include "../rtl8192ce/reg.h"
 #include "../rtl8192ce/def.h"
 #include "fw_common.h"
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,2,0)) 
 #include <linux/export.h>
-#endif
 #include <linux/kmemleak.h>
 
 static void _rtl92c_enable_fw_download(struct ieee80211_hw *hw, bool enable)

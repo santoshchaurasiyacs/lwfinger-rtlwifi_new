@@ -32,9 +32,7 @@
 #include "phy_common.h"
 #include "../pci.h"
 #include "../base.h"
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,2,0))
 #include <linux/export.h>
-#endif
 #include <linux/module.h>
 
 #define BT_RSSI_STATE_NORMAL_POWER	BIT_OFFSET_LEN_MASK_32(0, 1)

@@ -2112,24 +2112,15 @@ struct rtl_intf_ops {
 	bool (*check_buddy_priv)(struct ieee80211_hw *hw,
 			struct rtl_priv **buddy_priv);
 
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,7,0))
-	int (*adapter_tx) (struct ieee80211_hw * hw, struct sk_buff * skb,
-			   struct rtl_tcb_desc *ptcb_desc);
-#else
 	int (*adapter_tx)(struct ieee80211_hw *hw,
 			   struct ieee80211_sta *sta,
 			   struct sk_buff *skb,
 			   struct rtl_tcb_desc *ptcb_desc);
-#endif
 	void (*flush)(struct ieee80211_hw *hw, u32 queues, bool drop);
 	int (*reset_trx_ring)(struct ieee80211_hw *hw);
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,7,0))
-	bool (*waitq_insert) (struct ieee80211_hw *hw, struct sk_buff *skb);
-#else
 	bool (*waitq_insert)(struct ieee80211_hw *hw,
 			      struct ieee80211_sta *sta,
 			      struct sk_buff *skb);
-#endif
 
 	/*pci */
 	void (*disable_aspm)(struct ieee80211_hw *hw);
@@ -2449,10 +2440,6 @@ struct rtl_bt_coexist {
 	bool hold_for_bt_operation;
 	u8 lps_counter;
 };
-
-#if (LINUX_VERSION_CODE <= KERNEL_VERSION(3,11,0)) 
-#define cfg80211_pkt_pattern cfg80211_wowlan_trig_pkt_pattern
-#endif
 
 struct rtl_priv {
 	struct ieee80211_hw *hw;

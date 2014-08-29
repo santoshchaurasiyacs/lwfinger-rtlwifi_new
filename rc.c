@@ -110,19 +110,15 @@ static void _rtl_rc_rate_set_series(struct rtl_priv *rtlpriv,
 	if (sta) {
 		sgi_20 = sta->ht_cap.cap & IEEE80211_HT_CAP_SGI_20;
 		sgi_40 = sta->ht_cap.cap & IEEE80211_HT_CAP_SGI_40;
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 8, 0))
 		sgi_80 = sta->vht_cap.cap & IEEE80211_VHT_CAP_SHORT_GI_80;
-#endif
 		sta_entry = (struct rtl_sta_info *) sta->drv_priv;
 		wireless_mode = sta_entry->wireless_mode;
 	}
 	rate->count = tries;
 	rate->idx = rix >= 0x00 ? rix : 0x00;
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 8, 0))
 	if (rtlpriv->rtlhal.hw_type == HARDWARE_TYPE_RTL8812AE &&
 	    wireless_mode == WIRELESS_MODE_AC_5G) 
 		rate->idx += 0x10;/*2NSS for 8812AE*/
-#endif
 
 	if (!not_data) {
 		if (txrc->short_preamble)
@@ -132,17 +128,13 @@ static void _rtl_rc_rate_set_series(struct rtl_priv *rtlpriv,
 			if (sta && (sta->ht_cap.cap &
 				    IEEE80211_HT_CAP_SUP_WIDTH_20_40))
 				rate->flags |= IEEE80211_TX_RC_40_MHZ_WIDTH;
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 8, 0))
 			if (sta && (sta->vht_cap.vht_supported))
 				rate->flags |= IEEE80211_TX_RC_80_MHZ_WIDTH;
-#endif
 		} else {
 			if (mac->bw_40)
 				rate->flags |= IEEE80211_TX_RC_40_MHZ_WIDTH;
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 8, 0))
 			if (mac->bw_80)
 				rate->flags |= IEEE80211_TX_RC_80_MHZ_WIDTH;
-#endif
 		}
 
 		if (sgi_20 || sgi_40 || sgi_80)
@@ -151,11 +143,6 @@ static void _rtl_rc_rate_set_series(struct rtl_priv *rtlpriv,
 		    ((wireless_mode == WIRELESS_MODE_N_5G) ||
 		     (wireless_mode == WIRELESS_MODE_N_24G)))
 			rate->flags |= IEEE80211_TX_RC_MCS;
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 8, 0))
-		if (sta && sta->vht_cap.vht_supported &&
-		    (wireless_mode == WIRELESS_MODE_AC_5G))
-			rate->flags |= IEEE80211_TX_RC_VHT_MCS;
-#endif
 	}
 }
 
@@ -248,22 +235,11 @@ static void rtl_tx_status(void *ppriv,
 
 static void rtl_rate_init(void *ppriv,
 			  struct ieee80211_supported_band *sband,
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 12, 0))
 			  struct cfg80211_chan_def *chandef,
-#endif
 			  struct ieee80211_sta *sta, void *priv_sta)
 {
 }
 
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,5,0))
-static void rtl_rate_update(void *ppriv,
-			    struct ieee80211_supported_band *sband,
-			    struct ieee80211_sta *sta, void *priv_sta,
-			    u32 changed,
-			    enum nl80211_channel_type oper_chan_type)
-{
-}
-#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 12, 0))
 static void rtl_rate_update(void *ppriv,
 			    struct ieee80211_supported_band *sband,
 			    struct cfg80211_chan_def *chandef,
@@ -271,14 +247,6 @@ static void rtl_rate_update(void *ppriv,
 			    u32 changed)
 {
 }
-#else
-static void rtl_rate_update(void *ppriv,
-			    struct ieee80211_supported_band *sband,
-			    struct ieee80211_sta *sta, void *priv_sta,
-			    u32 changed)
-{
-}
-#endif
 
 static void *rtl_rate_alloc(struct ieee80211_hw *hw, struct dentry *debugfsdir)
 {
