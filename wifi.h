@@ -2450,7 +2450,7 @@ struct rtl_bt_coexist {
 	u8 lps_counter;
 };
 
-#ifndef cfg80211_pkt_pattern
+#if (LINUX_VERSION_CODE <= KERNEL_VERSION(3,11,0)) 
 #define cfg80211_pkt_pattern cfg80211_wowlan_trig_pkt_pattern
 #endif
 
