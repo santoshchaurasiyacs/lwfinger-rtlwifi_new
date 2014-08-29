@@ -38,6 +38,7 @@
 #include "phy.h"
 #include "dm.h"
 #include "hw.h"
+#include "rf.h"
 #include "sw.h"
 #include "trx.h"
 #include "led.h"
@@ -195,7 +196,6 @@ bool rtl92c_get_btc_status(void)
 	return false;
 }
 
-
 static struct rtl_hal_ops rtl8192ce_hal_ops = {
 	.init_sw_vars = rtl92c_init_sw_vars,
 	.deinit_sw_vars = rtl92c_deinit_sw_vars,
@@ -241,6 +241,13 @@ static struct rtl_hal_ops rtl8192ce_hal_ops = {
 	.set_rfreg = rtl92c_phy_set_rf_reg,
 	.get_btc_status = rtl92c_get_btc_status,
 	.rx_command_packet = rtl92ce_rx_command_packet,
+	.phy_rf6052_config = rtl92c_phy_rf6052_config,
+	.phy_rf6052_set_cck_txpower = rtl92c_phy_rf6052_set_cck_txpower,
+	.phy_rf6052_set_ofdm_txpower = rtl92c_phy_rf6052_set_ofdm_txpower,
+	.config_bb_with_headerfile = _rtl92ce_phy_config_bb_with_headerfile,
+	.config_bb_with_pgheaderfile = _rtl92ce_phy_config_bb_with_pgheaderfile,
+	.phy_lc_calibrate = _rtl92ce_phy_lc_calibrate,
+	.phy_set_bw_mode_callback = rtl92c_phy_set_bw_mode_callback,
 };
 
 static struct rtl_mod_params rtl92ce_mod_params = {

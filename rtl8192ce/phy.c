@@ -36,6 +36,7 @@
 #include "rf.h"
 #include "dm.h"
 #include "table.h"
+#include "../rtl8192c/phy_common.h"
 
 static bool _rtl92c_phy_config_mac_with_headerfile(struct ieee80211_hw *hw);
 void _rtl92c_phy_sw_rf_seting(struct ieee80211_hw *hw, u8 channel);
@@ -179,8 +180,7 @@ static bool _rtl92c_phy_config_mac_with_headerfile(struct ieee80211_hw *hw)
 	return true;
 }
 
-#if 0
-static bool _rtl92c_phy_config_bb_with_headerfile(struct ieee80211_hw *hw,
+bool _rtl92ce_phy_config_bb_with_headerfile(struct ieee80211_hw *hw,
 						  u8 configtype)
 {
 	int i;
@@ -237,7 +237,7 @@ static bool _rtl92c_phy_config_bb_with_headerfile(struct ieee80211_hw *hw,
 	return true;
 }
 
-static bool _rtl92c_phy_config_bb_with_pgheaderfile(struct ieee80211_hw *hw,
+bool _rtl92ce_phy_config_bb_with_pgheaderfile(struct ieee80211_hw *hw,
 						    u8 configtype)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
@@ -275,7 +275,6 @@ static bool _rtl92c_phy_config_bb_with_pgheaderfile(struct ieee80211_hw *hw,
 	}
 	return true;
 }
-#endif
 
 bool rtl92c_phy_config_rf_with_headerfile(struct ieee80211_hw *hw,
 					  enum radio_path rfpath)
@@ -459,8 +458,7 @@ void rtl92c_phy_set_bw_mode_callback(struct ieee80211_hw *hw)
 	rtlphy->set_bwmode_inprogress = false;
 }
 
-#if 0
-static void _rtl92c_phy_lc_calibrate(struct ieee80211_hw *hw, bool is2t)
+void _rtl92ce_phy_lc_calibrate(struct ieee80211_hw *hw, bool is2t)
 {
 	u8 tmpreg;
 	u32 rf_a_mode = 0, rf_b_mode = 0, lc_cal;
@@ -504,7 +502,6 @@ static void _rtl92c_phy_lc_calibrate(struct ieee80211_hw *hw, bool is2t)
 		rtl_write_byte(rtlpriv, REG_TXPAUSE, 0x00);
 	}
 }
-#endif
 
 static bool _rtl92ce_phy_set_rf_power_state(struct ieee80211_hw *hw,
 					    enum rf_pwrstate rfpwr_state)
