@@ -133,6 +133,7 @@ clean:
 	@make -C btcoexist/ clean
 	@make -C rtl8192c/ clean
 	@make -C rtl8192ce/ clean
+	@make -C rtl8192cu/ clean
 	@make -C rtl8192se/ clean
 	@make -C rtl8192de/ clean
 	@make -C rtl8723ae/ clean

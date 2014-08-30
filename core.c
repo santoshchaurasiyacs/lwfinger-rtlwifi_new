@@ -1618,7 +1618,7 @@ static int rtl_op_set_key(struct ieee80211_hw *hw, enum set_key_cmd cmd,
 			key->flags |= IEEE80211_KEY_FLAG_GENERATE_MMIC;
 		/*use software CCMP encryption for management frames (MFP) */
 		if (key_type == AESCCMP_ENCRYPTION)
-			key->flags |= IEEE80211_KEY_FLAG_SW_MGMT;
+			key->flags |= IEEE80211_KEY_FLAG_SW_MGMT_TX;
 		break;
 	case DISABLE_KEY:
 		RT_TRACE(rtlpriv, COMP_SEC, DBG_DMESG,

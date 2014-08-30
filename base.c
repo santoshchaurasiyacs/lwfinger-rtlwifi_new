@@ -1203,7 +1203,7 @@ bool rtl_action_proc(struct ieee80211_hw *hw, struct sk_buff *skb, u8 is_tx)
 						rx_status.band =
 							hw->conf.chandef.chan->band;
 						rx_status.flag |= RX_FLAG_DECRYPTED;
-						rx_status.flag |= RX_FLAG_MACTIME_MPDU;
+						rx_status.flag |= RX_FLAG_MACTIME_START;
 						rx_status.rate_idx = 0;
 						rx_status.signal = 50 + 10;
 						memcpy(IEEE80211_SKB_RXCB(skb_delba),
@@ -1713,7 +1713,7 @@ static struct sk_buff *rtl_make_smps_action(struct ieee80211_hw *hw,
 {
 	struct rtl_efuse *rtlefuse = rtl_efuse(rtl_priv(hw));
 	struct sk_buff *skb;
-	struct ieee80211_mgmt_compat *action_frame;
+	struct ieee80211_mgmt *action_frame;
 
 	/* 27 = header + category + action + smps mode */
 	skb = dev_alloc_skb(27 + hw->extra_tx_headroom);

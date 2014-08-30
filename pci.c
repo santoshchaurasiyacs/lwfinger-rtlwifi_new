@@ -644,8 +644,8 @@ static void _rtl_pci_tx_isr(struct ieee80211_hw *hw, int prio)
 			}
 		}
 		if (ieee80211_is_action(fc)) {
-			struct ieee80211_mgmt_compat *action_frame =
-				(struct ieee80211_mgmt_compat *)skb->data;
+			struct ieee80211_mgmt *action_frame =
+				(struct ieee80211_mgmt *)skb->data;
 			if (action_frame->u.action.u.ht_smps.action ==
 				WLAN_HT_ACTION_SMPS) {
 				dev_kfree_skb(skb);
