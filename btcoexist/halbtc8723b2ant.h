@@ -22,6 +22,8 @@
  * Larry Finger <Larry.Finger@lwfinger.net>
  *
  *****************************************************************************/
+#ifndef _HAL8723B_2_ANT
+#define _HAL8723B_2_ANT
 
 /************************************************************************
  * The following is for 8723B 2Ant BT Co-exist definition
@@ -40,14 +42,14 @@
 
 #define BTC_RSSI_COEX_THRESH_TOL_8723B_2ANT		2
 
-enum _BT_INFO_SRC_8723B_2ANT {
+enum BT_INFO_SRC_8723B_2ANT {
 	BT_INFO_SRC_8723B_2ANT_WIFI_FW			= 0x0,
 	BT_INFO_SRC_8723B_2ANT_BT_RSP			= 0x1,
 	BT_INFO_SRC_8723B_2ANT_BT_ACTIVE_SEND		= 0x2,
 	BT_INFO_SRC_8723B_2ANT_MAX
 };
 
-enum _BT_8723B_2ANT_BT_STATUS {
+enum BT_8723B_2ANT_BT_STATUS {
 	BT_8723B_2ANT_BT_STATUS_NON_CONNECTED_IDLE	= 0x0,
 	BT_8723B_2ANT_BT_STATUS_CONNECTED_IDLE		= 0x1,
 	BT_8723B_2ANT_BT_STATUS_INQ_PAGE		= 0x2,
@@ -57,7 +59,7 @@ enum _BT_8723B_2ANT_BT_STATUS {
 	BT_8723B_2ANT_BT_STATUS_MAX
 };
 
-enum _BT_8723B_2ANT_COEX_ALGO {
+enum BT_8723B_2ANT_COEX_ALGO {
 	BT_8723B_2ANT_COEX_ALGO_UNDEFINED		= 0x0,
 	BT_8723B_2ANT_COEX_ALGO_SCO			= 0x1,
 	BT_8723B_2ANT_COEX_ALGO_HID			= 0x2,
@@ -83,7 +85,7 @@ struct coex_dm_8723b_2ant {
 	u8 pre_ps_tdma;
 	u8 cur_ps_tdma;
 	u8 ps_tdma_para[5];
-	u8 ps_tdma_du_adj_type;
+	u8 tdma_adj_type;
 	bool reset_tdma_adjust;
 	bool auto_tdma_adjust;
 	bool pre_ps_tdma_on;
@@ -131,6 +133,7 @@ struct coex_sta_8723b_2ant {
 	bool a2dp_exist;
 	bool hid_exist;
 	bool pan_exist;
+
 	bool under_lps;
 	bool under_ips;
 	u32 high_priority_tx;
@@ -151,18 +154,20 @@ struct coex_sta_8723b_2ant {
 /*********************************************************************
  * The following is interface which will notify coex module.
  *********************************************************************/
-void ex_halbtc8723b2ant_init_hwconfig(struct btc_coexist *btcoexist);
-void ex_halbtc8723b2ant_init_coex_dm(struct btc_coexist *btcoexist);
-void ex_halbtc8723b2ant_ips_notify(struct btc_coexist *btcoexist, u8 type);
-void ex_halbtc8723b2ant_lps_notify(struct btc_coexist *btcoexist, u8 type);
-void ex_halbtc8723b2ant_scan_notify(struct btc_coexist *btcoexist, u8 type);
-void ex_halbtc8723b2ant_connect_notify(struct btc_coexist *btcoexist, u8 type);
-void ex_halbtc8723b2ant_media_status_notify(struct btc_coexist *btcoexist,
+void ex_btc8723b2ant_init_hwconfig(struct btc_coexist *btcoexist);
+void ex_btc8723b2ant_init_coex_dm(struct btc_coexist *btcoexist);
+void ex_btc8723b2ant_ips_notify(struct btc_coexist *btcoexist, u8 type);
+void ex_btc8723b2ant_lps_notify(struct btc_coexist *btcoexist, u8 type);
+void ex_btc8723b2ant_scan_notify(struct btc_coexist *btcoexist, u8 type);
+void ex_btc8723b2ant_connect_notify(struct btc_coexist *btcoexist, u8 type);
+void ex_btc8723b2ant_media_status_notify(struct btc_coexist *btcoexist,
 					    u8 type);
-void ex_halbtc8723b2ant_special_packet_notify(struct btc_coexist *btcoexist,
+void ex_btc8723b2ant_special_packet_notify(struct btc_coexist *btcoexist,
 					      u8 type);
-void ex_halbtc8723b2ant_bt_info_notify(struct btc_coexist *btcoexist,
+void ex_btc8723b2ant_bt_info_notify(struct btc_coexist *btcoexist,
 				       u8 *tmpbuf, u8 length);
-void ex_halbtc8723b2ant_halt_notify(struct btc_coexist *btcoexist);
-void ex_halbtc8723b2ant_periodical(struct btc_coexist *btcoexist);
-void ex_halbtc8723b2ant_display_coex_info(struct btc_coexist *btcoexist);
+void ex_btc8723b2ant_halt_notify(struct btc_coexist *btcoexist);
+void ex_btc8723b2ant_periodical(struct btc_coexist *btcoexist);
+void ex_btc8723b2ant_display_coex_info(struct btc_coexist *btcoexist);
+
+#endif

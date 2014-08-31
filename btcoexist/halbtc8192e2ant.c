@@ -1591,44 +1591,44 @@ static void halbtc8192e2ant_tdma_duration_adjust(struct btc_coexist *btcoexist,
 					halbtc8192e2ant_ps_tdma(btcoexist,
 								NORMAL_EXEC,
 								true, 13);
-					coex_dm->ps_tdma_du_adj_type = 13;
+					coex_dm->tdma_adj_type = 13;
 				} else if (max_interval == 2) {
 					halbtc8192e2ant_ps_tdma(btcoexist,
 								NORMAL_EXEC,
 								true, 14);
-					coex_dm->ps_tdma_du_adj_type = 14;
+					coex_dm->tdma_adj_type = 14;
 				} else if (max_interval == 3) {
 					halbtc8192e2ant_ps_tdma(btcoexist,
 								NORMAL_EXEC,
 								true, 15);
-					coex_dm->ps_tdma_du_adj_type = 15;
+					coex_dm->tdma_adj_type = 15;
 				} else {
 					halbtc8192e2ant_ps_tdma(btcoexist,
 								NORMAL_EXEC,
 								true, 15);
-					coex_dm->ps_tdma_du_adj_type = 15;
+					coex_dm->tdma_adj_type = 15;
 				}
 			} else {
 				if (max_interval == 1) {
 					halbtc8192e2ant_ps_tdma(btcoexist,
 								NORMAL_EXEC,
 								true, 9);
-					coex_dm->ps_tdma_du_adj_type = 9;
+					coex_dm->tdma_adj_type = 9;
 				} else if (max_interval == 2) {
 					halbtc8192e2ant_ps_tdma(btcoexist,
 								NORMAL_EXEC,
 								true, 10);
-					coex_dm->ps_tdma_du_adj_type = 10;
+					coex_dm->tdma_adj_type = 10;
 				} else if (max_interval == 3) {
 					halbtc8192e2ant_ps_tdma(btcoexist,
 								NORMAL_EXEC,
 								true, 11);
-					coex_dm->ps_tdma_du_adj_type = 11;
+					coex_dm->tdma_adj_type = 11;
 				} else {
 					halbtc8192e2ant_ps_tdma(btcoexist,
 								NORMAL_EXEC,
 								true, 11);
-					coex_dm->ps_tdma_du_adj_type = 11;
+					coex_dm->tdma_adj_type = 11;
 				}
 			}
 		} else {
@@ -1637,44 +1637,44 @@ static void halbtc8192e2ant_tdma_duration_adjust(struct btc_coexist *btcoexist,
 					halbtc8192e2ant_ps_tdma(btcoexist,
 								NORMAL_EXEC,
 								true, 5);
-					coex_dm->ps_tdma_du_adj_type = 5;
+					coex_dm->tdma_adj_type = 5;
 				} else if (max_interval == 2) {
 					halbtc8192e2ant_ps_tdma(btcoexist,
 								NORMAL_EXEC,
 								true, 6);
-					coex_dm->ps_tdma_du_adj_type = 6;
+					coex_dm->tdma_adj_type = 6;
 				} else if (max_interval == 3) {
 					halbtc8192e2ant_ps_tdma(btcoexist,
 								NORMAL_EXEC,
 								true, 7);
-					coex_dm->ps_tdma_du_adj_type = 7;
+					coex_dm->tdma_adj_type = 7;
 				} else {
 					halbtc8192e2ant_ps_tdma(btcoexist,
 								NORMAL_EXEC,
 								true, 7);
-					coex_dm->ps_tdma_du_adj_type = 7;
+					coex_dm->tdma_adj_type = 7;
 				}
 			} else {
 				if (max_interval == 1) {
 					halbtc8192e2ant_ps_tdma(btcoexist,
 								NORMAL_EXEC,
 								true, 1);
-					coex_dm->ps_tdma_du_adj_type = 1;
+					coex_dm->tdma_adj_type = 1;
 				} else if (max_interval == 2) {
 					halbtc8192e2ant_ps_tdma(btcoexist,
 								NORMAL_EXEC,
 								true, 2);
-					coex_dm->ps_tdma_du_adj_type = 2;
+					coex_dm->tdma_adj_type = 2;
 				} else if (max_interval == 3) {
 					halbtc8192e2ant_ps_tdma(btcoexist,
 								NORMAL_EXEC,
 								true, 3);
-					coex_dm->ps_tdma_du_adj_type = 3;
+					coex_dm->tdma_adj_type = 3;
 				} else {
 					halbtc8192e2ant_ps_tdma(btcoexist,
 								NORMAL_EXEC,
 								true, 3);
-					coex_dm->ps_tdma_du_adj_type = 3;
+					coex_dm->tdma_adj_type = 3;
 				}
 			}
 		}
@@ -1768,48 +1768,48 @@ static void halbtc8192e2ant_tdma_duration_adjust(struct btc_coexist *btcoexist,
 					halbtc8192e2ant_ps_tdma(btcoexist,
 								NORMAL_EXEC,
 								true, 5);
-					coex_dm->ps_tdma_du_adj_type = 5;
+					coex_dm->tdma_adj_type = 5;
 				} else if (coex_dm->cur_ps_tdma == 1) {
 					halbtc8192e2ant_ps_tdma(btcoexist,
 								NORMAL_EXEC,
 								true, 5);
-					coex_dm->ps_tdma_du_adj_type = 5;
+					coex_dm->tdma_adj_type = 5;
 				} else if (coex_dm->cur_ps_tdma == 2) {
 					halbtc8192e2ant_ps_tdma(btcoexist,
 								NORMAL_EXEC,
 								true, 6);
-					coex_dm->ps_tdma_du_adj_type = 6;
+					coex_dm->tdma_adj_type = 6;
 				} else if (coex_dm->cur_ps_tdma == 3) {
 					halbtc8192e2ant_ps_tdma(btcoexist,
 								NORMAL_EXEC,
 								true, 7);
-					coex_dm->ps_tdma_du_adj_type = 7;
+					coex_dm->tdma_adj_type = 7;
 				} else if (coex_dm->cur_ps_tdma == 4) {
 					halbtc8192e2ant_ps_tdma(btcoexist,
 								NORMAL_EXEC,
 								true, 8);
-					coex_dm->ps_tdma_du_adj_type = 8;
+					coex_dm->tdma_adj_type = 8;
 				}
 				if (coex_dm->cur_ps_tdma == 9) {
 					halbtc8192e2ant_ps_tdma(btcoexist,
 								NORMAL_EXEC,
 								true, 13);
-					coex_dm->ps_tdma_du_adj_type = 13;
+					coex_dm->tdma_adj_type = 13;
 				} else if (coex_dm->cur_ps_tdma == 10) {
 					halbtc8192e2ant_ps_tdma(btcoexist,
 								NORMAL_EXEC,
 								true, 14);
-					coex_dm->ps_tdma_du_adj_type = 14;
+					coex_dm->tdma_adj_type = 14;
 				} else if (coex_dm->cur_ps_tdma == 11) {
 					halbtc8192e2ant_ps_tdma(btcoexist,
 								NORMAL_EXEC,
 								true, 15);
-					coex_dm->ps_tdma_du_adj_type = 15;
+					coex_dm->tdma_adj_type = 15;
 				} else if (coex_dm->cur_ps_tdma == 12) {
 					halbtc8192e2ant_ps_tdma(btcoexist,
 								NORMAL_EXEC,
 								true, 16);
-					coex_dm->ps_tdma_du_adj_type = 16;
+					coex_dm->tdma_adj_type = 16;
 				}
 
 				if (result == -1) {
@@ -1818,42 +1818,42 @@ static void halbtc8192e2ant_tdma_duration_adjust(struct btc_coexist *btcoexist,
 								    btcoexist,
 								    NORMAL_EXEC,
 								    true, 6);
-						coex_dm->ps_tdma_du_adj_type =
+						coex_dm->tdma_adj_type =
 									     6;
 					} else if (coex_dm->cur_ps_tdma == 6) {
 						halbtc8192e2ant_ps_tdma(
 								    btcoexist,
 								    NORMAL_EXEC,
 								    true, 7);
-						coex_dm->ps_tdma_du_adj_type =
+						coex_dm->tdma_adj_type =
 									     7;
 					} else if (coex_dm->cur_ps_tdma == 7) {
 						halbtc8192e2ant_ps_tdma(
 								    btcoexist,
 								    NORMAL_EXEC,
 								    true, 8);
-						coex_dm->ps_tdma_du_adj_type =
+						coex_dm->tdma_adj_type =
 									     8;
 					} else if (coex_dm->cur_ps_tdma == 13) {
 						halbtc8192e2ant_ps_tdma(
 								    btcoexist,
 								    NORMAL_EXEC,
 								    true, 14);
-						coex_dm->ps_tdma_du_adj_type =
+						coex_dm->tdma_adj_type =
 									     14;
 					} else if (coex_dm->cur_ps_tdma == 14) {
 						halbtc8192e2ant_ps_tdma(
 								    btcoexist,
 								    NORMAL_EXEC,
 								    true, 15);
-						coex_dm->ps_tdma_du_adj_type =
+						coex_dm->tdma_adj_type =
 									     15;
 					} else if (coex_dm->cur_ps_tdma == 15) {
 						halbtc8192e2ant_ps_tdma(
 								    btcoexist,
 								    NORMAL_EXEC,
 								    true, 16);
-						coex_dm->ps_tdma_du_adj_type =
+						coex_dm->tdma_adj_type =
 									     16;
 					}
 				} else if (result == 1) {
@@ -1862,42 +1862,42 @@ static void halbtc8192e2ant_tdma_duration_adjust(struct btc_coexist *btcoexist,
 								    btcoexist,
 								    NORMAL_EXEC,
 								    true, 7);
-						coex_dm->ps_tdma_du_adj_type =
+						coex_dm->tdma_adj_type =
 									     7;
 					} else if (coex_dm->cur_ps_tdma == 7) {
 						halbtc8192e2ant_ps_tdma(
 								    btcoexist,
 								    NORMAL_EXEC,
 								    true, 6);
-						coex_dm->ps_tdma_du_adj_type =
+						coex_dm->tdma_adj_type =
 									     6;
 					} else if (coex_dm->cur_ps_tdma == 6) {
 						halbtc8192e2ant_ps_tdma(
 								    btcoexist,
 								    NORMAL_EXEC,
 								    true, 5);
-						coex_dm->ps_tdma_du_adj_type =
+						coex_dm->tdma_adj_type =
 									     5;
 					} else if (coex_dm->cur_ps_tdma == 16) {
 						halbtc8192e2ant_ps_tdma(
 								    btcoexist,
 								    NORMAL_EXEC,
 								    true, 15);
-						coex_dm->ps_tdma_du_adj_type =
+						coex_dm->tdma_adj_type =
 									     15;
 					} else if (coex_dm->cur_ps_tdma == 15) {
 						halbtc8192e2ant_ps_tdma(
 								    btcoexist,
 								    NORMAL_EXEC,
 								    true, 14);
-						coex_dm->ps_tdma_du_adj_type =
+						coex_dm->tdma_adj_type =
 									     14;
 					} else if (coex_dm->cur_ps_tdma == 14) {
 						halbtc8192e2ant_ps_tdma(
 								    btcoexist,
 								    NORMAL_EXEC,
 								    true, 13);
-						coex_dm->ps_tdma_du_adj_type =
+						coex_dm->tdma_adj_type =
 									     13;
 					}
 				}
@@ -1909,43 +1909,43 @@ static void halbtc8192e2ant_tdma_duration_adjust(struct btc_coexist *btcoexist,
 					halbtc8192e2ant_ps_tdma(btcoexist,
 								NORMAL_EXEC,
 								true, 71);
-					coex_dm->ps_tdma_du_adj_type = 71;
+					coex_dm->tdma_adj_type = 71;
 				} else if (coex_dm->cur_ps_tdma == 6) {
 					halbtc8192e2ant_ps_tdma(btcoexist,
 								NORMAL_EXEC,
 								true, 2);
-					coex_dm->ps_tdma_du_adj_type = 2;
+					coex_dm->tdma_adj_type = 2;
 				} else if (coex_dm->cur_ps_tdma == 7) {
 					halbtc8192e2ant_ps_tdma(btcoexist,
 								NORMAL_EXEC,
 								true, 3);
-					coex_dm->ps_tdma_du_adj_type = 3;
+					coex_dm->tdma_adj_type = 3;
 				} else if (coex_dm->cur_ps_tdma == 8) {
 					halbtc8192e2ant_ps_tdma(btcoexist,
 								NORMAL_EXEC,
 								true, 4);
-					coex_dm->ps_tdma_du_adj_type = 4;
+					coex_dm->tdma_adj_type = 4;
 				}
 				if (coex_dm->cur_ps_tdma == 13) {
 					halbtc8192e2ant_ps_tdma(btcoexist,
 								NORMAL_EXEC,
 								true, 9);
-					coex_dm->ps_tdma_du_adj_type = 9;
+					coex_dm->tdma_adj_type = 9;
 				} else if (coex_dm->cur_ps_tdma == 14) {
 					halbtc8192e2ant_ps_tdma(btcoexist,
 								NORMAL_EXEC,
 								true, 10);
-					coex_dm->ps_tdma_du_adj_type = 10;
+					coex_dm->tdma_adj_type = 10;
 				} else if (coex_dm->cur_ps_tdma == 15) {
 					halbtc8192e2ant_ps_tdma(btcoexist,
 								NORMAL_EXEC,
 								true, 11);
-					coex_dm->ps_tdma_du_adj_type = 11;
+					coex_dm->tdma_adj_type = 11;
 				} else if (coex_dm->cur_ps_tdma == 16) {
 					halbtc8192e2ant_ps_tdma(btcoexist,
 								NORMAL_EXEC,
 								true, 12);
-					coex_dm->ps_tdma_du_adj_type = 12;
+					coex_dm->tdma_adj_type = 12;
 				}
 
 				if (result == -1) {
@@ -1954,49 +1954,49 @@ static void halbtc8192e2ant_tdma_duration_adjust(struct btc_coexist *btcoexist,
 								    btcoexist,
 								    NORMAL_EXEC,
 								    true, 1);
-						coex_dm->ps_tdma_du_adj_type =
+						coex_dm->tdma_adj_type =
 									     1;
 					} else if (coex_dm->cur_ps_tdma == 1) {
 						halbtc8192e2ant_ps_tdma(
 								    btcoexist,
 								    NORMAL_EXEC,
 								    true, 2);
-						coex_dm->ps_tdma_du_adj_type =
+						coex_dm->tdma_adj_type =
 									     2;
 					} else if (coex_dm->cur_ps_tdma == 2) {
 						halbtc8192e2ant_ps_tdma(
 								    btcoexist,
 								    NORMAL_EXEC,
 								    true, 3);
-						coex_dm->ps_tdma_du_adj_type =
+						coex_dm->tdma_adj_type =
 									     3;
 					} else if (coex_dm->cur_ps_tdma == 3) {
 						halbtc8192e2ant_ps_tdma(
 								    btcoexist,
 								    NORMAL_EXEC,
 								    true, 4);
-						coex_dm->ps_tdma_du_adj_type =
+						coex_dm->tdma_adj_type =
 									     4;
 					} else if (coex_dm->cur_ps_tdma == 9) {
 						halbtc8192e2ant_ps_tdma(
 								    btcoexist,
 								    NORMAL_EXEC,
 								    true, 10);
-						coex_dm->ps_tdma_du_adj_type =
+						coex_dm->tdma_adj_type =
 									     10;
 					} else if (coex_dm->cur_ps_tdma == 10) {
 						halbtc8192e2ant_ps_tdma(
 								    btcoexist,
 								    NORMAL_EXEC,
 								    true, 11);
-						coex_dm->ps_tdma_du_adj_type =
+						coex_dm->tdma_adj_type =
 									     11;
 					} else if (coex_dm->cur_ps_tdma == 11) {
 						halbtc8192e2ant_ps_tdma(
 								    btcoexist,
 								    NORMAL_EXEC,
 								    true, 12);
-						coex_dm->ps_tdma_du_adj_type =
+						coex_dm->tdma_adj_type =
 									     12;
 					}
 				} else if (result == 1) {
@@ -2005,49 +2005,49 @@ static void halbtc8192e2ant_tdma_duration_adjust(struct btc_coexist *btcoexist,
 								    btcoexist,
 								    NORMAL_EXEC,
 								    true, 3);
-						coex_dm->ps_tdma_du_adj_type =
+						coex_dm->tdma_adj_type =
 									     3;
 					} else if (coex_dm->cur_ps_tdma == 3) {
 						halbtc8192e2ant_ps_tdma(
 								    btcoexist,
 								    NORMAL_EXEC,
 								    true, 2);
-						coex_dm->ps_tdma_du_adj_type =
+						coex_dm->tdma_adj_type =
 									     2;
 					} else if (coex_dm->cur_ps_tdma == 2) {
 						halbtc8192e2ant_ps_tdma(
 								    btcoexist,
 								    NORMAL_EXEC,
 								    true, 1);
-						coex_dm->ps_tdma_du_adj_type =
+						coex_dm->tdma_adj_type =
 									     1;
 					} else if (coex_dm->cur_ps_tdma == 1) {
 						halbtc8192e2ant_ps_tdma(
 								    btcoexist,
 								    NORMAL_EXEC,
 								    true, 71);
-						coex_dm->ps_tdma_du_adj_type =
+						coex_dm->tdma_adj_type =
 									     71;
 					} else if (coex_dm->cur_ps_tdma == 12) {
 						halbtc8192e2ant_ps_tdma(
 								    btcoexist,
 								    NORMAL_EXEC,
 								    true, 11);
-						coex_dm->ps_tdma_du_adj_type =
+						coex_dm->tdma_adj_type =
 									     11;
 					} else if (coex_dm->cur_ps_tdma == 11) {
 						halbtc8192e2ant_ps_tdma(
 								    btcoexist,
 								    NORMAL_EXEC,
 								    true, 10);
-						coex_dm->ps_tdma_du_adj_type =
+						coex_dm->tdma_adj_type =
 									     10;
 					} else if (coex_dm->cur_ps_tdma == 10) {
 						halbtc8192e2ant_ps_tdma(
 								    btcoexist,
 								    NORMAL_EXEC,
 								    true, 9);
-						coex_dm->ps_tdma_du_adj_type =
+						coex_dm->tdma_adj_type =
 									     9;
 					}
 				}
@@ -2061,43 +2061,43 @@ static void halbtc8192e2ant_tdma_duration_adjust(struct btc_coexist *btcoexist,
 					halbtc8192e2ant_ps_tdma(btcoexist,
 								NORMAL_EXEC,
 								true, 6);
-					coex_dm->ps_tdma_du_adj_type = 6;
+					coex_dm->tdma_adj_type = 6;
 				} else if (coex_dm->cur_ps_tdma == 2) {
 					halbtc8192e2ant_ps_tdma(btcoexist,
 								NORMAL_EXEC,
 								true, 6);
-					coex_dm->ps_tdma_du_adj_type = 6;
+					coex_dm->tdma_adj_type = 6;
 				} else if (coex_dm->cur_ps_tdma == 3) {
 					halbtc8192e2ant_ps_tdma(btcoexist,
 								NORMAL_EXEC,
 								true, 7);
-					coex_dm->ps_tdma_du_adj_type = 7;
+					coex_dm->tdma_adj_type = 7;
 				} else if (coex_dm->cur_ps_tdma == 4) {
 					halbtc8192e2ant_ps_tdma(btcoexist,
 								NORMAL_EXEC,
 								true, 8);
-					coex_dm->ps_tdma_du_adj_type = 8;
+					coex_dm->tdma_adj_type = 8;
 				}
 				if (coex_dm->cur_ps_tdma == 9) {
 					halbtc8192e2ant_ps_tdma(btcoexist,
 								NORMAL_EXEC,
 								true, 14);
-					coex_dm->ps_tdma_du_adj_type = 14;
+					coex_dm->tdma_adj_type = 14;
 				} else if (coex_dm->cur_ps_tdma == 10) {
 					halbtc8192e2ant_ps_tdma(btcoexist,
 								NORMAL_EXEC,
 								true, 14);
-					coex_dm->ps_tdma_du_adj_type = 14;
+					coex_dm->tdma_adj_type = 14;
 				} else if (coex_dm->cur_ps_tdma == 11) {
 					halbtc8192e2ant_ps_tdma(btcoexist,
 								NORMAL_EXEC,
 								true, 15);
-					coex_dm->ps_tdma_du_adj_type = 15;
+					coex_dm->tdma_adj_type = 15;
 				} else if (coex_dm->cur_ps_tdma == 12) {
 					halbtc8192e2ant_ps_tdma(btcoexist,
 								NORMAL_EXEC,
 								true, 16);
-					coex_dm->ps_tdma_du_adj_type = 16;
+					coex_dm->tdma_adj_type = 16;
 				}
 				if (result == -1) {
 					if (coex_dm->cur_ps_tdma == 5) {
@@ -2105,42 +2105,42 @@ static void halbtc8192e2ant_tdma_duration_adjust(struct btc_coexist *btcoexist,
 								    btcoexist,
 								    NORMAL_EXEC,
 								    true, 6);
-						coex_dm->ps_tdma_du_adj_type =
+						coex_dm->tdma_adj_type =
 									     6;
 					} else if (coex_dm->cur_ps_tdma == 6) {
 						halbtc8192e2ant_ps_tdma(
 								    btcoexist,
 								    NORMAL_EXEC,
 								    true, 7);
-						coex_dm->ps_tdma_du_adj_type =
+						coex_dm->tdma_adj_type =
 									     7;
 					} else if (coex_dm->cur_ps_tdma == 7) {
 						halbtc8192e2ant_ps_tdma(
 								    btcoexist,
 								    NORMAL_EXEC,
 								    true, 8);
-						coex_dm->ps_tdma_du_adj_type =
+						coex_dm->tdma_adj_type =
 									     8;
 					} else if (coex_dm->cur_ps_tdma == 13) {
 						halbtc8192e2ant_ps_tdma(
 								    btcoexist,
 								    NORMAL_EXEC,
 								    true, 14);
-						coex_dm->ps_tdma_du_adj_type =
+						coex_dm->tdma_adj_type =
 									     14;
 					} else if (coex_dm->cur_ps_tdma == 14) {
 						halbtc8192e2ant_ps_tdma(
 								    btcoexist,
 								    NORMAL_EXEC,
 								    true, 15);
-						coex_dm->ps_tdma_du_adj_type =
+						coex_dm->tdma_adj_type =
 									     15;
 					} else if (coex_dm->cur_ps_tdma == 15) {
 						halbtc8192e2ant_ps_tdma(
 								    btcoexist,
 								    NORMAL_EXEC,
 								    true, 16);
-						coex_dm->ps_tdma_du_adj_type =
+						coex_dm->tdma_adj_type =
 									     16;
 					}
 				} else if (result == 1) {
@@ -2149,42 +2149,42 @@ static void halbtc8192e2ant_tdma_duration_adjust(struct btc_coexist *btcoexist,
 								    btcoexist,
 								    NORMAL_EXEC,
 								    true, 7);
-						coex_dm->ps_tdma_du_adj_type =
+						coex_dm->tdma_adj_type =
 									     7;
 					} else if (coex_dm->cur_ps_tdma == 7) {
 						halbtc8192e2ant_ps_tdma(
 								    btcoexist,
 								    NORMAL_EXEC,
 								    true, 6);
-						coex_dm->ps_tdma_du_adj_type =
+						coex_dm->tdma_adj_type =
 									     6;
 					} else if (coex_dm->cur_ps_tdma == 6) {
 						halbtc8192e2ant_ps_tdma(
 								    btcoexist,
 								    NORMAL_EXEC,
 								    true, 6);
-						coex_dm->ps_tdma_du_adj_type =
+						coex_dm->tdma_adj_type =
 									     6;
 					} else if (coex_dm->cur_ps_tdma == 16) {
 						halbtc8192e2ant_ps_tdma(
 								    btcoexist,
 								    NORMAL_EXEC,
 								    true, 15);
-						coex_dm->ps_tdma_du_adj_type =
+						coex_dm->tdma_adj_type =
 									     15;
 					} else if (coex_dm->cur_ps_tdma == 15) {
 						halbtc8192e2ant_ps_tdma(
 								    btcoexist,
 								    NORMAL_EXEC,
 								    true, 14);
-						coex_dm->ps_tdma_du_adj_type =
+						coex_dm->tdma_adj_type =
 									     14;
 					} else if (coex_dm->cur_ps_tdma == 14) {
 						halbtc8192e2ant_ps_tdma(
 								    btcoexist,
 								    NORMAL_EXEC,
 								    true, 14);
-						coex_dm->ps_tdma_du_adj_type =
+						coex_dm->tdma_adj_type =
 									     14;
 					}
 				}
@@ -2196,43 +2196,43 @@ static void halbtc8192e2ant_tdma_duration_adjust(struct btc_coexist *btcoexist,
 					halbtc8192e2ant_ps_tdma(btcoexist,
 								NORMAL_EXEC,
 								true, 2);
-					coex_dm->ps_tdma_du_adj_type = 2;
+					coex_dm->tdma_adj_type = 2;
 				} else if (coex_dm->cur_ps_tdma == 6) {
 					halbtc8192e2ant_ps_tdma(btcoexist,
 								NORMAL_EXEC,
 								true, 2);
-					coex_dm->ps_tdma_du_adj_type = 2;
+					coex_dm->tdma_adj_type = 2;
 				} else if (coex_dm->cur_ps_tdma == 7) {
 					halbtc8192e2ant_ps_tdma(btcoexist,
 								NORMAL_EXEC,
 								true, 3);
-					coex_dm->ps_tdma_du_adj_type = 3;
+					coex_dm->tdma_adj_type = 3;
 				} else if (coex_dm->cur_ps_tdma == 8) {
 					halbtc8192e2ant_ps_tdma(btcoexist,
 								NORMAL_EXEC,
 								true, 4);
-					coex_dm->ps_tdma_du_adj_type = 4;
+					coex_dm->tdma_adj_type = 4;
 				}
 				if (coex_dm->cur_ps_tdma == 13) {
 					halbtc8192e2ant_ps_tdma(btcoexist,
 								NORMAL_EXEC,
 								true, 10);
-					coex_dm->ps_tdma_du_adj_type = 10;
+					coex_dm->tdma_adj_type = 10;
 				} else if (coex_dm->cur_ps_tdma == 14) {
 					halbtc8192e2ant_ps_tdma(btcoexist,
 								NORMAL_EXEC,
 								true, 10);
-					coex_dm->ps_tdma_du_adj_type = 10;
+					coex_dm->tdma_adj_type = 10;
 				} else if (coex_dm->cur_ps_tdma == 15) {
 					halbtc8192e2ant_ps_tdma(btcoexist,
 								NORMAL_EXEC,
 								true, 11);
-					coex_dm->ps_tdma_du_adj_type = 11;
+					coex_dm->tdma_adj_type = 11;
 				} else if (coex_dm->cur_ps_tdma == 16) {
 					halbtc8192e2ant_ps_tdma(btcoexist,
 								NORMAL_EXEC,
 								true, 12);
-					coex_dm->ps_tdma_du_adj_type = 12;
+					coex_dm->tdma_adj_type = 12;
 				}
 				if (result == -1) {
 					if (coex_dm->cur_ps_tdma == 1) {
@@ -2240,42 +2240,42 @@ static void halbtc8192e2ant_tdma_duration_adjust(struct btc_coexist *btcoexist,
 								    btcoexist,
 								    NORMAL_EXEC,
 								    true, 2);
-						coex_dm->ps_tdma_du_adj_type =
+						coex_dm->tdma_adj_type =
 									     2;
 					} else if (coex_dm->cur_ps_tdma == 2) {
 						halbtc8192e2ant_ps_tdma(
 								    btcoexist,
 								    NORMAL_EXEC,
 								    true, 3);
-						coex_dm->ps_tdma_du_adj_type =
+						coex_dm->tdma_adj_type =
 									     3;
 					} else if (coex_dm->cur_ps_tdma == 3) {
 						halbtc8192e2ant_ps_tdma(
 								    btcoexist,
 								    NORMAL_EXEC,
 								    true, 4);
-						coex_dm->ps_tdma_du_adj_type =
+						coex_dm->tdma_adj_type =
 									     4;
 					} else if (coex_dm->cur_ps_tdma == 9) {
 						halbtc8192e2ant_ps_tdma(
 								    btcoexist,
 								    NORMAL_EXEC,
 								    true, 10);
-						coex_dm->ps_tdma_du_adj_type =
+						coex_dm->tdma_adj_type =
 									     10;
 					} else if (coex_dm->cur_ps_tdma == 10) {
 						halbtc8192e2ant_ps_tdma(
 								    btcoexist,
 								    NORMAL_EXEC,
 								    true, 11);
-						coex_dm->ps_tdma_du_adj_type =
+						coex_dm->tdma_adj_type =
 									     11;
 					} else if (coex_dm->cur_ps_tdma == 11) {
 						halbtc8192e2ant_ps_tdma(
 								    btcoexist,
 								    NORMAL_EXEC,
 								    true, 12);
-						coex_dm->ps_tdma_du_adj_type =
+						coex_dm->tdma_adj_type =
 									     12;
 					}
 				} else if (result == 1) {
@@ -2284,42 +2284,42 @@ static void halbtc8192e2ant_tdma_duration_adjust(struct btc_coexist *btcoexist,
 								    btcoexist,
 								    NORMAL_EXEC,
 								    true, 3);
-						coex_dm->ps_tdma_du_adj_type =
+						coex_dm->tdma_adj_type =
 									     3;
 					} else if (coex_dm->cur_ps_tdma == 3) {
 						halbtc8192e2ant_ps_tdma(
 								    btcoexist,
 								    NORMAL_EXEC,
 								    true, 2);
-						coex_dm->ps_tdma_du_adj_type =
+						coex_dm->tdma_adj_type =
 									     2;
 					} else if (coex_dm->cur_ps_tdma == 2) {
 						halbtc8192e2ant_ps_tdma(
 								    btcoexist,
 								    NORMAL_EXEC,
 								    true, 2);
-						coex_dm->ps_tdma_du_adj_type =
+						coex_dm->tdma_adj_type =
 									     2;
 					} else if (coex_dm->cur_ps_tdma == 12) {
 						halbtc8192e2ant_ps_tdma(
 								    btcoexist,
 								    NORMAL_EXEC,
 								    true, 11);
-						coex_dm->ps_tdma_du_adj_type =
+						coex_dm->tdma_adj_type =
 									     11;
 					} else if (coex_dm->cur_ps_tdma == 11) {
 						halbtc8192e2ant_ps_tdma(
 								    btcoexist,
 								    NORMAL_EXEC,
 								    true, 10);
-						coex_dm->ps_tdma_du_adj_type =
+						coex_dm->tdma_adj_type =
 									     10;
 					} else if (coex_dm->cur_ps_tdma == 10) {
 						halbtc8192e2ant_ps_tdma(
 								    btcoexist,
 								    NORMAL_EXEC,
 								    true, 10);
-						coex_dm->ps_tdma_du_adj_type =
+						coex_dm->tdma_adj_type =
 									     10;
 					}
 				}
@@ -2333,43 +2333,43 @@ static void halbtc8192e2ant_tdma_duration_adjust(struct btc_coexist *btcoexist,
 					halbtc8192e2ant_ps_tdma(btcoexist,
 								NORMAL_EXEC,
 								true, 7);
-					coex_dm->ps_tdma_du_adj_type = 7;
+					coex_dm->tdma_adj_type = 7;
 				} else if (coex_dm->cur_ps_tdma == 2) {
 					halbtc8192e2ant_ps_tdma(btcoexist,
 								NORMAL_EXEC,
 								true, 7);
-					coex_dm->ps_tdma_du_adj_type = 7;
+					coex_dm->tdma_adj_type = 7;
 				} else if (coex_dm->cur_ps_tdma == 3) {
 					halbtc8192e2ant_ps_tdma(btcoexist,
 								NORMAL_EXEC,
 								true, 7);
-					coex_dm->ps_tdma_du_adj_type = 7;
+					coex_dm->tdma_adj_type = 7;
 				} else if (coex_dm->cur_ps_tdma == 4) {
 					halbtc8192e2ant_ps_tdma(btcoexist,
 								NORMAL_EXEC,
 								true, 8);
-					coex_dm->ps_tdma_du_adj_type = 8;
+					coex_dm->tdma_adj_type = 8;
 				}
 				if (coex_dm->cur_ps_tdma == 9) {
 					halbtc8192e2ant_ps_tdma(btcoexist,
 								NORMAL_EXEC,
 								true, 15);
-					coex_dm->ps_tdma_du_adj_type = 15;
+					coex_dm->tdma_adj_type = 15;
 				} else if (coex_dm->cur_ps_tdma == 10) {
 					halbtc8192e2ant_ps_tdma(btcoexist,
 								NORMAL_EXEC,
 								true, 15);
-					coex_dm->ps_tdma_du_adj_type = 15;
+					coex_dm->tdma_adj_type = 15;
 				} else if (coex_dm->cur_ps_tdma == 11) {
 					halbtc8192e2ant_ps_tdma(btcoexist,
 								NORMAL_EXEC,
 								true, 15);
-					coex_dm->ps_tdma_du_adj_type = 15;
+					coex_dm->tdma_adj_type = 15;
 				} else if (coex_dm->cur_ps_tdma == 12) {
 					halbtc8192e2ant_ps_tdma(btcoexist,
 								NORMAL_EXEC,
 								true, 16);
-					coex_dm->ps_tdma_du_adj_type = 16;
+					coex_dm->tdma_adj_type = 16;
 				}
 				if (result == -1) {
 					if (coex_dm->cur_ps_tdma == 5) {
@@ -2377,42 +2377,42 @@ static void halbtc8192e2ant_tdma_duration_adjust(struct btc_coexist *btcoexist,
 								    btcoexist,
 								    NORMAL_EXEC,
 								    true, 7);
-						coex_dm->ps_tdma_du_adj_type =
+						coex_dm->tdma_adj_type =
 									     7;
 					} else if (coex_dm->cur_ps_tdma == 6) {
 						halbtc8192e2ant_ps_tdma(
 								    btcoexist,
 								    NORMAL_EXEC,
 								    true, 7);
-						coex_dm->ps_tdma_du_adj_type =
+						coex_dm->tdma_adj_type =
 									     7;
 					} else if (coex_dm->cur_ps_tdma == 7) {
 						halbtc8192e2ant_ps_tdma(
 								    btcoexist,
 								    NORMAL_EXEC,
 								    true, 8);
-						coex_dm->ps_tdma_du_adj_type =
+						coex_dm->tdma_adj_type =
 									     8;
 					} else if (coex_dm->cur_ps_tdma == 13) {
 						halbtc8192e2ant_ps_tdma(
 								    btcoexist,
 								    NORMAL_EXEC,
 								    true, 15);
-						coex_dm->ps_tdma_du_adj_type =
+						coex_dm->tdma_adj_type =
 									     15;
 					} else if (coex_dm->cur_ps_tdma == 14) {
 						halbtc8192e2ant_ps_tdma(
 								    btcoexist,
 								    NORMAL_EXEC,
 								    true, 15);
-						coex_dm->ps_tdma_du_adj_type =
+						coex_dm->tdma_adj_type =
 									     15;
 					} else if (coex_dm->cur_ps_tdma == 15) {
 						halbtc8192e2ant_ps_tdma(
 								    btcoexist,
 								    NORMAL_EXEC,
 								    true, 16);
-						coex_dm->ps_tdma_du_adj_type =
+						coex_dm->tdma_adj_type =
 									     16;
 					}
 				} else if (result == 1) {
@@ -2421,42 +2421,42 @@ static void halbtc8192e2ant_tdma_duration_adjust(struct btc_coexist *btcoexist,
 								    btcoexist,
 								    NORMAL_EXEC,
 								    true, 7);
-						coex_dm->ps_tdma_du_adj_type =
+						coex_dm->tdma_adj_type =
 									     7;
 					} else if (coex_dm->cur_ps_tdma == 7) {
 						halbtc8192e2ant_ps_tdma(
 								    btcoexist,
 								    NORMAL_EXEC,
 								    true, 7);
-						coex_dm->ps_tdma_du_adj_type =
+						coex_dm->tdma_adj_type =
 									     7;
 					} else if (coex_dm->cur_ps_tdma == 6) {
 						halbtc8192e2ant_ps_tdma(
 								    btcoexist,
 								    NORMAL_EXEC,
 								    true, 7);
-						coex_dm->ps_tdma_du_adj_type =
+						coex_dm->tdma_adj_type =
 									     7;
 					} else if (coex_dm->cur_ps_tdma == 16) {
 						halbtc8192e2ant_ps_tdma(
 								    btcoexist,
 								    NORMAL_EXEC,
 								    true, 15);
-						coex_dm->ps_tdma_du_adj_type =
+						coex_dm->tdma_adj_type =
 									     15;
 					} else if (coex_dm->cur_ps_tdma == 15) {
 						halbtc8192e2ant_ps_tdma(
 								    btcoexist,
 								    NORMAL_EXEC,
 								    true, 15);
-						coex_dm->ps_tdma_du_adj_type =
+						coex_dm->tdma_adj_type =
 									     15;
 					} else if (coex_dm->cur_ps_tdma == 14) {
 						halbtc8192e2ant_ps_tdma(
 								    btcoexist,
 								    NORMAL_EXEC,
 								    true, 15);
-						coex_dm->ps_tdma_du_adj_type =
+						coex_dm->tdma_adj_type =
 									     15;
 					}
 				}
@@ -2468,43 +2468,43 @@ static void halbtc8192e2ant_tdma_duration_adjust(struct btc_coexist *btcoexist,
 					halbtc8192e2ant_ps_tdma(btcoexist,
 								NORMAL_EXEC,
 								true, 3);
-					coex_dm->ps_tdma_du_adj_type = 3;
+					coex_dm->tdma_adj_type = 3;
 				} else if (coex_dm->cur_ps_tdma == 6) {
 					halbtc8192e2ant_ps_tdma(btcoexist,
 								NORMAL_EXEC,
 								true, 3);
-					coex_dm->ps_tdma_du_adj_type = 3;
+					coex_dm->tdma_adj_type = 3;
 				} else if (coex_dm->cur_ps_tdma == 7) {
 					halbtc8192e2ant_ps_tdma(btcoexist,
 								NORMAL_EXEC,
 								true, 3);
-					coex_dm->ps_tdma_du_adj_type = 3;
+					coex_dm->tdma_adj_type = 3;
 				} else if (coex_dm->cur_ps_tdma == 8) {
 					halbtc8192e2ant_ps_tdma(btcoexist,
 								NORMAL_EXEC,
 								true, 4);
-					coex_dm->ps_tdma_du_adj_type = 4;
+					coex_dm->tdma_adj_type = 4;
 				}
 				if (coex_dm->cur_ps_tdma == 13) {
 					halbtc8192e2ant_ps_tdma(btcoexist,
 								NORMAL_EXEC,
 								true, 11);
-					coex_dm->ps_tdma_du_adj_type = 11;
+					coex_dm->tdma_adj_type = 11;
 				} else if (coex_dm->cur_ps_tdma == 14) {
 					halbtc8192e2ant_ps_tdma(btcoexist,
 								NORMAL_EXEC,
 								true, 11);
-					coex_dm->ps_tdma_du_adj_type = 11;
+					coex_dm->tdma_adj_type = 11;
 				} else if (coex_dm->cur_ps_tdma == 15) {
 					halbtc8192e2ant_ps_tdma(btcoexist,
 								NORMAL_EXEC,
 								true, 11);
-					coex_dm->ps_tdma_du_adj_type = 11;
+					coex_dm->tdma_adj_type = 11;
 				} else if (coex_dm->cur_ps_tdma == 16) {
 					halbtc8192e2ant_ps_tdma(btcoexist,
 								NORMAL_EXEC,
 								true, 12);
-					coex_dm->ps_tdma_du_adj_type = 12;
+					coex_dm->tdma_adj_type = 12;
 				}
 				if (result == -1) {
 					if (coex_dm->cur_ps_tdma == 1) {
@@ -2512,42 +2512,42 @@ static void halbtc8192e2ant_tdma_duration_adjust(struct btc_coexist *btcoexist,
 								    btcoexist,
 								    NORMAL_EXEC,
 								    true, 3);
-						coex_dm->ps_tdma_du_adj_type =
+						coex_dm->tdma_adj_type =
 									     3;
 					} else if (coex_dm->cur_ps_tdma == 2) {
 						halbtc8192e2ant_ps_tdma(
 								    btcoexist,
 								    NORMAL_EXEC,
 								    true, 3);
-						coex_dm->ps_tdma_du_adj_type =
+						coex_dm->tdma_adj_type =
 									     3;
 					} else if (coex_dm->cur_ps_tdma == 3) {
 						halbtc8192e2ant_ps_tdma(
 								    btcoexist,
 								    NORMAL_EXEC,
 								    true, 4);
-						coex_dm->ps_tdma_du_adj_type =
+						coex_dm->tdma_adj_type =
 									     4;
 					} else if (coex_dm->cur_ps_tdma == 9) {
 						halbtc8192e2ant_ps_tdma(
 								    btcoexist,
 								    NORMAL_EXEC,
 								    true, 11);
-						coex_dm->ps_tdma_du_adj_type =
+						coex_dm->tdma_adj_type =
 									     11;
 					} else if (coex_dm->cur_ps_tdma == 10) {
 						halbtc8192e2ant_ps_tdma(
 								    btcoexist,
 								    NORMAL_EXEC,
 								    true, 11);
-						coex_dm->ps_tdma_du_adj_type =
+						coex_dm->tdma_adj_type =
 									     11;
 					} else if (coex_dm->cur_ps_tdma == 11) {
 						halbtc8192e2ant_ps_tdma(
 								    btcoexist,
 								    NORMAL_EXEC,
 								    true, 12);
-						coex_dm->ps_tdma_du_adj_type =
+						coex_dm->tdma_adj_type =
 									     12;
 					}
 				} else if (result == 1) {
@@ -2556,42 +2556,42 @@ static void halbtc8192e2ant_tdma_duration_adjust(struct btc_coexist *btcoexist,
 								    btcoexist,
 								    NORMAL_EXEC,
 								    true, 3);
-						coex_dm->ps_tdma_du_adj_type =
+						coex_dm->tdma_adj_type =
 									     3;
 					} else if (coex_dm->cur_ps_tdma == 3) {
 						halbtc8192e2ant_ps_tdma(
 								    btcoexist,
 								    NORMAL_EXEC,
 								    true, 3);
-						coex_dm->ps_tdma_du_adj_type =
+						coex_dm->tdma_adj_type =
 									     3;
 					} else if (coex_dm->cur_ps_tdma == 2) {
 						halbtc8192e2ant_ps_tdma(
 								    btcoexist,
 								    NORMAL_EXEC,
 								    true, 3);
-						coex_dm->ps_tdma_du_adj_type =
+						coex_dm->tdma_adj_type =
 									     3;
 					} else if (coex_dm->cur_ps_tdma == 12) {
 						halbtc8192e2ant_ps_tdma(
 								    btcoexist,
 								    NORMAL_EXEC,
 								    true, 11);
-						coex_dm->ps_tdma_du_adj_type =
+						coex_dm->tdma_adj_type =
 									     11;
 					} else if (coex_dm->cur_ps_tdma == 11) {
 						halbtc8192e2ant_ps_tdma(
 								    btcoexist,
 								    NORMAL_EXEC,
 								    true, 11);
-						coex_dm->ps_tdma_du_adj_type =
+						coex_dm->tdma_adj_type =
 									     11;
 					} else if (coex_dm->cur_ps_tdma == 10) {
 						halbtc8192e2ant_ps_tdma(
 								    btcoexist,
 								    NORMAL_EXEC,
 								    true, 11);
-						coex_dm->ps_tdma_du_adj_type =
+						coex_dm->tdma_adj_type =
 									     11;
 					}
 				}
@@ -2602,13 +2602,13 @@ static void halbtc8192e2ant_tdma_duration_adjust(struct btc_coexist *btcoexist,
 	/* if current PsTdma not match with
 	 * the recorded one (when scan, dhcp...),
 	 * then we have to adjust it back to the previous record one. */
-	if (coex_dm->cur_ps_tdma != coex_dm->ps_tdma_du_adj_type) {
+	if (coex_dm->cur_ps_tdma != coex_dm->tdma_adj_type) {
 		bool scan = false, link = false, roam = false;
 		BTC_PRINT(BTC_MSG_ALGORITHM, ALGO_TRACE_FW_DETAIL,
 			  "[BTCoex], PsTdma type dismatch!!!, ");
 		BTC_PRINT(BTC_MSG_ALGORITHM, ALGO_TRACE_FW_DETAIL,
 			  "curPsTdma=%d, recordPsTdma=%d\n",
-			  coex_dm->cur_ps_tdma, coex_dm->ps_tdma_du_adj_type);
+			  coex_dm->cur_ps_tdma, coex_dm->tdma_adj_type);
 
 		btcoexist->btc_get(btcoexist, BTC_GET_BL_WIFI_SCAN, &scan);
 		btcoexist->btc_get(btcoexist, BTC_GET_BL_WIFI_LINK, &link);
@@ -2617,7 +2617,7 @@ static void halbtc8192e2ant_tdma_duration_adjust(struct btc_coexist *btcoexist,
 		if (!scan && !link && !roam)
 			halbtc8192e2ant_ps_tdma(btcoexist, NORMAL_EXEC,
 						true,
-						coex_dm->ps_tdma_du_adj_type);
+						coex_dm->tdma_adj_type);
 		else
 			BTC_PRINT(BTC_MSG_ALGORITHM,
 				  ALGO_TRACE_FW_DETAIL,

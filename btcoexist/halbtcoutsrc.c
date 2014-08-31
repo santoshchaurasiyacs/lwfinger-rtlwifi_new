@@ -11,17 +11,17 @@
  * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
  * more details.
  *
- * You should have received a copy of the GNU General Public License along with
- * this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110, USA
+ * Contact Information:
+ * wlanfae <wlanfae@realtek.com>
+ * Realtek Corporation, No. 2, Innovation Road II, Hsinchu Science Park,
+ * Hsinchu 300, Taiwan.
  *
+ * Larry Finger <Larry.Finger@lwfinger.net>
  *
  ******************************************************************************/
 
 #include "halbt_precomp.h"
 
-/*#if(BT_30_SUPPORT == 1)*/
-#if 1
 /***********************************************
  *		Global variables
  ***********************************************/
@@ -109,13 +109,11 @@ static bool halbtc_is_bt_coexist_available(struct btc_coexist *btcoexist)
 
 static bool halbtc_is_wifi_busy(struct rtl_priv *rtlpriv)
 {
-
 	if (rtlpriv->link_info.busytraffic)
 		return true;
 	else
 		return false;
 }
-
 
 static void halbtc_dbg_init(void)
 {
@@ -124,27 +122,7 @@ static void halbtc_dbg_init(void)
 	for (i = 0; i < BTC_MSG_MAX; i++)
 		btc_dbg_type[i] = 0;
 
-/*	btc_dbg_type[BTC_MSG_INTERFACE]			=	\
-			INTF_INIT				|
-			INTF_NOTIFY				|
-			0;
-*/
-
 	btc_dbg_type[BTC_MSG_INTERFACE] = 0;
-
-/*	btc_dbg_type[BTC_MSG_ALGORITHM]			=	\
-			ALGO_BT_RSSI_STATE			|
-			ALGO_WIFI_RSSI_STATE			|
-			ALGO_BT_MONITOR				|
-			ALGO_TRACE				|
-			ALGO_TRACE_FW				|
-			ALGO_TRACE_FW_DETAIL			|
-			ALGO_TRACE_FW_EXEC			|
-			ALGO_TRACE_SW				|
-			ALGO_TRACE_SW_DETAIL			|
-			ALGO_TRACE_SW_EXEC			|
-			0;
-*/
 
 	btc_dbg_type[BTC_MSG_ALGORITHM] = 0;
 }
@@ -232,7 +210,7 @@ static void halbtc_leave_lps(struct btc_coexist *btcoexist)
 			   &ap_enable);
 
 	if (ap_enable) {
-		printk("halbtc_leave_lps()<--dont leave lps under AP mode\n");
+		pr_info("halbtc_leave_lps()<--dont leave lps under AP mode\n");
 		return;
 	}
 
@@ -254,7 +232,7 @@ static void halbtc_enter_lps(struct btc_coexist *btcoexist)
 			   &ap_enable);
 
 	if (ap_enable) {
-		printk("halbtc_enter_lps()<--dont enter lps under AP mode\n");
+		pr_info("halbtc_enter_lps()<--dont enter lps under AP mode\n");
 		return;
 	}
 
@@ -339,11 +317,9 @@ static s32 halbtc_get_wifi_rssi(struct rtl_priv *adapter)
 	s32	undec_sm_pwdb = 0;
 
 	if (rtlpriv->mac80211.link_state >= MAC80211_LINKED)
-		undec_sm_pwdb =
-			rtlpriv->dm.undec_sm_pwdb;
+		undec_sm_pwdb = rtlpriv->dm.undec_sm_pwdb;
 	else /* associated entry pwdb */
-		undec_sm_pwdb =
-			rtlpriv->dm.undec_sm_pwdb;
+		undec_sm_pwdb = rtlpriv->dm.undec_sm_pwdb;
 	return undec_sm_pwdb;
 }
 
@@ -837,7 +813,7 @@ void exhalbtc_init_hw_config(struct btc_coexist *btcoexist)
 
 	if (rtlhal->hw_type == HARDWARE_TYPE_RTL8723BE) {
 		if (btcoexist->board_info.btdm_ant_num == 2)
-			ex_halbtc8723b2ant_init_hwconfig(btcoexist);
+			ex_btc8723b2ant_init_hwconfig(btcoexist);
 		else if (btcoexist->board_info.btdm_ant_num == 1)
 			ex_halbtc8723b1ant_init_hwconfig(btcoexist);
 	} else if (rtlhal->hw_type == HARDWARE_TYPE_RTL8192EE) {
@@ -863,7 +839,7 @@ void exhalbtc_init_coex_dm(struct btc_coexist *btcoexist)
 
 	if (rtlhal->hw_type == HARDWARE_TYPE_RTL8723BE) {
 		if (btcoexist->board_info.btdm_ant_num == 2)
-			ex_halbtc8723b2ant_init_coex_dm(btcoexist);
+			ex_btc8723b2ant_init_coex_dm(btcoexist);
 		else if (btcoexist->board_info.btdm_ant_num == 1)
 			ex_halbtc8723b1ant_init_coex_dm(btcoexist);
 	} else if (rtlhal->hw_type == HARDWARE_TYPE_RTL8192EE) {
@@ -899,7 +875,7 @@ void exhalbtc_ips_notify(struct btc_coexist *btcoexist, u8 type)
 
 	if (rtlhal->hw_type == HARDWARE_TYPE_RTL8723BE) {
 		if (btcoexist->board_info.btdm_ant_num == 2)
-			ex_halbtc8723b2ant_ips_notify(btcoexist, ips_type);
+			ex_btc8723b2ant_ips_notify(btcoexist, ips_type);
 		else if (btcoexist->board_info.btdm_ant_num == 1)
 			ex_halbtc8723b1ant_ips_notify(btcoexist, ips_type);
 	} else if (rtlhal->hw_type == HARDWARE_TYPE_RTL8192EE) {
@@ -933,7 +909,7 @@ void exhalbtc_lps_notify(struct btc_coexist *btcoexist, u8 type)
 
 	if (rtlhal->hw_type == HARDWARE_TYPE_RTL8723BE) {
 		if (btcoexist->board_info.btdm_ant_num == 2)
-			ex_halbtc8723b2ant_lps_notify(btcoexist, lps_type);
+			ex_btc8723b2ant_lps_notify(btcoexist, lps_type);
 		else if (btcoexist->board_info.btdm_ant_num == 1)
 			ex_halbtc8723b1ant_lps_notify(btcoexist, lps_type);
 	} else if (rtlhal->hw_type == HARDWARE_TYPE_RTL8192EE) {
@@ -967,7 +943,7 @@ void exhalbtc_scan_notify(struct btc_coexist *btcoexist, u8 type)
 
 	if (rtlhal->hw_type == HARDWARE_TYPE_RTL8723BE) {
 		if (btcoexist->board_info.btdm_ant_num == 2)
-			ex_halbtc8723b2ant_scan_notify(btcoexist, scan_type);
+			ex_btc8723b2ant_scan_notify(btcoexist, scan_type);
 		else if (btcoexist->board_info.btdm_ant_num == 1)
 			ex_halbtc8723b1ant_scan_notify(btcoexist, scan_type);
 	} else if (rtlhal->hw_type == HARDWARE_TYPE_RTL8192EE) {
@@ -1003,7 +979,7 @@ void exhalbtc_connect_notify(struct btc_coexist *btcoexist, u8 action)
 
 	if (rtlhal->hw_type == HARDWARE_TYPE_RTL8723BE) {
 		if (btcoexist->board_info.btdm_ant_num == 2)
-			ex_halbtc8723b2ant_connect_notify(btcoexist, asso_type);
+			ex_btc8723b2ant_connect_notify(btcoexist, asso_type);
 		else if (btcoexist->board_info.btdm_ant_num == 1)
 			ex_halbtc8723b1ant_connect_notify(btcoexist, asso_type);
 	} else if (rtlhal->hw_type == HARDWARE_TYPE_RTL8192EE) {
@@ -1040,7 +1016,7 @@ void exhalbtc_mediastatus_notify(struct btc_coexist *btcoexist,
 
 	if (rtlhal->hw_type == HARDWARE_TYPE_RTL8723BE) {
 		if (btcoexist->board_info.btdm_ant_num == 2)
-			ex_halbtc8723b2ant_media_status_notify(btcoexist,
+			ex_btc8723b2ant_media_status_notify(btcoexist,
 							       status);
 		else if (btcoexist->board_info.btdm_ant_num == 1)
 			ex_halbtc8723b1ant_media_status_notify(btcoexist,
@@ -1086,7 +1062,7 @@ void exhalbtc_special_packet_notify(struct btc_coexist *btcoexist, u8 pkt_type)
 
 	if (rtlhal->hw_type == HARDWARE_TYPE_RTL8723BE) {
 		if (btcoexist->board_info.btdm_ant_num == 2)
-			ex_halbtc8723b2ant_special_packet_notify(btcoexist,
+			ex_btc8723b2ant_special_packet_notify(btcoexist,
 								 packet_type);
 		else if (btcoexist->board_info.btdm_ant_num == 1)
 			ex_halbtc8723b1ant_special_packet_notify(btcoexist,
@@ -1116,7 +1092,7 @@ void exhalbtc_bt_info_notify(struct btc_coexist *btcoexist,
 
 	if (rtlhal->hw_type == HARDWARE_TYPE_RTL8723BE) {
 		if (btcoexist->board_info.btdm_ant_num == 2)
-			ex_halbtc8723b2ant_bt_info_notify(btcoexist, tmp_buf,
+			ex_btc8723b2ant_bt_info_notify(btcoexist, tmp_buf,
 							  length);
 		else if (btcoexist->board_info.btdm_ant_num == 1)
 			ex_halbtc8723b1ant_bt_info_notify(btcoexist, tmp_buf,
@@ -1169,7 +1145,7 @@ void exhalbtc_halt_notify(struct btc_coexist *btcoexist)
 
 	if (rtlhal->hw_type == HARDWARE_TYPE_RTL8723BE) {
 		if (btcoexist->board_info.btdm_ant_num == 2)
-			ex_halbtc8723b2ant_halt_notify(btcoexist);
+			ex_btc8723b2ant_halt_notify(btcoexist);
 		else if (btcoexist->board_info.btdm_ant_num == 1)
 			ex_halbtc8723b1ant_halt_notify(btcoexist);
 	} else if (rtlhal->hw_type == HARDWARE_TYPE_RTL8192EE) {
@@ -1211,8 +1187,8 @@ void exhalbtc_coex_dm_switch(struct btc_coexist *btcoexist)
 			btcoexist->stop_coex_dm = true;
 			ex_halbtc8723b1ant_coex_dm_reset(btcoexist);
 			exhalbtc_set_ant_num(BT_COEX_ANT_TYPE_DETECTED, 2);
-			ex_halbtc8723b2ant_init_hwconfig(btcoexist);
-			ex_halbtc8723b2ant_init_coex_dm(btcoexist);
+			ex_btc8723b2ant_init_hwconfig(btcoexist);
+			ex_btc8723b2ant_init_coex_dm(btcoexist);
 			btcoexist->stop_coex_dm = false;
 		}
 	}
@@ -1231,7 +1207,7 @@ void exhalbtc_periodical(struct btc_coexist *btcoexist)
 
 	if (rtlhal->hw_type == HARDWARE_TYPE_RTL8723BE) {
 		if (btcoexist->board_info.btdm_ant_num == 2)
-			ex_halbtc8723b2ant_periodical(btcoexist);
+			ex_btc8723b2ant_periodical(btcoexist);
 		else if (btcoexist->board_info.btdm_ant_num == 1)
 			ex_halbtc8723b1ant_periodical(btcoexist);
 	} else if (rtlhal->hw_type == HARDWARE_TYPE_RTL8192EE) {
@@ -1372,7 +1348,7 @@ void exhalbtc_display_bt_coex_info(struct btc_coexist *btcoexist)
 
 	if (rtlhal->hw_type == HARDWARE_TYPE_RTL8723BE) {
 		if (btcoexist->board_info.btdm_ant_num == 2)
-			ex_halbtc8723b2ant_display_coex_info(btcoexist);
+			ex_btc8723b2ant_display_coex_info(btcoexist);
 		else if (btcoexist->board_info.btdm_ant_num == 1)
 			ex_halbtc8723b1ant_display_coex_info(btcoexist);
 	} else if (rtlhal->hw_type == HARDWARE_TYPE_RTL8821AE) {
@@ -1383,5 +1359,3 @@ void exhalbtc_display_bt_coex_info(struct btc_coexist *btcoexist)
 	}
 	halbtc_normal_low_power(btcoexist);
 }
-
-#endif
