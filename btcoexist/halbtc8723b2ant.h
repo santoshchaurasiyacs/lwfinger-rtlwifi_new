@@ -30,7 +30,6 @@
  ************************************************************************/
 #define	BT_AUTO_REPORT_ONLY_8723B_2ANT			1
 
-
 #define	BT_INFO_8723B_2ANT_B_FTP			BIT7
 #define	BT_INFO_8723B_2ANT_B_A2DP			BIT6
 #define	BT_INFO_8723B_2ANT_B_HID			BIT5
@@ -161,11 +160,11 @@ void ex_btc8723b2ant_lps_notify(struct btc_coexist *btcoexist, u8 type);
 void ex_btc8723b2ant_scan_notify(struct btc_coexist *btcoexist, u8 type);
 void ex_btc8723b2ant_connect_notify(struct btc_coexist *btcoexist, u8 type);
 void ex_btc8723b2ant_media_status_notify(struct btc_coexist *btcoexist,
-					    u8 type);
+					 u8 type);
 void ex_btc8723b2ant_special_packet_notify(struct btc_coexist *btcoexist,
-					      u8 type);
+					   u8 type);
 void ex_btc8723b2ant_bt_info_notify(struct btc_coexist *btcoexist,
-				       u8 *tmpbuf, u8 length);
+				    u8 *tmpbuf, u8 length);
 void ex_btc8723b2ant_halt_notify(struct btc_coexist *btcoexist);
 void ex_btc8723b2ant_periodical(struct btc_coexist *btcoexist);
 void ex_btc8723b2ant_display_coex_info(struct btc_coexist *btcoexist);

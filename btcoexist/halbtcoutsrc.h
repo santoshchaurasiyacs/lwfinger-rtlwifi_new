@@ -1,3 +1,27 @@
+/******************************************************************************
+ *
+ * Copyright(c) 2009-2012  Realtek Corporation.
+ *
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of version 2 of the GNU General Public License as
+ * published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+ * more details.
+ *
+ * The full GNU General Public License is included in this distribution in the
+ * file called LICENSE.
+ *
+ * Contact Information:
+ * wlanfae <wlanfae@realtek.com>
+ * Realtek Corporation, No. 2, Innovation Road II, Hsinchu Science Park,
+ * Hsinchu 300, Taiwan.
+ *
+ * Larry Finger <Larry.Finger@lwfinger.net>
+ *
+ *****************************************************************************/
 #ifndef	__HALBTC_OUT_SRC_H__
 #define __HALBTC_OUT_SRC_H__
 
@@ -102,43 +126,6 @@ extern u32 btc_dbg_type[];
 			printk(printstr, ##__VA_ARGS__);	\
 		}						\
 	} while (0)
-
-#define	BTC_PRINT_F(dbgtype, dbgflag, printstr, ...)		\
-	do {							\
-		if (unlikely(btc_dbg_type[dbgtype] & dbgflag)) {\
-			printk(KERN_DEBUG "%s: ", __func__);	\
-			printk(printstr, ##__VA_ARGS__);	\
-		}						\
-	} while (0)
-
-#define	BTC_PRINT_ADDR(dbgtype, dbgflag, printstr, _ptr)	\
-	do {							\
-		if (unlikely(btc_dbg_type[dbgtype] & dbgflag)) {	\
-			int __i;				\
-			u8 *__ptr = (u8 *)_Ptr;			\
-			printk printstr;			\
-			for (__i = 0; __i < 6; __i++)		\
-				printk("%02X%s", __ptr[__i], (__i == 5)?"":"-"); \
-			printk(KERN_DEBUG "\n");		\
-		} \
-	} while (0)
-
-#define BTC_PRINT_DATA(dbgtype, dbgflag, _titlestring, _hexdata, _hexdatalen) \
-	do {								\
-		if (unlikely(btc_dbg_type[dbgtype] & dbgflag))	{	\
-			int __i;					\
-			u8 *__ptr = (u8 *)_hexdata;			\
-			printk(_titlestring);				\
-			for (__i = 0; __i < (int)_hexdatalen; __i++) {	\
-				printk("%02X%s", __ptr[__i], (((__i + 1) % 4) \
-							== 0)?"  ":" ");\
-				if (((__i + 1) % 16) == 0)		\
-					printk("\n");			\
-			}						\
-			printk(KERN_DEBUG "\n");			\
-		}							\
-	} while (0)
-
 
 #define	BTC_RSSI_HIGH(_rssi_)	\
 	((_rssi_ == BTC_RSSI_STATE_HIGH ||	\
@@ -256,13 +243,8 @@ enum btc_get_type {
 
 	/* for test mode */
 	BTC_GET_DRIVER_TEST_CFG,
-#if 0
-	BTC_GET_U1_LPS,
-	BTC_GET_U1_RPWM,
-#endif
 	BTC_GET_MAX
 };
-
 
 enum btc_set_type {
 	/* type bool */

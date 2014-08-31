@@ -11,6 +11,9 @@
  * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
  * more details.
  *
+ * The full GNU General Public License is included in this distribution in the
+ * file called LICENSE.
+ *
  * Contact Information:
  * wlanfae <wlanfae@realtek.com>
  * Realtek Corporation, No. 2, Innovation Road II, Hsinchu Science Park,
@@ -134,7 +137,6 @@ static bool halbtc_is_bt40(struct rtl_priv *adapter)
 	bool is_ht40 = true;
 	enum ht_channel_width bw = rtlphy->current_chan_bw;
 
-
 	if (bw == HT_CHANNEL_WIDTH_20)
 		is_ht40 = false;
 	else if (bw == HT_CHANNEL_WIDTH_20_40)
@@ -188,7 +190,6 @@ static u8 halbtc_get_wifi_central_chnl(struct btc_coexist *btcoexist)
 	struct rtl_priv *rtlpriv = btcoexist->adapter;
 	struct rtl_phy	*rtlphy = &(rtlpriv->phy);
 	u8 chnl = 1;
-
 
 	if (rtlphy->current_channel != 0)
 		chnl = rtlphy->current_channel;
@@ -254,7 +255,6 @@ static void halbtc_leave_low_power(struct btc_coexist *btcoexist)
 {
 }
 
-
 static void halbtc_normal_low_power(struct btc_coexist *btcoexist)
 {
 }
@@ -305,7 +305,6 @@ static u32 halbtcoutsrc_get_wifi_link_status(struct btc_coexist *btcoexist)
 	return ret_val;
 }
 
-
 static u32 halbtc_get_bt_patch_version(struct btc_coexist *btcoexist)
 {
 	return 0;
@@ -336,10 +335,8 @@ static bool halbtc_get(void *void_btcoexist, u8 get_type, void *out_buf)
 	u8 *u8_tmp = (u8 *)out_buf;
 	bool tmp = false;
 
-
 	if (!halbtc_is_bt_coexist_available(btcoexist))
 		return false;
-
 
 	switch (get_type) {
 	case BTC_GET_BL_HS_OPERATION:
@@ -363,7 +360,7 @@ static bool halbtc_get(void *void_btcoexist, u8 get_type, void *out_buf)
 			*bool_tmp = false;
 		break;
 	case BTC_GET_BL_WIFI_SCAN:
-		if (mac->act_scanning == true)
+		if (mac->act_scanning)
 			*bool_tmp = true;
 		else
 			*bool_tmp = false;
@@ -443,7 +440,7 @@ static bool halbtc_get(void *void_btcoexist, u8 get_type, void *out_buf)
 		*u8_tmp = halbtc_get_wifi_central_chnl(btcoexist);
 		break;
 	case BTC_GET_U1_WIFI_HS_CHNL:
-		*u8_tmp = 1;/* BT_OperateChnl(rtlpriv); */
+		*u8_tmp = 1;/*BT_OperateChnl(rtlpriv); */
 		break;
 	case BTC_GET_U1_MAC_PHY_MODE:
 		*u8_tmp = BTC_MP_UNKNOWN;
@@ -472,7 +469,6 @@ static bool halbtc_set(void *void_btcoexist, u8 set_type, void *in_buf)
 	bool *bool_tmp = (bool *)in_buf;
 	u8 *u8_tmp = (u8 *)in_buf;
 	u32 *u32_tmp = (u32 *)in_buf;
-
 
 	if (!halbtc_is_bt_coexist_available(btcoexist))
 		return false;
@@ -584,7 +580,6 @@ static u8 halbtc_read_1byte(void *bt_context, u32 reg_addr)
 	return	rtl_read_byte(rtlpriv, reg_addr);
 }
 
-
 static u16 halbtc_read_2byte(void *bt_context, u32 reg_addr)
 {
 	struct btc_coexist *btcoexist = (struct btc_coexist *)bt_context;
@@ -593,7 +588,6 @@ static u16 halbtc_read_2byte(void *bt_context, u32 reg_addr)
 	return	rtl_read_word(rtlpriv, reg_addr);
 }
 
-
 static u32 halbtc_read_4byte(void *bt_context, u32 reg_addr)
 {
 	struct btc_coexist *btcoexist = (struct btc_coexist *)bt_context;
@@ -601,7 +595,6 @@ static u32 halbtc_read_4byte(void *bt_context, u32 reg_addr)
 
 	return	rtl_read_dword(rtlpriv, reg_addr);
 }
-
 
 static void halbtc_write_1byte(void *bt_context, u32 reg_addr, u8 data)
 {
@@ -612,7 +605,7 @@ static void halbtc_write_1byte(void *bt_context, u32 reg_addr, u8 data)
 }
 
 static void halbtc_bitmask_write_1byte(void *bt_context, u32 reg_addr,
-				u8 bit_mask, u8 data)
+				       u8 bit_mask, u8 data)
 {
 	struct btc_coexist *btcoexist = (struct btc_coexist *)bt_context;
 	struct rtl_priv *rtlpriv = btcoexist->adapter;
@@ -622,7 +615,7 @@ static void halbtc_bitmask_write_1byte(void *bt_context, u32 reg_addr,
 	if (bit_mask != MASKBYTE0) {/*if not "byte" write*/
 		original_value = rtl_read_byte(rtlpriv, reg_addr);
 		for (i = 0; i <= 7; i++) {
-			if ((bit_mask>>i)&0x1)
+			if ((bit_mask>>i) & 0x1)
 				break;
 		}
 		bit_shift = i;
@@ -632,7 +625,6 @@ static void halbtc_bitmask_write_1byte(void *bt_context, u32 reg_addr,
 	rtl_write_byte(rtlpriv, reg_addr, data);
 }
 
-
 static void halbtc_write_2byte(void *bt_context, u32 reg_addr, u16 data)
 {
 	struct btc_coexist *btcoexist = (struct btc_coexist *)bt_context;
@@ -640,7 +632,6 @@ static void halbtc_write_2byte(void *bt_context, u32 reg_addr, u16 data)
 
 	rtl_write_word(rtlpriv, reg_addr, data);
 }
-
 
 static void halbtc_write_4byte(void *bt_context, u32 reg_addr, u32 data)
 {
@@ -651,15 +642,14 @@ static void halbtc_write_4byte(void *bt_context, u32 reg_addr, u32 data)
 	rtl_write_dword(rtlpriv, reg_addr, data);
 }
 
-
-static void halbtc_set_bbreg(void *bt_context, u32 reg_addr, u32 bit_mask, u32 data)
+static void halbtc_set_bbreg(void *bt_context, u32 reg_addr, u32 bit_mask,
+			     u32 data)
 {
 	struct btc_coexist *btcoexist = (struct btc_coexist *)bt_context;
 	struct rtl_priv *rtlpriv = btcoexist->adapter;
 
 	rtl_set_bbreg(rtlpriv->mac80211.hw, reg_addr, bit_mask, data);
 }
-
 
 static u32 halbtc_get_bbreg(void *bt_context, u32 reg_addr, u32 bit_mask)
 {
@@ -669,9 +659,8 @@ static u32 halbtc_get_bbreg(void *bt_context, u32 reg_addr, u32 bit_mask)
 	return rtl_get_bbreg(rtlpriv->mac80211.hw, reg_addr, bit_mask);
 }
 
-
 static void halbtc_set_rfreg(void *bt_context, u8 rf_path, u32 reg_addr,
-		      u32 bit_mask, u32 data)
+			     u32 bit_mask, u32 data)
 {
 	struct btc_coexist *btcoexist = (struct btc_coexist *)bt_context;
 	struct rtl_priv *rtlpriv = btcoexist->adapter;
@@ -679,8 +668,8 @@ static void halbtc_set_rfreg(void *bt_context, u8 rf_path, u32 reg_addr,
 	rtl_set_rfreg(rtlpriv->mac80211.hw, rf_path, reg_addr, bit_mask, data);
 }
 
-
-static u32 halbtc_get_rfreg(void *bt_context, u8 rf_path, u32 reg_addr, u32 bit_mask)
+static u32 halbtc_get_rfreg(void *bt_context, u8 rf_path, u32 reg_addr,
+			    u32 bit_mask)
 {
 	struct btc_coexist *btcoexist = (struct btc_coexist *)bt_context;
 	struct rtl_priv *rtlpriv = btcoexist->adapter;
@@ -688,9 +677,8 @@ static u32 halbtc_get_rfreg(void *bt_context, u8 rf_path, u32 reg_addr, u32 bit_
 	return rtl_get_rfreg(rtlpriv->mac80211.hw, rf_path, reg_addr, bit_mask);
 }
 
-
 static void halbtc_fill_h2c_cmd(void *bt_context, u8 element_id,
-			 u32 cmd_len, u8 *cmd_buf)
+				u32 cmd_len, u8 *cmd_buf)
 {
 	struct btc_coexist *btcoexist = (struct btc_coexist *)bt_context;
 	struct rtl_priv *rtlpriv = btcoexist->adapter;
@@ -755,17 +743,12 @@ bool exhalbtc_initlize_variables(struct rtl_priv *adapter)
 	else
 		btcoexist->binded = true;
 
-#if (defined(CONFIG_PCI_HCI))
-	btcoexist->chip_interface = BTC_INTF_PCI;
-#elif (defined(CONFIG_USB_HCI))
-	btcoexist->chip_interface = BTC_INTF_USB;
-#elif (defined(CONFIG_SDIO_HCI))
-	btcoexist->chip_interface = BTC_INTF_SDIO;
-#elif (defined(CONFIG_GSPI_HCI))
-	btcoexist->chip_interface = BTC_INTF_GSPI;
-#else
-	btcoexist->chip_interface = BTC_INTF_UNKNOWN;
-#endif
+	if (adapter->rtlhal.interface == INTF_PCI)
+		btcoexist->chip_interface = BTC_INTF_PCI;
+	else if (adapter->rtlhal.interface == INTF_USB)
+		btcoexist->chip_interface = BTC_INTF_USB;
+	else
+		btcoexist->chip_interface = BTC_INTF_UNKNOWN;
 
 	if (NULL == btcoexist->adapter)
 		btcoexist->adapter = adapter;
@@ -824,7 +807,6 @@ void exhalbtc_init_hw_config(struct btc_coexist *btcoexist)
 		else if (btcoexist->board_info.btdm_ant_num == 1)
 			ex_halbtc8821a1ant_init_hwconfig(btcoexist);
 	}
-
 }
 
 void exhalbtc_init_coex_dm(struct btc_coexist *btcoexist)
@@ -1249,7 +1231,6 @@ void exhalbtc_update_min_bt_rssi(char bt_rssi)
 
 	btcoexist->stack_info.min_bt_rssi = bt_rssi;
 }
-
 
 void exhalbtc_set_hci_version(u16 hci_version)
 {
