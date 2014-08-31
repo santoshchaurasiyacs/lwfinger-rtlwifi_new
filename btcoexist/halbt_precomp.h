@@ -11,12 +11,17 @@
  * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
  * more details.
  *
- * You should have received a copy of the GNU General Public License along with
- * this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110, USA
+ * The full GNU General Public License is included in this distribution in the
+ * file called LICENSE.
  *
+ * Contact Information:
+ * wlanfae <wlanfae@realtek.com>
+ * Realtek Corporation, No. 2, Innovation Road II, Hsinchu Science Park,
+ * Hsinchu 300, Taiwan.
+ * Larry Finger <Larry.Finger@lwfinger.net>
  *
  ******************************************************************************/
+
 #ifndef	__HALBT_PRECOMP_H__
 #define __HALBT_PRECOMP_H__
 /*************************************************************
@@ -32,7 +37,6 @@
 
 #include "halbtcoutsrc.h"
 
-
 #include "halbtc8192e2ant.h"
 #include "halbtc8723b1ant.h"
 #include "halbtc8723b2ant.h"
@@ -40,7 +44,6 @@
 #include "halbtc8821a1ant.h"
 
 #define GetDefaultAdapter(padapter)	padapter
-
 
 #define BIT0	0x00000001
 #define BIT1	0x00000002
