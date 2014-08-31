@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Copyright(c) 2009-2010  Realtek Corporation.
+ * Copyright(c) 2009-2013  Realtek Corporation.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of version 2 of the GNU General Public License as
@@ -10,10 +10,6 @@
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
  * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
  * more details.
- *
- * You should have received a copy of the GNU General Public License along with
- * this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110, USA
  *
  * The full GNU General Public License is included in this distribution in the
  * file called LICENSE.
@@ -50,10 +46,8 @@ static struct rtl_btc_ops rtl_btc_operation = {
 	.btc_special_packet_notify = rtl_btc_special_packet_notify,
 };
 
-
 void rtl_btc_init_variables(struct rtl_priv *rtlpriv)
 {
-
 	exhalbtc_initlize_variables(rtlpriv);
 }
 
@@ -62,31 +56,29 @@ void rtl_btc_init_hal_vars(struct rtl_priv *rtlpriv)
 	u8 ant_num;
 	u8 bt_exist;
 	u8 bt_type;
+
 	ant_num = rtl_get_hwpg_ant_num(rtlpriv);
 	RT_TRACE(rtlpriv, COMP_INIT, DBG_DMESG,
-		"%s, antNum is %d\n", __func__, ant_num);
+		 "%s, antNum is %d\n", __func__, ant_num);
 
 	bt_exist = rtl_get_hwpg_bt_exist(rtlpriv);
 	RT_TRACE(rtlpriv, COMP_INIT, DBG_DMESG,
-		"%s, bt_exist is %d\n", __func__, bt_exist);
+		 "%s, bt_exist is %d\n", __func__, bt_exist);
 	exhalbtc_set_bt_exist(bt_exist);
 
 	bt_type = rtl_get_hwpg_bt_type(rtlpriv);
-	RT_TRACE(rtlpriv, COMP_INIT, DBG_DMESG,
-		"%s, bt_type is %d\n", __func__, bt_type);
+	RT_TRACE(rtlpriv, COMP_INIT, DBG_DMESG, "%s, bt_type is %d\n",
+		 __func__, bt_type);
 	exhalbtc_set_chip_type(bt_type);
 
 	exhalbtc_set_ant_num(BT_COEX_ANT_TYPE_PG, ant_num);
-
 }
-
 
 void rtl_btc_init_hw_config(struct rtl_priv *rtlpriv)
 {
 	exhalbtc_init_hw_config(&gl_bt_coexist);
 	exhalbtc_init_coex_dm(&gl_bt_coexist);
 }
-
 
 void rtl_btc_ips_notify(struct rtl_priv *rtlpriv, u8 type)
 {
@@ -98,21 +90,18 @@ void rtl_btc_lps_notify(struct rtl_priv *rtlpriv, u8 type)
 	exhalbtc_lps_notify(&gl_bt_coexist, type);
 }
 
-
 void rtl_btc_scan_notify(struct rtl_priv *rtlpriv, u8 scantype)
 {
 	exhalbtc_scan_notify(&gl_bt_coexist, scantype);
 }
-
 
 void rtl_btc_connect_notify(struct rtl_priv *rtlpriv, u8 action)
 {
 	exhalbtc_connect_notify(&gl_bt_coexist, action);
 }
 
-
 void rtl_btc_mediastatus_notify(struct rtl_priv *rtlpriv,
-	enum rt_media_status mstatus)
+				enum rt_media_status mstatus)
 {
 	exhalbtc_mediastatus_notify(&gl_bt_coexist, mstatus);
 }
@@ -220,8 +209,6 @@ u8 rtl_get_hwpg_bt_type(struct rtl_priv *rtlpriv)
 {
 	return rtlpriv->btcoexist.btc_info.bt_type;
 }
-
-
 
 MODULE_AUTHOR("Page He	<page_he@realsil.com.cn>");
 MODULE_AUTHOR("Realtek WlanFAE	<wlanfae@realtek.com>");

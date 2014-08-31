@@ -11,10 +11,6 @@
  * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
  * more details.
  *
- * You should have received a copy of the GNU General Public License along with
- * this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110, USA
- *
  * The full GNU General Public License is included in this distribution in the
  * file called LICENSE.
  *
@@ -31,8 +27,6 @@
 
 #include "halbt_precomp.h"
 
-
-
 void rtl_btc_init_variables(struct rtl_priv *rtlpriv);
 void rtl_btc_init_hal_vars(struct rtl_priv *rtlpriv);
 void rtl_btc_init_hw_config(struct rtl_priv *rtlpriv);
@@ -41,29 +35,20 @@ void rtl_btc_lps_notify(struct rtl_priv *rtlpriv, u8 type);
 void rtl_btc_scan_notify(struct rtl_priv *rtlpriv, u8 scantype);
 void rtl_btc_connect_notify(struct rtl_priv *rtlpriv, u8 action);
 void rtl_btc_mediastatus_notify(struct rtl_priv *rtlpriv,
-	enum rt_media_status mstatus);
+				enum rt_media_status mstatus);
 void rtl_btc_periodical(struct rtl_priv *rtlpriv);
 void rtl_btc_halt_notify(void);
-void rtl_btc_btinfo_notify(struct rtl_priv *rtlpriv, u8 *tmpBuf, u8 length);
+void rtl_btc_btinfo_notify(struct rtl_priv *rtlpriv, u8 *tmpbuf, u8 length);
 bool rtl_btc_is_limited_dig(struct rtl_priv *rtlpriv);
 bool rtl_btc_is_disable_edca_turbo(struct rtl_priv *rtlpriv);
 bool rtl_btc_is_bt_disabled(struct rtl_priv *rtlpriv);
 void rtl_btc_special_packet_notify(struct rtl_priv *rtlpriv, u8 pkt_type);
 
-
-/*extern struct rtl_btc_ops rtl_btc_operation;*/
-extern struct rtl_btc_ops *rtl_btc_get_ops_pointer(void);
+struct rtl_btc_ops *rtl_btc_get_ops_pointer(void);
 
 u8 rtl_get_hwpg_ant_num(struct rtl_priv *rtlpriv);
 u8 rtl_get_hwpg_bt_exist(struct rtl_priv *rtlpriv);
 u8 rtl_get_hwpg_bt_type(struct rtl_priv *rtlpriv);
 enum rt_media_status mgnt_link_status_query(struct ieee80211_hw *hw);
-
-
-
-
-
-
-
 
 #endif
