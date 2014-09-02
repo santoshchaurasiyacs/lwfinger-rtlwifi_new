@@ -22,6 +22,7 @@
  * Larry Finger <Larry.Finger@lwfinger.net>
  *
  *****************************************************************************/
+#include "../wifi.h"
 #include <linux/vmalloc.h>
 #include <linux/module.h>
 

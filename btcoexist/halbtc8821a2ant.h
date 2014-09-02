@@ -1,3 +1,28 @@
+/******************************************************************************
+ *
+ * Copyright(c) 2012  Realtek Corporation.
+ *
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of version 2 of the GNU General Public License as
+ * published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+ * more details.
+ *
+ * The full GNU General Public License is included in this distribution in the
+ * file called LICENSE.
+ *
+ * Contact Information:
+ * wlanfae <wlanfae@realtek.com>
+ * Realtek Corporation, No. 2, Innovation Road II, Hsinchu Science Park,
+ * Hsinchu 300, Taiwan.
+ *
+ * Larry Finger <Larry.Finger@lwfinger.net>
+ *
+ *****************************************************************************/
+
 /*===========================================
  * The following is for 8821A 2Ant BT Co-exist definition
  *===========================================
@@ -22,7 +47,7 @@ enum _BT_INFO_SRC_8821A_2ANT {
 
 enum _BT_8821A_2ANT_BT_STATUS {
 	BT_8821A_2ANT_BT_STATUS_IDLE		= 0x0,
-	BT_8821A_2ANT_BT_STATUS_CONNECTED_IDLE	= 0x1,
+	BT_8821A_2ANT_BT_STATUS_CON_IDLE	= 0x1,
 	BT_8821A_2ANT_BT_STATUS_NON_IDLE	= 0x2,
 	BT_8821A_2ANT_BT_STATUS_MAX
 };
@@ -42,7 +67,7 @@ enum _BT_8821A_2ANT_COEX_ALGO {
 	BT_8821A_2ANT_COEX_ALGO_MAX			= 0xb,
 };
 
-typedef struct _coex_dm_8821a_2ant {
+struct coex_dm_8821a_2ant {
 	/* fw mechanism */
 	bool		pre_dec_bt_pwr;
 	bool		cur_dec_bt_pwr;
@@ -93,9 +118,9 @@ typedef struct _coex_dm_8821a_2ant {
 	u8		cur_algorithm;
 	u8		bt_status;
 	u8		wifi_chnl_info[3];
-} coex_dm_8821a_2ant;
+};
 
-typedef struct _coex_sta_8821a_2ant {
+struct coex_sta_8821a_2ant {
 	bool	bt_link_exist;
 	bool	sco_exist;
 	bool	a2dp_exist;
@@ -116,7 +141,7 @@ typedef struct _coex_sta_8821a_2ant {
 	bool	c2h_bt_inquiry_page;
 	u8	bt_retry_cnt;
 	u8	bt_info_ext;
-} coex_sta_8821a_2ant;
+};
 
 /*===========================================
  *	The following is interface which will notify coex module.

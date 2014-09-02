@@ -116,7 +116,6 @@ extern u32 btc_dbg_type[];
 #define		WIFI_P2P_GO_CONNECTED			BIT3
 #define		WIFI_P2P_GC_CONNECTED			BIT4
 
-
 #define	CL_SPRINTF	snprintf
 #define	CL_PRINTF	printk
 
@@ -136,7 +135,6 @@ extern u32 btc_dbg_type[];
 #define	BTC_RSSI_LOW(_rssi_)	\
 	((_rssi_ == BTC_RSSI_STATE_LOW ||	\
 	  _rssi_ == BTC_RSSI_STATE_STAY_LOW) ? true : false)
-
 
 enum btc_power_save_type {
 	BTC_PS_WIFI_NATIVE = 0,
@@ -197,7 +195,6 @@ enum btc_wifi_pnp {
 	BTC_WIFI_PNP_SLEEP = 0x1,
 	BTC_WIFI_PNP_MAX
 };
-
 
 enum btc_get_type {
 	/* type bool */
@@ -355,7 +352,6 @@ enum btc_notify_type_stack_operation {
 	BTC_STACK_OP_MAX
 };
 
-
 typedef u8 (*bfp_btc_r1)(void *btc_context, u32 reg_addr);
 
 typedef u16 (*bfp_btc_r2)(void *btc_context, u32 reg_addr);
@@ -490,8 +486,7 @@ struct btc_coexist {
 	struct btc_statistics statistics;
 	u8 pwr_mode_val[10];
 
-	/* function pointers
-	 * io related */
+	/* function pointers - io related */
 	bfp_btc_r1 btc_read_1byte;
 	bfp_btc_w1 btc_write_1byte;
 	bfp_btc_w1_bit_mak btc_write_1byte_bitmask;
@@ -503,10 +498,8 @@ struct btc_coexist {
 	bfp_btc_set_bb_reg btc_set_bb_reg;
 	bfp_btc_get_bb_reg btc_get_bb_reg;
 
-
 	bfp_btc_set_rf_reg btc_set_rf_reg;
 	bfp_btc_get_rf_reg btc_get_rf_reg;
-
 
 	bfp_btc_fill_h2c btc_fill_h2c;
 
@@ -517,7 +510,6 @@ struct btc_coexist {
 };
 
 bool halbtc_is_wifi_uplink(struct rtl_priv *adapter);
-
 
 extern struct btc_coexist gl_bt_coexist;
 
@@ -553,3 +545,4 @@ void exhalbtc_signal_compensation(struct btc_coexist *btcoexist,
 void exhalbtc_lps_leave(struct btc_coexist *btcoexist);
 void exhalbtc_low_wifi_traffic_notify(struct btc_coexist *btcoexist);
 #endif
+

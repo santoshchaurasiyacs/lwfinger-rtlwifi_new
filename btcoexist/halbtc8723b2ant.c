@@ -1174,8 +1174,8 @@ static void btc8723b2ant_sw_mechanism2(struct btc_coexist *btcoexist,
 }
 
 static void btc8723b2ant_set_ant_path(struct btc_coexist *btcoexist,
-				  u8 antpos_type, bool init_hwcfg,
-				  bool wifi_off)
+				      u8 antpos_type, bool init_hwcfg,
+				      bool wifi_off)
 {
 	struct btc_board_info *board_info = &btcoexist->board_info;
 	u32 fw_ver = 0, u32tmp = 0;
@@ -1253,9 +1253,8 @@ static void btc8723b2ant_set_ant_path(struct btc_coexist *btcoexist,
 }
 
 static void btc8723b2ant_ps_tdma(struct btc_coexist *btcoexist, bool force_exec,
-			     bool turn_on, u8 type)
+				 bool turn_on, u8 type)
 {
-
 	BTC_PRINT(BTC_MSG_ALGORITHM, ALGO_TRACE_FW,
 		  "[BTCoex], %s turn %s PS TDMA, type=%d\n",
 		  (force_exec ? "force to" : ""),
@@ -2502,14 +2501,14 @@ static void btc8723b2ant_action_a2dp(struct btc_coexist *btcoexist)
 		btcoexist->btc_get(btcoexist, BTC_GET_U4_WIFI_BW, &wifi_bw);
 		if (BTC_WIFI_BW_HT40 == wifi_bw) {
 			btc8723b2ant_sw_mechanism1(btcoexist, true, false,
-						      false, false);
+						   false, false);
 			btc8723b2ant_sw_mechanism2(btcoexist, true, false,
-						      true, 0x18);
+						   true, 0x18);
 		} else {
 			btc8723b2ant_sw_mechanism1(btcoexist, false, false,
-						      false, false);
+						   false, false);
 			btc8723b2ant_sw_mechanism2(btcoexist, true, false,
-						      true, 0x18);
+						   true, 0x18);
 		}
 		return;
 	}
@@ -3135,9 +3134,9 @@ void ex_btc8723b2ant_init_hwconfig(struct btc_coexist *btcoexist)
 	u8tmp |= 0x5;
 	btcoexist->btc_write_1byte(btcoexist, 0x790, u8tmp);
 
-	/*Antenna config	*/
+	/*Antenna config */
 	btc8723b2ant_set_ant_path(btcoexist, BTC_ANT_WIFI_AT_MAIN,
-				     true, false);
+				  true, false);
 	/* PTA parameter */
 	btc8723b_coex_tbl_type(btcoexist, FORCE_EXEC, 0);
 

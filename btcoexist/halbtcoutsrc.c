@@ -98,8 +98,7 @@ static bool is_any_client_connect_to_ap(struct btc_coexist *btcoexist)
 	}
 	if (cnt > 0)
 		return true;
-	else
-		return false;
+	return false;
 }
 
 static bool halbtc_is_bt_coexist_available(struct btc_coexist *btcoexist)
@@ -248,7 +247,6 @@ static void halbtc_normal_lps(struct btc_coexist *btcoexist)
 		btcoexist->bt_info.bt_lps_on = false;
 		btcoexist->bt_info.bt_ctrl_lps = false;
 	}
-
 }
 
 static void halbtc_leave_low_power(struct btc_coexist *btcoexist)
@@ -260,7 +258,7 @@ static void halbtc_normal_low_power(struct btc_coexist *btcoexist)
 }
 
 static void halbtc_disable_low_power(struct btc_coexist *btcoexist,
-			      bool low_pwr_disable)
+				     bool low_pwr_disable)
 {
 }
 
@@ -292,13 +290,7 @@ static u32 halbtcoutsrc_get_wifi_link_status(struct btc_coexist *btcoexist)
 		port_connected_status |= WIFI_AP_CONNECTED;
 		num_of_connected_port++;
 	}
-	/*if(BT_HsConnectionEstablished(Adapter))
-	{
-		port_connected_status |= WIFI_HS_CONNECTED;
-		num_of_connected_port++;
-	}*/
-	/* TODO:
-	 * P2P Connected Status	*/
+	/* TODO: P2P Connected Status	*/
 
 	ret_val = (num_of_connected_port << 16) | port_connected_status;
 
@@ -446,8 +438,9 @@ static bool halbtc_get(void *void_btcoexist, u8 get_type, void *out_buf)
 		*u8_tmp = BTC_MP_UNKNOWN;
 		break;
 	case BTC_GET_U1_AP_NUM:
-		/* driver don't know AP num in Linux,
-		 * So, the return value here is not right */
+		/* driver doesn't know AP num in Linux,
+		 * So, the return value here is not righti
+		 */
 		*u8_tmp = 1;/* pDefMgntInfo->NumBssDesc4Query; */
 		break;
 
@@ -718,10 +711,8 @@ static bool halbtc_under_ips(struct btc_coexist *btcoexist)
 		rtstate = ppsc->rfpwr_state;
 
 		if (rtstate != ERFON &&
-		    ppsc->rfoff_reason == RF_CHANGE_BY_IPS) {
-
+		    ppsc->rfoff_reason == RF_CHANGE_BY_IPS)
 			return true;
-		}
 	}
 
 	return false;
@@ -999,7 +990,7 @@ void exhalbtc_mediastatus_notify(struct btc_coexist *btcoexist,
 	if (rtlhal->hw_type == HARDWARE_TYPE_RTL8723BE) {
 		if (btcoexist->board_info.btdm_ant_num == 2)
 			ex_btc8723b2ant_media_status_notify(btcoexist,
-							       status);
+							    status);
 		else if (btcoexist->board_info.btdm_ant_num == 1)
 			ex_halbtc8723b1ant_media_status_notify(btcoexist,
 							       status);
@@ -1008,10 +999,10 @@ void exhalbtc_mediastatus_notify(struct btc_coexist *btcoexist,
 	} else if (rtlhal->hw_type == HARDWARE_TYPE_RTL8821AE) {
 		if (btcoexist->board_info.btdm_ant_num == 2)
 			ex_halbtc8821a2ant_media_status_notify(btcoexist,
-				status);
+							       status);
 		else if (btcoexist->board_info.btdm_ant_num == 1)
 			ex_halbtc8821a1ant_media_status_notify(btcoexist,
-				status);
+							       status);
 	}
 
 	halbtc_normal_low_power(btcoexist);
@@ -1045,17 +1036,17 @@ void exhalbtc_special_packet_notify(struct btc_coexist *btcoexist, u8 pkt_type)
 	if (rtlhal->hw_type == HARDWARE_TYPE_RTL8723BE) {
 		if (btcoexist->board_info.btdm_ant_num == 2)
 			ex_btc8723b2ant_special_packet_notify(btcoexist,
-								 packet_type);
+							      packet_type);
 		else if (btcoexist->board_info.btdm_ant_num == 1)
 			ex_halbtc8723b1ant_special_packet_notify(btcoexist,
 								 packet_type);
 	} else if (rtlhal->hw_type == HARDWARE_TYPE_RTL8821AE) {
 		if (btcoexist->board_info.btdm_ant_num == 2)
 			ex_halbtc8821a2ant_special_packet_notify(btcoexist,
-							 packet_type);
+								 packet_type);
 		else if (btcoexist->board_info.btdm_ant_num == 1)
 			ex_halbtc8821a1ant_special_packet_notify(btcoexist,
-							 packet_type);
+								 packet_type);
 	}
 
 	halbtc_normal_low_power(btcoexist);
@@ -1075,20 +1066,19 @@ void exhalbtc_bt_info_notify(struct btc_coexist *btcoexist,
 	if (rtlhal->hw_type == HARDWARE_TYPE_RTL8723BE) {
 		if (btcoexist->board_info.btdm_ant_num == 2)
 			ex_btc8723b2ant_bt_info_notify(btcoexist, tmp_buf,
-							  length);
+						       length);
 		else if (btcoexist->board_info.btdm_ant_num == 1)
 			ex_halbtc8723b1ant_bt_info_notify(btcoexist, tmp_buf,
 							  length);
 	} else if (rtlhal->hw_type == HARDWARE_TYPE_RTL8192EE) {
-			/*ex_halbtc8192e2ant_bt_info_notify(btcoexist,
-				tmp_buf, length);*/
+		/*ex_halbtc8192e2ant_bt_info_notify(btcoexist,tmp_buf,length);*/
 	} else if (rtlhal->hw_type == HARDWARE_TYPE_RTL8821AE) {
 		if (btcoexist->board_info.btdm_ant_num == 2)
 			ex_halbtc8821a2ant_bt_info_notify(btcoexist,
-				tmp_buf, length);
+							  tmp_buf, length);
 		else if (btcoexist->board_info.btdm_ant_num == 1)
 			ex_halbtc8821a1ant_bt_info_notify(btcoexist,
-				tmp_buf, length);
+							  tmp_buf, length);
 	}
 	halbtc_normal_low_power(btcoexist);
 }
@@ -1108,9 +1098,9 @@ void exhalbtc_stack_operation_notify(struct btc_coexist *btcoexist, u8 type)
 	    (HCI_BT_OP_PAIRING_START == type))
 		stack_op_type = BTC_STACK_OP_INQ_PAGE_PAIR_START;
 	else if ((HCI_BT_OP_INQUIRY_FINISH == type) ||
-		(HCI_BT_OP_PAGING_SUCCESS == type) ||
-		(HCI_BT_OP_PAGING_UNSUCCESS == type) ||
-		(HCI_BT_OP_PAIRING_FINISH == type))
+		 (HCI_BT_OP_PAGING_SUCCESS == type) ||
+		 (HCI_BT_OP_PAGING_UNSUCCESS == type) ||
+		 (HCI_BT_OP_PAIRING_FINISH == type))
 		stack_op_type = BTC_STACK_OP_INQ_PAGE_PAIR_FINISH;
 	else
 		stack_op_type = BTC_STACK_OP_NONE;
@@ -1158,6 +1148,7 @@ void exhalbtc_coex_dm_switch(struct btc_coexist *btcoexist)
 {
 	struct rtl_priv *rtlpriv = btcoexist->adapter;
 	struct rtl_hal *rtlhal = rtl_hal(rtlpriv);
+
 	if (!halbtc_is_bt_coexist_available(btcoexist))
 		return;
 	btcoexist->statistics.cnt_coex_dm_switch++;
@@ -1195,9 +1186,9 @@ void exhalbtc_periodical(struct btc_coexist *btcoexist)
 	} else if (rtlhal->hw_type == HARDWARE_TYPE_RTL8192EE) {
 		ex_halbtc8192e2ant_periodical(btcoexist);
 	} else if (rtlhal->hw_type == HARDWARE_TYPE_RTL8821AE) {
-		if (btcoexist->board_info.btdm_ant_num == 2)
+		if (btcoexist->board_info.btdm_ant_num == 2) {
 			ex_halbtc8821a2ant_periodical(btcoexist);
-		else if (btcoexist->board_info.btdm_ant_num == 1) {
+		} else if (btcoexist->board_info.btdm_ant_num == 1) {
 			if (!halbtc_under_ips(btcoexist))
 				ex_halbtc8821a1ant_periodical(btcoexist);
 		}
@@ -1340,3 +1331,4 @@ void exhalbtc_display_bt_coex_info(struct btc_coexist *btcoexist)
 	}
 	halbtc_normal_low_power(btcoexist);
 }
+
