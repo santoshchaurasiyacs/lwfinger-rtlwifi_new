@@ -1978,6 +1978,7 @@ static bool _rtl_pci_find_adapter(struct pci_dev *pdev,
 	} else if (deviceid == RTL_PCI_8192DE_DID ||
 		   deviceid == RTL_PCI_8192DE_DID2) {
 		rtlhal->hw_type = HARDWARE_TYPE_RTL8192DE;
+		rtlhal->bandset = BAND_ON_BOTH;
 		RT_TRACE(rtlpriv, COMP_INIT, DBG_DMESG,
 			 "8192D PCI-E is found - vid/did=%x/%x\n",
 			 venderid, deviceid);
@@ -1995,10 +1996,12 @@ static bool _rtl_pci_find_adapter(struct pci_dev *pdev,
 				 "Find adapter, Hardware type is 8192EE\n");
 	} else if (deviceid == RTL_PCI_8821AE_DID) {
 			rtlhal->hw_type = HARDWARE_TYPE_RTL8821AE;
+			rtlhal->bandset = BAND_ON_BOTH;
 			RT_TRACE(rtlpriv, COMP_INIT , DBG_LOUD,
 				"Find adapter, Hardware type is 8821AE\n");
 	} else if (deviceid == RTL_PCI_8812AE_DID) {
 			rtlhal->hw_type = HARDWARE_TYPE_RTL8812AE;
+			rtlhal->bandset = BAND_ON_BOTH;
 			RT_TRACE(rtlpriv, COMP_INIT , DBG_LOUD,
 				"Find adapter, Hardware type is 8812AE\n");
 	} else {
