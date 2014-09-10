@@ -627,7 +627,7 @@ static u32 halbtc_read_4byte(void *bt_context, u32 reg_addr)
 }
 
 
-static void halbtc_write_1byte(void *bt_context, u32 reg_addr, u8 data)
+static void halbtc_write_1byte(void *bt_context, u32 reg_addr, u32 data)
 {
 	struct btc_coexist *btcoexist = (struct btc_coexist *)bt_context;
 	struct rtl_priv *rtlpriv = btcoexist->adapter;
