@@ -2840,9 +2840,9 @@ void rtl8723be_phy_iq_calibrate(struct ieee80211_hw *hw, bool b_recovery)
 	if (rtlphy->iqk_inprogress)
 		return;
 
-	spin_lock(&rtlpriv->locks.irq_th_lock);
+	spin_lock(&rtlpriv->locks.iqk_lock);
 	rtlphy->iqk_inprogress = true;
-	spin_unlock(&rtlpriv->locks.irq_th_lock);
+	spin_unlock(&rtlpriv->locks.iqk_lock);
 
 	if (b_recovery) {
 		_rtl8723be_phy_reload_adda_registers(hw, iqk_bb_reg,
