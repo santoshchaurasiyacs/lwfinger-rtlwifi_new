@@ -2252,6 +2252,14 @@ int rtl_pci_probe(struct pci_dev *pdev,
 	/*like read eeprom and so on */
 	rtlpriv->cfg->ops->read_eeprom_info(hw);
 
+
+	if (rtlpriv->cfg->ops->init_sw_vars(hw)) {
+		RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG, "Can't init_sw_vars\n");
+		err = -ENODEV;
+		goto fail3;
+	}
+	rtlpriv->cfg->ops->init_sw_leds(hw);
+
 	/*aspm */
 	rtl_pci_init_aspm(hw);
 
@@ -2263,21 +2271,21 @@ int rtl_pci_probe(struct pci_dev *pdev,
 		goto fail3;
 	}
 
-	/* Init PCI sw */
 	err = !rtl_pci_init(hw, pdev);
 	if (err) {
 		RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG, "Failed to init PCI.\n");
 		goto fail3;
 	}
 
-	if (rtlpriv->cfg->ops->init_sw_vars(hw)) {
-		RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG, "Can't init_sw_vars\n");
-		err = -ENODEV;
+
+	err = ieee80211_register_hw(hw);
+	if (err) {
+		RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG,
+			 "Can't register mac80211 hw.\n");
 		goto fail3;
+	} else {
+		rtlpriv->mac80211.mac80211_registered = 1;
 	}
-
-	rtlpriv->cfg->ops->init_sw_leds(hw);
-
 	err = sysfs_create_group(&pdev->dev.kobj, &rtl_attribute_group);
 	if (err) {
 		RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG,
@@ -2286,6 +2294,9 @@ int rtl_pci_probe(struct pci_dev *pdev,
 	}
 	/* add for prov */
 	rtl_proc_add_one(hw);
+
+	/*init rfkill */
+	rtl_init_rfkill(hw);	/* Init PCI sw */
 
 	rtlpci = rtl_pcidev(pcipriv);
 	err = rtl_pci_intr_mode_decide(hw);
@@ -2297,6 +2308,8 @@ int rtl_pci_probe(struct pci_dev *pdev,
 	} else {
 		rtlpci->irq_alloc = 1;
 	}
+
+	set_bit(RTL_STATUS_INTERFACE_START, &rtlpriv->status);
 
 	return 0;
 
