@@ -133,19 +133,6 @@ found_alt:
 	memcpy(rtlpriv->rtlhal.pfirmware, firmware->data, firmware->size);
 	rtlpriv->rtlhal.fwsize = firmware->size;
 	release_firmware(firmware);
-
-	err = ieee80211_register_hw(hw);
-	if (err) {
-		RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG,
-			 "Can't register mac80211 hw\n");
-		return;
-	} else {
-		rtlpriv->mac80211.mac80211_registered = 1;
-	}
-	set_bit(RTL_STATUS_INTERFACE_START, &rtlpriv->status);
-
-	/*init rfkill */
-	rtl_init_rfkill(hw);
 }
 EXPORT_SYMBOL(rtl_fw_cb);
 
@@ -205,8 +192,6 @@ static void rtl_op_stop(struct ieee80211_hw *hw)
 	mutex_unlock(&rtlpriv->locks.conf_mutex);
 }
 
-
-
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(3,7,0))
 static void rtl_op_tx(struct ieee80211_hw *hw, struct sk_buff *skb)
 #else
@@ -226,8 +211,6 @@ static void rtl_op_tx(struct ieee80211_hw *hw,
 
 	if (!test_bit(RTL_STATUS_INTERFACE_START, &rtlpriv->status))
 		goto err_free;
-
-
 
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(3,7,0))
 	if (!rtlpriv->intf_ops->waitq_insert(hw, skb))
@@ -623,7 +606,6 @@ static int rtl_op_config(struct ieee80211_hw *hw, u32 changed)
 
 	if (mac->skip_scan)
 		return 1;
-
 
 	mutex_lock(&rtlpriv->locks.conf_mutex);
 	if (changed & IEEE80211_CONF_CHANGE_LISTEN_INTERVAL) {	/* BIT(2) */

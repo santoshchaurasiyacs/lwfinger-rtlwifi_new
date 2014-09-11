@@ -374,7 +374,6 @@ static bool rtl_pci_get_amd_l1_patch(struct ieee80211_hw *hw)
 	return status;
 }
 
-
 static bool rtl_pci_check_buddy_priv(struct ieee80211_hw *hw,
 			      struct rtl_priv **buddy_priv)
 {
@@ -602,7 +601,6 @@ static void _rtl_pci_tx_isr(struct ieee80211_hw *hw, int prio)
 		u8 tid;
 		u8 *entry;
 
-
 		if (rtlpriv->use_new_trx_flow)
 			entry = (u8 *)(&ring->buffer_desc[ring->idx]);
 		else
@@ -781,9 +779,8 @@ static void _rtl_pci_hs_interrupt(struct ieee80211_hw *hw)
 	rtl_write_byte(rtlpriv, rtlpriv->cfg->maps[MAC_HSISR],
 		       rtl_read_byte(rtlpriv, rtlpriv->cfg->maps[MAC_HSISR]) |
 		       rtlpci->sys_irq_mask);
-
-
 }
+
 static void _rtl_pci_rx_interrupt(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
@@ -854,7 +851,6 @@ static void _rtl_pci_rx_interrupt(struct ieee80211_hw *hw)
 			rtlpriv->cfg->ops->rx_check_dma_ok(hw,
 							   (u8 *)buffer_desc,
 							   hw_queue);
-
 
 		len = rtlpriv->cfg->ops->get_desc((u8 *)pdesc, false,
 						  HW_DESC_RXPKT_LEN);
@@ -935,7 +931,6 @@ static void _rtl_pci_rx_interrupt(struct ieee80211_hw *hw)
 			rtlpci->rx_ring[hw_queue].next_rx_rp %=
 							RTL_PCI_MAX_RX_COUNT;
 
-
 			rx_remained_cnt--;
 			if (1/*rx_remained_cnt == 0*/) {
 				rtl_write_word(rtlpriv, 0x3B4,
@@ -969,8 +964,6 @@ end:
 	}
 }
 
-
-
 static irqreturn_t _rtl_pci_interrupt(int irq, void *dev_id)
 {
 	struct ieee80211_hw *hw = dev_id;
@@ -998,16 +991,13 @@ static irqreturn_t _rtl_pci_interrupt(int irq, void *dev_id)
 		RT_TRACE(rtlpriv, COMP_INTR, DBG_TRACE,
 			 "beacon ok interrupt!\n");
 
-
 	if (unlikely(inta & rtlpriv->cfg->maps[RTL_IMR_TBDER]))
 		RT_TRACE(rtlpriv, COMP_INTR, DBG_TRACE,
 			 "beacon err interrupt!\n");
 
-
 	if (inta & rtlpriv->cfg->maps[RTL_IMR_BDOK])
 		RT_TRACE(rtlpriv, COMP_INTR, DBG_TRACE,
 			 "beacon interrupt!\n");
-
 
 	if (inta & rtlpriv->cfg->maps[RTL_IMR_BcnInt]) {
 		RT_TRACE(rtlpriv, COMP_INTR, DBG_TRACE,
@@ -1114,7 +1104,6 @@ static irqreturn_t _rtl_pci_interrupt(int irq, void *dev_id)
 			_rtl_pci_hs_interrupt(hw);
 		}
 	}
-
 
 	if (rtlpriv->rtlhal.earlymode_enable)
 		tasklet_schedule(&rtlpriv->works.irq_tasklet);
@@ -1880,7 +1869,6 @@ static void rtl_pci_stop(struct ieee80211_hw *hw)
 	if (rtlpriv->cfg->ops->get_btc_status())
 		rtlpriv->btcoexist.btc_ops->btc_halt_notify();
 
-
 	/*
 	 *should before disable interrrupt&adapter
 	 *and will do it immediately.
@@ -2142,7 +2130,6 @@ static int rtl_pci_intr_mode_legacy(struct ieee80211_hw *hw)
 	if (ret < 0)
 		return ret;
 
-
 	rtlpci->using_msi = false;
 	RT_TRACE(rtlpriv, COMP_INIT|COMP_INTR, DBG_DMESG,
 		 "Pin-based Interrupt Mode!\n");
@@ -2278,6 +2265,13 @@ int rtl_pci_probe(struct pci_dev *pdev,
 	/*like read eeprom and so on */
 	rtlpriv->cfg->ops->read_eeprom_info(hw);
 
+	if (rtlpriv->cfg->ops->init_sw_vars(hw)) {
+		RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG, "Can't init_sw_vars\n");
+		err = -ENODEV;
+		goto fail3;
+	}
+	rtlpriv->cfg->ops->init_sw_leds(hw);
+
 	/*aspm */
 	rtl_pci_init_aspm(hw);
 
@@ -2296,14 +2290,14 @@ int rtl_pci_probe(struct pci_dev *pdev,
 		goto fail3;
 	}
 
-	if (rtlpriv->cfg->ops->init_sw_vars(hw)) {
-		RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG, "Can't init_sw_vars\n");
-		err = -ENODEV;
+	err = ieee80211_register_hw(hw);
+	if (err) {
+		RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG,
+			 "Can't register mac80211 hw.\n");
 		goto fail3;
+	} else {
+		rtlpriv->mac80211.mac80211_registered = 1;
 	}
-
-	rtlpriv->cfg->ops->init_sw_leds(hw);
-
 	err = sysfs_create_group(&pdev->dev.kobj, &rtl_attribute_group);
 	if (err) {
 		RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG,
@@ -2312,6 +2306,9 @@ int rtl_pci_probe(struct pci_dev *pdev,
 	}
 	/* add for prov */
 	rtl_proc_add_one(hw);
+
+	/*init rfkill */
+	rtl_init_rfkill(hw);	/* Init PCI sw */
 
 	rtlpci = rtl_pcidev(pcipriv);
 	err = rtl_pci_intr_mode_decide(hw);
@@ -2323,6 +2320,8 @@ int rtl_pci_probe(struct pci_dev *pdev,
 	} else {
 		rtlpci->irq_alloc = 1;
 	}
+
+	set_bit(RTL_STATUS_INTERFACE_START, &rtlpriv->status);
 
 	return 0;
 
