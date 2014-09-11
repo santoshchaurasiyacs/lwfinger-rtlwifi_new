@@ -71,18 +71,7 @@ found_alt:
 	rtlpriv->rtlhal.fwsize = firmware->size;
 	release_firmware(firmware);
 
-	err = ieee80211_register_hw(hw);
-	if (err) {
-		RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG,
-			 "Can't register mac80211 hw\n");
-		return;
-	} else {
-		rtlpriv->mac80211.mac80211_registered = 1;
-	}
-	set_bit(RTL_STATUS_INTERFACE_START, &rtlpriv->status);
 
-	/*init rfkill */
-	rtl_init_rfkill(hw);
 }
 EXPORT_SYMBOL(rtl_fw_cb);
 
