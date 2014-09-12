@@ -1244,18 +1244,35 @@ u8 rtl_is_special_data(struct ieee80211_hw *hw, struct sk_buff *skb, u8 is_tx)
 	__le16 fc = rtl_get_fc(skb);
 	u16 ether_type;
 	u8 mac_hdr_len = ieee80211_get_hdrlen_from_skb(skb);
+   	u8 encrypt_header_len = 0;
 	const struct iphdr *ip;
 
 	if (!ieee80211_is_data(fc))
 		goto end;
 
+	switch(rtlpriv->sec.pairwise_enc_algorithm) {
+	case WEP40_ENCRYPTION:
+	case WEP104_ENCRYPTION:
+		encrypt_header_len = 4;/*WEP_IV_LEN*/
+		break;
+	case TKIP_ENCRYPTION:
+		encrypt_header_len = 8;/*TKIP_IV_LEN*/
+		break;
+	case AESCCMP_ENCRYPTION:
+		encrypt_header_len = 8;/*CCMP_HDR_LEN;*/
+		break;
+	default:
+	break;
+	}
 
-	ip = (struct iphdr *)((u8 *) skb->data + mac_hdr_len +
-			      SNAP_SIZE + PROTOC_TYPE_SIZE);
+
 	ether_type = be16_to_cpup((__be16 *)
-				  (skb->data + mac_hdr_len + SNAP_SIZE));
+				  (skb->data + mac_hdr_len + SNAP_SIZE + encrypt_header_len));
+
 
 	if (ETH_P_IP == ether_type) {
+		ip = (struct iphdr *)((u8 *) skb->data + mac_hdr_len +
+			      SNAP_SIZE + PROTOC_TYPE_SIZE + encrypt_header_len);
 		if (IPPROTO_UDP == ip->protocol) {
 			struct udphdr *udp = (struct udphdr *)((u8 *) ip +
 							       (ip->ihl << 2));
