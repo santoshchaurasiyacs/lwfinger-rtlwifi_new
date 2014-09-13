@@ -53,8 +53,6 @@
 #define	DM_REG_T_METER_92D_11N			0x42
 #define	DM_REG_T_METER_88E_11N			0x42
 
-
-
 /*BB REG LIST*/
 /*PAGE 8 */
 #define	DM_REG_BB_CTRL_11N				0x800
@@ -163,7 +161,6 @@
 #define	DM_REG_SLEEP_11N				0xEE0
 #define	DM_REG_PMPD_ANAEN_11N			0xEEC
 
-
 /*MAC REG LIST*/
 #define	DM_REG_BB_RST_11N				0x02
 #define	DM_REG_ANTSEL_PIN_11N			0x4C
@@ -178,12 +175,9 @@
 #define	DM_REG_ANT_TRAIN_PARA1_11N	0x7b0
 #define	DM_REG_ANT_TRAIN_PARA2_11N	0x7b4
 
-
 /*DIG Related*/
 #define	DM_BIT_IGI_11N					0x0000007F
 #define	DM_BIT_IGI_11AC					0xFFFFFFFF
-
-
 
 #define HAL_DM_DIG_DISABLE			BIT(0)
 #define HAL_DM_HIPWR_DISABLE		BIT(1)

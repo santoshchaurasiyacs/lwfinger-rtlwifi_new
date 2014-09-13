@@ -292,7 +292,6 @@ static u16 odm_cfo(char value)
 	return ret_val;
 }
 
-
 static void _rtl8821ae_query_rxphystatus(struct ieee80211_hw *hw,
 			struct rtl_stats *pstatus, u8 *pdesc,
 			struct rx_fwinfo_8821ae *p_drvinfo,
@@ -630,7 +629,6 @@ static bool rtl8821ae_get_rxdesc_is_ht(struct ieee80211_hw *hw, u8 *pdesc)
 		return false;
 }
 
-
 static bool rtl8821ae_get_rxdesc_is_vht(struct ieee80211_hw *hw, u8 *pdesc)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
@@ -661,7 +659,6 @@ static u8 rtl8821ae_get_rx_vht_nss(struct ieee80211_hw *hw, u8 *pdesc)
 
 	return vht_nss;
 }
-
 
 bool rtl8821ae_rx_query_desc(struct ieee80211_hw *hw,
 			   struct rtl_stats *status,
@@ -728,7 +725,6 @@ bool rtl8821ae_rx_query_desc(struct ieee80211_hw *hw,
 
 	if (status->crc)
 		rx_status->flag |= RX_FLAG_FAILED_FCS_CRC;
-
 
 	if (status->rx_packet_bw == HT_CHANNEL_WIDTH_20_40)
 		rx_status->flag |= RX_FLAG_40MHZ;
@@ -892,11 +888,8 @@ static u8 rtl8821ae_sc_mapping(struct ieee80211_hw *hw, struct rtl_tcb_desc *ptc
 		sc_setting_of_desc = VHT_DATA_SC_DONOT_CARE;
 	}
 
-
 	return sc_setting_of_desc;
 }
-
-
 
 void rtl8821ae_tx_fill_desc(struct ieee80211_hw *hw,
 			  struct ieee80211_hdr *hdr, u8 *pdesc_tx, u8 *txbd,
@@ -986,7 +979,6 @@ void rtl8821ae_tx_fill_desc(struct ieee80211_hw *hw,
 
 		if (ptcb_desc->tx_enable_sw_calc_duration)
 			SET_TX_DESC_NAV_USE_HDR(pdesc, 1);
-
 
 		SET_TX_DESC_DATA_BW(pdesc,
 			rtl8821ae_bw_mapping(hw, ptcb_desc));

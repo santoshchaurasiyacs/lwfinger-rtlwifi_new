@@ -73,8 +73,6 @@ static long _rtl8821ae_phy_txpwr_idx_to_dbm(struct ieee80211_hw *hw,
 static void rtl8821ae_phy_set_rf_on(struct ieee80211_hw *hw);
 static void rtl8821ae_phy_set_io(struct ieee80211_hw *hw);
 
-
-
 static void rtl8812ae_fixspur(
 	struct ieee80211_hw *hw,
 	enum ht_channel_width band_width,
@@ -91,7 +89,6 @@ static void rtl8812ae_fixspur(
 		else
 			rtl_set_bbreg(hw, RRFMOD, 0xC00, 0x2);
 			/* 0x8AC[11:10] = 2'b10*/
-
 
 		/* <20120914, Kordan> A workarould to resolve
 		2480Mhz spur by setting ADC clock as 160M. (Asked by Binson)*/
@@ -183,7 +180,6 @@ u32 rtl8821ae_phy_query_rf_reg(struct ieee80211_hw *hw,
 
 	spin_lock_irqsave(&rtlpriv->locks.rf_lock, flags);
 
-
 	original_value = _rtl8821ae_phy_rf_serial_read(hw, rfpath, regaddr);
 	bitshift = _rtl8821ae_phy_calculate_bit_shift(bitmask);
 	readback_value = (original_value & bitmask) >> bitshift;
@@ -222,7 +218,6 @@ void rtl8821ae_phy_set_rf_reg(struct ieee80211_hw *hw,
 		}
 
 	_rtl8821ae_phy_rf_serial_write(hw, rfpath, regaddr, data);
-
 
 	spin_unlock_irqrestore(&rtlpriv->locks.rf_lock, flags);
 
@@ -379,7 +374,6 @@ bool rtl8821ae_phy_rf_config(struct ieee80211_hw *hw)
 {
 	return rtl8821ae_phy_rf6052_config(hw);
 }
-
 
 u32 phy_get_tx_bb_swing_8812A(
 	struct ieee80211_hw *hw,
@@ -541,7 +535,6 @@ u32 phy_get_tx_bb_swing_8812A(
 		"<=== PHY_GetTxBBSwing_8812A, out = 0x%X\n", out);
 	 return out;
 }
-
 
 void rtl8821ae_phy_switch_wirelessband(struct ieee80211_hw *hw, u8 band)
 {
@@ -1175,8 +1168,6 @@ static u8 _rtl8812ae_phy_get_txpower_by_rate_base_index(struct ieee80211_hw *hw,
 	return index;
 }
 
-
-
 static void _rtl8812ae_phy_convert_txpower_limit_to_power_index(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
@@ -1316,7 +1307,6 @@ static void _rtl8812ae_phy_convert_txpower_limit_to_power_index(struct ieee80211
 	RT_TRACE(rtlpriv, COMP_INIT, DBG_TRACE,
 		 "<===== _rtl8812ae_phy_convert_txpower_limit_to_power_index()\n");
 }
-
 
 static void _rtl8821ae_phy_init_txpower_limit(struct ieee80211_hw *hw)
 {
@@ -1577,7 +1567,6 @@ static void _rtl8812ae_phy_set_txpower_limit(struct ieee80211_hw *hw, u8 *pregul
 	else if (_rtl8812ae_eq_n_byte(prate_section, (u8 *)("VHT"), 3) &&
 		 _rtl8812ae_eq_n_byte(prf_path, (u8 *)("2T"), 2))
 		rate_section = 5;
-
 
 	if (_rtl8812ae_eq_n_byte(pbandwidth, (u8 *)("20M"), 3))
 		bandwidth = 0;
@@ -1940,7 +1929,6 @@ static void _rtl8821ae_store_tx_power_by_rate(struct ieee80211_hw *hw,
 
 }
 
-
 static bool _rtl8821ae_phy_config_bb_with_pgheaderfile(struct ieee80211_hw *hw,
 							u8 configtype)
 {
@@ -2051,7 +2039,6 @@ bool rtl8812ae_phy_config_rf_with_headerfile(struct ieee80211_hw *hw,
 					       v2 != 0xCDCD && i < radioa_arraylen_a-2)
 						READ_NEXT_PAIR(radioa_array_table_a, v1, v2, i);
 
-
 					i -= 2; /* prevent from for-loop += 2*/
 				} else {/*Configure matched pairs and skip to end of if-else.*/
 					READ_NEXT_PAIR(radioa_array_table_a, v1, v2, i);
@@ -2112,7 +2099,6 @@ bool rtl8812ae_phy_config_rf_with_headerfile(struct ieee80211_hw *hw,
 	}
 	return true;
 }
-
 
 bool rtl8821ae_phy_config_rf_with_headerfile(struct ieee80211_hw *hw,
 						enum radio_path rfpath)
@@ -2408,7 +2394,6 @@ static char _rtl8812ae_phy_get_world_wide_limit(char  *limit_table)
 	return min;
 }
 
-
 static char _rtl8812ae_phy_get_txpower_limit(struct ieee80211_hw *hw,
 				     u8 band, enum ht_channel_width bandwidth,
 				     enum radio_path rf_path,
@@ -2426,7 +2411,6 @@ static char _rtl8812ae_phy_get_txpower_limit(struct ieee80211_hw *hw,
 		return MAX_POWER_INDEX;
 
 	regulation = TXPWR_LMT_WW;
-
 
 	if (band == BAND_ON_2_4G)
 		band_temp = 0;
@@ -2528,7 +2512,6 @@ static char _rtl8812ae_phy_get_txpower_limit(struct ieee80211_hw *hw,
 		bandwidth_temp == 2)
 		bandwidth_temp = 1;
 
-
 	if (band == BAND_ON_2_4G)
 		channel_temp = _rtl8812ae_phy_get_chnl_idx_of_txpwr_lmt(hw,
 		BAND_ON_2_4G, channel);
@@ -2537,7 +2520,6 @@ static char _rtl8812ae_phy_get_txpower_limit(struct ieee80211_hw *hw,
 		BAND_ON_5G, channel);
 	else if (band == BAND_ON_BOTH)
 		;/* BAND_ON_BOTH don't care temporarily */
-
 
 	if (band_temp == -1 || regulation == -1 || bandwidth_temp == -1 ||
 		rate_section == -1 || channel_temp == -1) {
@@ -3600,8 +3582,6 @@ void rtl8821ae_phy_set_bw_mode_callback(struct ieee80211_hw *hw)
 		  (rtlphy->current_chan_bw == HT_CHANNEL_WIDTH_20_40 ?
 		  "40MHz" : "80MHz")));
 
-
-
 	_rtl8821ae_phy_set_reg_bw(rtlpriv, rtlphy->current_chan_bw);
 	sub_chnl = _rtl8821ae_phy_get_secondary_chnl(rtlpriv);
 	rtl_write_byte(rtlpriv, 0x0483, sub_chnl);
@@ -3719,7 +3699,6 @@ void rtl8821ae_phy_sw_chnl_callback(struct ieee80211_hw *hw)
 		data = 0x96a;
 	rtl_set_bbreg(hw, RFC_AREA, 0x1ffe0000, data);
 
-
 	for (path = RF90_PATH_A; path < rtlphy->num_total_rfpath; path++) {
 		if (36 <= channel && channel <= 64)
 			data = 0x101;
@@ -3821,7 +3800,6 @@ u8 _rtl8812ae_get_right_chnl_place_for_iqk(u8 chnl)
 #define AFE_REG_NUM 14
 #define RF_REG_NUM 3
 
-
 static void _rtl8821ae_iqk_backup_macbb(
 		struct ieee80211_hw *hw,
 		u32 *macbb_backup,
@@ -3891,7 +3869,6 @@ static void _rtl8821ae_iqk_configure_mac(
 	rtl_set_bbreg(hw, 0x838, 0xf, 0xc);		/*CCA off*/
 }
 
-
 static void _rtl8821ae_iqk_tx_fill_iqc(
 		struct ieee80211_hw *hw,
 		enum radio_path path,
@@ -3922,7 +3899,6 @@ static void _rtl8821ae_iqk_tx_fill_iqc(
 	};
 }
 
-
 static void _rtl8821ae_iqk_rx_fill_iqc(
 		struct ieee80211_hw *hw,
 		enum radio_path path,
@@ -3950,8 +3926,6 @@ static void _rtl8821ae_iqk_rx_fill_iqc(
 	};
 }
 
-
-
 #define cal_num 10
 
 static void _rtl8821ae_iqk_tx(
@@ -3971,7 +3945,6 @@ static void _rtl8821ae_iqk_tx(
 	bool	vdf_enable = false;
 	int	i, k, vdf_y[3], vdf_x[3], tx_dt[3], rx_dt[3],
 		ii, dx = 0, dy = 0, tx_finish = 0, rx_finish = 0;
-
 
 	RT_TRACE(rtlpriv, COMP_IQK, DBG_LOUD,
 			"BandWidth = %d.\n",
@@ -4224,7 +4197,6 @@ static void _rtl8821ae_iqk_tx(
 					}
 				}
 
-
 				if (tx0iqkok == false)
 					break;				/* TXK fail, Don't do RXK */
 
@@ -4341,7 +4313,6 @@ static void _rtl8821ae_iqk_tx(
 								 DBG_LOUD,
 								 "RXK Step 1 fail\n");
 						}
-
 
 						/* ====== RX IQK ====== */
 						rtl_set_bbreg(hw, 0x82c, BIT(31), 0x0); /* [31] = 0 --> Page C */
@@ -4492,7 +4463,6 @@ static void _rtl8821ae_iqk_tx(
 						}
 					}
 
-
 					if (tx0iqkok == false) {   /* If RX mode TXK fail, then take TXK Result */
 						tx_x0_rxk[cal] = tx_x0[cal];
 						tx_y0_rxk[cal] = tx_y0[cal];
@@ -4500,7 +4470,6 @@ static void _rtl8821ae_iqk_tx(
 						RT_TRACE(rtlpriv, COMP_IQK,
 							 DBG_LOUD, "1");
 					}
-
 
 					/* ====== RX IQK ====== */
 					rtl_set_bbreg(hw, 0x82c, BIT(31), 0x0); /* [31] = 0 --> Page C */
@@ -4632,7 +4601,6 @@ static void _rtl8821ae_iqk_tx(
 		else
 			_rtl8821ae_iqk_tx_fill_iqc(hw, path, 0x200, 0x0);
 
-
 		if (rx_average == 0)
 			break;
 
@@ -4738,7 +4706,6 @@ static void _rtl8821ae_iqk_restore_macbb(
 		rtl_write_dword(rtlpriv, backup_macbb_reg[i], macbb_backup[i]);
 	RT_TRACE(rtlpriv, COMP_IQK, DBG_LOUD, "RestoreMacBB Success!!!!\n");
 }
-
 
 #undef MACBB_REG_NUM
 #undef AFE_REG_NUM

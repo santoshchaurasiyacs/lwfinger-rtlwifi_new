@@ -43,7 +43,6 @@
 #define	RTL8812_TRANS_LPS_TO_ACT_STEPS	15
 #define	RTL8812_TRANS_END_STEPS	1
 
-
 #define RTL8812_TRANS_CARDEMU_TO_ACT														\
 	/* format */																\
 	/* { offset, cut_msk, fab_msk|interface_msk, base|cmd, msk, value }, // comments here*/								\
@@ -252,7 +251,6 @@
 	{0x0301, PWR_CUT_ALL_MSK, PWR_FAB_ALL_MSK, PWR_INTF_PCI_MSK,\
 	PWR_BASEADDR_MAC, PWR_CMD_WRITE, 0xFF, 0}, \
 
-
 #define RTL8812_TRANS_CARDEMU_TO_PDN		\
 	/* format */		\
 	/* { offset, cut_msk, fab_msk|interface_msk, base|cmd, msk, value }, // comments here*/	\
@@ -313,7 +311,6 @@
 	{0x0553, PWR_CUT_ALL_MSK, PWR_FAB_ALL_MSK, PWR_INTF_ALL_MSK,\
 	PWR_BASEADDR_MAC, PWR_CMD_WRITE, BIT5, BIT5}, \
 
-
 #define RTL8812_TRANS_LPS_TO_ACT															\
 	/* format */																\
 	/* { offset, cut_msk, fab_msk|interface_msk, base|cmd, msk, value }, // comments here*/	\
@@ -357,7 +354,6 @@
 	{0xFFFF, PWR_CUT_ALL_MSK, PWR_FAB_ALL_MSK, PWR_INTF_ALL_MSK, \
 	0, PWR_CMD_END, 0, 0}, \
 
-
 extern struct wlan_pwr_cfg  rtl8812_power_on_flow[RTL8812_TRANS_CARDEMU_TO_ACT_STEPS+RTL8812_TRANS_END_STEPS];
 extern struct wlan_pwr_cfg  rtl8812_radio_off_flow[RTL8812_TRANS_ACT_TO_CARDEMU_STEPS+RTL8812_TRANS_END_STEPS];
 extern struct wlan_pwr_cfg  rtl8812_card_disable_flow[RTL8812_TRANS_ACT_TO_CARDEMU_STEPS+RTL8812_TRANS_CARDEMU_TO_PDN_STEPS+RTL8812_TRANS_END_STEPS];
@@ -399,7 +395,6 @@ extern struct wlan_pwr_cfg  rtl8812_leave_lps_flow[RTL8812_TRANS_LPS_TO_ACT_STEP
 #define	RTL8821A_TRANS_ACT_TO_LPS_STEPS	15
 #define	RTL8821A_TRANS_LPS_TO_ACT_STEPS	15
 #define	RTL8821A_TRANS_END_STEPS	1
-
 
 #define RTL8821A_TRANS_CARDEMU_TO_ACT														\
 	/* format */																\
@@ -477,7 +472,6 @@ extern struct wlan_pwr_cfg  rtl8812_leave_lps_flow[RTL8812_TRANS_LPS_TO_ACT_STEP
 	{0x0010, PWR_CUT_A_MSK , PWR_FAB_ALL_MSK, PWR_INTF_ALL_MSK,\
 	PWR_BASEADDR_MAC, PWR_CMD_WRITE, BIT6 , BIT6 }, \
 
-
 #define RTL8821A_TRANS_ACT_TO_CARDEMU													\
 	/* format */																\
 	/* { offset, cut_msk, fab_msk|interface_msk, base|cmd, msk, value }, // comments here*/								\
@@ -502,7 +496,6 @@ extern struct wlan_pwr_cfg  rtl8812_leave_lps_flow[RTL8812_TRANS_LPS_TO_ACT_STEP
 	 /*0x20[0] = 1b'0 disable LDOA12 MACRO block*/   \
 	{0x0020, PWR_CUT_ALL_MSK, PWR_FAB_ALL_MSK, PWR_INTF_USB_MSK|PWR_INTF_SDIO_MSK,\
 	PWR_BASEADDR_MAC, PWR_CMD_WRITE, BIT0, 0}, \
-
 
 #define RTL8821A_TRANS_CARDEMU_TO_SUS													\
 	/* format */																\
@@ -598,7 +591,6 @@ extern struct wlan_pwr_cfg  rtl8812_leave_lps_flow[RTL8812_TRANS_LPS_TO_ACT_STEP
 	{0x0301, PWR_CUT_ALL_MSK, PWR_FAB_ALL_MSK, PWR_INTF_PCI_MSK,\
 	PWR_BASEADDR_MAC, PWR_CMD_WRITE, 0xFF, 0}, \
 
-
 #define RTL8821A_TRANS_CARDEMU_TO_PDN												\
 	/* format */																\
 	/* { offset, cut_msk, fab_msk|interface_msk, base|cmd, msk, value }, // comments here*/								\
@@ -664,7 +656,6 @@ extern struct wlan_pwr_cfg  rtl8812_leave_lps_flow[RTL8812_TRANS_LPS_TO_ACT_STEP
 	/*Respond TxOK to scheduler*/	\
 	{0x0553, PWR_CUT_ALL_MSK, PWR_FAB_ALL_MSK, PWR_INTF_ALL_MSK,\
 	PWR_BASEADDR_MAC, PWR_CMD_WRITE, BIT5, BIT5}, \
-
 
 #define RTL8821A_TRANS_LPS_TO_ACT															\
 	/* format */																\
@@ -754,6 +745,5 @@ extern struct wlan_pwr_cfg rtl8821A_leave_lps_flow[RTL8821A_TRANS_LPS_TO_ACT_STE
 #define RTL8821A_NIC_PDN_FLOW				rtl8821A_hwpdn_flow
 #define RTL8821A_NIC_LPS_ENTER_FLOW			rtl8821A_enter_lps_flow
 #define RTL8821A_NIC_LPS_LEAVE_FLOW			rtl8821A_leave_lps_flow
-
 
 #endif

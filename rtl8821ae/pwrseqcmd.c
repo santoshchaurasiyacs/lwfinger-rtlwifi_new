@@ -29,7 +29,6 @@
 
 #include "pwrseq.h"
 
-
 /*
 *	Description:
 *		This routine deal with the Power Configuration CMDs

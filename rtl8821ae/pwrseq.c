@@ -83,8 +83,6 @@ struct wlan_pwr_cfg rtl8812_resume_flow[RTL8812_TRANS_ACT_TO_CARDEMU_STEPS +
 	RTL8812_TRANS_END
 };
 
-
-
 /* 3HWPDN Array */
 struct wlan_pwr_cfg rtl8812_hwpdn_flow[RTL8812_TRANS_ACT_TO_CARDEMU_STEPS +
 					RTL8812_TRANS_CARDEMU_TO_PDN_STEPS +
@@ -109,7 +107,6 @@ struct wlan_pwr_cfg rtl8812_leave_lps_flow[RTL8812_TRANS_LPS_TO_ACT_STEPS +
 	RTL8812_TRANS_LPS_TO_ACT
 	RTL8812_TRANS_END
 };
-
 
 /*
     drivers should parse below arrays and do the corresponding actions

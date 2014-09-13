@@ -416,7 +416,6 @@ static u8 rtl8821ae_delta_swing_table_idx_5ga_p[][DELTA_SWINGIDX_SIZE] = {
 				_offset = _size-1;\
 		} while (0)
 
-
 void rtl8821ae_dm_txpower_track_adjust(struct ieee80211_hw *hw,
 					u8 type, u8 *pdirection,
 					u32 *poutwrite_val)
@@ -558,7 +557,6 @@ static void rtl8821ae_dm_init_dynamic_bb_powersaving(struct ieee80211_hw *hw)
 }
 #endif
 
-
 static void rtl8821ae_dm_diginit(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
@@ -610,7 +608,6 @@ void rtl8821ae_dm_init_edca_turbo(struct ieee80211_hw *hw)
 	rtlpriv->dm.is_any_nonbepkts = false;
 	rtlpriv->dm.is_cur_rdlstate = false;
 }
-
 
 void rtl8821ae_dm_init_rate_adaptive_mask(struct ieee80211_hw *hw)
 {
@@ -888,9 +885,7 @@ static void rtl8821ae_dm_dig(struct ieee80211_hw *hw)
 	u8 dm_dig_max, dm_dig_min, offset;
 	u8 current_igi = dm_digtable->cur_igvalue;
 
-
 	RT_TRACE(rtlpriv, COMP_DIG, DBG_LOUD, "\n");
-
 
 	if (mac->act_scanning) {
 		RT_TRACE(rtlpriv, COMP_DIG, DBG_LOUD,
@@ -906,7 +901,6 @@ static void rtl8821ae_dm_dig(struct ieee80211_hw *hw)
 			(dm_digtable->media_connect_0 == true);
 
 	/*1 Boundary Decision*/
-
 
 	dm_dig_max = 0x5A;
 
@@ -1121,7 +1115,6 @@ static void rtl8821ae_dm_common_info_self_update(struct ieee80211_hw *hw)
 	}
 }
 
-
 static void rtl8821ae_dm_false_alarm_counter_statistics(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
@@ -1163,7 +1156,6 @@ static void rtl8812ae_dm_check_txpower_tracking_thermalmeter(
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	static u8 tm_trigger;
-
 
 	if (!tm_trigger) {
 		rtl_set_rfreg(hw,
@@ -1335,7 +1327,6 @@ static void rtl8812ae_get_delta_swing_table(
 	u8 channel = rtlphy->current_channel;
 	u8 rate = rtldm->tx_rate;
 
-
 	if (1 <= channel && channel <= 14) {
 		if (RX_HAL_IS_CCK_RATE(rate)) {
 			*up_a = rtl8812ae_delta_swing_table_idx_24gccka_p;
@@ -1404,7 +1395,6 @@ u8 rtl8821ae_hw_rate_to_mrate(
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	u8 ret_rate = MGN_1M;
-
 
 	switch (rate) {
 	case DESC_RATE1M:
@@ -1593,7 +1583,6 @@ void rtl8812ae_dm_txpwr_track_set_pwr(struct ieee80211_hw *hw,
 		tx_rate =
 			rtl8821ae_hw_rate_to_mrate(hw, rtldm->tx_rate);
 
-
 	RT_TRACE(rtlpriv, COMP_POWER_TRACKING, DBG_LOUD,
 		"===>rtl8812ae_dm_txpwr_track_set_pwr\n");
 	/*20130429 Mimic Modify High Rate BBSwing Limit.*/
@@ -1670,7 +1659,6 @@ void rtl8812ae_dm_txpwr_track_set_pwr(struct ieee80211_hw *hw,
 		"TxRate=0x%x, PwrTrackingLimit=%d\n",
 		tx_rate, pwr_tracking_limit);
 
-
 	if (method == BBSWING) {
 		RT_TRACE(rtlpriv, COMP_POWER_TRACKING, DBG_LOUD,
 			"===>rtl8812ae_dm_txpwr_track_set_pwr\n");
@@ -1708,7 +1696,6 @@ void rtl8812ae_dm_txpwr_track_set_pwr(struct ieee80211_hw *hw,
 			rtldm->default_ofdm_index,
 			rtldm->aboslute_ofdm_swing_idx[rf_path],
 			rf_path);
-
 
 		final_ofdm_swing_index = rtldm->default_ofdm_index +
 				rtldm->aboslute_ofdm_swing_idx[rf_path];
@@ -1901,7 +1888,6 @@ void rtl8812ae_dm_txpower_tracking_callback_thermalmeter(
 		rtlefuse->eeprom_thermalmeter == 0xFF)
 		return;
 
-
 	/* 3. Initialize ThermalValues of RFCalibrateInfo*/
 
 	if (rtlhal->reloadtxpowerindex) {
@@ -1990,7 +1976,6 @@ void rtl8812ae_dm_txpower_tracking_callback_thermalmeter(
 			"******Temp is higher and pDM_Odm->Aboslute_OFDMSwingIdx[ODM_RF_PATH_A] = %d\n",
 			rtldm->aboslute_ofdm_swing_idx[RF90_PATH_A]);
 
-
 			RT_TRACE(rtlpriv, COMP_POWER_TRACKING, DBG_LOUD,
 					     "delta_swing_table_idx_tup_b[%d] = %d\n",
 					     delta, delta_swing_table_idx_tup_b[delta]);
@@ -2023,7 +2008,6 @@ void rtl8812ae_dm_txpower_tracking_callback_thermalmeter(
 			RT_TRACE(rtlpriv, COMP_POWER_TRACKING, DBG_LOUD,
 			"******Temp is lower and pDM_Odm->Aboslute_OFDMSwingIdx[ODM_RF_PATH_A] = %d\n",
 			rtldm->aboslute_ofdm_swing_idx[RF90_PATH_A]);
-
 
 			RT_TRACE(rtlpriv, COMP_POWER_TRACKING, DBG_LOUD,
 				"deltaSwingTableIdx_TDOWN_B[%d] = %d\n",
@@ -2093,7 +2077,6 @@ void rtl8812ae_dm_txpower_tracking_callback_thermalmeter(
 				rtldm->power_index_offset[p]);
 
 			/*7.1 Handle boundary conditions of index.*/
-
 
 			if (rtldm->ofdm_index[p] > TXSCALE_TABLE_SIZE - 1)
 				rtldm->ofdm_index[p] = TXSCALE_TABLE_SIZE - 1;
@@ -2177,7 +2160,6 @@ void rtl8812ae_dm_txpower_tracking_callback_thermalmeter(
 				"Temperature(%d) higher than PG value(%d)\n",
 				thermal_value, rtlefuse->eeprom_thermalmeter);
 
-
 			RT_TRACE(rtlpriv, COMP_POWER_TRACKING, DBG_LOUD,
 				"**********Enter POWER Tracking MIX_MODE**********\n");
 			for (p = RF90_PATH_A; p < MAX_PATH_NUM_8812A; p++)
@@ -2188,7 +2170,6 @@ void rtl8812ae_dm_txpower_tracking_callback_thermalmeter(
 			RT_TRACE(rtlpriv, COMP_POWER_TRACKING, DBG_LOUD,
 				"Temperature(%d) lower than PG value(%d)\n",
 				thermal_value, rtlefuse->eeprom_thermalmeter);
-
 
 			RT_TRACE(rtlpriv, COMP_POWER_TRACKING, DBG_LOUD,
 				"**********Enter POWER Tracking MIX_MODE**********\n");
@@ -2234,7 +2215,6 @@ static void rtl8821ae_get_delta_swing_table(
 	struct rtl_dm *rtldm = rtl_dm(rtl_priv(hw));
 	u8 channel = rtlphy->current_channel;
 	u8 rate = rtldm->tx_rate;
-
 
 	if (1 <= channel && channel <= 14) {
 		if (RX_HAL_IS_CCK_RATE(rate)) {
@@ -2304,7 +2284,6 @@ void rtl8821ae_dm_txpwr_track_set_pwr(struct ieee80211_hw *hw,
 	if (rtldm->tx_rate != 0xFF)
 		tx_rate = rtl8821ae_hw_rate_to_mrate(hw, rtldm->tx_rate);
 
-
 	RT_TRACE(rtlpriv, COMP_POWER_TRACKING, DBG_LOUD,
 		"===>rtl8812ae_dm_txpwr_track_set_pwr\n");
 
@@ -2364,7 +2343,6 @@ void rtl8821ae_dm_txpwr_track_set_pwr(struct ieee80211_hw *hw,
 		"TxRate=0x%x, PwrTrackingLimit=%d\n",
 		tx_rate, pwr_tracking_limit);
 
-
 	if (method == BBSWING) {
 		RT_TRACE(rtlpriv, COMP_POWER_TRACKING, DBG_LOUD,
 			"===>rtl8812ae_dm_txpwr_track_set_pwr\n");
@@ -2389,7 +2367,6 @@ void rtl8821ae_dm_txpwr_track_set_pwr(struct ieee80211_hw *hw,
 			rtldm->default_ofdm_index,
 			rtldm->aboslute_ofdm_swing_idx[rf_path],
 			rf_path);
-
 
 		final_ofdm_swing_index =
 			rtldm->default_ofdm_index +
@@ -2470,7 +2447,6 @@ void rtl8821ae_dm_txpwr_track_set_pwr(struct ieee80211_hw *hw,
 	}
 }
 
-
 void rtl8821ae_dm_txpower_tracking_callback_thermalmeter(
 	struct ieee80211_hw *hw)
 {
@@ -2516,7 +2492,6 @@ void rtl8821ae_dm_txpower_tracking_callback_thermalmeter(
 		rtlefuse->eeprom_thermalmeter == 0 ||
 		rtlefuse->eeprom_thermalmeter == 0xFF)
 		return;
-
 
 	/* 3. Initialize ThermalValues of RFCalibrateInfo*/
 
@@ -2674,7 +2649,6 @@ void rtl8821ae_dm_txpower_tracking_callback_thermalmeter(
 
 			/*7.1 Handle boundary conditions of index.*/
 
-
 			if (rtldm->ofdm_index[p] > TXSCALE_TABLE_SIZE - 1)
 				rtldm->ofdm_index[p] = TXSCALE_TABLE_SIZE - 1;
 			else if (rtldm->ofdm_index[p] < ofdm_min_index)
@@ -2743,7 +2717,6 @@ void rtl8821ae_dm_txpower_tracking_callback_thermalmeter(
 				"Temperature(%d) higher than PG value(%d)\n",
 				thermal_value, rtlefuse->eeprom_thermalmeter);
 
-
 			RT_TRACE(rtlpriv, COMP_POWER_TRACKING, DBG_LOUD,
 				"****Enter POWER Tracking MIX_MODE****\n");
 			for (p = RF90_PATH_A; p < MAX_PATH_NUM_8821A; p++)
@@ -2754,7 +2727,6 @@ void rtl8821ae_dm_txpower_tracking_callback_thermalmeter(
 			RT_TRACE(rtlpriv, COMP_POWER_TRACKING, DBG_LOUD,
 				"Temperature(%d) lower than PG value(%d)\n",
 				thermal_value, rtlefuse->eeprom_thermalmeter);
-
 
 			RT_TRACE(rtlpriv, COMP_POWER_TRACKING, DBG_LOUD,
 				"*****Enter POWER Tracking MIX_MODE*****\n");
@@ -2797,7 +2769,6 @@ void rtl8821ae_dm_txpower_tracking_callback_thermalmeter(
 		"<===rtl8812ae_dm_txpower_tracking_callback_thermalmeter\n");
 }
 
-
 void rtl8821ae_dm_check_txpower_tracking_thermalmeter(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
@@ -2821,7 +2792,6 @@ void rtl8821ae_dm_check_txpower_tracking_thermalmeter(struct ieee80211_hw *hw)
 		tm_trigger = 0;
 	}
 }
-
 
 static void rtl8821ae_dm_refresh_rate_adaptive_mask(struct ieee80211_hw *hw)
 {
@@ -2978,7 +2948,6 @@ static void rtl8821ae_dm_check_edca_turbo(struct ieee80211_hw *hw)
 		"Orginial BE PARAM: 0x%x\n",
 		rtl_read_dword(rtlpriv, DM_REG_EDCA_BE_11N));
 
-
 	if (rtlpriv->dm.dbginfo.num_non_be_pkt > 0x100)
 		rtlpriv->dm.is_any_nonbepkts = true;
 	rtlpriv->dm.dbginfo.num_non_be_pkt = 0;
@@ -3088,12 +3057,10 @@ static void rtl8821ae_dm_cck_packet_detection_thresh(struct ieee80211_hw *hw)
 	if (dm_digtable->cur_cck_cca_thres != cur_cck_cca_thresh)
 		rtl_write_byte(rtlpriv, ODM_REG_CCK_CCA_11AC, cur_cck_cca_thresh);
 
-
 	dm_digtable->pre_cck_cca_thres = dm_digtable->cur_cck_cca_thres;
 	dm_digtable->cur_cck_cca_thres = cur_cck_cca_thresh;
 	RT_TRACE(rtlpriv, COMP_DIG, DBG_TRACE,
 		 "CCK cca thresh hold =%x\n", dm_digtable->cur_cck_cca_thres);
-
 }
 
 static void rtl8821ae_dm_dynamic_atc_switch(struct ieee80211_hw *hw)

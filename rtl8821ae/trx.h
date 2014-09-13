@@ -101,7 +101,6 @@
 #define SET_TX_DESC_PKT_OFFSET(__pdesc, __val)		\
 	SET_BITS_TO_LE_4BYTE(__pdesc+4, 24, 5, __val)
 
-
 #define SET_TX_DESC_PAID(__pdesc, __val)			\
 	SET_BITS_TO_LE_4BYTE(__pdesc+8, 0, 9, __val)
 #define SET_TX_DESC_CCA_RTS(__pdesc, __val)		\
@@ -126,7 +125,6 @@
 	SET_BITS_TO_LE_4BYTE(__pdesc+8, 23, 1, __val)
 #define SET_TX_DESC_GID(__pdesc, __val)			\
 	SET_BITS_TO_LE_4BYTE(__pdesc+8, 24, 6, __val)
-
 
 #define SET_TX_DESC_WHEADER_LEN(__pdesc, __val)		\
 	SET_BITS_TO_LE_4BYTE(__pdesc+12, 0, 4, __val)
@@ -174,7 +172,6 @@
 #define SET_TX_DESC_RTS_RATE(__pdesc, __val)		\
 	SET_BITS_TO_LE_4BYTE(__pdesc+16, 24, 5, __val)
 
-
 #define SET_TX_DESC_TX_SUB_CARRIER(__pdesc, __val)		\
 	SET_BITS_TO_LE_4BYTE(__pdesc+20, 0, 4, __val)
 #define SET_TX_DESC_DATA_SHORTGI(__pdesc, __val)	\
@@ -191,7 +188,6 @@
 	SET_BITS_TO_LE_4BYTE(__pdesc+20, 12, 1, __val)
 #define SET_TX_DESC_RTS_SC(__pdesc, __val)	\
 	SET_BITS_TO_LE_4BYTE(__pdesc+20, 13, 4, __val)
-
 
 #define SET_TX_DESC_TX_BUFFER_SIZE(__pdesc, __val)	\
 	SET_BITS_TO_LE_4BYTE(__pdesc+28, 0, 16, __val)
@@ -210,7 +206,6 @@
 
 #define GET_TX_DESC_TX_BUFFER_ADDRESS(__pdesc)		\
 	LE_BITS_TO_4BYTE(__pdesc+40, 0, 32)
-
 
 #define SET_TX_DESC_NEXT_DESC_ADDRESS(__pdesc, __val)	\
 	SET_BITS_TO_LE_4BYTE(__pdesc+48, 0, 32, __val)
@@ -287,7 +282,6 @@
 #define GET_RX_DESC_BC(__pdesc)					\
 	LE_BITS_TO_4BYTE(__pdesc+4, 31, 1)
 
-
 #define GET_RX_DESC_SEQ(__pdesc)				\
 	LE_BITS_TO_4BYTE(__pdesc+8, 0, 12)
 #define GET_RX_DESC_FRAG(__pdesc)				\
@@ -298,7 +292,6 @@
 	LE_BITS_TO_4BYTE(__pdesc+8, 18, 6)
 #define GET_RX_STATUS_DESC_RPT_SEL(__pdesc)			\
 	LE_BITS_TO_4BYTE(__pdesc+8, 28, 1)
-
 
 #define GET_RX_DESC_RXMCS(__pdesc)				\
 	LE_BITS_TO_4BYTE(__pdesc+12, 0, 7)
@@ -337,7 +330,6 @@
 	SET_BITS_TO_LE_4BYTE(__pdesc+24, 0, 32, __val)
 #define SET_RX_DESC_BUFF_ADDR64(__pdesc, __val) \
 	SET_BITS_TO_LE_4BYTE(__pdesc+28, 0, 32, __val)
-
 
 /* TX report 2 format in Rx desc*/
 

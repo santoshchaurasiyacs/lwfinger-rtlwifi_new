@@ -169,7 +169,6 @@ struct r_antenna_select_cck {
 	u8 r_ccktx_enable:4;
 };
 
-
 struct efuse_contents {
 	u8 mac_addr[ETH_ALEN];
 	u8 cck_tx_power_idx[6];

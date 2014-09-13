@@ -802,10 +802,8 @@ static bool _rtl8821ae_cmd_send_packet(struct ieee80211_hw *hw,
 #define REMOTE_PG		5
 #define GTKEXT_PG		6
 
-
 #define TOTAL_RESERVED_PKT_LEN_8812	3584
 #define TOTAL_RESERVED_PKT_LEN_8821	1792
-
 
 static u8 reserved_page_packet_8821[TOTAL_RESERVED_PKT_LEN_8821] = {
 	/* page 0: beacon */
@@ -1041,7 +1039,6 @@ static u8 reserved_page_packet_8821[TOTAL_RESERVED_PKT_LEN_8821] = {
 	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
 	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
 };
-
 
 static u8 reserved_page_packet_8812[TOTAL_RESERVED_PKT_LEN_8812] = {
 	/* page 0: beacon */
@@ -1853,7 +1850,6 @@ static void rtl8821ae_c2h_ra_report_handler(struct ieee80211_hw *hw,
 
 	rtl8821ae_dm_update_init_rate(hw, rate);
 }
-
 
 static void _rtl8821ae_c2h_content_parsing(struct ieee80211_hw *hw,
 					   u8 c2h_cmd_id, u8 c2h_cmd_len,

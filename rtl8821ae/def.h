@@ -118,7 +118,6 @@
 
 #define	MGN_UNKNOWN			0xff
 
-
 /* 30 ms */
 #define	WIFI_NAV_UPPER_US				30000
 #define HAL_92C_NAV_UPPER_UNIT			128
@@ -152,7 +151,6 @@
 
 #define MAX_RX_DMA_BUFFER_SIZE				0x3E80
 
-
 #define MAX_LINES_HWCONFIG_TXT				1000
 #define MAX_BYTES_LINE_HWCONFIG_TXT			256
 
@@ -175,7 +173,6 @@
 #define AC2QUEUEID(_AC)						(_AC)
 
 #define MAX_RX_DMA_BUFFER_SIZE_8812	0x3E80
-
 
 #define	C2H_RX_CMD_HDR_LEN					8
 #define	GET_C2H_CMD_CMD_LEN(__prxhdr)		\
@@ -225,8 +222,6 @@
 #define E_CUT_VERSION				BIT(14)
 #define	RF_RL_ID			(BIT(31)|BIT(30)|BIT(29)|BIT(28))
 
-
-
 enum version_8821ae {
 	VERSION_TEST_CHIP_1T1R_8812 = 0x0004,
 	VERSION_TEST_CHIP_2T2R_8812 = 0x0024,
@@ -253,7 +248,6 @@ enum vht_data_sc {
 	VHT_DATA_SC_40_UPPER_OF_80MHZ = 9,
 	VHT_DATA_SC_40_LOWER_OF_80MHZ = 10,
 };
-
 
 /* MASK */
 #define IC_TYPE_MASK			(BIT(0)|BIT(1)|BIT(2))

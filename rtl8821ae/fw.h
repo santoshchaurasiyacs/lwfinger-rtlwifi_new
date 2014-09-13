@@ -60,7 +60,6 @@
 #define H2C_8821AE_AOAC_RSVDPAGE_LOC_LEN	7
 #define H2C_8821AE_DISCONNECT_DECISION_CTRL_LEN	3
 
-
 /* Fw PS state for RPWM.
 *BIT[2:0] = HW state
 
@@ -82,7 +81,6 @@
 #define	FW_PS_ST_ACTIVE		BIT(3)
 #define	FW_PS_ISR_ENABLE	BIT(4)
 #define	FW_PS_IMR_ENABLE	BIT(5)
-
 
 #define	FW_PS_ACK		BIT(6)
 #define	FW_PS_TOGGLE		BIT(7)
@@ -106,7 +104,6 @@
 #define	FW_PS_IMR_MASK(x)	((x) & 0xDF)
 #define	FW_PS_KEEP_IMR(x)		((x) & 0x20)
 
-
 #define	FW_PS_STATE_S0		(FW_PS_DPS)
 #define	FW_PS_STATE_S1		(FW_PS_LCLK)
 #define	FW_PS_STATE_S2		(FW_PS_RF_OFF)
@@ -125,7 +122,6 @@
 #define	FW_PS_STATE_RF_ON_92C		(FW_PS_STATE_S3)
 #define	FW_PS_STATE_RF_OFF_92C	(FW_PS_STATE_S2)
 #define	FW_PS_STATE_RF_OFF_LOW_PWR_92C	(FW_PS_STATE_S1)
-
 
 /* For 8821AE H2C PwrMode Cmd ID 5.*/
 #define	FW_PWR_STATE_ACTIVE	((FW_PS_RF_ON) | (FW_PS_REGISTER_ACTIVE))
@@ -232,7 +228,6 @@ enum rtl8821a_h2c_cmd {
 	SET_BITS_TO_LE_1BYTE((__pH2CCmd) + 1, 0, 8, __Value)
 #define SET_8812_H2CCMD_WOWLAN_GPIO_DURATION(__pH2CCmd, __Value)	\
 	SET_BITS_TO_LE_1BYTE((__pH2CCmd) + 2, 0, 8, __Value)
-
 
 #define SET_H2CCMD_PWRMODE_PARM_MODE(__ph2ccmd, __val)			\
 	SET_BITS_TO_LE_1BYTE(__ph2ccmd, 0, 8, __val)

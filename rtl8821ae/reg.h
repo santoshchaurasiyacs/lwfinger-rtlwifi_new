@@ -83,7 +83,6 @@
 #define REG_WOL_EVENT				0x0081
 #define REG_MCUTSTCFG				0x0084
 
-
 #define REG_HIMR					0x00B0
 #define REG_HISR					0x00B4
 #define REG_HIMRE					0x00B8
@@ -196,7 +195,6 @@
 #define	REG_UART_TX_DESA			0x0370
 #define	REG_UART_RX_DESA			0x0378
 
-
 #define	REG_HDAQ_DESA_NODEF			0x0000
 #define	REG_CMDQ_DESA_NODEF			0x0000
 
@@ -208,7 +206,6 @@
 #define REG_HGQ_INFORMATION			0x0414
 #define REG_BCNQ_INFORMATION			0x0418
 #define REG_TXPKT_EMPTY				0x041A
-
 
 #define REG_CPU_MGQ_INFORMATION		0x041C
 #define REG_FWHW_TXQ_CTRL			0x0420
@@ -424,7 +421,6 @@
 #define	HSIMR_RON_INT_EN			BIT(6)
 #define	HSIMR_PDN_INT_EN			BIT(7)
 #define	HSIMR_GPIO9_INT_EN			BIT(25)
-
 
 /*
 *     8723/8188E Host System Interrupt Status Register (offset 0x5C, 32 byte)
@@ -659,13 +655,11 @@
 /* Receive FIFO Overflow */
 #define	IMR_RXFOVW				BIT(8)
 
-
 #define	HWSET_MAX_SIZE				512
 #define   EFUSE_MAX_SECTION			64
 #define   EFUSE_REAL_CONTENT_LEN			256
 /* PG data exclude header, dummy 7 bytes frome CP test and reserved 1byte.*/
 #define		EFUSE_OOB_PROTECT_BYTES		18
-
 
 #define	EEPROM_DEFAULT_TSSI					0x0
 #define EEPROM_DEFAULT_TXPOWERDIFF			0x0
@@ -722,13 +716,10 @@
 #define EEPROM_CLK							0x06
 #define EEPROM_TESTR						0x08
 
-
 #define EEPROM_TXPOWERCCK			0x10
 #define	EEPROM_TXPOWERHT40_1S		0x16
 #define EEPROM_TXPOWERHT20DIFF		0x1B
 #define EEPROM_TXPOWER_OFDMDIFF		0x1B
-
-
 
 #define	EEPROM_TX_PWR_INX				0x10
 
@@ -1425,7 +1416,6 @@
 #define	RCCK_SYSTEM					0xa00
 #define	BCCK_SYSTEM					0x10
 
-
 #define	RCCK0_AFESETTING			0xa04
 #define	RCCK0_CCA					0xa08
 
@@ -1446,7 +1436,6 @@
 #define	RCCK0_FACOUNTERLOWER		0xa5c
 #define	RCCK0_FACOUNTERUPPER		0xa58
 #define	RCCK0_CCA_CNT			0xa60
-
 
 /* PageB(0xB00) */
 #define	rPdp_AntA					0xb00
@@ -1573,7 +1562,6 @@
 #define	ROFDM0_FRAMESYNC			0xcf0
 #define	ROFDM0_DFSREPORT			0xcf4
 
-
 #define	ROFDM1_LSTF					0xd00
 #define	ROFDM1_TRXPATHENABLE		0xd04
 
@@ -1633,7 +1621,6 @@
 
 #define	RA_TXPWRTRAING		0xc54
 #define	RB_TXPWRTRAING		0xe54
-
 
 #define	RFPGA0_IQK					0xe28
 #define	RTx_IQK_Tone_A				0xe30
@@ -1839,7 +1826,6 @@
 #define	BCCK_RX						0x0c000000
 /* Use LSIG for VHT length*/
 #define	RVHTLEN_USE_LSIG			0x8c3
-
 
 #define	BOFDMRXADCPHASE			0x10000
 #define	BOFDMTXDACPHASE			0x40000
@@ -2379,7 +2365,6 @@
 
 #define	REG_UN_used_register		0x01bf
 
-
 /* Path_A RFE cotrol pinmux*/
 #define		RA_RFE_PINMUX	0xcb0
 /* Path_B RFE control pinmux*/
@@ -2435,7 +2420,6 @@
 /* GPS function enable */
 #define	GPS_FUNC_EN				BIT(22)
 
-
 #define	BMASKBYTE0			0xff
 #define	BMASKBYTE1			0xff00
 #define	BMASKBYTE2			0xff0000
@@ -2465,11 +2449,7 @@
 /*PAGE F*/
 #define	ODM_REG_OFDM_FA_11AC			0xF48
 
-
 /* 2 MAC REG LIST */
-
-
-
 
 /* DIG Related */
 #define	ODM_BIT_IGI_11AC					0xFFFFFFFF

@@ -180,7 +180,6 @@ int rtl8821ae_init_sw_vars(struct ieee80211_hw *hw)
 				RCR_APM			|
 				0);
 
-
 	rtlpci->irq_mask[0] =
 	     (u32) (IMR_PSTIMEOUT			|
 				IMR_GTINT3		|
@@ -360,7 +359,6 @@ static struct rtl_hal_cfg rtl8821ae_hal_cfg = {
 	.maps[MAC_RCR_AAP] = AAP,
 	.maps[MAC_HIMR] = REG_HIMR,
 	.maps[MAC_HIMRE] = REG_HIMRE,
-
 
 	.maps[EFUSE_ACCESS] = REG_EFUSE_ACCESS,
 
