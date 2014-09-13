@@ -694,7 +694,6 @@ void rtl_swlps_rf_sleep(struct ieee80211_hw *hw)
 			MSECS(sleep_intv * mac->vif->bss_conf.beacon_int - 40));
 }
 
-
 void rtl_swlps_wq_callback(void *data)
 {
 	struct rtl_works *rtlworks =
@@ -722,7 +721,6 @@ void rtl_swlps_wq_callback(void *data)
 		rtlpriv->psc.state = ps;
 	}
 }
-
 
 static void rtl_p2p_noa_ie(struct ieee80211_hw *hw, void *data, unsigned int len)
 {
@@ -912,9 +910,7 @@ static void rtl_p2p_action_ie(struct ieee80211_hw *hw, void *data, unsigned int 
 		ie += 3 + noa_len;
 	}
 
-
 }
-
 
 void rtl_p2p_ps_cmd(struct ieee80211_hw *hw , u8 p2p_ps_state)
 {

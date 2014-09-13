@@ -132,7 +132,6 @@ found_alt:
 	rtlpriv->rtlhal.fwsize = firmware->size;
 	release_firmware(firmware);
 
-
 }
 EXPORT_SYMBOL(rtl_fw_cb);
 
@@ -192,8 +191,6 @@ static void rtl_op_stop(struct ieee80211_hw *hw)
 	mutex_unlock(&rtlpriv->locks.conf_mutex);
 }
 
-
-
 static void rtl_op_tx(struct ieee80211_hw *hw,
 		      struct ieee80211_tx_control *control,
 		      struct sk_buff *skb)
@@ -209,8 +206,6 @@ static void rtl_op_tx(struct ieee80211_hw *hw,
 
 	if (!test_bit(RTL_STATUS_INTERFACE_START, &rtlpriv->status))
 		goto err_free;
-
-
 
 	if (!rtlpriv->intf_ops->waitq_insert(hw, control->sta, skb))
 		rtlpriv->intf_ops->adapter_tx(hw, control->sta, skb, &tcb_desc);
@@ -595,7 +590,6 @@ static int rtl_op_config(struct ieee80211_hw *hw, u32 changed)
 
 	if (mac->skip_scan)
 		return 1;
-
 
 	mutex_lock(&rtlpriv->locks.conf_mutex);
 	if (changed & IEEE80211_CONF_CHANGE_LISTEN_INTERVAL) {	/* BIT(2) */

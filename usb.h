@@ -41,7 +41,6 @@
 #define USB_HIGH_SPEED_BULK_SIZE	512
 #define USB_FULL_SPEED_BULK_SIZE	64
 
-
 #define RTL_USB_MAX_TXQ_NUM		4		/* max tx queue */
 #define RTL_USB_MAX_EP_NUM		6		/* max ep number */
 #define RTL_USB_MAX_TX_URBS_NUM		8
@@ -80,7 +79,6 @@ static inline void _rtl_install_trx_info(struct rtl_usb *rtlusb,
 	info->rate_driver_data[0] = rtlusb;
 	info->rate_driver_data[1] = (void *)(__kernel_size_t)ep_num;
 }
-
 
 /*  Add suspend/resume later */
 enum rtl_usb_state {
@@ -156,8 +154,6 @@ struct rtl_usb_priv {
 
 #define rtl_usbpriv(hw)	 (((struct rtl_usb_priv *)(rtl_priv(hw))->priv))
 #define rtl_usbdev(usbpriv)	(&((usbpriv)->dev))
-
-
 
 int rtl_usb_probe(struct usb_interface *intf,
 		  const struct usb_device_id *id,

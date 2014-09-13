@@ -39,7 +39,6 @@
 #include <net/mac80211.h>
 #include "debug.h"
 
-
 #define RF_CHANGE_BY_INIT		0
 #define RF_CHANGE_BY_IPS		BIT(28)
 #define RF_CHANGE_BY_PS			BIT(29)
@@ -104,9 +103,6 @@
 #define MAX_2_4G_BANDWITH_NUM		4
 #define MAX_5G_BANDWITH_NUM		4
 
-
-
-
 #define CHANNEL_MAX_NUMBER_5G_80M	7
 #define CHANNEL_GROUP_MAX		(3 + 9)	/* ch1~3, ch4~9, ch10~14
 						 * total three groups */
@@ -146,7 +142,6 @@
  *not OK yet, keep it 0*/
 #define DMA_IS_64BIT 0
 #define RTL8192EE_SEG_NUM		1 /* 0:2 seg, 1: 4 seg, 2: 8 seg */
-
 
 #define PACKET_NORMAL			0
 #define PACKET_DHCP			1
@@ -197,7 +192,6 @@ struct txpower_info_5g {
 	u8 bw80_diff[MAX_RF_PATH][MAX_TX_COUNT];
 	u8 bw160_diff[MAX_RF_PATH][MAX_TX_COUNT];
 };
-
 
 /* for early mode */
 #define EM_HDR_LEN			8
@@ -256,7 +250,6 @@ enum regulation_txpwr_lmt {
 
 	TXPWR_LMT_MAX_REGULATION_NUM = 4
 };
-
 
 enum rt_eeprom_type {
 	EEPROM_93C46,
@@ -1632,7 +1625,6 @@ struct rtl_dm {
 	u32 packet_count_pre;
 	u8 tx_rate;
 
-
 	/*88e tx power tracking*/
 	u8 bb_swing_idx_ofdm[2];
 	u8 bb_swing_idx_ofdm_current;
@@ -1704,7 +1696,6 @@ struct rtl_efuse {
 	u8 eeprom_chnlarea_txpwr_cck[2][CHANNEL_GROUP_MAX_2G];
 	u8 eeprom_chnlarea_txpwr_ht40_1s[2][CHANNEL_GROUP_MAX];
 	u8 eeprom_chnlarea_txpwr_ht40_2sdif[2][CHANNEL_GROUP_MAX];
-
 
 	u8 internal_pa_5g[2];	/* pathA / pathB */
 	u8 eeprom_c9;
@@ -2773,7 +2764,6 @@ value to host byte ordering.*/
 #define	STBC_HT_TEST_TX_ENABLE			BIT(2)
 #define	STBC_HT_CAP_TX				BIT(3)
 
-
 #define	LDPC_VHT_ENABLE_RX			BIT(0)
 #define	LDPC_VHT_ENABLE_TX			BIT(1)
 #define	LDPC_VHT_TEST_TX_ENABLE			BIT(2)
@@ -2783,7 +2773,6 @@ value to host byte ordering.*/
 #define	STBC_VHT_ENABLE_TX			BIT(1)
 #define	STBC_VHT_TEST_TX_ENABLE			BIT(2)
 #define	STBC_VHT_CAP_TX				BIT(3)
-
 
 static inline u8 rtl_read_byte(struct rtl_priv *rtlpriv, u32 addr)
 {
@@ -2909,6 +2898,5 @@ static inline struct ieee80211_sta *rtl_find_sta(struct ieee80211_hw *hw,
 }
 
 struct ieee80211_hw *rtl_pci_get_hw_pointer(void);
-
 
 #endif
