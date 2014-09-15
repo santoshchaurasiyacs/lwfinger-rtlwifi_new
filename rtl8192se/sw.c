@@ -454,4 +454,25 @@ static struct pci_driver rtl92se_driver = {
 	.driver.pm = &rtlwifi_pm_ops,
 };
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,4,0))
 module_pci_driver(rtl92se_driver);
+#else
+static int __init rtl92se_module_init(void)
+{
+	int ret = 0;
+
+	ret = pci_register_driver(&rtl92se_driver);
+	if (ret)
+		RT_ASSERT(false, ": No device found\n");
+
+	return ret;
+}
+
+static void __exit rtl92se_module_exit(void)
+{
+	pci_unregister_driver(&rtl92se_driver);
+}
+
+module_init(rtl92se_module_init);
+module_exit(rtl92se_module_exit);
+#endif

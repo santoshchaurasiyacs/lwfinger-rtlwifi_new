@@ -78,10 +78,11 @@
 #define REG_PCIE_MIO_INTF			0x00E4
 #define REG_PCIE_MIO_INTD			0x00E8
 #define REG_HPON_FSM				0x00EC
-#define REG_SYS_CFG					0x00F0
+#define REG_SYS_CFG				0x00F0
+#define REG_GPIO_OUTSTS				0x00F4
 
-#define REG_CR						0x0100
-#define REG_PBP						0x0104
+#define REG_CR					0x0100
+#define REG_PBP					0x0104
 #define REG_TRXDMA_CTRL				0x010C
 #define REG_TRXFF_BNDY				0x0114
 #define REG_TRXFF_STATUS			0x0118
@@ -879,6 +880,7 @@
 #define BD_MAC2						BIT(9)
 #define BD_MAC1						BIT(10)
 #define IC_MACPHY_MODE				BIT(11)
+#define BT_FUNC					BIT(16)
 #define VENDOR_ID					BIT(19)
 #define PAD_HWPD_IDN				BIT(22)
 #define TRP_VAUX_EN					BIT(23)
@@ -886,6 +888,7 @@
 #define BD_PKG_SEL					BIT(25)
 #define BD_HCI_SEL					BIT(26)
 #define TYPE_ID						BIT(27)
+#define	RF_RL_ID		(BIT(31) | BIT(30) | BIT(29) | BIT(28))
 
 #define CHIP_VER_RTL_MASK			0xF000
 #define CHIP_VER_RTL_SHIFT			12

@@ -2809,14 +2809,14 @@ void rtl8723be_read_bt_coexist_info_from_hwpg(struct ieee80211_hw *hw,
 
 void rtl8723be_bt_reg_init(struct ieee80211_hw *hw)
 {
-	struct rtl_pci_priv *rtlpcipriv = rtl_pcipriv(hw);
+	struct rtl_priv *rtlpriv = rtl_priv(hw);
 
 	/* 0:Low, 1:High, 2:From Efuse. */
-	rtlpcipriv->btcoexist.reg_bt_iso = 2;
+	rtlpriv->btcoexist.reg_bt_iso = 2;
 	/* 0:Idle, 1:None-SCO, 2:SCO, 3:From Counter. */
-	rtlpcipriv->btcoexist.reg_bt_sco = 3;
+	rtlpriv->btcoexist.reg_bt_sco = 3;
 	/* 0:Disable BT control A-MPDU, 1:Enable BT control A-MPDU. */
-	rtlpcipriv->btcoexist.reg_bt_sco = 0;
+	rtlpriv->btcoexist.reg_bt_sco = 0;
 }
 
 

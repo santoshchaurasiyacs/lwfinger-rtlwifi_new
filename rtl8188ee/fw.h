@@ -153,7 +153,7 @@ struct rtl92c_firmware_header {
 	u32 rsvd5;
 };
 
-enum rtl8192c_h2c_cmd {
+enum rtl8188e_h2c_cmd {
 	H2C_88E_RSVDPAGE = 0,
 	H2C_88E_JOINBSSRPT = 1,
 	H2C_88E_SCAN = 2,

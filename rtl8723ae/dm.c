@@ -616,7 +616,6 @@ void rtl8723e_dm_init_edca_turbo(struct ieee80211_hw *hw)
 static void rtl8723e_dm_check_edca_turbo(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
-	struct rtl_pci_priv *rtlpcipriv = rtl_pcipriv(hw);
 	struct rtl_mac *mac = rtl_mac(rtl_priv(hw));
 
 	static u64 last_txok_cnt;
@@ -629,20 +628,20 @@ static void rtl8723e_dm_check_edca_turbo(struct ieee80211_hw *hw)
 	u32 edca_be_dl = 0x5ea42b;
 	bool bt_change_edca = false;
 
-	if ((last_bt_edca_ul != rtlpcipriv->btcoexist.bt_edca_ul) ||
-	    (last_bt_edca_dl != rtlpcipriv->btcoexist.bt_edca_dl)) {
+	if ((last_bt_edca_ul != rtlpriv->btcoexist.bt_edca_ul) ||
+	    (last_bt_edca_dl != rtlpriv->btcoexist.bt_edca_dl)) {
 		rtlpriv->dm.bcurrent_turbo_edca = false;
-		last_bt_edca_ul = rtlpcipriv->btcoexist.bt_edca_ul;
-		last_bt_edca_dl = rtlpcipriv->btcoexist.bt_edca_dl;
+		last_bt_edca_ul = rtlpriv->btcoexist.bt_edca_ul;
+		last_bt_edca_dl = rtlpriv->btcoexist.bt_edca_dl;
 	}
 
-	if (rtlpcipriv->btcoexist.bt_edca_ul != 0) {
-		edca_be_ul = rtlpcipriv->btcoexist.bt_edca_ul;
+	if (rtlpriv->btcoexist.bt_edca_ul != 0) {
+		edca_be_ul = rtlpriv->btcoexist.bt_edca_ul;
 		bt_change_edca = true;
 	}
 
-	if (rtlpcipriv->btcoexist.bt_edca_dl != 0) {
-		edca_be_ul = rtlpcipriv->btcoexist.bt_edca_dl;
+	if (rtlpriv->btcoexist.bt_edca_dl != 0) {
+		edca_be_ul = rtlpriv->btcoexist.bt_edca_dl;
 		bt_change_edca = true;
 	}
 
@@ -869,7 +868,6 @@ void rtl8723e_dm_watchdog(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_ps_ctl *ppsc = rtl_psc(rtl_priv(hw));
-	struct rtl_pci_priv *rtlpcipriv = rtl_pcipriv(hw);
 	bool fw_current_inpsmode = false;
 	bool fw_ps_awake = true;
 	rtlpriv->cfg->ops->get_hw_reg(hw, HW_VAR_FW_PSMODE_STATUS,
@@ -893,46 +891,44 @@ void rtl8723e_dm_watchdog(struct ieee80211_hw *hw)
 		rtl8723e_dm_bt_coexist(hw);
 		rtl8723e_dm_check_edca_turbo(hw);
 	}
-	if (rtlpcipriv->btcoexist.init_set)
+	if (rtlpriv->btcoexist.init_set)
 		rtl_write_byte(rtlpriv, 0x76e, 0xc);
 }
 
 static void rtl8723e_dm_init_bt_coexist(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
-	struct rtl_pci_priv *rtlpcipriv = rtl_pcipriv(hw);
 
-	rtlpcipriv->btcoexist.bt_rfreg_origin_1e
+	rtlpriv->btcoexist.bt_rfreg_origin_1e
 		= rtl_get_rfreg(hw, (enum radio_path)0, RF_RCK1, 0xfffff);
-	rtlpcipriv->btcoexist.bt_rfreg_origin_1f
+	rtlpriv->btcoexist.bt_rfreg_origin_1f
 		= rtl_get_rfreg(hw, (enum radio_path)0, RF_RCK2, 0xf0);
 
-	rtlpcipriv->btcoexist.current_state = 0;
-	rtlpcipriv->btcoexist.previous_state = 0;
-	rtlpcipriv->btcoexist.current_state_h = 0;
-	rtlpcipriv->btcoexist.previous_state_h = 0;
-	rtlpcipriv->btcoexist.lps_counter = 0;
+	rtlpriv->btcoexist.current_state = 0;
+	rtlpriv->btcoexist.previous_state = 0;
+	rtlpriv->btcoexist.current_state_h = 0;
+	rtlpriv->btcoexist.previous_state_h = 0;
+	rtlpriv->btcoexist.lps_counter = 0;
 
 	/*  Enable counter statistics */
 	rtl_write_byte(rtlpriv, 0x76e, 0x4);
 	rtl_write_byte(rtlpriv, 0x778, 0x3);
 	rtl_write_byte(rtlpriv, 0x40, 0x20);
 
-	rtlpcipriv->btcoexist.init_set = true;
+	rtlpriv->btcoexist.init_set = true;
 }
 
 void rtl8723e_dm_bt_coexist(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
-	struct rtl_pci_priv *rtlpcipriv = rtl_pcipriv(hw);
 	u8 tmp_byte = 0;
-	if (!rtlpcipriv->btcoexist.bt_coexistence) {
+	if (!rtlpriv->btcoexist.bt_coexistence) {
 		RT_TRACE(rtlpriv, COMP_BT_COEXIST, DBG_LOUD,
 			 "[DM]{BT], BT not exist!!\n");
 		return;
 	}
 
-	if (!rtlpcipriv->btcoexist.init_set) {
+	if (!rtlpriv->btcoexist.init_set) {
 		RT_TRACE(rtlpriv, COMP_BT_COEXIST, DBG_LOUD,
 			 "[DM][BT], rtl8723e_dm_bt_coexist()\n");
 		rtl8723e_dm_init_bt_coexist(hw);

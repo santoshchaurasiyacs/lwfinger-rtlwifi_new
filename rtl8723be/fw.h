@@ -106,7 +106,7 @@ struct rtl92c_firmware_header {
 	u32 rsvd5;
 };
 
-enum rtl8192c_h2c_cmd {
+enum rtl8723b_h2c_cmd {
 	H2C_8723B_RSVDPAGE = 0,
 	H2C_8723B_MSRRPT = 1,
 	H2C_8723B_SCAN = 2,
@@ -120,7 +120,7 @@ enum rtl8192c_h2c_cmd {
 	H2C_8723B_P2P_PS_OFFLOAD = 0x24,
 
 	H2C_8723B_RA_MASK = 0x40,
-	H2C_RSSI_REPORT = 0x42,
+	H2C_RSSIBE_REPORT = 0x42,
 	/*Not defined CTW CMD for P2P yet*/
 	H2C_8723B_P2P_PS_CTW_CMD,
 	MAX_8723B_H2CCMD

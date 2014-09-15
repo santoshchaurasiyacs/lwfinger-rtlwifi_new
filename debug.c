@@ -30,6 +30,9 @@
 #include "wifi.h"
 #include "cam.h"
 #include <linux/moduleparam.h>
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,2,0)) 
+#include <linux/export.h>
+#endif
 
 #ifndef GET_INODE_DATA
 	#define GET_INODE_DATA(__node)		PDE_DATA(__node)

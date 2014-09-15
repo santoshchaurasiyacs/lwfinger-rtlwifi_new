@@ -411,7 +411,7 @@ static void rtl8723be_dm_check_rssi_monitor(struct ieee80211_hw *hw)
 		h2c_parameter[1] = 0x20;
 		h2c_parameter[0] = drv_priv->rss;
 		rtl8723be_fill_h2c_cmd(hw,
-			H2C_RSSI_REPORT, 3, h2c_parameter);*/
+			H2C_RSSIBE_REPORT, 3, h2c_parameter);*/
 	}
 	spin_unlock_bh(&rtlpriv->locks.entry_list_lock);
 
@@ -441,7 +441,7 @@ static void rtl8723be_dm_check_rssi_monitor(struct ieee80211_hw *hw)
 			(u8) (rtlpriv->dm.undec_sm_pwdb & 0xFF);
 		h2c_parameter[1] = 0x20;
 		h2c_parameter[0] = 0;
-		rtl8723be_fill_h2c_cmd(hw, H2C_RSSI_REPORT, 3, h2c_parameter);
+		rtl8723be_fill_h2c_cmd(hw, H2C_RSSIBE_REPORT, 3, h2c_parameter);
 	} else {
 		rtl_write_byte(rtlpriv, 0x4fe,
 			       rtlpriv->dm.undec_sm_pwdb);

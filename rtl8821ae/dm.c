@@ -830,10 +830,10 @@ static void rtl8821ae_dm_check_rssi_monitor(struct ieee80211_hw *hw)
 		h2c_parameter[0] = 0;
 		if (rtlhal->hw_type == HARDWARE_TYPE_RTL8812AE)
 			rtl8821ae_fill_h2c_cmd(hw,
-				H2C_RSSI_REPORT, 4, h2c_parameter);
+				H2C_RSSI_21AE_REPORT, 4, h2c_parameter);
 		else
 			rtl8821ae_fill_h2c_cmd(hw,
-				H2C_RSSI_REPORT, 3, h2c_parameter);
+				H2C_RSSI_21AE_REPORT, 3, h2c_parameter);
 	} else {
 		rtl_write_byte(rtlpriv,
 			0x4fe, rtlpriv->dm.undec_sm_pwdb);

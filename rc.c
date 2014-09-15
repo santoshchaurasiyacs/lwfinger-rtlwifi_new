@@ -263,7 +263,7 @@ static void rtl_rate_update(void *ppriv,
 			    enum nl80211_channel_type oper_chan_type)
 {
 }
-#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 14, 0))
+#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 12, 0))
 static void rtl_rate_update(void *ppriv,
 			    struct ieee80211_supported_band *sband,
 			    struct cfg80211_chan_def *chandef,

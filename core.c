@@ -36,6 +36,69 @@
 
 #include "btcoexist/rtl_btc.h"
 #include <linux/firmware.h>
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,2,0))
+#include <linux/export.h>
+#endif
+
+void rtl_addr_delay(u32 addr)
+{
+	if (addr == 0xfe)
+		mdelay(50);
+	else if (addr == 0xfd)
+		mdelay(5);
+	else if (addr == 0xfc)
+		mdelay(1);
+	else if (addr == 0xfb)
+		udelay(50);
+	else if (addr == 0xfa)
+		udelay(5);
+	else if (addr == 0xf9)
+		udelay(1);
+}
+EXPORT_SYMBOL(rtl_addr_delay);
+
+void rtl_rfreg_delay(struct ieee80211_hw *hw, enum radio_path rfpath, u32 addr,
+		     u32 mask, u32 data)
+{
+	if (addr == 0xfe) {
+		mdelay(50);
+	} else if (addr == 0xfd) {
+		mdelay(5);
+	} else if (addr == 0xfc) {
+		mdelay(1);
+	} else if (addr == 0xfb) {
+		udelay(50);
+	} else if (addr == 0xfa) {
+		udelay(5);
+	} else if (addr == 0xf9) {
+		udelay(1);
+	} else {
+		rtl_set_rfreg(hw, rfpath, addr, mask, data);
+		udelay(1);
+	}
+}
+EXPORT_SYMBOL(rtl_rfreg_delay);
+
+void rtl_bb_delay(struct ieee80211_hw *hw, u32 addr, u32 data)
+{
+	if (addr == 0xfe) {
+		mdelay(50);
+	} else if (addr == 0xfd) {
+		mdelay(5);
+	} else if (addr == 0xfc) {
+		mdelay(1);
+	} else if (addr == 0xfb) {
+		udelay(50);
+	} else if (addr == 0xfa) {
+		udelay(5);
+	} else if (addr == 0xf9) {
+		udelay(1);
+	} else {
+		rtl_set_bbreg(hw, addr, MASKDWORD, data);
+		udelay(1);
+	}
+}
+EXPORT_SYMBOL(rtl_bb_delay);
 
 void rtl_fw_cb(const struct firmware *firmware, void *context)
 {
