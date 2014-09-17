@@ -999,7 +999,7 @@ static void rtl92d_dm_pwdb_monitor(struct ieee80211_hw *hw)
 void rtl92d_dm_init_edca_turbo(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
-	rtlpriv->dm.bcurrent_turbo_edca = false;
+	rtlpriv->dm.current_turbo_edca = false;
 	rtlpriv->dm.is_any_nonbepkts = false;
 	rtlpriv->dm.is_cur_rdlstate = false;
 }
@@ -1017,7 +1017,7 @@ static void rtl92d_dm_check_edca_turbo(struct ieee80211_hw *hw)
 	u32 edca_be_dl = 0x5ea42b;
 
 	if (mac->link_state != MAC80211_LINKED) {
-		rtlpriv->dm.bcurrent_turbo_edca = false;
+		rtlpriv->dm.current_turbo_edca = false;
 		goto dm_checkedcaturbo_exit;
 	}
 	/* (edca_be_ul & 0xffff0000) is always true
@@ -1044,23 +1044,23 @@ static void rtl92d_dm_check_edca_turbo(struct ieee80211_hw *hw)
 		cur_rxok_cnt = rtlpriv->stats.rxbytesunicast - last_rxok_cnt;
 		if (cur_rxok_cnt > 4 * cur_txok_cnt) {
 			if (!rtlpriv->dm.is_cur_rdlstate ||
-			    !rtlpriv->dm.bcurrent_turbo_edca) {
+			    !rtlpriv->dm.current_turbo_edca) {
 				rtl_write_dword(rtlpriv, REG_EDCA_BE_PARAM,	edca_be_dl);
 				rtlpriv->dm.is_cur_rdlstate = true;
 			}
 		} else {
 			if (rtlpriv->dm.is_cur_rdlstate ||
-			    !rtlpriv->dm.bcurrent_turbo_edca) {
+			    !rtlpriv->dm.current_turbo_edca) {
 				rtl_write_dword(rtlpriv, REG_EDCA_BE_PARAM, edca_be_ul);
 				rtlpriv->dm.is_cur_rdlstate = false;
 			}
 		}
-		rtlpriv->dm.bcurrent_turbo_edca = true;
+		rtlpriv->dm.current_turbo_edca = true;
 	} else {
-		if (rtlpriv->dm.bcurrent_turbo_edca) {
+		if (rtlpriv->dm.current_turbo_edca) {
 			u8 tmp = AC0_BE;
 			rtlpriv->cfg->ops->set_hw_reg(hw, HW_VAR_AC_PARAM, (u8 *) (&tmp));
-			rtlpriv->dm.bcurrent_turbo_edca = false;
+			rtlpriv->dm.current_turbo_edca = false;
 		}
 	}
 

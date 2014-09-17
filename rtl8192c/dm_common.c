@@ -675,7 +675,7 @@ EXPORT_SYMBOL(rtl92c_dm_write_dig);
 void rtl92c_dm_init_edca_turbo(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
-	rtlpriv->dm.bcurrent_turbo_edca = false;
+	rtlpriv->dm.current_turbo_edca = false;
 	rtlpriv->dm.is_any_nonbepkts = false;
 	rtlpriv->dm.is_cur_rdlstate = false;
 }
@@ -698,7 +698,7 @@ static void rtl92c_dm_check_edca_turbo(struct ieee80211_hw *hw)
 
 	if ((last_bt_edca_ul != rtlpriv->btcoexist.bt_edca_ul) ||
 	    (last_bt_edca_dl != rtlpriv->btcoexist.bt_edca_dl)) {
-		rtlpriv->dm.bcurrent_turbo_edca = false;
+		rtlpriv->dm.current_turbo_edca = false;
 		last_bt_edca_ul = rtlpriv->btcoexist.bt_edca_ul;
 		last_bt_edca_dl = rtlpriv->btcoexist.bt_edca_dl;
 	}
@@ -714,7 +714,7 @@ static void rtl92c_dm_check_edca_turbo(struct ieee80211_hw *hw)
 	}
 
 	if (mac->link_state != MAC80211_LINKED) {
-		rtlpriv->dm.bcurrent_turbo_edca = false;
+		rtlpriv->dm.current_turbo_edca = false;
 		return;
 	}
 	if ((bt_change_edca) || ((!rtlpriv->dm.is_any_nonbepkts) &&
@@ -725,7 +725,7 @@ static void rtl92c_dm_check_edca_turbo(struct ieee80211_hw *hw)
 
 		if (cur_rxok_cnt > 4 * cur_txok_cnt) {
 			if (!rtlpriv->dm.is_cur_rdlstate ||
-			    !rtlpriv->dm.bcurrent_turbo_edca) {
+			    !rtlpriv->dm.current_turbo_edca) {
 				rtl_write_dword(rtlpriv,
 						REG_EDCA_BE_PARAM,
 						edca_be_dl);
@@ -733,21 +733,21 @@ static void rtl92c_dm_check_edca_turbo(struct ieee80211_hw *hw)
 			}
 		} else {
 			if (rtlpriv->dm.is_cur_rdlstate ||
-			    !rtlpriv->dm.bcurrent_turbo_edca) {
+			    !rtlpriv->dm.current_turbo_edca) {
 				rtl_write_dword(rtlpriv,
 						REG_EDCA_BE_PARAM,
 						edca_be_ul);
 				rtlpriv->dm.is_cur_rdlstate = false;
 			}
 		}
-		rtlpriv->dm.bcurrent_turbo_edca = true;
+		rtlpriv->dm.current_turbo_edca = true;
 	} else {
-		if (rtlpriv->dm.bcurrent_turbo_edca) {
+		if (rtlpriv->dm.current_turbo_edca) {
 			u8 tmp = AC0_BE;
 			rtlpriv->cfg->ops->set_hw_reg(hw,
 						      HW_VAR_AC_PARAM,
 						      (u8 *) (&tmp));
-			rtlpriv->dm.bcurrent_turbo_edca = false;
+			rtlpriv->dm.current_turbo_edca = false;
 		}
 	}
 

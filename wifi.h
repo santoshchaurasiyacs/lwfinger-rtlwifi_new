@@ -1535,9 +1535,9 @@ struct fast_ant_training {
 	u8 antsel_rx_keep_0;
 	u8 antsel_rx_keep_1;
 	u8 antsel_rx_keep_2;
-	u32 ant_sum_rssi[7];
-	u32 ant_rssi_cnt[7];
-	u32 ant_ave_rssi[7];
+	u32 ant_sum[7];
+	u32 ant_cnt[7];
+	u32 ant_ave[7];
 	u8 fat_state;
 	u32 train_idx;
 	u8 antsel_a[ASSOCIATE_ENTRY_NUM];
@@ -1569,7 +1569,7 @@ struct rtl_dm {
 	long entry_max_undec_sm_pwdb;
 	bool dm_initialgain_enable;
 	bool dynamic_txpower_enable;
-	bool bcurrent_turbo_edca;
+	bool current_turbo_edca;
 	bool is_any_nonbepkts;	/*out dm */
 	bool is_cur_rdlstate;
 	bool txpower_trackinginit;

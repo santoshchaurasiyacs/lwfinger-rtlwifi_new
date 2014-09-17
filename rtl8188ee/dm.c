@@ -826,7 +826,7 @@ static void rtl88e_dm_pwdb_monitor(struct ieee80211_hw *hw)
 void rtl88e_dm_init_edca_turbo(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
-	rtlpriv->dm.bcurrent_turbo_edca = false;
+	rtlpriv->dm.current_turbo_edca = false;
 	rtlpriv->dm.is_any_nonbepkts = false;
 	rtlpriv->dm.is_cur_rdlstate = false;
 }
@@ -848,7 +848,7 @@ static void rtl88e_dm_check_edca_turbo(struct ieee80211_hw *hw)
 
 	if ((last_bt_edca_ul != rtlpriv->btcoexist.bt_edca_ul) ||
 	    (last_bt_edca_dl != rtlpriv->btcoexist.bt_edca_dl)) {
-		rtlpriv->dm.bcurrent_turbo_edca = false;
+		rtlpriv->dm.current_turbo_edca = false;
 		last_bt_edca_ul = rtlpriv->btcoexist.bt_edca_ul;
 		last_bt_edca_dl = rtlpriv->btcoexist.bt_edca_dl;
 	}
@@ -864,7 +864,7 @@ static void rtl88e_dm_check_edca_turbo(struct ieee80211_hw *hw)
 	}
 
 	if (mac->link_state != MAC80211_LINKED) {
-		rtlpriv->dm.bcurrent_turbo_edca = false;
+		rtlpriv->dm.current_turbo_edca = false;
 		return;
 	}
 	if ((bt_change_edca) || ((!rtlpriv->dm.is_any_nonbepkts) &&
@@ -875,7 +875,7 @@ static void rtl88e_dm_check_edca_turbo(struct ieee80211_hw *hw)
 
 		if (cur_rxok_cnt > 4 * cur_txok_cnt) {
 			if (!rtlpriv->dm.is_cur_rdlstate ||
-			    !rtlpriv->dm.bcurrent_turbo_edca) {
+			    !rtlpriv->dm.current_turbo_edca) {
 				rtl_write_dword(rtlpriv,
 						REG_EDCA_BE_PARAM,
 						edca_be_dl);
@@ -883,21 +883,21 @@ static void rtl88e_dm_check_edca_turbo(struct ieee80211_hw *hw)
 			}
 		} else {
 			if (rtlpriv->dm.is_cur_rdlstate ||
-			    !rtlpriv->dm.bcurrent_turbo_edca) {
+			    !rtlpriv->dm.current_turbo_edca) {
 				rtl_write_dword(rtlpriv,
 						REG_EDCA_BE_PARAM,
 						edca_be_ul);
 				rtlpriv->dm.is_cur_rdlstate = false;
 			}
 		}
-		rtlpriv->dm.bcurrent_turbo_edca = true;
+		rtlpriv->dm.current_turbo_edca = true;
 	} else {
-		if (rtlpriv->dm.bcurrent_turbo_edca) {
+		if (rtlpriv->dm.current_turbo_edca) {
 			u8 tmp = AC0_BE;
 			rtlpriv->cfg->ops->set_hw_reg(hw,
 						      HW_VAR_AC_PARAM,
 						      (u8 *) (&tmp));
-			rtlpriv->dm.bcurrent_turbo_edca = false;
+			rtlpriv->dm.current_turbo_edca = false;
 		}
 	}
 
@@ -1413,9 +1413,9 @@ static void rtl88e_dm_fast_training_init(struct ieee80211_hw *hw)
 
 	for (i = 0; i < 6; i++) {
 		pfat_table->bssid[i] = 0;
-		pfat_table->ant_sum_rssi[i] = 0;
-		pfat_table->ant_rssi_cnt[i] = 0;
-		pfat_table->ant_ave_rssi[i] = 0;
+		pfat_table->ant_sum[i] = 0;
+		pfat_table->ant_cnt[i] = 0;
+		pfat_table->ant_ave[i] = 0;
 	}
 	pfat_table->train_idx = 0;
 	pfat_table->fat_state = FAT_NORMAL_STATE;
@@ -1692,17 +1692,17 @@ static void rtl88e_dm_fast_ant_training(struct ieee80211_hw *hw)
 
 	if (pfat_table->fat_state == FAT_TRAINING_STATE) {
 		for (i = 0; i < 7; i++) {
-			if (pfat_table->ant_rssi_cnt[i] == 0)
-				pfat_table->ant_ave_rssi[i] = 0;
+			if (pfat_table->ant_cnt[i] == 0)
+				pfat_table->ant_ave[i] = 0;
 			else {
-				pfat_table->ant_ave_rssi[i] =
-					pfat_table->ant_sum_rssi[i] /
-					pfat_table->ant_rssi_cnt[i];
+				pfat_table->ant_ave[i] =
+					pfat_table->ant_sum[i] /
+					pfat_table->ant_cnt[i];
 				bpkt_filter_match = true;
 			}
 
-			if (pfat_table->ant_ave_rssi[i] > max_rssi) {
-				max_rssi = pfat_table->ant_ave_rssi[i];
+			if (pfat_table->ant_ave[i] > max_rssi) {
+				max_rssi = pfat_table->ant_ave[i];
 				target_ant = (u8) i;
 			}
 		}
@@ -1732,8 +1732,8 @@ static void rtl88e_dm_fast_ant_training(struct ieee80211_hw *hw)
 		}
 
 		for (i = 0; i < 7; i++) {
-			pfat_table->ant_sum_rssi[i] = 0;
-			pfat_table->ant_rssi_cnt[i] = 0;
+			pfat_table->ant_sum[i] = 0;
+			pfat_table->ant_cnt[i] = 0;
 		}
 
 		pfat_table->fat_state = FAT_NORMAL_STATE;

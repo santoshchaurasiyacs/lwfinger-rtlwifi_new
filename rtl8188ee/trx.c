@@ -426,8 +426,8 @@ static void _rtl88ee_smart_antenna(struct ieee80211_hw *hw,
 				antsel_tr_mux = (pfat_table->antsel_rx_keep_2 << 2) |
 					(pfat_table->antsel_rx_keep_1 << 1) |
 					pfat_table->antsel_rx_keep_0;
-				pfat_table->ant_sum_rssi[antsel_tr_mux] += pstatus->rx_pwdb_all;
-				pfat_table->ant_rssi_cnt[antsel_tr_mux]++;
+				pfat_table->ant_sum[antsel_tr_mux] += pstatus->rx_pwdb_all;
+				pfat_table->ant_cnt[antsel_tr_mux]++;
 			}
 		}
 	} else if ((rtlefuse->antenna_div_type == CG_TRX_HW_ANTDIV) ||
