@@ -274,7 +274,7 @@ bool rtl88e_phy_bb_config(struct ieee80211_hw *hw)
 	rtl_write_byte(rtlpriv, REG_RF_CTRL, RF_EN | RF_RSTB | RF_SDMRSTB);
 	rtl_write_byte(rtlpriv, REG_SYS_FUNC_EN,
 		       FEN_PPLL | FEN_PCIEA | FEN_DIO_PCIE |
-		       FEN_BB_GLB_RSTn | FEN_BBRSTB);
+		       FEN_BB_GLB_RSTN | FEN_BBRSTB);
 	tmp = rtl_read_dword(rtlpriv, 0x4c);
 	rtl_write_dword(rtlpriv, 0x4c, tmp | BIT(23));
 	if (b_reg_hwparafile == 1)
@@ -882,8 +882,8 @@ static void _rtl88e_phy_init_bb_rf_register_definition(struct ieee80211_hw *hw)
 	rtlphy->phyreg_def[RF90_PATH_B].rf3wire_offset =
 	    RFPGA0_XB_LSSIPARAMETER;
 
-	rtlphy->phyreg_def[RF90_PATH_A].rflssi_select = rFPGA0_XAB_RFPARAMETER;
-	rtlphy->phyreg_def[RF90_PATH_B].rflssi_select = rFPGA0_XAB_RFPARAMETER;
+	rtlphy->phyreg_def[RF90_PATH_A].rflssi_select = RFPGA0_XAB_RFPARAMETER;
+	rtlphy->phyreg_def[RF90_PATH_B].rflssi_select = RFPGA0_XAB_RFPARAMETER;
 	rtlphy->phyreg_def[RF90_PATH_C].rflssi_select = rFPGA0_XCD_RFPARAMETER;
 	rtlphy->phyreg_def[RF90_PATH_D].rflssi_select = rFPGA0_XCD_RFPARAMETER;
 
@@ -1475,26 +1475,26 @@ static u8 _rtl88e_phy_path_a_rx_iqk(struct ieee80211_hw *hw, bool config_pathb)
 	rtl_set_bbreg(hw, RFPGA0_IQK, MASKDWORD, 0x80800000);
 
 	/*IQK Setting*/
-	rtl_set_bbreg(hw, RTx_IQK, MASKDWORD, 0x01007c00);
+	rtl_set_bbreg(hw, RTX_IQK, MASKDWORD, 0x01007c00);
 	rtl_set_bbreg(hw, RRx_IQK, MASKDWORD, 0x81004800);
 
 	/*path a IQK setting*/
-	rtl_set_bbreg(hw, RTx_IQK_Tone_A, MASKDWORD, 0x10008c1c);
+	rtl_set_bbreg(hw, RTX_IQK_TONE_A, MASKDWORD, 0x10008c1c);
 	rtl_set_bbreg(hw, RRx_IQK_Tone_A, MASKDWORD, 0x30008c1c);
-	rtl_set_bbreg(hw, RTx_IQK_PI_A, MASKDWORD, 0x82160804);
+	rtl_set_bbreg(hw, RTX_IQK_PI_A, MASKDWORD, 0x82160804);
 	rtl_set_bbreg(hw, RRx_IQK_PI_A, MASKDWORD, 0x28160000);
 
 	/*LO calibration Setting*/
-	rtl_set_bbreg(hw, RIQK_AGC_Rsp, MASKDWORD, 0x0046a911);
+	rtl_set_bbreg(hw, RIQK_AGC_RSP, MASKDWORD, 0x0046a911);
 	/*one shot,path A LOK & iqk*/
-	rtl_set_bbreg(hw, RIQK_AGC_Pts, MASKDWORD, 0xf9000000);
-	rtl_set_bbreg(hw, RIQK_AGC_Pts, MASKDWORD, 0xf8000000);
+	rtl_set_bbreg(hw, RIQK_AGC_PTS, MASKDWORD, 0xf9000000);
+	rtl_set_bbreg(hw, RIQK_AGC_PTS, MASKDWORD, 0xf8000000);
 
 	mdelay(IQK_DELAY_TIME);
 
-	reg_eac = rtl_get_bbreg(hw, RRx_Power_After_IQK_A_2, MASKDWORD);
-	reg_e94 = rtl_get_bbreg(hw, RTx_Power_Before_IQK_A, MASKDWORD);
-	reg_e9c = rtl_get_bbreg(hw, RTx_Power_After_IQK_A, MASKDWORD);
+	reg_eac = rtl_get_bbreg(hw, RRX_POWER_AFTER_IQK_A_2, MASKDWORD);
+	reg_e94 = rtl_get_bbreg(hw, RTX_POWER_BEFORE_IQK_A, MASKDWORD);
+	reg_e9c = rtl_get_bbreg(hw, RTX_POWER_AFTER_IQK_A, MASKDWORD);
 
 
 	if (!(reg_eac & BIT(28)) &&
@@ -1505,7 +1505,7 @@ static u8 _rtl88e_phy_path_a_rx_iqk(struct ieee80211_hw *hw, bool config_pathb)
 		return result;
 
 	u32temp = 0x80007C00 | (reg_e94&0x3FF0000)  | ((reg_e9c&0x3FF0000) >> 16);
-	rtl_set_bbreg(hw, RTx_IQK, MASKDWORD, u32temp);
+	rtl_set_bbreg(hw, RTX_IQK, MASKDWORD, u32temp);
 	/*RX IQK*/
 	/*Modify RX IQK mode table*/
 	rtl_set_bbreg(hw, RFPGA0_IQK, MASKDWORD, 0x00000000);
@@ -1519,23 +1519,23 @@ static u8 _rtl88e_phy_path_a_rx_iqk(struct ieee80211_hw *hw, bool config_pathb)
 	rtl_set_bbreg(hw, RRx_IQK, MASKDWORD, 0x01004800);
 
 	/*path a IQK setting*/
-	rtl_set_bbreg(hw, RTx_IQK_Tone_A, MASKDWORD, 0x30008c1c);
+	rtl_set_bbreg(hw, RTX_IQK_TONE_A, MASKDWORD, 0x30008c1c);
 	rtl_set_bbreg(hw, RRx_IQK_Tone_A, MASKDWORD, 0x10008c1c);
-	rtl_set_bbreg(hw, RTx_IQK_PI_A, MASKDWORD, 0x82160c05);
+	rtl_set_bbreg(hw, RTX_IQK_PI_A, MASKDWORD, 0x82160c05);
 	rtl_set_bbreg(hw, RRx_IQK_PI_A, MASKDWORD, 0x28160c05);
 
 	/*LO calibration Setting*/
-	rtl_set_bbreg(hw, RIQK_AGC_Rsp, MASKDWORD, 0x0046a911);
+	rtl_set_bbreg(hw, RIQK_AGC_RSP, MASKDWORD, 0x0046a911);
 	/*one shot,path A LOK & iqk*/
-	rtl_set_bbreg(hw, RIQK_AGC_Pts, MASKDWORD, 0xf9000000);
-	rtl_set_bbreg(hw, RIQK_AGC_Pts, MASKDWORD, 0xf8000000);
+	rtl_set_bbreg(hw, RIQK_AGC_PTS, MASKDWORD, 0xf9000000);
+	rtl_set_bbreg(hw, RIQK_AGC_PTS, MASKDWORD, 0xf8000000);
 
 	mdelay(IQK_DELAY_TIME);
 
-	reg_eac = rtl_get_bbreg(hw, RRx_Power_After_IQK_A_2, MASKDWORD);
-	reg_e94 = rtl_get_bbreg(hw, RTx_Power_Before_IQK_A, MASKDWORD);
-	reg_e9c = rtl_get_bbreg(hw, RTx_Power_After_IQK_A, MASKDWORD);
-	reg_ea4 = rtl_get_bbreg(hw, RRx_Power_Before_IQK_A_2, MASKDWORD);
+	reg_eac = rtl_get_bbreg(hw, RRX_POWER_AFTER_IQK_A_2, MASKDWORD);
+	reg_e94 = rtl_get_bbreg(hw, RTX_POWER_BEFORE_IQK_A, MASKDWORD);
+	reg_e9c = rtl_get_bbreg(hw, RTX_POWER_AFTER_IQK_A, MASKDWORD);
+	reg_ea4 = rtl_get_bbreg(hw, RRX_POWER_BEFORE_IQK_A_2, MASKDWORD);
 
 	if (!(reg_eac & BIT(27)) &&
 	    (((reg_ea4 & 0x03FF0000) >> 16) != 0x132) &&
@@ -1944,7 +1944,7 @@ static void _rtl88e_phy_set_rfpath_switch(struct ieee80211_hw *hw,
 		u8 u1btmp;
 		u1btmp = rtl_read_byte(rtlpriv, REG_LEDCFG0);
 		rtl_write_byte(rtlpriv, REG_LEDCFG0, u1btmp | BIT(7));
-		rtl_set_bbreg(hw, rFPGA0_XAB_RFPARAMETER, BIT(13), 0x01);
+		rtl_set_bbreg(hw, RFPGA0_XAB_RFPARAMETER, BIT(13), 0x01);
 	}
 	if (is2t) {
 		if (bmain)
@@ -1966,14 +1966,14 @@ static void _rtl88e_phy_set_rfpath_switch(struct ieee80211_hw *hw,
 			rtl_set_bbreg(hw, RFPGA0_XB_RFINTERFACEOE,
 				BIT(5) | BIT(4) | BIT(3), 0);
 			if (rtlefuse->antenna_div_type == CGCS_RX_HW_ANTDIV)
-				rtl_set_bbreg(hw, rConfig_ram64x16, BIT(31), 0);
+				rtl_set_bbreg(hw, RCONFIG_RAM64x16, BIT(31), 0);
 		} else {
 			rtl_set_bbreg(hw, RFPGA0_XA_RFINTERFACEOE,
 				BIT(14) | BIT(13) | BIT(12), 1);
 			rtl_set_bbreg(hw, RFPGA0_XB_RFINTERFACEOE,
 				BIT(5) | BIT(4) | BIT(3), 1);
 			if (rtlefuse->antenna_div_type == CGCS_RX_HW_ANTDIV)
-				rtl_set_bbreg(hw, rConfig_ram64x16, BIT(31), 1);
+				rtl_set_bbreg(hw, RCONFIG_RAM64x16, BIT(31), 1);
 		}
 
 

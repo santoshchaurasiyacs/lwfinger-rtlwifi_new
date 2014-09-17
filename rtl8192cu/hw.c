@@ -1069,9 +1069,9 @@ e.	SYS_FUNC_EN 0x02[7:0] = 0x14	reset BB state machine
 	value8 |= APSDOFF;
 	rtl_write_byte(rtlpriv, REG_APSD_CTRL, value8); /*0x40*/
 	value8 = 0;
-	value8 |= (FEN_USBD | FEN_USBA | FEN_BB_GLB_RSTn);
+	value8 |= (FEN_USBD | FEN_USBA | FEN_BB_GLB_RSTN);
 	rtl_write_byte(rtlpriv, REG_SYS_FUNC_EN, value8);/*0x16*/
-	value8 &= (~FEN_BB_GLB_RSTn);
+	value8 &= (~FEN_BB_GLB_RSTN);
 	rtl_write_byte(rtlpriv, REG_SYS_FUNC_EN, value8); /*0x14*/
 }
 

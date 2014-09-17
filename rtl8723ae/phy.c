@@ -340,7 +340,7 @@ bool rtl8723e_phy_bb_config(struct ieee80211_hw *hw)
 	/* 3. 0x02[1:0] = 2b'11 */
 	tmpu1b = rtl_read_byte(rtlpriv, REG_SYS_FUNC_EN);
 	rtl_write_byte(rtlpriv, REG_SYS_FUNC_EN,
-			(tmpu1b|FEN_BB_GLB_RSTn|FEN_BBRSTB));
+			(tmpu1b|FEN_BB_GLB_RSTN|FEN_BBRSTB));
 
 	/* 4. 0x25[6] = 0 */
 	tmpu1b = rtl_read_byte(rtlpriv, REG_AFE_XTAL_CTRL+1);
@@ -769,8 +769,8 @@ static void _rtl8723e_phy_init_bb_rf_register_definition(struct ieee80211_hw *hw
 	rtlphy->phyreg_def[RF90_PATH_B].rf3wire_offset =
 	    RFPGA0_XB_LSSIPARAMETER;
 
-	rtlphy->phyreg_def[RF90_PATH_A].rflssi_select = rFPGA0_XAB_RFPARAMETER;
-	rtlphy->phyreg_def[RF90_PATH_B].rflssi_select = rFPGA0_XAB_RFPARAMETER;
+	rtlphy->phyreg_def[RF90_PATH_A].rflssi_select = RFPGA0_XAB_RFPARAMETER;
+	rtlphy->phyreg_def[RF90_PATH_B].rflssi_select = RFPGA0_XAB_RFPARAMETER;
 	rtlphy->phyreg_def[RF90_PATH_C].rflssi_select = rFPGA0_XCD_RFPARAMETER;
 	rtlphy->phyreg_def[RF90_PATH_D].rflssi_select = rFPGA0_XCD_RFPARAMETER;
 
@@ -2180,7 +2180,7 @@ static void _rtl8723e_phy_set_rfpath_switch(struct ieee80211_hw *hw,
 
 	if (is_hal_stop(rtlhal)) {
 		rtl_set_bbreg(hw, REG_LEDCFG0, BIT(23), 0x01);
-		rtl_set_bbreg(hw, rFPGA0_XAB_RFPARAMETER, BIT(13), 0x01);
+		rtl_set_bbreg(hw, RFPGA0_XAB_RFPARAMETER, BIT(13), 0x01);
 	}
 	if (is2t) {
 		if (bmain)

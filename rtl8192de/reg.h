@@ -752,7 +752,7 @@
 
 /* SYS_FUNC_EN */
 #define FEN_BBRSTB					BIT(0)
-#define FEN_BB_GLB_RSTn				BIT(1)
+#define FEN_BB_GLB_RSTN				BIT(1)
 #define FEN_USBA					BIT(2)
 #define FEN_UPLL					BIT(3)
 #define FEN_USBD					BIT(4)

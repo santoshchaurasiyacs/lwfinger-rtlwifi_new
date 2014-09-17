@@ -134,10 +134,10 @@ bool rtl92cu_phy_bb_config(struct ieee80211_hw *hw)
 	rtl_write_byte(rtlpriv, REG_RF_CTRL, RF_EN | RF_RSTB | RF_SDMRSTB);
 	if (IS_HARDWARE_TYPE_8192CE(rtlhal)) {
 		rtl_write_byte(rtlpriv, REG_SYS_FUNC_EN, FEN_PPLL | FEN_PCIEA |
-			       FEN_DIO_PCIE |	FEN_BB_GLB_RSTn | FEN_BBRSTB);
+			       FEN_DIO_PCIE |	FEN_BB_GLB_RSTN | FEN_BBRSTB);
 	} else if (IS_HARDWARE_TYPE_8192CU(rtlhal)) {
 		rtl_write_byte(rtlpriv, REG_SYS_FUNC_EN, FEN_USBA | FEN_USBD |
-			       FEN_BB_GLB_RSTn | FEN_BBRSTB);
+			       FEN_BB_GLB_RSTN | FEN_BBRSTB);
 	}
 	regval32 = rtl_read_dword(rtlpriv, 0x87c);
 	rtl_write_dword(rtlpriv, 0x87c, regval32 & (~BIT(31)));

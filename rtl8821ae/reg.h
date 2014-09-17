@@ -1384,7 +1384,7 @@
 #define	RFPGA0_XAB_RFINTERFACESW	0x870
 #define	RFPGA0_XCD_RFINTERFACESW	0x874
 
-#define	rFPGA0_XAB_RFPARAMETER		0x878
+#define	RFPGA0_XAB_RFPARAMETER		0x878
 #define	rFPGA0_XCD_RFPARAMETER		0x87c
 
 #define	RFPGA0_ANALOGPARAMETER1		0x880
@@ -1450,7 +1450,7 @@
 #define	rPdp_AntA_24					0xb24
 
 #define	rConfig_Pmpd_AntA			0xb28
-#define	rConfig_ram64x16				0xb2c
+#define	RCONFIG_RAM64x16				0xb2c
 
 #define	rBndA						0xb30
 #define	rHssiPar						0xb34
@@ -1623,18 +1623,18 @@
 #define	RB_TXPWRTRAING		0xe54
 
 #define	RFPGA0_IQK					0xe28
-#define	RTx_IQK_Tone_A				0xe30
+#define	RTX_IQK_TONE_A				0xe30
 #define	RRx_IQK_Tone_A				0xe34
-#define	RTx_IQK_PI_A					0xe38
+#define	RTX_IQK_PI_A					0xe38
 #define	RRx_IQK_PI_A					0xe3c
 
-#define	RTx_IQK							0xe40
+#define	RTX_IQK							0xe40
 #define	RRx_IQK						0xe44
-#define	RIQK_AGC_Pts					0xe48
-#define	RIQK_AGC_Rsp					0xe4c
-#define	RTx_IQK_Tone_B				0xe50
+#define	RIQK_AGC_PTS					0xe48
+#define	RIQK_AGC_RSP					0xe4c
+#define	RTX_IQK_Tone_B				0xe50
 #define	RRx_IQK_Tone_B				0xe54
-#define	RTx_IQK_PI_B					0xe58
+#define	RTX_IQK_PI_B					0xe58
 #define	RRx_IQK_PI_B					0xe5c
 #define	RIQK_AGC_Cont				0xe60
 
@@ -1648,13 +1648,13 @@
 #define	RTx_To_Tx					0xe88
 #define	RRx_CCK						0xe8c
 
-#define	RTx_Power_Before_IQK_A		0xe94
-#define	RTx_Power_After_IQK_A			0xe9c
+#define	RTX_POWER_BEFORE_IQK_A		0xe94
+#define	RTX_POWER_AFTER_IQK_A			0xe9c
 
 #define	RRx_Power_Before_IQK_A		0xea0
-#define	RRx_Power_Before_IQK_A_2		0xea4
+#define	RRX_POWER_BEFORE_IQK_A_2		0xea4
 #define	RRx_Power_After_IQK_A			0xea8
-#define	RRx_Power_After_IQK_A_2		0xeac
+#define	RRX_POWER_AFTER_IQK_A_2		0xeac
 
 #define	RTx_Power_Before_IQK_B		0xeb4
 #define	RTx_Power_After_IQK_B			0xebc

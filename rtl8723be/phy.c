@@ -279,7 +279,7 @@ bool rtl8723be_phy_bb_config(struct ieee80211_hw *hw)
 	rtl_write_byte(rtlpriv, REG_RF_CTRL, RF_EN | RF_RSTB | RF_SDMRSTB);
 	rtl_write_byte(rtlpriv, REG_SYS_FUNC_EN,
 		       FEN_PPLL | FEN_PCIEA | FEN_DIO_PCIE |
-		       FEN_BB_GLB_RSTn | FEN_BBRSTB);
+		       FEN_BB_GLB_RSTN | FEN_BBRSTB);
 	tmp = rtl_read_dword(rtlpriv, 0x4c);
 	rtl_write_dword(rtlpriv, 0x4c, tmp | BIT(23));
 
@@ -1042,8 +1042,8 @@ static void _rtl8723be_phy_init_bb_rf_register_definition(
 	rtlphy->phyreg_def[RF90_PATH_B].rf3wire_offset =
 						RFPGA0_XB_LSSIPARAMETER;
 
-	rtlphy->phyreg_def[RF90_PATH_A].rflssi_select = rFPGA0_XAB_RFPARAMETER;
-	rtlphy->phyreg_def[RF90_PATH_B].rflssi_select = rFPGA0_XAB_RFPARAMETER;
+	rtlphy->phyreg_def[RF90_PATH_A].rflssi_select = RFPGA0_XAB_RFPARAMETER;
+	rtlphy->phyreg_def[RF90_PATH_B].rflssi_select = RFPGA0_XAB_RFPARAMETER;
 	rtlphy->phyreg_def[RF90_PATH_C].rflssi_select = rFPGA0_XCD_RFPARAMETER;
 	rtlphy->phyreg_def[RF90_PATH_D].rflssi_select = rFPGA0_XCD_RFPARAMETER;
 
@@ -1907,26 +1907,26 @@ static u8 _rtl8723be_phy_path_a_iqk(struct ieee80211_hw *hw)
 	/* 1. TX IQK */
 	/* path-A IQK setting */
 	/* IQK setting */
-	rtl_set_bbreg(hw, RTx_IQK, MASKDWORD, 0x01007c00);
+	rtl_set_bbreg(hw, RTX_IQK, MASKDWORD, 0x01007c00);
 	rtl_set_bbreg(hw, RRx_IQK, MASKDWORD, 0x01004800);
 	/* path-A IQK setting */
-	rtl_set_bbreg(hw, RTx_IQK_Tone_A, MASKDWORD, 0x18008c1c);
+	rtl_set_bbreg(hw, RTX_IQK_TONE_A, MASKDWORD, 0x18008c1c);
 	rtl_set_bbreg(hw, RRx_IQK_Tone_A, MASKDWORD, 0x38008c1c);
-	rtl_set_bbreg(hw, RTx_IQK_Tone_B, MASKDWORD, 0x38008c1c);
+	rtl_set_bbreg(hw, RTX_IQK_Tone_B, MASKDWORD, 0x38008c1c);
 	rtl_set_bbreg(hw, RRx_IQK_Tone_B, MASKDWORD, 0x38008c1c);
 
-	rtl_set_bbreg(hw, RTx_IQK_PI_A, MASKDWORD, 0x821403ea);
+	rtl_set_bbreg(hw, RTX_IQK_PI_A, MASKDWORD, 0x821403ea);
 	rtl_set_bbreg(hw, RRx_IQK_PI_A, MASKDWORD, 0x28160000);
-	rtl_set_bbreg(hw, RTx_IQK_PI_B, MASKDWORD, 0x82110000);
+	rtl_set_bbreg(hw, RTX_IQK_PI_B, MASKDWORD, 0x82110000);
 	rtl_set_bbreg(hw, RRx_IQK_PI_B, MASKDWORD, 0x28110000);
 	/* LO calibration setting */
-	rtl_set_bbreg(hw, RIQK_AGC_Rsp, MASKDWORD, 0x00462911);
+	rtl_set_bbreg(hw, RIQK_AGC_RSP, MASKDWORD, 0x00462911);
 	/* enter IQK mode */
 	rtl_set_bbreg(hw, RFPGA0_IQK, MASKDWORD, 0x80800000);
 
 	/* One shot, path A LOK & IQK */
-	rtl_set_bbreg(hw, RIQK_AGC_Pts, MASKDWORD, 0xf9000000);
-	rtl_set_bbreg(hw, RIQK_AGC_Pts, MASKDWORD, 0xf8000000);
+	rtl_set_bbreg(hw, RIQK_AGC_PTS, MASKDWORD, 0xf9000000);
+	rtl_set_bbreg(hw, RIQK_AGC_PTS, MASKDWORD, 0xf8000000);
 
 	mdelay(IQK_DELAY_TIME);
 
@@ -1983,29 +1983,29 @@ static u8 _rtl8723be_phy_path_a_rx_iqk(struct ieee80211_hw *hw)
 	rtl_set_bbreg(hw, RFPGA0_IQK, MASKDWORD, 0x80800000);
 
 	/* IQK setting */
-	rtl_set_bbreg(hw, RTx_IQK, MASKDWORD, 0x01007c00);
+	rtl_set_bbreg(hw, RTX_IQK, MASKDWORD, 0x01007c00);
 	rtl_set_bbreg(hw, RRx_IQK, MASKDWORD, 0x01004800);
 
 	/* path-A IQK setting */
-	rtl_set_bbreg(hw, RTx_IQK_Tone_A, MASKDWORD, 0x18008c1c);
+	rtl_set_bbreg(hw, RTX_IQK_TONE_A, MASKDWORD, 0x18008c1c);
 	rtl_set_bbreg(hw, RRx_IQK_Tone_A, MASKDWORD, 0x38008c1c);
-	rtl_set_bbreg(hw, RTx_IQK_Tone_B, MASKDWORD, 0x38008c1c);
+	rtl_set_bbreg(hw, RTX_IQK_Tone_B, MASKDWORD, 0x38008c1c);
 	rtl_set_bbreg(hw, RRx_IQK_Tone_B, MASKDWORD, 0x38008c1c);
 
-	rtl_set_bbreg(hw, RTx_IQK_PI_A, MASKDWORD, 0x82160ff0);
+	rtl_set_bbreg(hw, RTX_IQK_PI_A, MASKDWORD, 0x82160ff0);
 	rtl_set_bbreg(hw, RRx_IQK_PI_A, MASKDWORD, 0x28110000);
-	rtl_set_bbreg(hw, RTx_IQK_PI_B, MASKDWORD, 0x82110000);
+	rtl_set_bbreg(hw, RTX_IQK_PI_B, MASKDWORD, 0x82110000);
 	rtl_set_bbreg(hw, RRx_IQK_PI_B, MASKDWORD, 0x28110000);
 
 	/* LO calibration setting */
-	rtl_set_bbreg(hw, RIQK_AGC_Rsp, MASKDWORD, 0x0046a911);
+	rtl_set_bbreg(hw, RIQK_AGC_RSP, MASKDWORD, 0x0046a911);
 
 	/* enter IQK mode */
 	rtl_set_bbreg(hw, RFPGA0_IQK, MASKDWORD, 0x80800000);
 
 	/* One shot, path A LOK & IQK */
-	rtl_set_bbreg(hw, RIQK_AGC_Pts, MASKDWORD, 0xf9000000);
-	rtl_set_bbreg(hw, RIQK_AGC_Pts, MASKDWORD, 0xf8000000);
+	rtl_set_bbreg(hw, RIQK_AGC_PTS, MASKDWORD, 0xf9000000);
+	rtl_set_bbreg(hw, RIQK_AGC_PTS, MASKDWORD, 0xf8000000);
 
 	mdelay(IQK_DELAY_TIME);
 
@@ -2013,9 +2013,9 @@ static u8 _rtl8723be_phy_path_a_rx_iqk(struct ieee80211_hw *hw)
 	rtl_set_bbreg(hw, RFPGA0_IQK, MASKDWORD, 0x00000000);
 
 	/* Check failed */
-	reg_eac = rtl_get_bbreg(hw, RRx_Power_After_IQK_A_2, MASKDWORD);
-	reg_e94 = rtl_get_bbreg(hw, RTx_Power_Before_IQK_A, MASKDWORD);
-	reg_e9c = rtl_get_bbreg(hw, RTx_Power_After_IQK_A, MASKDWORD);
+	reg_eac = rtl_get_bbreg(hw, RRX_POWER_AFTER_IQK_A_2, MASKDWORD);
+	reg_e94 = rtl_get_bbreg(hw, RTX_POWER_BEFORE_IQK_A, MASKDWORD);
+	reg_e9c = rtl_get_bbreg(hw, RTX_POWER_AFTER_IQK_A, MASKDWORD);
 
 	if (!(reg_eac & BIT(28)) &&
 	    (((reg_e94 & 0x03FF0000) >> 16) != 0x142) &&
@@ -2039,7 +2039,7 @@ static u8 _rtl8723be_phy_path_a_rx_iqk(struct ieee80211_hw *hw)
 
 	u32tmp = 0x80007C00 | (reg_e94 & 0x3FF0000) |
 		 ((reg_e9c & 0x3FF0000) >> 16);
-	rtl_set_bbreg(hw, RTx_IQK, MASKDWORD, u32tmp);
+	rtl_set_bbreg(hw, RTX_IQK, MASKDWORD, u32tmp);
 
 	/* 1 RX IQK */
 	/* modify RXIQK mode table */
@@ -2058,25 +2058,25 @@ static u8 _rtl8723be_phy_path_a_rx_iqk(struct ieee80211_hw *hw)
 	rtl_set_bbreg(hw, RRx_IQK, MASKDWORD, 0x01004800);
 
 	/* path-A IQK setting */
-	rtl_set_bbreg(hw, RTx_IQK_Tone_A, MASKDWORD, 0x38008c1c);
+	rtl_set_bbreg(hw, RTX_IQK_TONE_A, MASKDWORD, 0x38008c1c);
 	rtl_set_bbreg(hw, RRx_IQK_Tone_A, MASKDWORD, 0x18008c1c);
-	rtl_set_bbreg(hw, RTx_IQK_Tone_B, MASKDWORD, 0x38008c1c);
+	rtl_set_bbreg(hw, RTX_IQK_Tone_B, MASKDWORD, 0x38008c1c);
 	rtl_set_bbreg(hw, RRx_IQK_Tone_B, MASKDWORD, 0x38008c1c);
 
-	rtl_set_bbreg(hw, RTx_IQK_PI_A, MASKDWORD, 0x82110000);
+	rtl_set_bbreg(hw, RTX_IQK_PI_A, MASKDWORD, 0x82110000);
 	rtl_set_bbreg(hw, RRx_IQK_PI_A, MASKDWORD, 0x2816001f);
-	rtl_set_bbreg(hw, RTx_IQK_PI_B, MASKDWORD, 0x82110000);
+	rtl_set_bbreg(hw, RTX_IQK_PI_B, MASKDWORD, 0x82110000);
 	rtl_set_bbreg(hw, RRx_IQK_PI_B, MASKDWORD, 0x28110000);
 
 	/* LO calibration setting */
-	rtl_set_bbreg(hw, RIQK_AGC_Rsp, MASKDWORD, 0x0046a8d1);
+	rtl_set_bbreg(hw, RIQK_AGC_RSP, MASKDWORD, 0x0046a8d1);
 
 	/* enter IQK mode */
 	rtl_set_bbreg(hw, RFPGA0_IQK, MASKDWORD, 0x80800000);
 
 	/* One shot, path A LOK & IQK */
-	rtl_set_bbreg(hw, RIQK_AGC_Pts, MASKDWORD, 0xf9000000);
-	rtl_set_bbreg(hw, RIQK_AGC_Pts, MASKDWORD, 0xf8000000);
+	rtl_set_bbreg(hw, RIQK_AGC_PTS, MASKDWORD, 0xf9000000);
+	rtl_set_bbreg(hw, RIQK_AGC_PTS, MASKDWORD, 0xf8000000);
 
 	mdelay(IQK_DELAY_TIME);
 
@@ -2084,8 +2084,8 @@ static u8 _rtl8723be_phy_path_a_rx_iqk(struct ieee80211_hw *hw)
 	rtl_set_bbreg(hw, RFPGA0_IQK, MASKDWORD, 0x00000000);
 
 	/* Check failed */
-	reg_eac = rtl_get_bbreg(hw, RRx_Power_After_IQK_A_2, MASKDWORD);
-	reg_ea4 = rtl_get_bbreg(hw, RRx_Power_Before_IQK_A_2, MASKDWORD);
+	reg_eac = rtl_get_bbreg(hw, RRX_POWER_AFTER_IQK_A_2, MASKDWORD);
+	reg_ea4 = rtl_get_bbreg(hw, RRX_POWER_BEFORE_IQK_A_2, MASKDWORD);
 
 	/* leave IQK mode */
 	rtl_set_bbreg(hw, RFPGA0_IQK, MASKDWORD, 0x00000000);
@@ -2125,28 +2125,28 @@ static u8 _rtl8723be_phy_path_b_iqk(struct ieee80211_hw *hw)
 
 	/* 1 Tx IQK */
 	/* IQK setting */
-	rtl_set_bbreg(hw, RTx_IQK, MASKDWORD, 0x01007c00);
+	rtl_set_bbreg(hw, RTX_IQK, MASKDWORD, 0x01007c00);
 	rtl_set_bbreg(hw, RRx_IQK, MASKDWORD, 0x01004800);
 	/* path-A IQK setting */
-	rtl_set_bbreg(hw, RTx_IQK_Tone_A, MASKDWORD, 0x18008c1c);
+	rtl_set_bbreg(hw, RTX_IQK_TONE_A, MASKDWORD, 0x18008c1c);
 	rtl_set_bbreg(hw, RRx_IQK_Tone_A, MASKDWORD, 0x38008c1c);
-	rtl_set_bbreg(hw, RTx_IQK_Tone_B, MASKDWORD, 0x38008c1c);
+	rtl_set_bbreg(hw, RTX_IQK_Tone_B, MASKDWORD, 0x38008c1c);
 	rtl_set_bbreg(hw, RRx_IQK_Tone_B, MASKDWORD, 0x38008c1c);
 
-	rtl_set_bbreg(hw, RTx_IQK_PI_A, MASKDWORD, 0x821403ea);
+	rtl_set_bbreg(hw, RTX_IQK_PI_A, MASKDWORD, 0x821403ea);
 	rtl_set_bbreg(hw, RRx_IQK_PI_A, MASKDWORD, 0x28110000);
-	rtl_set_bbreg(hw, RTx_IQK_PI_B, MASKDWORD, 0x82110000);
+	rtl_set_bbreg(hw, RTX_IQK_PI_B, MASKDWORD, 0x82110000);
 	rtl_set_bbreg(hw, RRx_IQK_PI_B, MASKDWORD, 0x28110000);
 
 	/* LO calibration setting */
-	rtl_set_bbreg(hw, RIQK_AGC_Rsp, MASKDWORD, 0x00462911);
+	rtl_set_bbreg(hw, RIQK_AGC_RSP, MASKDWORD, 0x00462911);
 
 	/* enter IQK mode */
 	rtl_set_bbreg(hw, RFPGA0_IQK, MASKDWORD, 0x80800000);
 
 	/* One shot, path B LOK & IQK */
-	rtl_set_bbreg(hw, RIQK_AGC_Pts, MASKDWORD, 0xf9000000);
-	rtl_set_bbreg(hw, RIQK_AGC_Pts, MASKDWORD, 0xf8000000);
+	rtl_set_bbreg(hw, RIQK_AGC_PTS, MASKDWORD, 0xf9000000);
+	rtl_set_bbreg(hw, RIQK_AGC_PTS, MASKDWORD, 0xf8000000);
 
 	mdelay(IQK_DELAY_TIME);
 
@@ -2154,9 +2154,9 @@ static u8 _rtl8723be_phy_path_b_iqk(struct ieee80211_hw *hw)
 	rtl_set_bbreg(hw, RFPGA0_IQK, MASKDWORD, 0x00000000);
 
 	/* Check failed */
-	reg_eac = rtl_get_bbreg(hw, RRx_Power_After_IQK_A_2, MASKDWORD);
-	reg_e94 = rtl_get_bbreg(hw, RTx_Power_Before_IQK_A, MASKDWORD);
-	reg_e9c = rtl_get_bbreg(hw, RTx_Power_After_IQK_A, MASKDWORD);
+	reg_eac = rtl_get_bbreg(hw, RRX_POWER_AFTER_IQK_A_2, MASKDWORD);
+	reg_e94 = rtl_get_bbreg(hw, RTX_POWER_BEFORE_IQK_A, MASKDWORD);
+	reg_e9c = rtl_get_bbreg(hw, RTX_POWER_AFTER_IQK_A, MASKDWORD);
 
 	if (!(reg_eac & BIT(28)) &&
 	    (((reg_e94 & 0x03FF0000) >> 16) != 0x142) &&
@@ -2205,37 +2205,37 @@ static u8 _rtl8723be_phy_path_b_rx_iqk(struct ieee80211_hw *hw)
 	rtl_set_rfreg(hw, RF90_PATH_A, 0x43, RFREG_OFFSET_MASK, 0x60fed);
 
 	/* IQK setting */
-	rtl_set_bbreg(hw, RTx_IQK, MASKDWORD, 0x01007c00);
+	rtl_set_bbreg(hw, RTX_IQK, MASKDWORD, 0x01007c00);
 	rtl_set_bbreg(hw, RRx_IQK, MASKDWORD, 0x01004800);
 
 	/* path-B IQK setting */
-	rtl_set_bbreg(hw, RTx_IQK_Tone_A, MASKDWORD, 0x18008c1c);
+	rtl_set_bbreg(hw, RTX_IQK_TONE_A, MASKDWORD, 0x18008c1c);
 	rtl_set_bbreg(hw, RRx_IQK_Tone_A, MASKDWORD, 0x38008c1c);
-	rtl_set_bbreg(hw, RTx_IQK_Tone_B, MASKDWORD, 0x38008c1c);
+	rtl_set_bbreg(hw, RTX_IQK_Tone_B, MASKDWORD, 0x38008c1c);
 	rtl_set_bbreg(hw, RRx_IQK_Tone_B, MASKDWORD, 0x38008c1c);
 
-	rtl_set_bbreg(hw, RTx_IQK_PI_A, MASKDWORD, 0x82160ff0);
+	rtl_set_bbreg(hw, RTX_IQK_PI_A, MASKDWORD, 0x82160ff0);
 	rtl_set_bbreg(hw, RRx_IQK_PI_A, MASKDWORD, 0x28110000);
-	rtl_set_bbreg(hw, RTx_IQK_PI_B, MASKDWORD, 0x82110000);
+	rtl_set_bbreg(hw, RTX_IQK_PI_B, MASKDWORD, 0x82110000);
 	rtl_set_bbreg(hw, RRx_IQK_PI_B, MASKDWORD, 0x28110000);
 
 	/* LO calibration setting */
-	rtl_set_bbreg(hw, RIQK_AGC_Rsp, MASKDWORD, 0x0046a911);
+	rtl_set_bbreg(hw, RIQK_AGC_RSP, MASKDWORD, 0x0046a911);
 	/* enter IQK mode */
 	rtl_set_bbreg(hw, RFPGA0_IQK, MASKDWORD, 0x80800000);
 
 	/* One shot, path B TXIQK @ RXIQK */
-	rtl_set_bbreg(hw, RIQK_AGC_Pts, MASKDWORD, 0xf9000000);
-	rtl_set_bbreg(hw, RIQK_AGC_Pts, MASKDWORD, 0xf8000000);
+	rtl_set_bbreg(hw, RIQK_AGC_PTS, MASKDWORD, 0xf9000000);
+	rtl_set_bbreg(hw, RIQK_AGC_PTS, MASKDWORD, 0xf8000000);
 
 	mdelay(IQK_DELAY_TIME);
 
 	/* leave IQK mode */
 	rtl_set_bbreg(hw, RFPGA0_IQK, MASKDWORD, 0x00000000);
 	/* Check failed */
-	reg_eac = rtl_get_bbreg(hw, RRx_Power_After_IQK_A_2, MASKDWORD);
-	reg_e94 = rtl_get_bbreg(hw, RTx_Power_Before_IQK_A, MASKDWORD);
-	reg_e9c = rtl_get_bbreg(hw, RTx_Power_After_IQK_A, MASKDWORD);
+	reg_eac = rtl_get_bbreg(hw, RRX_POWER_AFTER_IQK_A_2, MASKDWORD);
+	reg_e94 = rtl_get_bbreg(hw, RTX_POWER_BEFORE_IQK_A, MASKDWORD);
+	reg_e9c = rtl_get_bbreg(hw, RTX_POWER_AFTER_IQK_A, MASKDWORD);
 
 	if (!(reg_eac & BIT(28)) &&
 	    (((reg_e94 & 0x03FF0000) >> 16) != 0x142) &&
@@ -2259,7 +2259,7 @@ static u8 _rtl8723be_phy_path_b_rx_iqk(struct ieee80211_hw *hw)
 
 	u32tmp = 0x80007C00 | (reg_e94 & 0x3FF0000)  |
 		 ((reg_e9c & 0x3FF0000) >> 16);
-	rtl_set_bbreg(hw, RTx_IQK, MASKDWORD, u32tmp);
+	rtl_set_bbreg(hw, RTX_IQK, MASKDWORD, u32tmp);
 
 	/* 1 RX IQK */
 
@@ -2279,32 +2279,32 @@ static u8 _rtl8723be_phy_path_b_rx_iqk(struct ieee80211_hw *hw)
 	rtl_set_bbreg(hw, RRx_IQK, MASKDWORD, 0x01004800);
 
 	/* path-B IQK setting */
-	rtl_set_bbreg(hw, RTx_IQK_Tone_A, MASKDWORD, 0x38008c1c);
+	rtl_set_bbreg(hw, RTX_IQK_TONE_A, MASKDWORD, 0x38008c1c);
 	rtl_set_bbreg(hw, RRx_IQK_Tone_A, MASKDWORD, 0x18008c1c);
-	rtl_set_bbreg(hw, RTx_IQK_Tone_B, MASKDWORD, 0x38008c1c);
+	rtl_set_bbreg(hw, RTX_IQK_Tone_B, MASKDWORD, 0x38008c1c);
 	rtl_set_bbreg(hw, RRx_IQK_Tone_B, MASKDWORD, 0x38008c1c);
 
-	rtl_set_bbreg(hw, RTx_IQK_PI_A, MASKDWORD, 0x82110000);
+	rtl_set_bbreg(hw, RTX_IQK_PI_A, MASKDWORD, 0x82110000);
 	rtl_set_bbreg(hw, RRx_IQK_PI_A, MASKDWORD, 0x2816001f);
-	rtl_set_bbreg(hw, RTx_IQK_PI_B, MASKDWORD, 0x82110000);
+	rtl_set_bbreg(hw, RTX_IQK_PI_B, MASKDWORD, 0x82110000);
 	rtl_set_bbreg(hw, RRx_IQK_PI_B, MASKDWORD, 0x28110000);
 
 	/* LO calibration setting */
-	rtl_set_bbreg(hw, RIQK_AGC_Rsp, MASKDWORD, 0x0046a8d1);
+	rtl_set_bbreg(hw, RIQK_AGC_RSP, MASKDWORD, 0x0046a8d1);
 	/* enter IQK mode */
 	rtl_set_bbreg(hw, RFPGA0_IQK, MASKDWORD, 0x80800000);
 
 	/* One shot, path B LOK & IQK */
-	rtl_set_bbreg(hw, RIQK_AGC_Pts, MASKDWORD, 0xf9000000);
-	rtl_set_bbreg(hw, RIQK_AGC_Pts, MASKDWORD, 0xf8000000);
+	rtl_set_bbreg(hw, RIQK_AGC_PTS, MASKDWORD, 0xf9000000);
+	rtl_set_bbreg(hw, RIQK_AGC_PTS, MASKDWORD, 0xf8000000);
 
 	mdelay(IQK_DELAY_TIME);
 
 	/* leave IQK mode */
 	rtl_set_bbreg(hw, RFPGA0_IQK, MASKDWORD, 0x00000000);
 	/* Check failed */
-	reg_eac = rtl_get_bbreg(hw, RRx_Power_After_IQK_A_2, MASKDWORD);
-	reg_ea4 = rtl_get_bbreg(hw, RRx_Power_Before_IQK_A_2, MASKDWORD);
+	reg_eac = rtl_get_bbreg(hw, RRX_POWER_AFTER_IQK_A_2, MASKDWORD);
+	reg_ea4 = rtl_get_bbreg(hw, RRX_POWER_BEFORE_IQK_A_2, MASKDWORD);
 
 	/* Allen 20131125 */
 	tmp = (reg_eac & 0x03FF0000) >> 16;
