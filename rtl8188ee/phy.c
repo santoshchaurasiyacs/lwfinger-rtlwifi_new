@@ -813,7 +813,7 @@ bool rtl88e_phy_config_rf_with_headerfile(struct ieee80211_hw *hw,
 			}
 		}
 
-		if (rtlhal->oem_id == RT_CID_819x_HP)
+		if (rtlhal->oem_id == RT_CID_819X_HP)
 			_rtl8188e_config_rf_radio_a(hw, 0x52, 0x7E4BD);
 
 		break;

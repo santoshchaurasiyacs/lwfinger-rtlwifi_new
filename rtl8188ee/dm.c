@@ -768,7 +768,7 @@ static void rtl88e_dm_pwdb_monitor(struct ieee80211_hw *hw)
 	static u64 last_record_rxok_cnt = 0;
 	long tmp_entry_max_pwdb = 0, tmp_entry_min_pwdb = 0xff;
 
-	if (rtlhal->oem_id == RT_CID_819x_HP) {
+	if (rtlhal->oem_id == RT_CID_819X_HP) {
 		u64 cur_txok_cnt = 0;
 		u64 cur_rxok_cnt = 0;
 		cur_txok_cnt = rtlpriv->stats.txbytesunicast -
