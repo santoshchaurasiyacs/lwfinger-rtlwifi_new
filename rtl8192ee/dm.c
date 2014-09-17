@@ -949,11 +949,11 @@ static void rtl92ee_dm_init_txpower_tracking(struct ieee80211_hw *hw)
 	dm->default_ofdm_index = 30;
 	dm->default_cck_index = 20;
 
-	dm->bb_swing_idx_cck_base = dm->default_cck_index;
+	dm->swing_idx_cck_base = dm->default_cck_index;
 	dm->cck_index = dm->default_cck_index;
 
 	for (path = RF90_PATH_A; path < MAX_RF_PATH; path++) {
-		dm->bb_swing_idx_ofdm_base[path] = dm->default_ofdm_index;
+		dm->swing_idx_ofdm_base[path] = dm->default_ofdm_index;
 		dm->ofdm_index[path] = dm->default_ofdm_index;
 		dm->delta_power_index[path] = 0;
 		dm->delta_power_index_last[path] = 0;

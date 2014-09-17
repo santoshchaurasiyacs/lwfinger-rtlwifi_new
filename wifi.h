@@ -1626,17 +1626,17 @@ struct rtl_dm {
 	u8 tx_rate;
 
 	/*88e tx power tracking*/
-	u8 bb_swing_idx_ofdm[2];
-	u8 bb_swing_idx_ofdm_current;
-	u8 bb_swing_idx_ofdm_base[MAX_RF_PATH];
-	bool bb_swing_flag_Ofdm;
-	u8 bb_swing_idx_cck;
-	u8 bb_swing_idx_cck_current;
-	u8 bb_swing_idx_cck_base;
-	bool bb_swing_flag_cck;
+	u8 swing_idx_ofdm[2];
+	u8 swing_idx_ofdm_current;
+	u8 swing_idx_ofdm_base[MAX_RF_PATH];
+	bool swing_flag_Ofdm;
+	u8 swing_idx_cck;
+	u8 swing_idx_cck_current;
+	u8 swing_idx_cck_base;
+	bool swing_flag_cck;
 
-	char bb_swing_diff_2g;
-	char bb_swing_diff_5g;
+	char swing_diff_2g;
+	char swing_diff_5g;
 
 	/* DMSP */
 	bool supp_phymode_switch;
