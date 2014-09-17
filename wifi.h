@@ -1107,12 +1107,12 @@ struct rtl_p2p_ps_info {
 };
 
 struct p2p_ps_offload_t {
-	u8 Offload_En:1;
+	u8 offload_en:1;
 	u8 role:1; /* 1: Owner, 0: Client */
-	u8 CTWindow_En:1;
-	u8 NoA0_En:1;
-	u8 NoA1_En:1;
-	u8 AllStaSleep:1;
+	u8 ctwindow_en:1;
+	u8 noa0_en:1;
+	u8 noa1_en:1;
+	u8 allstasleep:1;
 	u8 discovery:1;
 	u8 reserved:1;
 };

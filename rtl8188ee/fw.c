@@ -787,7 +787,7 @@ void rtl88e_set_p2p_ps_offload_cmd(struct ieee80211_hw *hw, u8 p2p_ps_state)
 			RT_TRACE(rtlpriv, COMP_FW, DBG_LOUD, "P2P_PS_ENABLE\n");
 			/* update CTWindow value. */
 			if (p2pinfo->ctwindow > 0) {
-				p2p_ps_offload->CTWindow_En = 1;
+				p2p_ps_offload->ctwindow_en = 1;
 				ctwindow = p2pinfo->ctwindow;
 				rtl88e_set_p2p_ctw_period_cmd(hw, ctwindow);
 			}
@@ -798,9 +798,9 @@ void rtl88e_set_p2p_ps_offload_cmd(struct ieee80211_hw *hw, u8 p2p_ps_state)
 				setting for which NOA*/
 				rtl_write_byte(rtlpriv, 0x5cf, (i << 4));
 				if (i == 0)
-					p2p_ps_offload->NoA0_En = 1;
+					p2p_ps_offload->noa0_en = 1;
 				else
-					p2p_ps_offload->NoA1_En = 1;
+					p2p_ps_offload->noa1_en = 1;
 
 				/* config P2P NoA Descriptor Register */
 				rtl_write_dword(rtlpriv,
@@ -829,11 +829,11 @@ void rtl88e_set_p2p_ps_offload_cmd(struct ieee80211_hw *hw, u8 p2p_ps_state)
 				/* rst p2p circuit */
 				rtl_write_byte(rtlpriv, REG_DUAL_TSF_RST, BIT(4));
 
-				p2p_ps_offload->Offload_En = 1;
+				p2p_ps_offload->offload_en = 1;
 
 				if (P2P_ROLE_GO == rtlpriv->mac80211.p2p) {
 					p2p_ps_offload->role = 1;
-					p2p_ps_offload->AllStaSleep = 0;
+					p2p_ps_offload->allstasleep = 0;
 				} else {
 					p2p_ps_offload->role = 0;
 				}
