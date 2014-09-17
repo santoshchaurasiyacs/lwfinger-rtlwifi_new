@@ -900,7 +900,7 @@ static bool _rtl88ee_init_mac(struct ieee80211_hw *hw)
 	rtl_write_byte(rtlpriv, REG_RSV_CTRL, 0x00);
 	/* HW Power on sequence */
 	if (!rtl_hal_pwrseqcmdparsing(rtlpriv, PWR_CUT_ALL_MSK, PWR_FAB_ALL_MSK,
-		PWR_INTF_PCI_MSK, Rtl8188E_NIC_ENABLE_FLOW)){
+		PWR_INTF_PCI_MSK, RTL8188E_NIC_ENABLE_FLOW)){
 		RT_TRACE(rtlpriv, COMP_INIT, DBG_LOUD,
 			"init MAC Fail as rtl_hal_pwrseqcmdparsing\n");
 		return false;
@@ -1156,11 +1156,11 @@ void rtl88ee_enable_hw_security_config(struct ieee80211_hw *hw)
 		return;
 	}
 
-	sec_reg_value = SCR_TxEncEnable | SCR_RxDecEnable;
+	sec_reg_value = SCR_TXENCENABLE | SCR_RXDECENABLE;
 
 	if (rtlpriv->sec.use_defaultkey) {
-		sec_reg_value |= SCR_TxUseDK;
-		sec_reg_value |= SCR_RxUseDK;
+		sec_reg_value |= SCR_TXUSEDK;
+		sec_reg_value |= SCR_RXUSEDK;
 	}
 
 	sec_reg_value |= (SCR_RXBCUSEDK | SCR_TXBCUSEDK);
@@ -1541,7 +1541,7 @@ static void _rtl88ee_poweroff_adapter(struct ieee80211_hw *hw)
 
 	rtl_hal_pwrseqcmdparsing(rtlpriv,
 		PWR_CUT_ALL_MSK, PWR_FAB_ALL_MSK,
-		PWR_INTF_PCI_MSK, Rtl8188E_NIC_LPS_ENTER_FLOW);
+		PWR_INTF_PCI_MSK, RTL8188E_NIC_LPS_ENTER_FLOW);
 
 	rtl_write_byte(rtlpriv, REG_RF_CTRL, 0x00);
 
@@ -1558,7 +1558,7 @@ static void _rtl88ee_poweroff_adapter(struct ieee80211_hw *hw)
 	rtl_write_byte(rtlpriv, REG_32K_CTRL, (u1b_tmp & (~BIT(0))));
 
 	rtl_hal_pwrseqcmdparsing(rtlpriv, PWR_CUT_ALL_MSK, PWR_FAB_ALL_MSK,
-		PWR_INTF_PCI_MSK, Rtl8188E_NIC_DISABLE_FLOW);
+		PWR_INTF_PCI_MSK, RTL8188E_NIC_DISABLE_FLOW);
 
 	u1b_tmp = rtl_read_byte(rtlpriv, REG_RSV_CTRL+1);
 	rtl_write_byte(rtlpriv, REG_RSV_CTRL+1, (u1b_tmp & (~BIT(3))));
@@ -1904,7 +1904,7 @@ static void _rtl88ee_read_txpower_info_from_hwpg(struct ieee80211_hw *hw,
 		}
 
 		for (i = 0; i < 14; i++) {
-			RTPRINT(rtlpriv, FINIT, INIT_TxPower,
+			RTPRINT(rtlpriv, FINIT, INIT_TXPOWER,
 				"RF(%d)-Ch(%d) [CCK / HT40_1S ] = [0x%x / 0x%x ]\n",
 				rf_path, i,
 				rtlefuse->txpwrlevel_cck[rf_path][i],
@@ -1923,7 +1923,7 @@ static void _rtl88ee_read_txpower_info_from_hwpg(struct ieee80211_hw *hw,
 	}
 
 	rtlefuse->thermalmeter[0] = rtlefuse->eeprom_thermalmeter;
-	RTPRINT(rtlpriv, FINIT, INIT_TxPower,
+	RTPRINT(rtlpriv, FINIT, INIT_TXPOWER,
 		"thermalmeter = 0x%x\n", rtlefuse->eeprom_thermalmeter);
 
 	if (!autoload_fail) {
@@ -1934,7 +1934,7 @@ static void _rtl88ee_read_txpower_info_from_hwpg(struct ieee80211_hw *hw,
 	} else {
 		rtlefuse->eeprom_regulatory = 0;
 	}
-	RTPRINT(rtlpriv, FINIT, INIT_TxPower,
+	RTPRINT(rtlpriv, FINIT, INIT_TXPOWER,
 	"eeprom_regulatory = 0x%x\n", rtlefuse->eeprom_regulatory);
 }
 

@@ -1223,12 +1223,12 @@
 #define RXERR_RPT_RST				BIT(27)
 #define _RXERR_RPT_SEL(type)			((type) << 28)
 
-#define	SCR_TxUseDK				BIT(0)
-#define	SCR_RxUseDK				BIT(1)
-#define	SCR_TxEncEnable				BIT(2)
-#define	SCR_RxDecEnable				BIT(3)
-#define	SCR_SKByA2				BIT(4)
-#define	SCR_NoSKMC				BIT(5)
+#define	SCR_TXUSEDK				BIT(0)
+#define	SCR_RXUSEDK				BIT(1)
+#define	SCR_TXENCENABLE				BIT(2)
+#define	SCR_RXDECENABLE				BIT(3)
+#define	SCR_SKBYA2				BIT(4)
+#define	SCR_NOSKMC				BIT(5)
 #define SCR_TXBCUSEDK				BIT(6)
 #define SCR_RXBCUSEDK				BIT(7)
 

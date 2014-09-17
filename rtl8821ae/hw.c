@@ -1234,11 +1234,11 @@ void rtl8821ae_enable_hw_security_config(struct ieee80211_hw *hw)
 		return;
 	}
 
-	sec_reg_value = SCR_TxEncEnable | SCR_RxDecEnable;
+	sec_reg_value = SCR_TXENCENABLE | SCR_RXDECENABLE;
 
 	if (rtlpriv->sec.use_defaultkey) {
-		sec_reg_value |= SCR_TxUseDK;
-		sec_reg_value |= SCR_RxUseDK;
+		sec_reg_value |= SCR_TXUSEDK;
+		sec_reg_value |= SCR_RXUSEDK;
 	}
 
 	sec_reg_value |= (SCR_RXBCUSEDK | SCR_TXBCUSEDK);
@@ -2933,7 +2933,7 @@ static void _rtl8812ae_read_txpower_info_from_hwpg(struct ieee80211_hw *hw,
 		rtlefuse->eeprom_regulatory = 0;
 	}
 
-	RTPRINT(rtlpriv, FINIT, INIT_TxPower,
+	RTPRINT(rtlpriv, FINIT, INIT_TXPOWER,
 	"eeprom_regulatory = 0x%x\n", rtlefuse->eeprom_regulatory);
 }
 #endif
@@ -3020,7 +3020,7 @@ static void _rtl8821ae_read_txpower_info_from_hwpg(struct ieee80211_hw *hw,
 		rtlefuse->eeprom_regulatory = 0;
 	}
 
-	RTPRINT(rtlpriv, FINIT, INIT_TxPower,
+	RTPRINT(rtlpriv, FINIT, INIT_TXPOWER,
 	"eeprom_regulatory = 0x%x\n", rtlefuse->eeprom_regulatory);
 }
 
