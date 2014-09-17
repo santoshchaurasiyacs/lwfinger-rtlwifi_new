@@ -337,7 +337,7 @@ static void rtl92d_dm_find_minimum_rssi(struct ieee80211_hw *hw)
 	struct rtl_dig *rtl_dm_dig = &(rtlpriv->dm.dm_digtable);
 	struct rtl_mac *mac = rtl_mac(rtlpriv);
 	long rssi_val_min_back_for_mac0 = 0;
-	bool b_getvalue_from_buddy = _rtl92d_dualmac_getparameter_from_buddy(hw);
+	bool getvalue_from_buddy = _rtl92d_dualmac_getparameter_from_buddy(hw);
 	bool brestore_rssi = false;
 	struct rtl_priv *buddy_priv = rtlpriv->buddy_priv;
 
@@ -380,7 +380,7 @@ static void rtl92d_dm_find_minimum_rssi(struct ieee80211_hw *hw)
 					buddy_priv->dmsp_ctl.rssivalmin_for_anothermacofdmsp =
 						rtl_dm_dig->min_undecorated_pwdb_for_dm;
 				} else {
-					if (b_getvalue_from_buddy) {
+					if (getvalue_from_buddy) {
 						RT_TRACE(rtlpriv, COMP_EASY_CONCURRENT, DBG_LOUD,
 							"get new RSSI\n");
 						brestore_rssi = true;
@@ -999,7 +999,7 @@ static void rtl92d_dm_pwdb_monitor(struct ieee80211_hw *hw)
 void rtl92d_dm_init_edca_turbo(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
-	rtlpriv->dm.bcurrent_turbo_edca = false;
+	rtlpriv->dm.current_turbo_edca = false;
 	rtlpriv->dm.is_any_nonbepkts = false;
 	rtlpriv->dm.is_cur_rdlstate = false;
 }
@@ -1017,7 +1017,7 @@ static void rtl92d_dm_check_edca_turbo(struct ieee80211_hw *hw)
 	u32 edca_be_dl = 0x5ea42b;
 
 	if (mac->link_state != MAC80211_LINKED) {
-		rtlpriv->dm.bcurrent_turbo_edca = false;
+		rtlpriv->dm.current_turbo_edca = false;
 		goto dm_checkedcaturbo_exit;
 	}
 	/* (edca_be_ul & 0xffff0000) is always true
@@ -1044,23 +1044,23 @@ static void rtl92d_dm_check_edca_turbo(struct ieee80211_hw *hw)
 		cur_rxok_cnt = rtlpriv->stats.rxbytesunicast - last_rxok_cnt;
 		if (cur_rxok_cnt > 4 * cur_txok_cnt) {
 			if (!rtlpriv->dm.is_cur_rdlstate ||
-			    !rtlpriv->dm.bcurrent_turbo_edca) {
+			    !rtlpriv->dm.current_turbo_edca) {
 				rtl_write_dword(rtlpriv, REG_EDCA_BE_PARAM,	edca_be_dl);
 				rtlpriv->dm.is_cur_rdlstate = true;
 			}
 		} else {
 			if (rtlpriv->dm.is_cur_rdlstate ||
-			    !rtlpriv->dm.bcurrent_turbo_edca) {
+			    !rtlpriv->dm.current_turbo_edca) {
 				rtl_write_dword(rtlpriv, REG_EDCA_BE_PARAM, edca_be_ul);
 				rtlpriv->dm.is_cur_rdlstate = false;
 			}
 		}
-		rtlpriv->dm.bcurrent_turbo_edca = true;
+		rtlpriv->dm.current_turbo_edca = true;
 	} else {
-		if (rtlpriv->dm.bcurrent_turbo_edca) {
+		if (rtlpriv->dm.current_turbo_edca) {
 			u8 tmp = AC0_BE;
 			rtlpriv->cfg->ops->set_hw_reg(hw, HW_VAR_AC_PARAM, (u8 *) (&tmp));
-			rtlpriv->dm.bcurrent_turbo_edca = false;
+			rtlpriv->dm.current_turbo_edca = false;
 		}
 	}
 
@@ -1572,70 +1572,70 @@ static bool _rtl92d_dm_dual_mac_check_switch_to_dmsp(struct ieee80211_hw *hw)
 	struct rtl_hal *rtlhal = rtl_hal(rtlpriv);
 	struct rtl_priv *buddy_priv = rtlpriv->buddy_priv;
 	struct ieee80211_hw *buddy_hw = NULL;
-	bool b_need_to_change = true;
+	bool need_to_change = true;
 
 	if (buddy_priv == NULL) {
 		/* SMSP */
-		b_need_to_change = false;
+		need_to_change = false;
 		RT_TRACE(rtlpriv, COMP_EASY_CONCURRENT, DBG_LOUD,
 				"buddy is NULL\n");
-		return b_need_to_change;
+		return need_to_change;
 	} else {
 		buddy_hw = buddy_priv->mac80211.hw;
 		if (rtlhal->macphymode == DUALMAC_SINGLEPHY) {
 			/* DMSP */
-			b_need_to_change = false;
+			need_to_change = false;
 			RT_TRACE(rtlpriv, COMP_EASY_CONCURRENT, DBG_LOUD,
 				"DMSP\n");
-			return b_need_to_change;
+			return need_to_change;
 		}
 
 		if (rtlpriv->rtlhal.interfaceindex == 1) {
 			/* MAC 1 */
-			b_need_to_change = false;
+			need_to_change = false;
 			RT_TRACE(rtlpriv, COMP_EASY_CONCURRENT, DBG_LOUD,
 				"MAC 1\n");
-			return b_need_to_change;
+			return need_to_change;
 		}
 
 		if ((rtlpriv->rtlhal.being_init_adapter) ||
 			(buddy_priv->rtlhal.being_init_adapter)) {
 			/* hw is not ready */
-			b_need_to_change = false;
+			need_to_change = false;
 			RT_TRACE(rtlpriv, COMP_EASY_CONCURRENT, DBG_LOUD,
 				"Initialization is on going\n");
-			return b_need_to_change;
+			return need_to_change;
 		}
 
 		if ((!rtlpriv->rtlhal.bbrf_ready) ||
 			(!buddy_priv->rtlhal.bbrf_ready)) {
 			/* hw is not ready */
-			b_need_to_change = false;
+			need_to_change = false;
 			RT_TRACE(rtlpriv, COMP_EASY_CONCURRENT, DBG_LOUD,
 				"bb rf not ready\n");
-			return b_need_to_change;
+			return need_to_change;
 		}
 
 		if ((rtlpriv->mac80211.link_state == MAC80211_LINKING) ||
 			(buddy_priv->mac80211.link_state == MAC80211_LINKING)) {
 			/* Link In process */
-			b_need_to_change = false;
+			need_to_change = false;
 			RT_TRACE(rtlpriv, COMP_EASY_CONCURRENT, DBG_LOUD,
 				"Link has been in Progress\n");
-			return b_need_to_change;
+			return need_to_change;
 		}
 
 		if ((rtlpriv->mac80211.act_scanning) ||
 			(buddy_priv->mac80211.act_scanning)) {
 			/* Scan In process */
-			b_need_to_change = false;
+			need_to_change = false;
 			RT_TRACE(rtlpriv, COMP_EASY_CONCURRENT, DBG_LOUD,
 				"Scan In Progress\n");
-			return b_need_to_change;
+			return need_to_change;
 		}
 	}
 
-	return b_need_to_change;
+	return need_to_change;
 }
 
 static void rtl92d_dm_easy_concurrent_switch_to_dmsp(struct ieee80211_hw *hw)
@@ -1647,20 +1647,20 @@ static void rtl92d_dm_easy_concurrent_switch_to_dmsp(struct ieee80211_hw *hw)
 	struct ieee80211_sta *sta = NULL;
 	struct rtl_sta_info *sta_entry = NULL;
 	bool bschedule_workitem = false;
-	bool b_buddy_linked = false;
-	bool b_change_to_dmsp = false;
+	bool buddy_linked = false;
+	bool change_to_dmsp = false;
 	static int switch_count;
 	if (!rtlpriv->dm.supp_phymode_switch)
 		return;
 	if (rtlpriv->mac80211.opmode == NL80211_IFTYPE_ADHOC)
 		return;
-	b_change_to_dmsp = _rtl92d_dm_dual_mac_check_switch_to_dmsp(hw);
+	change_to_dmsp = _rtl92d_dm_dual_mac_check_switch_to_dmsp(hw);
 	RT_TRACE(rtlpriv, COMP_EASY_CONCURRENT, DBG_LOUD,
 		"rtlhal->macphymode %x \n", rtlhal->macphymode);
 	if (buddy_priv)
 		buddy_hw = buddy_priv->mac80211.hw;
 
-	if (!b_change_to_dmsp) {
+	if (!change_to_dmsp) {
 		RT_TRACE(rtlpriv, COMP_EASY_CONCURRENT, DBG_LOUD,
 			"Skip change To DMSP return\n");
 
@@ -1700,7 +1700,7 @@ static void rtl92d_dm_easy_concurrent_switch_to_dmsp(struct ieee80211_hw *hw)
 				} else {
 					sta = rtl_find_sta(buddy_priv->mac80211.hw,
 						buddy_priv->mac80211.bssid);
-					b_buddy_linked = true;
+					buddy_linked = true;
 
 				}
 				if (sta) {
@@ -1710,7 +1710,7 @@ static void rtl92d_dm_easy_concurrent_switch_to_dmsp(struct ieee80211_hw *hw)
 				rtlpriv->easy_concurrent_ctl.change_to_dmsp = true;
 				rtl_dualmac_easyconcurrent(hw);
 				if (sta) {
-					if (b_buddy_linked) {
+					if (buddy_linked) {
 						if (sta->ht_cap.ht_supported)
 							rtl_send_smps_action(buddy_hw, sta, IEEE80211_SMPS_OFF);
 					} else {

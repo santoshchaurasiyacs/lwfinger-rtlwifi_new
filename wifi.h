@@ -1571,12 +1571,11 @@ struct dm_phy_dbg_info {
 struct rtl_dm {
 	/*PHY status for DM */
 	long entry_min_undec_sm_pwdb;
-	long undec_sm_cck;
 	long undec_sm_pwdb;	/*out dm */
 	long entry_max_undec_sm_pwdb;
 	bool dm_initialgain_enable;
 	bool dynamic_txpower_enable;
-	bool bcurrent_turbo_edca;
+	bool current_turbo_edca;
 	bool is_any_nonbepkts;	/*out dm */
 	bool is_cur_rdlstate;
 	bool txpower_trackinginit;
@@ -2298,34 +2297,32 @@ struct ps_t {
 };
 
 struct dig_t {
+
+	long rssi_val;
+	u32 rssi_max;
+	u8 rssi_val_min;
+	u32 antdiv_rssi_max;
 	u32 rssi_lowthresh;
 	u32 rssi_highthresh;
-	u32 fa_lowthresh;
-	u32 fa_highthresh;
-	long last_min_undec_pwdb_for_dm;
 	long rssi_highpower_lowthresh;
 	long rssi_highpower_highthresh;
+
+
+	u32 fa_lowthresh;
+	u32 fa_highthresh;
+	u8 large_fa_hit;
+	u8 forbidden_igi;
 	u32 recover_cnt;
+	u8 bt30_cur_igi;
+	bool media_connect_0;
+	bool media_connect_1;
+
+	
+
+	u8 pre_sta_cstate;	
+	u8 cur_sta_cstate;
 	u32 pre_igvalue;
 	u32 cur_igvalue;
-	long rssi_val;
-	u8 dig_enable_flag;
-	u8 dig_ext_port_stage;
-	u8 dig_algorithm;
-	u8 dig_twoport_algorithm;
-	u8 dig_dbgmode;
-	u8 dig_slgorithm_switch;
-	u8 cursta_cstate;
-	u8 presta_cstate;
-	u8 curmultista_cstate;
-	u8 stop_dig;
-	u8 back_val;
-	u8 back_range_max;
-	s8 back_range_min;
-	u8 rx_gain_max;
-	u8 rx_gain_min;
-	u8 min_undec_pwdb_for_dm;
-	u8 rssi_val_min;
 	u8 pre_cck_cca_thres;
 	u8 cur_cck_cca_thres;
 	u8 pre_cck_pd_state;
@@ -2334,29 +2331,44 @@ struct dig_t {
 	u8 cur_cck_fa_state;
 	u8 pre_ccastate;
 	u8 cur_ccasate;
-	u8 large_fa_hit;
-	u8 dig_dynamic_min_0;
-	u8 dig_dynamic_min_1;
-	u8 forbidden_igi;
+	u8 pre_ap_cstate;
+	u8 cur_ap_cstate;
+	u8 pre_pd_thstate;
+	u8 cur_pd_thstate;
+	u8 pre_cs_ratiostate;
+	u8 cur_cs_ratiostate;
+	u8 curmultista_cstate;
+
+
+
+	u8 stop_dig;
+	u8 dig_enable_flag;
+	u8 dig_ext_port_stage;
+	u8 dig_algorithm;
+	u8 dig_twoport_algorithm;
+	u8 dig_dbgmode;
+	u8 dig_slgorithm_switch;
 	u8 dig_state;
 	u8 dig_highpwrstate;
-	u8 cur_sta_cstate;
-	u8 pre_sta_cstate;
-	u8 cur_ap_cstate;
-	u8 pre_ap_cstate;
-	u8 cur_pd_thstate;
-	u8 pre_pd_thstate;
-	u8 cur_cs_ratiostate;
-	u8 pre_cs_ratiostate;
-	u8 backoff_enable_flag;
 	u8 dig_min_0;
 	u8 dig_min_1;
-	u8 bt30_cur_igi;
-	bool media_connect_0;
-	bool media_connect_1;
+	u8 dig_dynamic_min_0;
+	u8 dig_dynamic_min_1;
 
-	u32 antdiv_rssi_max;
-	u32 rssi_max;
+
+
+	
+
+	u8 backoff_enable_flag;
+	u8 back_val;
+	u8 back_range_max;
+	s8 back_range_min;
+
+	u8 rx_gain_max;
+	u8 rx_gain_min;
+
+	u8 min_undec_pwdb_for_dm;
+	long last_min_undec_pwdb_for_dm;
 };
 
 struct rtl_global_var {

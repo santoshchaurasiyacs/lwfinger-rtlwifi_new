@@ -216,7 +216,7 @@ static void _rtl92ce_query_rxphystatus(struct ieee80211_hw *hw,
 			struct rtl_stats *pstatus, u8 *pdesc,
 			struct rx_fwinfo_92c *p_drvinfo,
 			bool bpacket_match_bssid,
-			bool bpacket_toself, bool packet_beacon)
+			bool packet_toself, bool packet_beacon)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_ps_ctl *ppsc = rtl_psc(rtlpriv);
@@ -229,7 +229,7 @@ static void _rtl92ce_query_rxphystatus(struct ieee80211_hw *hw,
 
 	/* Record it for next packet processing */
 	pstatus->packet_matchbssid = bpacket_match_bssid;
-	pstatus->packet_toself = bpacket_toself;
+	pstatus->packet_toself = packet_toself;
 	pstatus->packet_beacon = packet_beacon;
 	pstatus->rx_mimo_signalquality[0] = -1;
 	pstatus->rx_mimo_signalquality[1] = -1;

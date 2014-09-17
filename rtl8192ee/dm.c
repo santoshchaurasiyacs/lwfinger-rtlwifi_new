@@ -627,7 +627,7 @@ void rtl92ee_dm_init_edca_turbo(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 
-	rtlpriv->dm.bcurrent_turbo_edca = false;
+	rtlpriv->dm.current_turbo_edca = false;
 	rtlpriv->dm.is_cur_rdlstate = false;
 	rtlpriv->dm.is_any_nonbepkts = false;
 }
@@ -644,7 +644,7 @@ static void rtl92ee_dm_check_edca_turbo(struct ieee80211_hw *hw)
 	u32 edca_be_dl = 0x5ea42b; /*not sure*/
 	u32 edca_be = 0x5ea42b;
 	bool is_cur_rdlstate;
-	bool b_edca_turbo_on = false;
+	bool edca_turbo_on = false;
 
 	if (rtlpriv->dm.dbginfo.num_non_be_pkt > 0x100)
 		rtlpriv->dm.is_any_nonbepkts = true;
@@ -654,28 +654,28 @@ static void rtl92ee_dm_check_edca_turbo(struct ieee80211_hw *hw)
 	cur_rxok_cnt = rtlpriv->stats.rxbytesunicast - last_rxok_cnt;
 
 	/*b_bias_on_rx = false;*/
-	b_edca_turbo_on = ((!rtlpriv->dm.is_any_nonbepkts) &&
+	edca_turbo_on = ((!rtlpriv->dm.is_any_nonbepkts) &&
 			   (!rtlpriv->dm.disable_framebursting)) ?
 			  true : false;
 
 	if (rtl92ee_dm_is_edca_turbo_disable(hw))
 		goto dm_CheckEdcaTurbo_EXIT;
 
-	if (b_edca_turbo_on) {
+	if (edca_turbo_on) {
 		is_cur_rdlstate = (cur_rxok_cnt > cur_txok_cnt * 4) ?
 				    true : false;
 
 		edca_be = is_cur_rdlstate ? edca_be_dl : edca_be_ul;
 		rtl_write_dword(rtlpriv , REG_EDCA_BE_PARAM , edca_be);
 		rtlpriv->dm.is_cur_rdlstate = is_cur_rdlstate;
-		rtlpriv->dm.bcurrent_turbo_edca = true;
+		rtlpriv->dm.current_turbo_edca = true;
 	} else {
-		if (rtlpriv->dm.bcurrent_turbo_edca) {
+		if (rtlpriv->dm.current_turbo_edca) {
 			u8 tmp = AC0_BE;
 			rtlpriv->cfg->ops->set_hw_reg(hw, HW_VAR_AC_PARAM,
 						      (u8 *) (&tmp));
 		}
-		rtlpriv->dm.bcurrent_turbo_edca = false;
+		rtlpriv->dm.current_turbo_edca = false;
 	}
 
 dm_CheckEdcaTurbo_EXIT:

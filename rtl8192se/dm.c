@@ -82,7 +82,7 @@ static void _rtl92s_dm_check_edca_turbo(struct ieee80211_hw *hw)
 	u32 edca_be_dl_gmode = edca_setting_dl_gmode[mac->vendor];
 
 	if (mac->link_state != MAC80211_LINKED) {
-		rtlpriv->dm.bcurrent_turbo_edca = false;
+		rtlpriv->dm.current_turbo_edca = false;
 		goto dm_checkedcaturbo_exit;
 	}
 
@@ -95,14 +95,14 @@ static void _rtl92s_dm_check_edca_turbo(struct ieee80211_hw *hw)
 			/* Uplink TP is present. */
 			if (cur_txok_cnt > 4 * cur_rxok_cnt) {
 				if (rtlpriv->dm.is_cur_rdlstate ||
-					!rtlpriv->dm.bcurrent_turbo_edca) {
+					!rtlpriv->dm.current_turbo_edca) {
 					rtl_write_dword(rtlpriv, EDCAPARA_BE,
 						edca_be_ul);
 					rtlpriv->dm.is_cur_rdlstate = false;
 				}
 			} else {/* Balance TP is present. */
 				if (!rtlpriv->dm.is_cur_rdlstate ||
-					!rtlpriv->dm.bcurrent_turbo_edca) {
+					!rtlpriv->dm.current_turbo_edca) {
 					if (mac->mode == WIRELESS_MODE_G ||
 						mac->mode == WIRELESS_MODE_B)
 						rtl_write_dword(rtlpriv,
@@ -113,11 +113,11 @@ static void _rtl92s_dm_check_edca_turbo(struct ieee80211_hw *hw)
 					rtlpriv->dm.is_cur_rdlstate = true;
 				}
 			}
-			rtlpriv->dm.bcurrent_turbo_edca = true;
+			rtlpriv->dm.current_turbo_edca = true;
 		} else {
 			if (cur_rxok_cnt > 4 * cur_txok_cnt) {
 				if (!rtlpriv->dm.is_cur_rdlstate ||
-					!rtlpriv->dm.bcurrent_turbo_edca) {
+					!rtlpriv->dm.current_turbo_edca) {
 					if (mac->mode == WIRELESS_MODE_G ||
 						mac->mode == WIRELESS_MODE_B)
 						rtl_write_dword(rtlpriv,
@@ -129,20 +129,20 @@ static void _rtl92s_dm_check_edca_turbo(struct ieee80211_hw *hw)
 				}
 			} else {
 				if (rtlpriv->dm.is_cur_rdlstate ||
-					!rtlpriv->dm.bcurrent_turbo_edca) {
+					!rtlpriv->dm.current_turbo_edca) {
 					rtl_write_dword(rtlpriv,
 						EDCAPARA_BE, edca_be_ul);
 					rtlpriv->dm.is_cur_rdlstate = false;
 				}
 			}
-			rtlpriv->dm.bcurrent_turbo_edca = true;
+			rtlpriv->dm.current_turbo_edca = true;
 		}
 	} else {
-		if (rtlpriv->dm.bcurrent_turbo_edca) {
+		if (rtlpriv->dm.current_turbo_edca) {
 			u8 tmp = AC0_BE;
 			rtlpriv->cfg->ops->set_hw_reg(hw,
 				HW_VAR_AC_PARAM, (u8 *)(&tmp));
-			rtlpriv->dm.bcurrent_turbo_edca = false;
+			rtlpriv->dm.current_turbo_edca = false;
 		}
 	}
 
@@ -373,7 +373,7 @@ void rtl92s_dm_init_edca_turbo(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 
-	rtlpriv->dm.bcurrent_turbo_edca = false;
+	rtlpriv->dm.current_turbo_edca = false;
 	rtlpriv->dm.is_any_nonbepkts = false;
 	rtlpriv->dm.is_cur_rdlstate = false;
 }
@@ -440,9 +440,9 @@ static void _rtl92s_dm_initial_gain_sta_beforeconnect(struct ieee80211_hw *hw)
 	static u8 initialized, force_write;
 	u8 initial_gain = 0;
 
-	if ((digtable->pre_sta_cstate == digtable->cursta_cstate) ||
-		(digtable->cursta_cstate == DIG_STA_BEFORE_CONNECT)) {
-		if (digtable->cursta_cstate == DIG_STA_BEFORE_CONNECT) {
+	if ((digtable->pre_sta_cstate == digtable->cur_sta_cstate) ||
+		(digtable->cur_sta_cstate == DIG_STA_BEFORE_CONNECT)) {
+		if (digtable->cur_sta_cstate == DIG_STA_BEFORE_CONNECT) {
 			if (rtlpriv->psc.rfpwr_state != ERFON)
 				return;
 
@@ -533,14 +533,14 @@ static void _rtl92s_dm_ctrl_initgain_bytwoport(struct ieee80211_hw *hw)
 	/* Decide the current status and if modify initial gain or not */
 	if (rtlpriv->mac80211.link_state >= MAC80211_LINKED ||
 		rtlpriv->mac80211.opmode == NL80211_IFTYPE_ADHOC)
-		digtable->cursta_cstate = DIG_STA_CONNECT;
+		digtable->cur_sta_cstate = DIG_STA_CONNECT;
 	else
-		digtable->cursta_cstate = DIG_STA_DISCONNECT;
+		digtable->cur_sta_cstate = DIG_STA_DISCONNECT;
 
 	digtable->rssi_val = rtlpriv->dm.undec_sm_pwdb;
 
 	/* Change dig mode to rssi */
-	if (digtable->cursta_cstate != DIG_STA_DISCONNECT) {
+	if (digtable->cur_sta_cstate != DIG_STA_DISCONNECT) {
 		if (digtable->dig_twoport_algorithm == DIG_TWO_PORT_ALGO_FALSE_ALARM) {
 			digtable->dig_twoport_algorithm = DIG_TWO_PORT_ALGO_RSSI;
 			rtl92s_phy_set_fw_cmd(hw, FW_CMD_DIG_MODE_SS);
@@ -550,7 +550,7 @@ static void _rtl92s_dm_ctrl_initgain_bytwoport(struct ieee80211_hw *hw)
 	_rtl92s_dm_false_alarm_counter_statistics(hw);
 	_rtl92s_dm_initial_gain_sta_beforeconnect(hw);
 
-	digtable->pre_sta_cstate = digtable->cursta_cstate;
+	digtable->pre_sta_cstate = digtable->cur_sta_cstate;
 }
 
 static void	_rtl92s_dm_ctrl_initgain_byrssi(struct ieee80211_hw *hw)
@@ -667,7 +667,7 @@ static void _rtl92s_dm_init_dig(struct ieee80211_hw *hw)
 	digtable->dig_state = DM_STA_DIG_MAX;
 	digtable->dig_highpwrstate = DM_STA_DIG_MAX;
 
-	digtable->cursta_cstate = DIG_STA_DISCONNECT;
+	digtable->cur_sta_cstate = DIG_STA_DISCONNECT;
 	digtable->pre_sta_cstate = DIG_STA_DISCONNECT;
 	digtable->cur_ap_cstate = DIG_AP_DISCONNECT;
 	digtable->pre_ap_cstate = DIG_AP_DISCONNECT;

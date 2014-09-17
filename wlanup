@@ -6,6 +6,7 @@ insmod rtlwifi.ko
 insmod rtl_pci.ko
 insmod rtl_usb.ko
 insmod btcoexist/btcoexist.ko
+insmod rtl8192c/rtl8192c-common.ko
 insmod rtl8192ce/rtl8192ce.ko
 insmod rtl8192se/rtl8192se.ko
 insmod rtl8192de/rtl8192de.ko

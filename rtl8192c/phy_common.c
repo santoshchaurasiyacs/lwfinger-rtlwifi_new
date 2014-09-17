@@ -1022,7 +1022,7 @@ static u8 _rtl92c_phy_path_b_iqk(struct ieee80211_hw *hw)
 }
 
 static void _rtl92c_phy_path_a_fill_iqk_matrix(struct ieee80211_hw *hw,
-					       bool b_iqk_ok, long result[][8],
+					       bool iqk_ok, long result[][8],
 					       u8 final_candidate, bool btxonly)
 {
 	u32 oldval_0, x, tx0_a, reg;
@@ -1030,7 +1030,7 @@ static void _rtl92c_phy_path_a_fill_iqk_matrix(struct ieee80211_hw *hw,
 
 	if (final_candidate == 0xFF) {
 		return;
-	} else if (b_iqk_ok) {
+	} else if (iqk_ok) {
 		oldval_0 = (rtl_get_bbreg(hw, ROFDM0_XATXIQIMBALANCE,
 					  MASKDWORD) >> 22) & 0x3FF;
 		x = result[final_candidate][0];
@@ -1062,7 +1062,7 @@ static void _rtl92c_phy_path_a_fill_iqk_matrix(struct ieee80211_hw *hw,
 }
 
 static void _rtl92c_phy_path_b_fill_iqk_matrix(struct ieee80211_hw *hw,
-					       bool b_iqk_ok, long result[][8],
+					       bool iqk_ok, long result[][8],
 					       u8 final_candidate, bool btxonly)
 {
 	u32 oldval_1, x, tx1_a, reg;
@@ -1070,7 +1070,7 @@ static void _rtl92c_phy_path_b_fill_iqk_matrix(struct ieee80211_hw *hw,
 
 	if (final_candidate == 0xFF) {
 		return;
-	} else if (b_iqk_ok) {
+	} else if (iqk_ok) {
 		oldval_1 = (rtl_get_bbreg(hw, ROFDM0_XBTXIQIMBALANCE,
 					  MASKDWORD) >> 22) & 0x3FF;
 		x = result[final_candidate][4];
@@ -1763,7 +1763,7 @@ static void _rtl92c_phy_set_rfpath_switch(struct ieee80211_hw *hw,
 #undef IQK_ADDA_REG_NUM
 #undef IQK_DELAY_TIME
 
-void rtl92c_phy_iq_calibrate(struct ieee80211_hw *hw, bool b_recovery)
+void rtl92c_phy_iq_calibrate(struct ieee80211_hw *hw, bool recovery)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_phy *rtlphy = &(rtlpriv->phy);
@@ -1771,7 +1771,7 @@ void rtl92c_phy_iq_calibrate(struct ieee80211_hw *hw, bool b_recovery)
 
 	long result[4][8];
 	u8 i, final_candidate;
-	bool b_patha_ok, b_pathb_ok;
+	bool patha_ok, pathb_ok;
 	long reg_e94, reg_e9c, reg_ea4, reg_eac, reg_eb4, reg_ebc, reg_ec4,
 	    reg_ecc, reg_tmp = 0;
 	bool is12simular, is13simular, is23simular;
@@ -1788,7 +1788,7 @@ void rtl92c_phy_iq_calibrate(struct ieee80211_hw *hw, bool b_recovery)
 		ROFDM0_RXIQEXTANTA
 	};
 
-	if (b_recovery) {
+	if (recovery) {
 		_rtl92c_phy_reload_adda_registers(hw,
 						  iqk_bb_reg,
 						  rtlphy->iqk_bb_backup, 10);
@@ -1801,8 +1801,8 @@ void rtl92c_phy_iq_calibrate(struct ieee80211_hw *hw, bool b_recovery)
 		result[3][i] = 0;
 	}
 	final_candidate = 0xff;
-	b_patha_ok = false;
-	b_pathb_ok = false;
+	patha_ok = false;
+	pathb_ok = false;
 	is12simular = false;
 	is23simular = false;
 	is13simular = false;
@@ -1863,18 +1863,18 @@ void rtl92c_phy_iq_calibrate(struct ieee80211_hw *hw, bool b_recovery)
 		rtlphy->reg_ebc = reg_ebc = result[final_candidate][5];
 		reg_ec4 = result[final_candidate][6];
 		reg_ecc = result[final_candidate][7];
-		b_patha_ok = b_pathb_ok = true;
+		patha_ok = pathb_ok = true;
 	} else {
 		rtlphy->reg_e94 = rtlphy->reg_eb4 = 0x100;
 		rtlphy->reg_e9c = rtlphy->reg_ebc = 0x0;
 	}
 	if (reg_e94 != 0) /*&&(reg_ea4 != 0) */
-		_rtl92c_phy_path_a_fill_iqk_matrix(hw, b_patha_ok, result,
+		_rtl92c_phy_path_a_fill_iqk_matrix(hw, patha_ok, result,
 						   final_candidate,
 						   (reg_ea4 == 0));
 	if (IS_92C_SERIAL(rtlhal->version)) {
 		if (reg_eb4 != 0) /*&&(reg_ec4 != 0) */
-			_rtl92c_phy_path_b_fill_iqk_matrix(hw, b_pathb_ok,
+			_rtl92c_phy_path_b_fill_iqk_matrix(hw, pathb_ok,
 							   result,
 							   final_candidate,
 							   (reg_ec4 == 0));

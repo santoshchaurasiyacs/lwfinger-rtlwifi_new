@@ -606,7 +606,7 @@ static void rtl8821ae_dm_init_dynamic_txpower(struct ieee80211_hw *hw)
 void rtl8821ae_dm_init_edca_turbo(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
-	rtlpriv->dm.bcurrent_turbo_edca = false;
+	rtlpriv->dm.current_turbo_edca = false;
 	rtlpriv->dm.is_any_nonbepkts = false;
 	rtlpriv->dm.is_cur_rdlstate = false;
 }
@@ -3041,18 +3041,18 @@ static void rtl8821ae_dm_check_edca_turbo(struct ieee80211_hw *hw)
 		RT_TRACE(rtlpriv, COMP_TURBO, DBG_LOUD,
 			"EDCA Turbo on: EDCA_BE:0x%x\n", edca_be);
 
-		rtlpriv->dm.bcurrent_turbo_edca = true;
+		rtlpriv->dm.current_turbo_edca = true;
 
 		RT_TRACE(rtlpriv, COMP_TURBO, DBG_LOUD,
 			"EDCA_BE_DL : 0x%x  EDCA_BE_UL : 0x%x  EDCA_BE : 0x%x\n",
 			edca_be_dl, edca_be_ul, edca_be);
 	} else {
-		if (rtlpriv->dm.bcurrent_turbo_edca) {
+		if (rtlpriv->dm.current_turbo_edca) {
 			u8 tmp = AC0_BE;
 			rtlpriv->cfg->ops->set_hw_reg(hw, HW_VAR_AC_PARAM,
 						      (u8 *) (&tmp));
 		}
-		rtlpriv->dm.bcurrent_turbo_edca = false;
+		rtlpriv->dm.current_turbo_edca = false;
 	}
 
 	rtlpriv->dm.is_any_nonbepkts = false;

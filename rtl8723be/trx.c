@@ -216,8 +216,8 @@ static int _rtl8723be_rate_mapping(struct ieee80211_hw *hw,
 static void _rtl8723be_query_rxphystatus(struct ieee80211_hw *hw,
 					 struct rtl_stats *pstatus, u8 *pdesc,
 					 struct rx_fwinfo_8723be *p_drvinfo,
-					 bool bpacket_match_bssid,
-					 bool bpacket_toself,
+					 bool packet_match_bssid,
+					 bool packet_toself,
 					 bool packet_beacon)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
@@ -230,8 +230,8 @@ static void _rtl8723be_query_rxphystatus(struct ieee80211_hw *hw,
 	u8 lan_idx, vga_idx;
 
 	/* Record it for next packet processing */
-	pstatus->packet_matchbssid = bpacket_match_bssid;
-	pstatus->packet_toself = bpacket_toself;
+	pstatus->packet_matchbssid = packet_match_bssid;
+	pstatus->packet_toself = packet_toself;
 	pstatus->packet_beacon = packet_beacon;
 	pstatus->rx_mimo_signalquality[0] = -1;
 	pstatus->rx_mimo_signalquality[1] = -1;
@@ -279,7 +279,7 @@ static void _rtl8723be_query_rxphystatus(struct ieee80211_hw *hw,
 		pstatus->recvsignalpower = rx_pwr_all;
 
 		/* (3) Get Signal Quality (EVM) */
-		if (bpacket_match_bssid) {
+		if (packet_match_bssid) {
 			u8 sq, sq_rpt;
 			if (pstatus->rx_pwdb_all > 40) {
 				sq = 100;
@@ -337,7 +337,7 @@ static void _rtl8723be_query_rxphystatus(struct ieee80211_hw *hw,
 			evm = rtl_evm_db_to_percentage(
 						p_phystrpt->stream_rxevm[i]);
 
-			if (bpacket_match_bssid) {
+			if (packet_match_bssid) {
 				/* Fill value in RFD, Get the first
 				 * spatial stream only */
 				if (i == 0)
@@ -348,7 +348,7 @@ static void _rtl8723be_query_rxphystatus(struct ieee80211_hw *hw,
 			}
 		}
 
-		if (bpacket_match_bssid) {
+		if (packet_match_bssid) {
 			for (i = RF90_PATH_A; i <= RF90_PATH_B; i++)
 				rtl_priv(hw)->dm.cfo_tail[i] =
 					(int)p_phystrpt->path_cfotail[i];
