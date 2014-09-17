@@ -616,7 +616,7 @@ enum rtl_var_map {
 	RTL_IMR_TIMEOUT1,	/*Timeout interrupt 1 */
 	RTL_IMR_TXFOVW,		/*Transmit FIFO Overflow */
 	RTL_IMR_PSTIMEOUT,	/*Power save time out interrupt */
-	RTL_IMR_BcnInt,		/*Beacon DMA Interrupt 0 */
+	RTL_IMR_BCNINT,		/*Beacon DMA Interrupt 0 */
 	RTL_IMR_RXFOVW,		/*Receive FIFO Overflow */
 	RTL_IMR_RDU,		/*Receive Descriptor Unavailable */
 	RTL_IMR_ATIMEND,	/*For 92C,ATIM Window End Interrupt */
@@ -632,7 +632,7 @@ enum rtl_var_map {
 	RTL_IMR_VODOK,		/*AC_VO DMA Interrupt */
 	RTL_IMR_ROK,		/*Receive DMA OK Interrupt */
 	RTL_IMR_HSISR_IND,  /*HSISR Interrupt*/
-	RTL_IBSS_INT_MASKS,	/*(RTL_IMR_BcnInt | RTL_IMR_TBDOK |
+	RTL_IBSS_INT_MASKS,	/*(RTL_IMR_BCNINT | RTL_IMR_TBDOK |
 				 * RTL_IMR_TBDER) */
 	RTL_IMR_C2HCMD,		/*fw interrupt*/
 
