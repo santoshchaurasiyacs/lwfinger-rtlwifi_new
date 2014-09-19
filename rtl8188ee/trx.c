@@ -739,7 +739,7 @@ void rtl88ee_tx_fill_desc(struct ieee80211_hw *hw,
 		}
 
 		ptcb_desc->use_driver_rate = true;
-		SET_TX_DESC_TX_RATE(pdesc, ptcb_desc->hw_rate);
+		SET_TX_DESC_TX_RATE(pdesc, rtlpriv->cfg->maps[RTL_RC_OFDM_RATE54M]);
 		if (ptcb_desc->hw_rate > DESC92C_RATEMCS0)
 			short_gi = (ptcb_desc->use_shortgi) ? 1 : 0;
 		else
