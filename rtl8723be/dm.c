@@ -406,7 +406,7 @@ static void rtl8723be_dm_check_rssi_monitor(struct ieee80211_hw *hw)
 			tmp_entry_max_pwdb =
 				drv_priv->rssi_stat.undec_sm_pwdb;
 		/*
-		h2c_parameter[2] = (u8) (rtlpriv->dm.undec_sm_pwdb
+		h2c_parameter[2] = (u8)(rtlpriv->dm.undec_sm_pwdb
 					& 0xFF);
 		h2c_parameter[1] = 0x20;
 		h2c_parameter[0] = drv_priv->rss;
@@ -438,7 +438,7 @@ static void rtl8723be_dm_check_rssi_monitor(struct ieee80211_hw *hw)
 	/* Indicate Rx signal strength to FW. */
 	if (rtlpriv->dm.useramask) {
 		h2c_parameter[2] =
-			(u8) (rtlpriv->dm.undec_sm_pwdb & 0xFF);
+			(u8)(rtlpriv->dm.undec_sm_pwdb & 0xFF);
 		h2c_parameter[1] = 0x20;
 		h2c_parameter[0] = 0;
 		rtl8723be_fill_h2c_cmd(hw, H2C_RSSIBE_REPORT, 3, h2c_parameter);
@@ -869,7 +869,7 @@ static void rtl8723be_dm_txpower_tracking_callback_thermalmeter(
 	RT_TRACE(rtlpriv, COMP_POWER_TRACKING, DBG_LOUD,
 		 "rtl8723be_dm_txpower_tracking_callback_thermalmeter\n");
 
-	thermalvalue = (u8) rtl_get_rfreg(hw,
+	thermalvalue = (u8)rtl_get_rfreg(hw,
 		RF90_PATH_A, RF_T_METER, 0xfc00);
 	if (!rtlpriv->dm.txpower_track_control || thermalvalue == 0 ||
 	    rtlefuse->eeprom_thermalmeter == 0xFF)
@@ -1160,7 +1160,7 @@ static void rtl8723be_dm_check_edca_turbo(struct ieee80211_hw *hw)
 		if (rtlpriv->dm.current_turbo_edca) {
 			u8 tmp = AC0_BE;
 			rtlpriv->cfg->ops->set_hw_reg(hw, HW_VAR_AC_PARAM,
-						      (u8 *) (&tmp));
+						      (u8 *)(&tmp));
 		}
 		rtlpriv->dm.current_turbo_edca = false;
 	}
@@ -1372,10 +1372,10 @@ void rtl8723be_dm_watchdog(struct ieee80211_hw *hw)
 	bool fw_ps_awake = true;
 
 	rtlpriv->cfg->ops->get_hw_reg(hw, HW_VAR_FW_PSMODE_STATUS,
-				      (u8 *) (&fw_current_inpsmode));
+				      (u8 *)(&fw_current_inpsmode));
 
 	rtlpriv->cfg->ops->get_hw_reg(hw, HW_VAR_FWLPS_RF_ON,
-				      (u8 *) (&fw_ps_awake));
+				      (u8 *)(&fw_ps_awake));
 
 	if (ppsc->p2p_ps_info.p2p_ps_mode)
 		fw_ps_awake = false;

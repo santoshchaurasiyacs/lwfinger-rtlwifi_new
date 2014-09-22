@@ -595,7 +595,7 @@ void rtl_init_rx_config(struct ieee80211_hw *hw)
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_mac *mac = rtl_mac(rtl_priv(hw));
 
-	rtlpriv->cfg->ops->get_hw_reg(hw, HW_VAR_RCR, (u8 *) (&mac->rx_conf));
+	rtlpriv->cfg->ops->get_hw_reg(hw, HW_VAR_RCR, (u8 *)(&mac->rx_conf));
 }
 EXPORT_SYMBOL_GPL(rtl_init_rx_config);
 
@@ -709,7 +709,7 @@ static void _rtl_txrate_selectmode(struct ieee80211_hw *hw,
 	u8 ratr_index = 7;
 
 	if (sta) {
-		sta_entry = (struct rtl_sta_info *) sta->drv_priv;
+		sta_entry = (struct rtl_sta_info *)sta->drv_priv;
 		ratr_index = sta_entry->ratr_index;
 	}
 	if (!tcb_desc->disable_ratefallback || !tcb_desc->use_driver_rate) {
@@ -1142,7 +1142,7 @@ bool rtl_action_proc(struct ieee80211_hw *hw, struct sk_buff *skb, u8 is_tx)
 	struct ieee80211_hdr *hdr = rtl_get_hdr(skb);
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	__le16 fc = rtl_get_fc(skb);
-	u8 *act = (u8 *) (((u8 *) skb->data + MAC80211_3ADDR_LEN));
+	u8 *act = (u8 *)(((u8 *)skb->data + MAC80211_3ADDR_LEN));
 	u8 category;
 
 	if (!ieee80211_is_action(fc))
@@ -1268,15 +1268,15 @@ u8 rtl_is_special_data(struct ieee80211_hw *hw, struct sk_buff *skb, u8 is_tx)
 				  (skb->data + mac_hdr_len + SNAP_SIZE + encrypt_header_len));
 
 	if (ETH_P_IP == ether_type) {
-		ip = (struct iphdr *)((u8 *) skb->data + mac_hdr_len +
+		ip = (struct iphdr *)((u8 *)skb->data + mac_hdr_len +
 			      SNAP_SIZE + PROTOC_TYPE_SIZE + encrypt_header_len);
 		if (IPPROTO_UDP == ip->protocol) {
-			struct udphdr *udp = (struct udphdr *)((u8 *) ip +
+			struct udphdr *udp = (struct udphdr *)((u8 *)ip +
 							       (ip->ihl << 2));
-			if (((((u8 *) udp)[1] == 68) &&
-			     (((u8 *) udp)[3] == 67)) ||
-			    ((((u8 *) udp)[1] == 67) &&
-			     (((u8 *) udp)[3] == 68))) {
+			if (((((u8 *)udp)[1] == 68) &&
+			     (((u8 *)udp)[3] == 67)) ||
+			    ((((u8 *)udp)[1] == 67) &&
+			     (((u8 *)udp)[3] == 68))) {
 				/*
 				 * 68 : UDP BOOTP client
 				 * 67 : UDP BOOTP server
@@ -1803,7 +1803,7 @@ int rtl_send_smps_action(struct ieee80211_hw *hw,
 	if (skb) {
 		struct ieee80211_tx_info *info = IEEE80211_SKB_CB(skb);
 		struct rtl_sta_info *sta_entry =
-			(struct rtl_sta_info *) sta->drv_priv;
+			(struct rtl_sta_info *)sta->drv_priv;
 		sta_entry->mimo_ps = smps;
 		/* rtlpriv->cfg->ops->update_rate_tbl(hw, sta, 0); */
 

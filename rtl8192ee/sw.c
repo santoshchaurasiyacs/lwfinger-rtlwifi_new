@@ -127,7 +127,7 @@ int rtl92ee_init_sw_vars(struct ieee80211_hw *hw)
 				  RCR_APM			|
 				  0);
 
-	rtlpci->irq_mask[0] = (u32) (IMR_PSTIMEOUT		|
+	rtlpci->irq_mask[0] = (u32)(IMR_PSTIMEOUT		|
 				/*   IMR_TBDER			|
 				     IMR_TBDOK			|
 				     IMR_BCNDMAINT0		|*/
@@ -141,7 +141,7 @@ int rtl92ee_init_sw_vars(struct ieee80211_hw *hw)
 				     IMR_RDU			|
 				     IMR_ROK			|
 				     0);
-	rtlpci->irq_mask[1] = (u32) (IMR_RXFOVW | 0);
+	rtlpci->irq_mask[1] = (u32)(IMR_RXFOVW | 0);
 
 	/* for debug level */
 	rtlpriv->dbg.global_debuglevel = rtlpriv->cfg->mod_params->debug;

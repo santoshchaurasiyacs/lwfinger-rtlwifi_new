@@ -126,7 +126,7 @@ int rtl8723e_init_sw_vars(struct ieee80211_hw *hw)
 				  0);
 
 	rtlpci->irq_mask[0] =
-	    (u32) (PHIMR_ROK |
+	    (u32)(PHIMR_ROK |
 		   PHIMR_RDU |
 		   PHIMR_VODOK |
 		   PHIMR_VIDOK |

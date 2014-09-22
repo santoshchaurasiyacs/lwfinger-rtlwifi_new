@@ -515,7 +515,7 @@ void rtl_swlps_beacon(struct ieee80211_hw *hw, void *data, unsigned int len)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_mac *mac = rtl_mac(rtl_priv(hw));
-	struct ieee80211_hdr *hdr = (void *) data;
+	struct ieee80211_hdr *hdr = (void *)data;
 	struct ieee80211_tim_ie *tim_ie;
 	u8 *tim;
 	u8 tim_len;
@@ -562,7 +562,7 @@ void rtl_swlps_beacon(struct ieee80211_hw *hw, void *data, unsigned int len)
 		return;
 
 	tim_len = tim[1];
-	tim_ie = (struct ieee80211_tim_ie *) &tim[2];
+	tim_ie = (struct ieee80211_tim_ie *)&tim[2];
 
 	if (!WARN_ON_ONCE(!hw->conf.ps_dtim_period))
 		rtlpriv->psc.dtim_counter = tim_ie->dtim_count;
@@ -833,7 +833,7 @@ static void rtl_p2p_action_ie(struct ieee80211_hw *hw, void *data, unsigned int 
 	u16 noa_len;
 	static u8 p2p_oui_ie_type[4] = {0x50, 0x6f, 0x9a, 0x09};
 
-	pos = (u8 *) &mgmt->u.action.category;
+	pos = (u8 *)&mgmt->u.action.category;
 	end = data + len;
 	ie = NULL;
 
@@ -990,7 +990,7 @@ void rtl_p2p_info(struct ieee80211_hw *hw, void *data, unsigned int len)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_mac *mac = rtl_mac(rtl_priv(hw));
-	struct ieee80211_hdr *hdr = (void *) data;
+	struct ieee80211_hdr *hdr = (void *)data;
 
 	if (!mac->p2p)
 		return;

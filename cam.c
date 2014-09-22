@@ -59,8 +59,8 @@ static void rtl_cam_program_entry(struct ieee80211_hw *hw, u32 entry_no,
 		target_command = target_command | BIT(31) | BIT(16);
 
 		if (entry_i == 0) {
-			target_content = (u32) (*(mac_addr + 0)) << 16 |
-			    (u32) (*(mac_addr + 1)) << 24 | (u32) us_config;
+			target_content = (u32)(*(mac_addr + 0)) << 16 |
+			    (u32)(*(mac_addr + 1)) << 24 | (u32)us_config;
 
 			rtl_write_dword(rtlpriv, rtlpriv->cfg->maps[WCAMI],
 					target_content);
@@ -78,10 +78,10 @@ static void rtl_cam_program_entry(struct ieee80211_hw *hw, u32 entry_no,
 
 		} else if (entry_i == 1) {
 
-			target_content = (u32) (*(mac_addr + 5)) << 24 |
-			    (u32) (*(mac_addr + 4)) << 16 |
-			    (u32) (*(mac_addr + 3)) << 8 |
-			    (u32) (*(mac_addr + 2));
+			target_content = (u32)(*(mac_addr + 5)) << 24 |
+			    (u32)(*(mac_addr + 4)) << 16 |
+			    (u32)(*(mac_addr + 3)) << 8 |
+			    (u32)(*(mac_addr + 2));
 
 			rtl_write_dword(rtlpriv, rtlpriv->cfg->maps[WCAMI],
 					target_content);
@@ -96,11 +96,11 @@ static void rtl_cam_program_entry(struct ieee80211_hw *hw, u32 entry_no,
 		} else {
 
 			target_content =
-			    (u32) (*(key_cont_128 + (entry_i * 4 - 8) + 3)) <<
-			    24 | (u32) (*(key_cont_128 + (entry_i * 4 - 8) + 2))
+			    (u32)(*(key_cont_128 + (entry_i * 4 - 8) + 3)) <<
+			    24 | (u32)(*(key_cont_128 + (entry_i * 4 - 8) + 2))
 			    << 16 |
-			    (u32) (*(key_cont_128 + (entry_i * 4 - 8) + 1)) << 8
-			    | (u32) (*(key_cont_128 + (entry_i * 4 - 8) + 0));
+			    (u32)(*(key_cont_128 + (entry_i * 4 - 8) + 1)) << 8
+			    | (u32)(*(key_cont_128 + (entry_i * 4 - 8) + 0));
 
 			rtl_write_dword(rtlpriv, rtlpriv->cfg->maps[WCAMI],
 					target_content);
@@ -139,12 +139,12 @@ u8 rtl_cam_add_one_entry(struct ieee80211_hw *hw, u8 *mac_addr,
 	}
 
 	if (ul_default_key == 1)
-		us_config = CFG_VALID | ((u16) (ul_enc_alg) << 2);
+		us_config = CFG_VALID | ((u16)(ul_enc_alg) << 2);
 	else
 		us_config = CFG_VALID | ((ul_enc_alg) << 2) | ul_key_id;
 
 	rtl_cam_program_entry(hw, ul_entry_idx, mac_addr,
-		(u8 *) key_content, us_config);
+		(u8 *)key_content, us_config);
 
 	RT_TRACE(rtlpriv, COMP_SEC, DBG_DMESG, "end\n");
 
@@ -212,7 +212,7 @@ void rtl_cam_mark_invalid(struct ieee80211_hw *hw, u8 uc_index)
 		ul_enc_algo = rtlpriv->cfg->maps[SEC_CAM_AES];
 	}
 
-	ul_content = (uc_index & 3) | ((u16) (ul_enc_algo) << 2);
+	ul_content = (uc_index & 3) | ((u16)(ul_enc_algo) << 2);
 
 	ul_content |= BIT(15);
 	ul_command = CAM_CONTENT_COUNT * uc_index;
@@ -258,7 +258,7 @@ void rtl_cam_empty_entry(struct ieee80211_hw *hw, u8 uc_index)
 
 		if (entry_i == 0) {
 			ul_content =
-			    (uc_index & 0x03) | ((u16) (ul_encalgo) << 2);
+			    (uc_index & 0x03) | ((u16)(ul_encalgo) << 2);
 			ul_content |= BIT(15);
 
 		} else {

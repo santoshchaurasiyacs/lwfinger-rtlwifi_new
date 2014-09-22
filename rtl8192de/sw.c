@@ -123,7 +123,7 @@ static int rtl92d_init_sw_vars(struct ieee80211_hw *hw)
 		| RCR_HTC_LOC_CTRL
 			);
 
-	rtlpci->irq_mask[0] = (u32) (
+	rtlpci->irq_mask[0] = (u32)(
 			IMR_ROK
 			| IMR_VODOK
 			| IMR_VIDOK
@@ -136,7 +136,7 @@ static int rtl92d_init_sw_vars(struct ieee80211_hw *hw)
 			| IMR_RXFOVW
 			);
 
-	rtlpci->irq_mask[1] = (u32) (IMR_CPWM | IMR_C2HCMD);
+	rtlpci->irq_mask[1] = (u32)(IMR_CPWM | IMR_C2HCMD);
 
 	/* for debug level */
 	rtlpriv->dbg.global_debuglevel = rtlpriv->cfg->mod_params->debug;

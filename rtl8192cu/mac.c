@@ -409,14 +409,14 @@ void rtl92c_set_qos(struct ieee80211_hw *hw, int aci)
 	u32 u4b_ac_param;
 
 	rtl92c_dm_init_edca_turbo(hw);
-	u4b_ac_param = (u32) mac->ac[aci].aifs;
+	u4b_ac_param = (u32)mac->ac[aci].aifs;
 	u4b_ac_param |=
-	    ((u32) le16_to_cpu(mac->ac[aci].cw_min) & 0xF) <<
+	    ((u32)le16_to_cpu(mac->ac[aci].cw_min) & 0xF) <<
 	    AC_PARAM_ECW_MIN_OFFSET;
 	u4b_ac_param |=
-	    ((u32) le16_to_cpu(mac->ac[aci].cw_max) & 0xF) <<
+	    ((u32)le16_to_cpu(mac->ac[aci].cw_max) & 0xF) <<
 	    AC_PARAM_ECW_MAX_OFFSET;
-	u4b_ac_param |= (u32) le16_to_cpu(mac->ac[aci].tx_op) <<
+	u4b_ac_param |= (u32)le16_to_cpu(mac->ac[aci].tx_op) <<
 			 AC_PARAM_TXOP_OFFSET;
 	RT_TRACE(rtlpriv, COMP_QOS, DBG_LOUD, "queue:%x, ac_param:%x\n",
 		 aci, u4b_ac_param);
@@ -872,7 +872,7 @@ static void _rtl92c_query_rxphystatus(struct ieee80211_hw *hw,
 			    (long)(p_drvinfo->rxsnr[i] / 2);
 
 			if (packet_match_bssid)
-				pstats->rx_mimo_signalstrength[i] = (u8) rssi;
+				pstats->rx_mimo_signalstrength[i] = (u8)rssi;
 		}
 		rx_pwr_all = ((p_drvinfo->pwdb_all >> 1) & 0x7f) - 110;
 		pwdb_all = _rtl92c_query_rxpwrpercentage(rx_pwr_all);
@@ -890,18 +890,18 @@ static void _rtl92c_query_rxphystatus(struct ieee80211_hw *hw,
 			if (packet_match_bssid) {
 				if (i == 0)
 					pstats->signalquality =
-					    (u8) (evm & 0xff);
+					    (u8)(evm & 0xff);
 				pstats->RX_SIGQ[i] =
-				    (u8) (evm & 0xff);
+				    (u8)(evm & 0xff);
 			}
 		}
 	}
 	if (is_cck_rate)
 		pstats->signalstrength =
-		    (u8) (_rtl92c_signal_scale_mapping(hw, pwdb_all));
+		    (u8)(_rtl92c_signal_scale_mapping(hw, pwdb_all));
 	else if (rf_rx_num != 0)
 		pstats->signalstrength =
-		    (u8) (_rtl92c_signal_scale_mapping
+		    (u8)(_rtl92c_signal_scale_mapping
 			  (hw, total_rssi /= rf_rx_num));
 }
 

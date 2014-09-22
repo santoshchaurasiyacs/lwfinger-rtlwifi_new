@@ -375,7 +375,7 @@ int rtl92s_download_fw(struct ieee80211_hw *hw)
 	file_length = pfirmware->sz_fw_tmpbufferlen;
 
 	/* 1. Retrieve FW header. */
-	pfirmware->pfwheader = (struct fw_hdr *) puc_mappedfile;
+	pfirmware->pfwheader = (struct fw_hdr *)puc_mappedfile;
 	pfwheader = pfirmware->pfwheader;
 	pfirmware->firmwareversion =  byte(pfwheader->version , 0);
 	pfirmware->pfwheader->fwpriv.hci_sel = 1;/* pcie */
@@ -485,7 +485,7 @@ static u32 _rtl92s_fill_h2c_cmd(struct sk_buff *skb, u32 h2cbufferlen,
 			break;
 
 		/* Clear content */
-		ph2c_buffer = (u8 *) skb_put(skb, (u32)len);
+		ph2c_buffer = (u8 *)skb_put(skb, (u32)len);
 		memset((ph2c_buffer + totallen + tx_desclen), 0, len);
 
 		/* CMD len */

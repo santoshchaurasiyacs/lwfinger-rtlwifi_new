@@ -989,10 +989,10 @@ static void rtl92d_dm_pwdb_monitor(struct ieee80211_hw *hw)
 		temp = temp | 0x100;
 		/* fw v12 cmdid 5:use max macid ,for nic ,
 		 * default macid is 0 ,max macid is 1 */
-		rtl92d_fill_h2c_cmd(hw, H2C_RSSI_REPORT, 3, (u8 *) (&temp));
+		rtl92d_fill_h2c_cmd(hw, H2C_RSSI_REPORT, 3, (u8 *)(&temp));
 	} else {
 		rtl_write_byte(rtlpriv, 0x4fe,
-				(u8) rtlpriv->dm.undec_sm_pwdb);
+				(u8)rtlpriv->dm.undec_sm_pwdb);
 	}
 }
 
@@ -1059,7 +1059,7 @@ static void rtl92d_dm_check_edca_turbo(struct ieee80211_hw *hw)
 	} else {
 		if (rtlpriv->dm.current_turbo_edca) {
 			u8 tmp = AC0_BE;
-			rtlpriv->cfg->ops->set_hw_reg(hw, HW_VAR_AC_PARAM, (u8 *) (&tmp));
+			rtlpriv->cfg->ops->set_hw_reg(hw, HW_VAR_AC_PARAM, (u8 *)(&tmp));
 			rtlpriv->dm.current_turbo_edca = false;
 		}
 	}
@@ -1145,7 +1145,7 @@ static void rtl92d_dm_txpower_tracking_callback_thermalmeter(
 
 	rtlpriv->dm.txpower_trackinginit = true;
 	RT_TRACE(rtlpriv, COMP_POWER_TRACKING, DBG_LOUD, "\n");
-	thermalvalue = (u8) rtl_get_rfreg(hw, RF90_PATH_A, RF_T_METER, 0xf800);
+	thermalvalue = (u8)rtl_get_rfreg(hw, RF90_PATH_A, RF_T_METER, 0xf800);
 	RT_TRACE(rtlpriv, COMP_POWER_TRACKING, DBG_LOUD,
 		 "Readback Thermal Meter = 0x%x pre thermal meter 0x%x eeprom_thermalmeter 0x%x\n",
 		 thermalvalue,
@@ -1161,7 +1161,7 @@ static void rtl92d_dm_txpower_tracking_callback_thermalmeter(
 				      BMASKDWORD) & BMASKOFDM_D;
 		for (i = 0; i < OFDM_TABLE_SIZE_92D; i++) {
 			if (ele_d == (ofdmswing_table[i] & BMASKOFDM_D)) {
-				ofdm_index_old[0] = (u8) i;
+				ofdm_index_old[0] = (u8)i;
 
 				RT_TRACE(rtlpriv, COMP_POWER_TRACKING, DBG_LOUD,
 					 "Initial pathA ele_d reg0x%x = 0x%lx, ofdm_index=0x%x\n",
@@ -1175,7 +1175,7 @@ static void rtl92d_dm_txpower_tracking_callback_thermalmeter(
 					      BMASKDWORD) & BMASKOFDM_D;
 			for (i = 0; i < OFDM_TABLE_SIZE_92D; i++) {
 				if (ele_d == (ofdmswing_table[i] & BMASKOFDM_D)) {
-					ofdm_index_old[1] = (u8) i;
+					ofdm_index_old[1] = (u8)i;
 					RT_TRACE(rtlpriv, COMP_POWER_TRACKING, DBG_LOUD,
 						 "Initial pathB ele_d reg0x%x = 0x%lx, ofdm_index=0x%x\n",
 						  ROFDM0_XBTxIQIMBALANCE, ele_d,
@@ -1194,7 +1194,7 @@ static void rtl92d_dm_txpower_tracking_callback_thermalmeter(
 				if (rtlpriv->dm.cck_inch14) {
 					if (memcmp((void *)&temp_cck,
 						   (void *)&cckswing_table_ch14[i][2], 4) == 0) {
-						cck_index_old = (u8) i;
+						cck_index_old = (u8)i;
 						RT_TRACE(rtlpriv, COMP_POWER_TRACKING, DBG_LOUD,
 							 "Initial reg0x%x = 0x%lx, cck_index=0x%x, ch 14 %d\n",
 							  RCCK0_TXFILTER2,
@@ -1205,7 +1205,7 @@ static void rtl92d_dm_txpower_tracking_callback_thermalmeter(
 				} else {
 					if (memcmp((void *)&temp_cck,
 							(void *)&cckswing_table_ch1ch13[i][2], 4) == 0) {
-						cck_index_old = (u8) i;
+						cck_index_old = (u8)i;
 						RT_TRACE(rtlpriv, COMP_POWER_TRACKING, DBG_LOUD,
 							 "Initial reg0x%x = 0x%lx, cck_index=0x%x, ch14 %d\n",
 							  RCCK0_TXFILTER2,
@@ -1248,7 +1248,7 @@ static void rtl92d_dm_txpower_tracking_callback_thermalmeter(
 			}
 		}
 		if (thermalvalue_avg_count)
-			thermalvalue = (u8) (thermalvalue_avg / thermalvalue_avg_count);
+			thermalvalue = (u8)(thermalvalue_avg / thermalvalue_avg_count);
 		if (rtlhal->reloadtxpowerindex) {
 			delta = (thermalvalue > rtlefuse->eeprom_thermalmeter) ?
 			    (thermalvalue - rtlefuse->eeprom_thermalmeter) :
@@ -1383,7 +1383,7 @@ static void rtl92d_dm_txpower_tracking_callback_thermalmeter(
 					 "new OFDM_A_index=0x%x,cck_index=0x%x\n",
 					  ofdm_index[0], cck_index);
 			}
-			ele_d = (ofdmswing_table[(u8) ofdm_index[0]] & 0xFFC00000) >> 22;
+			ele_d = (ofdmswing_table[(u8)ofdm_index[0]] & 0xFFC00000) >> 22;
 			val_x = rtlphy->iqk_matrix_regsetting[indexforchannel].value[0][0];
 			val_y = rtlphy->iqk_matrix_regsetting[indexforchannel].value[0][1];
 			if (val_x != 0) {
@@ -1458,7 +1458,7 @@ static void rtl92d_dm_txpower_tracking_callback_thermalmeter(
 				}
 			}
 			if (is2t) {
-				ele_d = (ofdmswing_table[(u8) ofdm_index[1]] &
+				ele_d = (ofdmswing_table[(u8)ofdm_index[1]] &
 						0xFFC00000) >> 22;
 				val_x = rtlphy->iqk_matrix_regsetting[indexforchannel].value[
 							0][4];
@@ -1487,7 +1487,7 @@ static void rtl92d_dm_txpower_tracking_callback_thermalmeter(
 						      BIT(28), value32);
 				} else {
 					rtl_set_bbreg(hw, ROFDM0_XBTxIQIMBALANCE, BMASKDWORD,
-						      ofdmswing_table[(u8) ofdm_index[1]]);
+						      ofdmswing_table[(u8)ofdm_index[1]]);
 					rtl_set_bbreg(hw, ROFDM0_XDTxAFE, BMASKH4BITS, 0x00);
 					rtl_set_bbreg(hw, ROFDM0_ECCATHRESHOLD, BIT(28), 0x00);
 				}
@@ -1704,7 +1704,7 @@ static void rtl92d_dm_easy_concurrent_switch_to_dmsp(struct ieee80211_hw *hw)
 
 				}
 				if (sta) {
-					sta_entry = (struct rtl_sta_info *) sta->drv_priv;
+					sta_entry = (struct rtl_sta_info *)sta->drv_priv;
 					sta_entry->mimo_ps = IEEE80211_SMPS_OFF;
 				}
 				rtlpriv->easy_concurrent_ctl.change_to_dmsp = true;

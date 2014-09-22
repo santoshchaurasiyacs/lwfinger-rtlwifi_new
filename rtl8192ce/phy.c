@@ -176,7 +176,7 @@ static bool _rtl92c_phy_config_mac_with_headerfile(struct ieee80211_hw *hw)
 	RT_TRACE(rtlpriv, COMP_INIT, DBG_TRACE,
 		 "Img:RTL8192CEMAC_2T_ARRAY\n");
 	for (i = 0; i < arraylength; i = i + 2)
-		rtl_write_byte(rtlpriv, ptrarray[i], (u8) ptrarray[i + 1]);
+		rtl_write_byte(rtlpriv, ptrarray[i], (u8)ptrarray[i + 1]);
 	return true;
 }
 
@@ -373,14 +373,14 @@ void rtl92c_phy_scan_operation_backup(struct ieee80211_hw *hw, u8 operation)
 			iotype = IO_CMD_PAUSE_BAND0_DM_BY_SCAN;
 			rtlpriv->cfg->ops->set_hw_reg(hw,
 						      HW_VAR_IO_CMD,
-						      (u8 *) &iotype);
+						      (u8 *)&iotype);
 
 			break;
 		case SCAN_OPT_RESTORE:
 			iotype = IO_CMD_RESUME_DM_BY_SCAN;
 			rtlpriv->cfg->ops->set_hw_reg(hw,
 						      HW_VAR_IO_CMD,
-						      (u8 *) &iotype);
+						      (u8 *)&iotype);
 			break;
 		default:
 			RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG,

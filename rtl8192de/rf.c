@@ -116,7 +116,7 @@ void rtl92d_phy_rf6052_set_cck_txpower(struct ieee80211_hw *hw,
 	}
 
 	for (idx1 = RF90_PATH_A; idx1 <= RF90_PATH_B; idx1++) {
-		ptr = (u8 *) (&(tx_agc[idx1]));
+		ptr = (u8 *)(&(tx_agc[idx1]));
 		for (idx2 = 0; idx2 < 4; idx2++) {
 			if (*ptr > RF6052_MAX_TX_PWR)
 				*ptr = RF6052_MAX_TX_PWR;
@@ -268,7 +268,7 @@ static void _rtl92d_get_txpower_writeval_by_regulatory(struct ieee80211_hw *hw,
 					 rtlefuse->pwrgroup_ht20[rf][channel - 1]);
 			}
 			for (i = 0; i < 4; i++) {
-				pwr_diff_limit[i] = (u8) ((rtlphy->mcs_txpwrlevel_origoffset[
+				pwr_diff_limit[i] = (u8)((rtlphy->mcs_txpwrlevel_origoffset[
 					chnlgroup][index + (rf ? 8 : 0)] & (0x7f << (i * 8))) >>
 					(i * 8));
 				if (rtlphy->current_chan_bw == HT_CHANNEL_WIDTH_20_40) {
@@ -331,7 +331,7 @@ static void _rtl92d_write_ofdm_power_reg(struct ieee80211_hw *hw,
 	for (rf = 0; rf < 2; rf++) {
 		writeval = pvalue[rf];
 		for (i = 0; i < 4; i++) {
-			pwr_val[i] = (u8) ((writeval & (0x7f <<
+			pwr_val[i] = (u8)((writeval & (0x7f <<
 							(i * 8))) >> (i * 8));
 			if (pwr_val[i] > RF6052_MAX_TX_PWR)
 				pwr_val[i] = RF6052_MAX_TX_PWR;
@@ -363,7 +363,7 @@ static void _rtl92d_write_ofdm_power_reg(struct ieee80211_hw *hw,
 					writeval = (writeval > 8) ? (writeval - 8) : 0;
 				else
 					writeval = (writeval > 6) ? (writeval - 6) : 0;
-				rtl_write_byte(rtlpriv, (u32) (regoffset + i), (u8) writeval);
+				rtl_write_byte(rtlpriv, (u32)(regoffset + i), (u8)writeval);
 			}
 		}
 	}

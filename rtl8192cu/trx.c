@@ -309,21 +309,21 @@ bool rtl92cu_rx_query_desc(struct ieee80211_hw *hw,
 	struct rx_desc_92c *p_desc = (struct rx_desc_92c *)pdesc;
 	u32 phystatus = GET_RX_DESC_PHY_STATUS(pdesc);
 
-	stats->length = (u16) GET_RX_DESC_PKT_LEN(pdesc);
+	stats->length = (u16)GET_RX_DESC_PKT_LEN(pdesc);
 	stats->rx_drvinfo_size = (u8)GET_RX_DESC_DRVINFO_SIZE(pdesc) *
 				 RX_DRV_INFO_SIZE_UNIT;
-	stats->rx_bufshift = (u8) (GET_RX_DESC_SHIFT(pdesc) & 0x03);
-	stats->icv = (u16) GET_RX_DESC_ICV(pdesc);
-	stats->crc = (u16) GET_RX_DESC_CRC32(pdesc);
+	stats->rx_bufshift = (u8)(GET_RX_DESC_SHIFT(pdesc) & 0x03);
+	stats->icv = (u16)GET_RX_DESC_ICV(pdesc);
+	stats->crc = (u16)GET_RX_DESC_CRC32(pdesc);
 	stats->hwerror = (stats->crc | stats->icv);
 	stats->decrypted = !GET_RX_DESC_SWDEC(pdesc);
-	stats->rate = (u8) GET_RX_DESC_RX_MCS(pdesc);
-	stats->shortpreamble = (u16) GET_RX_DESC_SPLCP(pdesc);
-	stats->isampdu = (bool) (GET_RX_DESC_PAGGR(pdesc) == 1);
-	stats->isampdu = (bool) ((GET_RX_DESC_PAGGR(pdesc) == 1)
+	stats->rate = (u8)GET_RX_DESC_RX_MCS(pdesc);
+	stats->shortpreamble = (u16)GET_RX_DESC_SPLCP(pdesc);
+	stats->isampdu = (bool)(GET_RX_DESC_PAGGR(pdesc) == 1);
+	stats->isampdu = (bool)((GET_RX_DESC_PAGGR(pdesc) == 1)
 				   && (GET_RX_DESC_FAGGR(pdesc) == 1));
 	stats->timestamp_low = GET_RX_DESC_TSFL(pdesc);
-	stats->rx_is40Mhzpacket = (bool) GET_RX_DESC_BW(pdesc);
+	stats->rx_is40Mhzpacket = (bool)GET_RX_DESC_BW(pdesc);
 	rx_status->freq = hw->conf.chandef.chan->center_freq;
 	rx_status->band = hw->conf.chandef.chan->band;
 	if (GET_RX_DESC_CRC32(pdesc))
@@ -378,20 +378,20 @@ static void _rtl_rx_process(struct ieee80211_hw *hw, struct sk_buff *skb)
 	pkt_len		= GET_RX_DESC_PKT_LEN(rxdesc);
 	/* TODO: Error recovery. drop this skb or something. */
 	WARN_ON(skb_len < (pkt_len + RTL_RX_DESC_SIZE + drvinfo_len));
-	stats.length = (u16) GET_RX_DESC_PKT_LEN(rxdesc);
+	stats.length = (u16)GET_RX_DESC_PKT_LEN(rxdesc);
 	stats.rx_drvinfo_size = (u8)GET_RX_DESC_DRVINFO_SIZE(rxdesc) *
 				RX_DRV_INFO_SIZE_UNIT;
-	stats.rx_bufshift = (u8) (GET_RX_DESC_SHIFT(rxdesc) & 0x03);
-	stats.icv = (u16) GET_RX_DESC_ICV(rxdesc);
-	stats.crc = (u16) GET_RX_DESC_CRC32(rxdesc);
+	stats.rx_bufshift = (u8)(GET_RX_DESC_SHIFT(rxdesc) & 0x03);
+	stats.icv = (u16)GET_RX_DESC_ICV(rxdesc);
+	stats.crc = (u16)GET_RX_DESC_CRC32(rxdesc);
 	stats.hwerror = (stats.crc | stats.icv);
 	stats.decrypted = !GET_RX_DESC_SWDEC(rxdesc);
-	stats.rate = (u8) GET_RX_DESC_RX_MCS(rxdesc);
-	stats.shortpreamble = (u16) GET_RX_DESC_SPLCP(rxdesc);
-	stats.isampdu = (bool) ((GET_RX_DESC_PAGGR(rxdesc) == 1)
+	stats.rate = (u8)GET_RX_DESC_RX_MCS(rxdesc);
+	stats.shortpreamble = (u16)GET_RX_DESC_SPLCP(rxdesc);
+	stats.isampdu = (bool)((GET_RX_DESC_PAGGR(rxdesc) == 1)
 				   && (GET_RX_DESC_FAGGR(rxdesc) == 1));
 	stats.timestamp_low = GET_RX_DESC_TSFL(rxdesc);
-	stats.rx_is40Mhzpacket = (bool) GET_RX_DESC_BW(rxdesc);
+	stats.rx_is40Mhzpacket = (bool)GET_RX_DESC_BW(rxdesc);
 	/* TODO: is center_freq changed when doing scan? */
 	/* TODO: Shall we add protection or just skip those two step? */
 	rx_status->freq = hw->conf.chandef.chan->center_freq;

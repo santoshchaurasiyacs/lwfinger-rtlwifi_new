@@ -114,7 +114,7 @@ void rtl8821ae_phy_rf6052_set_cck_txpower(struct ieee80211_hw *hw,
 	}
 
 	for (idx1 = RF90_PATH_A; idx1 <= RF90_PATH_B; idx1++) {
-		ptr = (u8 *) (&(tx_agc[idx1]));
+		ptr = (u8 *)(&(tx_agc[idx1]));
 		for (idx2 = 0; idx2 < 4; idx2++) {
 			if (*ptr > RF6052_MAX_TX_PWR)
 				*ptr = RF6052_MAX_TX_PWR;
@@ -281,7 +281,7 @@ static void _rtl8821ae_get_txpower_writeval_by_regulatory(struct ieee80211_hw *h
 
 			for (i = 0; i < 4; i++) {
 				pwr_diff_limit[i] =
-				    (u8) ((rtlphy->mcs_txpwrlevel_origoffset
+				    (u8)((rtlphy->mcs_txpwrlevel_origoffset
 					   [chnlgroup][index + (rf ? 8 : 0)] & (0x7f <<
 							(i * 8))) >> (i * 8));
 
@@ -347,7 +347,7 @@ static void _rtl8821ae_write_ofdm_power_reg(struct ieee80211_hw *hw,
 	for (rf = 0; rf < 2; rf++) {
 		writeVal = pValue[rf];
 		for (i = 0; i < 4; i++) {
-			pwr_val[i] = (u8) ((writeVal & (0x7f <<
+			pwr_val[i] = (u8)((writeVal & (0x7f <<
 							(i * 8))) >> (i * 8));
 
 			if (pwr_val[i] > RF6052_MAX_TX_PWR)

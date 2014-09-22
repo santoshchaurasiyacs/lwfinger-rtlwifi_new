@@ -66,8 +66,8 @@ static void _rtl92d_fw_block_write(struct ieee80211_hw *hw,
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	u32 blocksize = sizeof(u32);
-	u8 *bufferptr = (u8 *) buffer;
-	u32 *pu4BytePtr = (u32 *) buffer;
+	u8 *bufferptr = (u8 *)buffer;
+	u32 *pu4BytePtr = (u32 *)buffer;
 	u32 i, offset, blockCount, remainSize;
 
 	blockCount = size / blocksize;
@@ -92,7 +92,7 @@ static void _rtl92d_fw_page_write(struct ieee80211_hw *hw,
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	u8 value8;
-	u8 u8page = (u8) (page & 0x07);
+	u8 u8page = (u8)(page & 0x07);
 
 	value8 = (rtl_read_byte(rtlpriv, REG_MCUFWDL + 2) & 0xF8) | u8page;
 	rtl_write_byte(rtlpriv, (REG_MCUFWDL + 2), value8);
@@ -102,7 +102,7 @@ static void _rtl92d_fw_page_write(struct ieee80211_hw *hw,
 static void _rtl92d_fill_dummy(u8 *pfwbuf, u32 *pfwlen)
 {
 	u32 fwlen = *pfwlen;
-	u8 remain = (u8) (fwlen % 4);
+	u8 remain = (u8)(fwlen % 4);
 
 	remain = (remain == 0) ? 0 : (4 - remain);
 	while (remain > 0) {
@@ -118,7 +118,7 @@ static void _rtl92d_write_fw(struct ieee80211_hw *hw,
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_hal *rtlhal = rtl_hal(rtl_priv(hw));
-	u8 *bufferPtr = (u8 *) buffer;
+	u8 *bufferPtr = (u8 *)buffer;
 	u32 pagenums, remainSize;
 	u32 page, offset;
 
@@ -251,10 +251,10 @@ int rtl92d_download_fw(struct ieee80211_hw *hw)
 	if (!rtlhal->pfirmware)
 		return 1;
 	fwsize = rtlhal->fwsize;
-	pfwheader = (u8 *) rtlhal->pfirmware;
-	pfwdata = (u8 *) rtlhal->pfirmware;
-	rtlhal->fw_version = (u16) GET_FIRMWARE_HDR_VERSION(pfwheader);
-	rtlhal->fw_subversion = (u16) GET_FIRMWARE_HDR_SUB_VER(pfwheader);
+	pfwheader = (u8 *)rtlhal->pfirmware;
+	pfwdata = (u8 *)rtlhal->pfirmware;
+	rtlhal->fw_version = (u16)GET_FIRMWARE_HDR_VERSION(pfwheader);
+	rtlhal->fw_subversion = (u16)GET_FIRMWARE_HDR_SUB_VER(pfwheader);
 	RT_TRACE(rtlpriv, COMP_INIT, DBG_DMESG,
 		 "FirmwareVersion(%d),FirmwareSubVersion(%d), Signature(%#x)\n",
 		 rtlhal->fw_version,	rtlhal->fw_subversion,
@@ -462,7 +462,7 @@ static void _rtl92d_fill_h2c_command(struct ieee80211_hw *hw,
 		switch (cmd_len) {
 		case 1:
 			boxcontent[0] &= ~(BIT(7));
-			memcpy((u8 *) (boxcontent) + 1,
+			memcpy((u8 *)(boxcontent) + 1,
 				cmdbuffer + buf_index, 1);
 			for (idx = 0; idx < 4; idx++)
 				rtl_write_byte(rtlpriv,
@@ -470,7 +470,7 @@ static void _rtl92d_fill_h2c_command(struct ieee80211_hw *hw,
 			break;
 		case 2:
 			boxcontent[0] &= ~(BIT(7));
-			memcpy((u8 *) (boxcontent) + 1,
+			memcpy((u8 *)(boxcontent) + 1,
 				cmdbuffer + buf_index, 2);
 			for (idx = 0; idx < 4; idx++)
 				rtl_write_byte(rtlpriv,
@@ -478,7 +478,7 @@ static void _rtl92d_fill_h2c_command(struct ieee80211_hw *hw,
 			break;
 		case 3:
 			boxcontent[0] &= ~(BIT(7));
-			memcpy((u8 *) (boxcontent) + 1,
+			memcpy((u8 *)(boxcontent) + 1,
 				cmdbuffer + buf_index, 3);
 			for (idx = 0; idx < 4; idx++)
 				rtl_write_byte(rtlpriv,
@@ -486,9 +486,9 @@ static void _rtl92d_fill_h2c_command(struct ieee80211_hw *hw,
 			break;
 		case 4:
 			boxcontent[0] |= (BIT(7));
-			memcpy((u8 *) (boxextcontent),
+			memcpy((u8 *)(boxextcontent),
 				cmdbuffer + buf_index, 2);
-			memcpy((u8 *) (boxcontent) + 1,
+			memcpy((u8 *)(boxcontent) + 1,
 				cmdbuffer + buf_index + 2, 2);
 			for (idx = 0; idx < 2; idx++)
 				rtl_write_byte(rtlpriv,
@@ -499,9 +499,9 @@ static void _rtl92d_fill_h2c_command(struct ieee80211_hw *hw,
 			break;
 		case 5:
 			boxcontent[0] |= (BIT(7));
-			memcpy((u8 *) (boxextcontent),
+			memcpy((u8 *)(boxextcontent),
 				cmdbuffer + buf_index, 2);
-			memcpy((u8 *) (boxcontent) + 1,
+			memcpy((u8 *)(boxcontent) + 1,
 				cmdbuffer + buf_index + 2, 3);
 			for (idx = 0; idx < 2; idx++)
 				rtl_write_byte(rtlpriv,
@@ -541,7 +541,7 @@ void rtl92d_fill_h2c_cmd(struct ieee80211_hw *hw,
 	}
 	memset(tmp_cmdbuf, 0, 8);
 	memcpy(tmp_cmdbuf, cmdbuffer, cmd_len);
-	_rtl92d_fill_h2c_command(hw, element_id, cmd_len, (u8 *) &tmp_cmdbuf);
+	_rtl92d_fill_h2c_command(hw, element_id, cmd_len, (u8 *)&tmp_cmdbuf);
 	return;
 }
 
@@ -580,8 +580,8 @@ static bool _rtl92d_cmd_send_packet(struct ieee80211_hw *hw, struct sk_buff *skb
 		kfree_skb(pskb);
 	spin_lock_irqsave(&rtlpriv->locks.irq_th_lock, flags);
 	pdesc = &ring->desc[idx];
-	own = (u8) rtlpriv->cfg->ops->get_desc((u8 *) pdesc, true, HW_DESC_OWN);
-	rtlpriv->cfg->ops->fill_tx_cmddesc(hw, (u8 *) pdesc, 1, 1, skb);
+	own = (u8)rtlpriv->cfg->ops->get_desc((u8 *)pdesc, true, HW_DESC_OWN);
+	rtlpriv->cfg->ops->fill_tx_cmddesc(hw, (u8 *)pdesc, 1, 1, skb);
 	__skb_queue_tail(&ring->queue, skb);
 	spin_unlock_irqrestore(&rtlpriv->locks.irq_th_lock, flags);
 	rtlpriv->cfg->ops->tx_polling(hw, BEACON_QUEUE);
@@ -755,7 +755,7 @@ void rtl92d_set_fw_rsvdpagepkt(struct ieee80211_hw *hw, bool b_dl_finished)
 		      "rtl92d_set_fw_rsvdpagepkt(): HW_VAR_SET_TX_CMD: ALL\n",
 		      u1RsvdPageLoc, 3);
 	skb = dev_alloc_skb(totalpacketlen);
-	memcpy((u8 *) skb_put(skb, totalpacketlen), &reserved_page_packet,
+	memcpy((u8 *)skb_put(skb, totalpacketlen), &reserved_page_packet,
 		totalpacketlen);
 	rtstatus = _rtl92d_cmd_send_packet(hw, skb);
 

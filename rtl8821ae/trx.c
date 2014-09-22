@@ -324,7 +324,7 @@ static void _rtl8821ae_query_rxphystatus(struct ieee80211_hw *hw,
 		/* (1)Hardware does not provide RSSI for CCK */
 		/* (2)PWDB, Average PWDB cacluated by
 		 * hardware (for rate adaptive) */
-		cck_highpwr = (u8) rtlpriv->dm.cck_high_power;
+		cck_highpwr = (u8)rtlpriv->dm.cck_high_power;
 
 		lan_idx = ((cck_agc_rpt & 0xE0) >> 5);
 		vga_idx = (cck_agc_rpt & 0x1f);
@@ -448,7 +448,7 @@ static void _rtl8821ae_query_rxphystatus(struct ieee80211_hw *hw,
 			pstatus->cfo_short[i] = odm_cfo(p_phystrpt->cfosho[i]);
 			pstatus->cfo_tail[i] = odm_cfo(p_phystrpt->cfotail[i]);
 			/* Record Signal Strength for next packet */
-			pstatus->rx_mimo_signalstrength[i] = (u8) rssi;
+			pstatus->rx_mimo_signalstrength[i] = (u8)rssi;
 		}
 
 		/* (2)PWDB, Average PWDB cacluated by
@@ -671,18 +671,18 @@ bool rtl8821ae_rx_query_desc(struct ieee80211_hw *hw,
 
 	u32 phystatus = GET_RX_DESC_PHYST(pdesc);
 
-	status->length = (u16) GET_RX_DESC_PKT_LEN(pdesc);
-	status->rx_drvinfo_size = (u8) GET_RX_DESC_DRV_INFO_SIZE(pdesc) *
+	status->length = (u16)GET_RX_DESC_PKT_LEN(pdesc);
+	status->rx_drvinfo_size = (u8)GET_RX_DESC_DRV_INFO_SIZE(pdesc) *
 	    RX_DRV_INFO_SIZE_UNIT;
-	status->rx_bufshift = (u8) (GET_RX_DESC_SHIFT(pdesc) & 0x03);
-	status->icv = (u16) GET_RX_DESC_ICV(pdesc);
-	status->crc = (u16) GET_RX_DESC_CRC32(pdesc);
+	status->rx_bufshift = (u8)(GET_RX_DESC_SHIFT(pdesc) & 0x03);
+	status->icv = (u16)GET_RX_DESC_ICV(pdesc);
+	status->crc = (u16)GET_RX_DESC_CRC32(pdesc);
 	status->hwerror = (status->crc | status->icv);
 	status->decrypted = !GET_RX_DESC_SWDEC(pdesc);
-	status->rate = (u8) GET_RX_DESC_RXMCS(pdesc);
-	status->shortpreamble = (u16) GET_RX_DESC_SPLCP(pdesc);
-	status->isampdu = (bool) (GET_RX_DESC_PAGGR(pdesc) == 1);
-	status->isfirst_ampdu = (bool) (GET_RX_DESC_PAGGR(pdesc) == 1);
+	status->rate = (u8)GET_RX_DESC_RXMCS(pdesc);
+	status->shortpreamble = (u16)GET_RX_DESC_SPLCP(pdesc);
+	status->isampdu = (bool)(GET_RX_DESC_PAGGR(pdesc) == 1);
+	status->isfirst_ampdu = (bool)(GET_RX_DESC_PAGGR(pdesc) == 1);
 	status->timestamp_low = GET_RX_DESC_TSFL(pdesc);
 	status->rx_packet_bw = GET_RX_DESC_BW(pdesc);
 	status->macid = GET_RX_DESC_MACID(pdesc);
@@ -902,7 +902,7 @@ void rtl8821ae_tx_fill_desc(struct ieee80211_hw *hw,
 	struct rtl_mac *mac = rtl_mac(rtl_priv(hw));
 	struct rtl_pci *rtlpci = rtl_pcidev(rtl_pcipriv(hw));
 	struct rtl_hal *rtlhal = rtl_hal(rtlpriv);
-	u8 *pdesc = (u8 *) pdesc_tx;
+	u8 *pdesc = (u8 *)pdesc_tx;
 	u16 seq_number;
 	__le16 fc = hdr->frame_control;
 	unsigned int buf_len = 0;
@@ -987,7 +987,7 @@ void rtl8821ae_tx_fill_desc(struct ieee80211_hw *hw,
 			rtl8821ae_sc_mapping(hw, ptcb_desc));
 
 		SET_TX_DESC_LINIP(pdesc, 0);
-		SET_TX_DESC_PKT_SIZE(pdesc, (u16) skb_len);
+		SET_TX_DESC_PKT_SIZE(pdesc, (u16)skb_len);
 		if (sta) {
 			u8 ampdu_density = sta->ht_cap.ampdu_density;
 			SET_TX_DESC_AMPDU_DENSITY(pdesc, ampdu_density);
@@ -1048,7 +1048,7 @@ void rtl8821ae_tx_fill_desc(struct ieee80211_hw *hw,
 
 	SET_TX_DESC_FIRST_SEG(pdesc, (firstseg ? 1 : 0));
 	SET_TX_DESC_LAST_SEG(pdesc, (lastseg ? 1 : 0));
-	SET_TX_DESC_TX_BUFFER_SIZE(pdesc, (u16) buf_len);
+	SET_TX_DESC_TX_BUFFER_SIZE(pdesc, (u16)buf_len);
 	SET_TX_DESC_TX_BUFFER_ADDRESS(pdesc, mapping);
 	/* if (rtlpriv->dm.useramask) { */
 	if (1) {
@@ -1097,7 +1097,7 @@ void rtl8821ae_tx_fill_cmddesc(struct ieee80211_hw *hw,
 	SET_TX_DESC_FIRST_SEG(pdesc, 1);
 	SET_TX_DESC_LAST_SEG(pdesc, 1);
 
-	SET_TX_DESC_PKT_SIZE((u8 *) pdesc, (u16) (skb->len));
+	SET_TX_DESC_PKT_SIZE((u8 *)pdesc, (u16)(skb->len));
 
 	SET_TX_DESC_OFFSET(pdesc, USB_HWDESC_HEADER_LEN);
 
@@ -1130,7 +1130,7 @@ void rtl8821ae_tx_fill_cmddesc(struct ieee80211_hw *hw,
 		}
 	}*/
 
-	SET_TX_DESC_TX_BUFFER_SIZE(pdesc, (u16) (skb->len));
+	SET_TX_DESC_TX_BUFFER_SIZE(pdesc, (u16)(skb->len));
 
 	SET_TX_DESC_TX_BUFFER_ADDRESS(pdesc, mapping);
 
@@ -1152,7 +1152,7 @@ void rtl8821ae_set_desc(struct ieee80211_hw *hw, u8 *pdesc,
 			SET_TX_DESC_OWN(pdesc, 1);
 			break;
 		case HW_DESC_TX_NEXTDESC_ADDR:
-			SET_TX_DESC_NEXT_DESC_ADDRESS(pdesc, *(u32 *) val);
+			SET_TX_DESC_NEXT_DESC_ADDRESS(pdesc, *(u32 *)val);
 			break;
 		default:
 			RT_ASSERT(false,
@@ -1165,10 +1165,10 @@ void rtl8821ae_set_desc(struct ieee80211_hw *hw, u8 *pdesc,
 			SET_RX_DESC_OWN(pdesc, 1);
 			break;
 		case HW_DESC_RXBUFF_ADDR:
-			SET_RX_DESC_BUFF_ADDR(pdesc, *(u32 *) val);
+			SET_RX_DESC_BUFF_ADDR(pdesc, *(u32 *)val);
 			break;
 		case HW_DESC_RXPKT_LEN:
-			SET_RX_DESC_PKT_LEN(pdesc, *(u32 *) val);
+			SET_RX_DESC_PKT_LEN(pdesc, *(u32 *)val);
 			break;
 		case HW_DESC_RXERO:
 			SET_RX_DESC_EOR(pdesc, 1);
@@ -1224,7 +1224,7 @@ bool rtl8821ae_is_tx_desc_closed(struct ieee80211_hw *hw,
 	struct rtl_pci *rtlpci = rtl_pcidev(rtl_pcipriv(hw));
 	struct rtl8192_tx_ring *ring = &rtlpci->tx_ring[hw_queue];
 	u8 *entry = (u8 *)(&ring->desc[ring->idx]);
-	u8 own = (u8) rtl8821ae_get_desc(entry, true, HW_DESC_OWN);
+	u8 own = (u8)rtl8821ae_get_desc(entry, true, HW_DESC_OWN);
 
 	/*
 	 *beacon packet will only use the first
@@ -1261,7 +1261,7 @@ u32 rtl8821ae_rx_command_packet(struct ieee80211_hw *hw,
 		result = 0;
 		break;
 	case C2H_PACKET:
-		rtl8821ae_c2h_packet_handler(hw, skb->data, (u8) skb->len);
+		rtl8821ae_c2h_packet_handler(hw, skb->data, (u8)skb->len);
 		result = 1;
 		RT_TRACE(rtlpriv, COMP_RECV, DBG_LOUD,
 			"skb->len=%d\n\n", skb->len);

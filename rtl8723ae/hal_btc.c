@@ -680,9 +680,9 @@ void rtl8723e_dm_bt_set_bt_dm(struct ieee80211_hw *hw,
 	bool fw_ps_awake = true;
 
 	rtlpriv->cfg->ops->get_hw_reg(hw, HW_VAR_FW_PSMODE_STATUS,
-					      (u8 *) (&fw_current_inpsmode));
+					      (u8 *)(&fw_current_inpsmode));
 	rtlpriv->cfg->ops->get_hw_reg(hw, HW_VAR_FWLPS_RF_ON,
-					      (u8 *) (&fw_ps_awake));
+					      (u8 *)(&fw_ps_awake));
 
 	/* check new setting is different with the old one, */
 	/* if all the same, don't do the setting again. */
@@ -1803,7 +1803,7 @@ void rtl_8723e_c2h_command_handle(struct ieee80211_hw *hw)
 		rtl_write_byte(rtlpriv, 0x1AF, 0x00);
 		return;
 	}
-	ptmp_buf = (u8 *) kmalloc(c2h_event.cmd_len, GFP_KERNEL);
+	ptmp_buf = (u8 *)kmalloc(c2h_event.cmd_len, GFP_KERNEL);
 	if (ptmp_buf == NULL) {
 		RT_TRACE(rtlpriv, COMP_FW, DBG_TRACE, "malloc cmd buf failed\n");
 		return;

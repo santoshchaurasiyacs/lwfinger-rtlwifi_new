@@ -141,7 +141,7 @@ static void rtl_process_ui_rssi(struct ieee80211_hw *hw, struct rtl_stats *pstat
 	tmpval = rtlpriv->stats.ui_rssi.total_val /
 		rtlpriv->stats.ui_rssi.total_num;
 	rtlpriv->stats.signal_strength = rtl_translate_todbm(hw,
-		(u8) tmpval);
+		(u8)tmpval);
 	pstatus->rssi = rtlpriv->stats.signal_strength;
 
 	if (pstatus->is_cck)
@@ -208,7 +208,7 @@ static void rtl_process_pwdb(struct ieee80211_hw *hw, struct rtl_stats *pstatus)
 
 	/* adhoc or ap mode */
 	if (sta) {
-		drv_priv = (struct rtl_sta_info *) sta->drv_priv;
+		drv_priv = (struct rtl_sta_info *)sta->drv_priv;
 		undec_sm_pwdb = drv_priv->rssi_stat.undec_sm_pwdb;
 	} else {
 		undec_sm_pwdb = rtlpriv->dm.undec_sm_pwdb;
@@ -216,7 +216,7 @@ static void rtl_process_pwdb(struct ieee80211_hw *hw, struct rtl_stats *pstatus)
 
 	if (undec_sm_pwdb < 0)
 		undec_sm_pwdb = pstatus->rx_pwdb_all;
-	if (pstatus->rx_pwdb_all > (u32) undec_sm_pwdb) {
+	if (pstatus->rx_pwdb_all > (u32)undec_sm_pwdb) {
 		undec_sm_pwdb = (((undec_sm_pwdb) *
 		      (RX_SMOOTH_FACTOR - 1)) +
 		     (pstatus->rx_pwdb_all)) / (RX_SMOOTH_FACTOR);

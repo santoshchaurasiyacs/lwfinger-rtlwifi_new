@@ -558,7 +558,7 @@ static void rtl92ee_dm_check_rssi_monitor(struct ieee80211_hw *hw)
 				max = stat->undec_sm_pwdb;
 
 			h2c[3] = 0;
-			h2c[2] = (u8) (dm->undec_sm_pwdb & 0xFF);
+			h2c[2] = (u8)(dm->undec_sm_pwdb & 0xFF);
 			h2c[1] = 0x20;
 			h2c[0] = ++i;
 			rtl92ee_fill_h2c_cmd(hw, H2C_92E_RSSI_REPORT, 4, h2c);
@@ -586,7 +586,7 @@ static void rtl92ee_dm_check_rssi_monitor(struct ieee80211_hw *hw)
 	/* Indicate Rx signal strength to FW. */
 	if (dm->useramask) {
 		h2c[3] = 0;
-		h2c[2] = (u8) (dm->undec_sm_pwdb & 0xFF);
+		h2c[2] = (u8)(dm->undec_sm_pwdb & 0xFF);
 		h2c[1] = 0x20;
 		h2c[0] = 0;
 		rtl92ee_fill_h2c_cmd(hw, H2C_92E_RSSI_REPORT, 4, h2c);
@@ -673,7 +673,7 @@ static void rtl92ee_dm_check_edca_turbo(struct ieee80211_hw *hw)
 		if (rtlpriv->dm.current_turbo_edca) {
 			u8 tmp = AC0_BE;
 			rtlpriv->cfg->ops->set_hw_reg(hw, HW_VAR_AC_PARAM,
-						      (u8 *) (&tmp));
+						      (u8 *)(&tmp));
 		}
 		rtlpriv->dm.current_turbo_edca = false;
 	}
@@ -1245,9 +1245,9 @@ void rtl92ee_dm_watchdog(struct ieee80211_hw *hw)
 	bool fw_ps_awake = true;
 
 	rtlpriv->cfg->ops->get_hw_reg(hw, HW_VAR_FW_PSMODE_STATUS,
-				      (u8 *) (&fw_current_inpsmode));
+				      (u8 *)(&fw_current_inpsmode));
 	rtlpriv->cfg->ops->get_hw_reg(hw, HW_VAR_FWLPS_RF_ON,
-				      (u8 *) (&fw_ps_awake));
+				      (u8 *)(&fw_ps_awake));
 	if (ppsc->p2p_ps_info.p2p_ps_mode)
 		fw_ps_awake = false;
 

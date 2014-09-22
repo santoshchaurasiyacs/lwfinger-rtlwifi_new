@@ -199,10 +199,10 @@ static u32 _rtl88e_phy_rf_serial_read(struct ieee80211_hw *hw,
 		      tmplong | BLSSIREADEDGE);*/
 	mdelay(1);
 	if (rfpath == RF90_PATH_A)
-		rfpi_enable = (u8) rtl_get_bbreg(hw, RFPGA0_XA_HSSIPARAMETER1,
+		rfpi_enable = (u8)rtl_get_bbreg(hw, RFPGA0_XA_HSSIPARAMETER1,
 						 BIT(8));
 	else if (rfpath == RF90_PATH_B)
-		rfpi_enable = (u8) rtl_get_bbreg(hw, RFPGA0_XB_HSSIPARAMETER1,
+		rfpi_enable = (u8)rtl_get_bbreg(hw, RFPGA0_XB_HSSIPARAMETER1,
 						 BIT(8));
 	if (rfpi_enable)
 		retvalue = rtl_get_bbreg(hw, pphyreg->rflssi_readbackpi,
@@ -416,7 +416,7 @@ static bool _rtl88e_phy_bb8188e_config_parafile(struct ieee80211_hw *hw)
 		RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG, "AGC Table Fail\n");
 		return false;
 	}
-	rtlphy->cck_high_power = (bool) (rtl_get_bbreg(hw,
+	rtlphy->cck_high_power = (bool)(rtl_get_bbreg(hw,
 							RFPGA0_XA_HSSIPARAMETER2,
 							0x200));
 
@@ -436,7 +436,7 @@ static bool _rtl88e_phy_config_mac_with_headerfile(struct ieee80211_hw *hw)
 	RT_TRACE(rtlpriv, COMP_INIT, DBG_LOUD,
 		 "Img:RTL8188EEMAC_1T_ARRAY LEN %d\n", arraylength);
 	for (i = 0; i < arraylength; i = i + 2)
-		rtl_write_byte(rtlpriv, ptrarray[i], (u8) ptrarray[i + 1]);
+		rtl_write_byte(rtlpriv, ptrarray[i], (u8)ptrarray[i + 1]);
 	return true;
 }
 
@@ -831,13 +831,13 @@ void rtl88e_phy_get_hw_reg_originalvalue(struct ieee80211_hw *hw)
 	struct rtl_phy *rtlphy = &(rtlpriv->phy);
 
 	rtlphy->default_initialgain[0] =
-	    (u8) rtl_get_bbreg(hw, ROFDM0_XAAGCCORE1, MASKBYTE0);
+	    (u8)rtl_get_bbreg(hw, ROFDM0_XAAGCCORE1, MASKBYTE0);
 	rtlphy->default_initialgain[1] =
-	    (u8) rtl_get_bbreg(hw, ROFDM0_XBAGCCORE1, MASKBYTE0);
+	    (u8)rtl_get_bbreg(hw, ROFDM0_XBAGCCORE1, MASKBYTE0);
 	rtlphy->default_initialgain[2] =
-	    (u8) rtl_get_bbreg(hw, ROFDM0_XCAGCCORE1, MASKBYTE0);
+	    (u8)rtl_get_bbreg(hw, ROFDM0_XCAGCCORE1, MASKBYTE0);
 	rtlphy->default_initialgain[3] =
-	    (u8) rtl_get_bbreg(hw, ROFDM0_XDAGCCORE1, MASKBYTE0);
+	    (u8)rtl_get_bbreg(hw, ROFDM0_XDAGCCORE1, MASKBYTE0);
 
 	RT_TRACE(rtlpriv, COMP_INIT, DBG_TRACE,
 		 "Default initial gain (c50=0x%x, c58=0x%x, c60=0x%x, c68=0x%x\n",
@@ -846,7 +846,7 @@ void rtl88e_phy_get_hw_reg_originalvalue(struct ieee80211_hw *hw)
 		 rtlphy->default_initialgain[2],
 		 rtlphy->default_initialgain[3]);
 
-	rtlphy->framesync = (u8) rtl_get_bbreg(hw,
+	rtlphy->framesync = (u8)rtl_get_bbreg(hw,
 					       ROFDM0_RXDETECTOR3, MASKBYTE0);
 	rtlphy->framesync_c34 = rtl_get_bbreg(hw,
 					      ROFDM0_RXDETECTOR2, MASKDWORD);
@@ -1100,14 +1100,14 @@ void rtl88e_phy_scan_operation_backup(struct ieee80211_hw *hw, u8 operation)
 			iotype = IO_CMD_PAUSE_BAND0_DM_BY_SCAN;
 			rtlpriv->cfg->ops->set_hw_reg(hw,
 						      HW_VAR_IO_CMD,
-						      (u8 *) &iotype);
+						      (u8 *)&iotype);
 
 			break;
 		case SCAN_OPT_RESTORE:
 			iotype = IO_CMD_RESUME_DM_BY_SCAN;
 			rtlpriv->cfg->ops->set_hw_reg(hw,
 						      HW_VAR_IO_CMD,
-						      (u8 *) &iotype);
+						      (u8 *)&iotype);
 			break;
 		default:
 			RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG,
@@ -1344,11 +1344,11 @@ static bool _rtl88e_phy_sw_chnl_step_by_step(struct ieee80211_hw *hw,
 			break;
 		case CMDID_WRITEPORT_USHORT:
 			rtl_write_word(rtlpriv, currentcmd->para1,
-				       (u16) currentcmd->para2);
+				       (u16)currentcmd->para2);
 			break;
 		case CMDID_WRITEPORT_UCHAR:
 			rtl_write_byte(rtlpriv, currentcmd->para1,
-				       (u8) currentcmd->para2);
+				       (u8)currentcmd->para2);
 			break;
 		case CMDID_RF_WRITEREG:
 			for (rfpath = 0; rfpath < num_total_rfpath; rfpath++) {
@@ -1623,7 +1623,7 @@ static void _rtl88e_phy_reload_mac_registers(struct ieee80211_hw *hw,
 	u32 i;
 
 	for (i = 0; i < (IQK_MAC_REG_NUM - 1); i++)
-		rtl_write_byte(rtlpriv, macreg[i], (u8) macbackup[i]);
+		rtl_write_byte(rtlpriv, macreg[i], (u8)macbackup[i]);
 	rtl_write_dword(rtlpriv, macreg[i], macbackup[i]);
 }
 
@@ -1655,8 +1655,8 @@ static void _rtl88e_phy_mac_setting_calibration(struct ieee80211_hw *hw,
 
 	for (i = 1; i < (IQK_MAC_REG_NUM - 1); i++)
 		rtl_write_byte(rtlpriv, macreg[i],
-			       (u8) (macbackup[i] & (~BIT(3))));
-	rtl_write_byte(rtlpriv, macreg[i], (u8) (macbackup[i] & (~BIT(5))));
+			       (u8)(macbackup[i] & (~BIT(3))));
+	rtl_write_byte(rtlpriv, macreg[i], (u8)(macbackup[i] & (~BIT(5))));
 }
 
 static void _rtl88e_phy_path_a_standby(struct ieee80211_hw *hw)
@@ -1773,7 +1773,7 @@ static void _rtl88e_phy_iq_calibrate(struct ieee80211_hw *hw,
 	}
 	_rtl88e_phy_path_adda_on(hw, adda_reg, true, is2t);
 	if (t == 0) {
-		rtlphy->rfpi_enable = (u8) rtl_get_bbreg(hw,
+		rtlphy->rfpi_enable = (u8)rtl_get_bbreg(hw,
 							   RFPGA0_XA_HSSIPARAMETER1,
 							   BIT(8));
 	}

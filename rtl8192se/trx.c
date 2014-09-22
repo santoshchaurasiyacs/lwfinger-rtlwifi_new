@@ -233,7 +233,7 @@ static void _rtl92se_query_rxphystatus(struct ieee80211_hw *hw,
 		cck_buf = (struct phy_sts_cck_8192s_t *)p_drvinfo;
 
 		if (ppsc->rfpwr_state == ERFON)
-			cck_highpwr = (u8) rtl_get_bbreg(hw,
+			cck_highpwr = (u8)rtl_get_bbreg(hw,
 					RFPGA0_XA_HSSIPARAMETER2,
 					0x200);
 		else
@@ -329,7 +329,7 @@ static void _rtl92se_query_rxphystatus(struct ieee80211_hw *hw,
 				(long)(p_drvinfo->rxsnr[i] / 2);
 
 			if (bpacket_match_bssid)
-				pstatus->rx_mimo_signalstrength[i] = (u8) rssi;
+				pstatus->rx_mimo_signalstrength[i] = (u8)rssi;
 		}
 
 		rx_pwr_all = ((p_drvinfo->pwdb_all >> 1) & 0x7f) - 110;
@@ -350,9 +350,9 @@ static void _rtl92se_query_rxphystatus(struct ieee80211_hw *hw,
 			if (bpacket_match_bssid) {
 				if (i == 0)
 					pstatus->signalquality =
-						(u8) (evm & 0xff);
+						(u8)(evm & 0xff);
 				pstatus->rx_mimo_signalquality[i] =
-						(u8) (evm & 0xff);
+						(u8)(evm & 0xff);
 			}
 		}
 	}
@@ -361,7 +361,7 @@ static void _rtl92se_query_rxphystatus(struct ieee80211_hw *hw,
 		pstatus->signalstrength = (u8)(rtl_signal_scale_mapping(hw,
 				pwdb_all));
 	else if (rf_rx_num != 0)
-		pstatus->signalstrength = (u8) (rtl_signal_scale_mapping(hw,
+		pstatus->signalstrength = (u8)(rtl_signal_scale_mapping(hw,
 				total_rssi /= rf_rx_num));
 }
 
@@ -429,7 +429,7 @@ bool rtl92se_rx_query_desc(struct ieee80211_hw *hw, struct rtl_stats *status,
 	status->shortpreamble = (u16)GET_RX_STATUS_DESC_SPLCP(pdesc);
 	status->isampdu = (bool)(GET_RX_STATUS_DESC_PAGGR(pdesc) == 1);
 	status->isfirst_ampdu =
-			(bool) ((GET_RX_STATUS_DESC_PAGGR(pdesc) == 1)
+			(bool)((GET_RX_STATUS_DESC_PAGGR(pdesc) == 1)
 			&& (GET_RX_STATUS_DESC_FAGGR(pdesc) == 1));
 	status->timestamp_low = GET_RX_STATUS_DESC_TSFL(pdesc);
 	status->rx_is40Mhzpacket = (bool)GET_RX_STATUS_DESC_BW(pdesc);
@@ -504,7 +504,7 @@ void rtl92se_tx_fill_desc(struct ieee80211_hw *hw, struct ieee80211_hdr *hdr,
 	struct rtl_mac *mac = rtl_mac(rtl_priv(hw));
 	struct rtl_pci *rtlpci = rtl_pcidev(rtl_pcipriv(hw));
 	struct rtl_hal *rtlhal = rtl_hal(rtl_priv(hw));
-	u8 *pdesc = (u8 *) pdesc_tx;
+	u8 *pdesc = (u8 *)pdesc_tx;
 	u16 seq_number;
 	__le16 fc = hdr->frame_control;
 	u8 reserved_macid = 0;
@@ -616,7 +616,7 @@ void rtl92se_tx_fill_desc(struct ieee80211_hw *hw, struct ieee80211_hdr *hdr,
 		/*DWORD 0*/
 		SET_TX_DESC_LINIP(pdesc, 0);
 		SET_TX_DESC_OFFSET(pdesc, 32);
-		SET_TX_DESC_PKT_SIZE(pdesc, (u16) skb->len);
+		SET_TX_DESC_PKT_SIZE(pdesc, (u16)skb->len);
 
 		/*DWORD 1*/
 		SET_TX_DESC_RA_BRSR_ID(pdesc, ptcb_desc->ratr_index);
@@ -672,7 +672,7 @@ void rtl92se_tx_fill_desc(struct ieee80211_hw *hw, struct ieee80211_hdr *hdr,
 	SET_TX_DESC_LAST_SEG(pdesc, (lastseg ? 1 : 0));
 
 	/* DWORD 7 */
-	SET_TX_DESC_TX_BUFFER_SIZE(pdesc, (u16) skb->len);
+	SET_TX_DESC_TX_BUFFER_SIZE(pdesc, (u16)skb->len);
 
 	/* DOWRD 8 */
 	SET_TX_DESC_TX_BUFFER_ADDRESS(pdesc, mapping);
@@ -746,7 +746,7 @@ void rtl92se_set_desc(struct ieee80211_hw *hw, u8 *pdesc,
 			SET_TX_DESC_OWN(pdesc, 1);
 			break;
 		case HW_DESC_TX_NEXTDESC_ADDR:
-			SET_TX_DESC_NEXT_DESC_ADDRESS(pdesc, *(u32 *) val);
+			SET_TX_DESC_NEXT_DESC_ADDRESS(pdesc, *(u32 *)val);
 			break;
 		default:
 			RT_ASSERT(false,
@@ -759,10 +759,10 @@ void rtl92se_set_desc(struct ieee80211_hw *hw, u8 *pdesc,
 			SET_RX_STATUS_DESC_OWN(pdesc, 1);
 			break;
 		case HW_DESC_RXBUFF_ADDR:
-			SET_RX_STATUS__DESC_BUFF_ADDR(pdesc, *(u32 *) val);
+			SET_RX_STATUS__DESC_BUFF_ADDR(pdesc, *(u32 *)val);
 			break;
 		case HW_DESC_RXPKT_LEN:
-			SET_RX_STATUS_DESC_PKT_LEN(pdesc, *(u32 *) val);
+			SET_RX_STATUS_DESC_PKT_LEN(pdesc, *(u32 *)val);
 			break;
 		case HW_DESC_RXERO:
 			SET_RX_STATUS_DESC_EOR(pdesc, 1);
@@ -817,7 +817,7 @@ bool rtl92se_is_tx_desc_closed(struct ieee80211_hw *hw, u8 hw_queue, u16 index)
 	struct rtl_pci *rtlpci = rtl_pcidev(rtl_pcipriv(hw));
 	struct rtl8192_tx_ring *ring = &rtlpci->tx_ring[hw_queue];
 	u8 *entry = (u8 *)(&ring->desc[ring->idx]);
-	u8 own = (u8) rtl92se_get_desc(entry, true, HW_DESC_OWN);
+	u8 own = (u8)rtl92se_get_desc(entry, true, HW_DESC_OWN);
 
 	/*
 	 *beacon packet will only use the first

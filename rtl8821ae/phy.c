@@ -253,9 +253,9 @@ static u32 _rtl8821ae_phy_rf_serial_read(struct ieee80211_hw *hw,
 	offset &= 0xff;
 
 	if (rfpath == RF90_PATH_A)
-		is_pi_mode = (bool) rtl_get_bbreg(hw, 0xC00, 0x4);
+		is_pi_mode = (bool)rtl_get_bbreg(hw, 0xC00, 0x4);
 	else if (rfpath == RF90_PATH_B)
-		is_pi_mode = (bool) rtl_get_bbreg(hw, 0xE00, 0x4);
+		is_pi_mode = (bool)rtl_get_bbreg(hw, 0xE00, 0x4);
 
 	rtl_set_bbreg(hw, RHSSIREAD_8821AE, 0xff, offset);
 
@@ -931,47 +931,47 @@ static void _rtl8821ae_phy_store_txpower_by_rate_base(struct ieee80211_hw *hw)
 	u8 base = 0, path = 0;
 
 	for (path = RF90_PATH_A; path <= RF90_PATH_B; ++path) {
-		rawValue = (u16) (rtlphy->tx_power_by_rate_offset[BAND_ON_2_4G][path][RF_1TX][0] >> 24) & 0xFF;
+		rawValue = (u16)(rtlphy->tx_power_by_rate_offset[BAND_ON_2_4G][path][RF_1TX][0] >> 24) & 0xFF;
 		base = (rawValue >> 4) * 10 + (rawValue & 0xF);
 		_rtl8821ae_phy_set_txpower_by_rate_base(hw, BAND_ON_2_4G, path, CCK, RF_1TX, base);
 
-		rawValue = (u16) (rtlphy->tx_power_by_rate_offset[BAND_ON_2_4G][path][RF_1TX][2] >> 24) & 0xFF;
+		rawValue = (u16)(rtlphy->tx_power_by_rate_offset[BAND_ON_2_4G][path][RF_1TX][2] >> 24) & 0xFF;
 		base = (rawValue >> 4) * 10 + (rawValue & 0xF);
 		_rtl8821ae_phy_set_txpower_by_rate_base(hw, BAND_ON_2_4G, path, OFDM, RF_1TX, base);
 
-		rawValue = (u16) (rtlphy->tx_power_by_rate_offset[BAND_ON_2_4G][path][RF_1TX][4] >> 24) & 0xFF;
+		rawValue = (u16)(rtlphy->tx_power_by_rate_offset[BAND_ON_2_4G][path][RF_1TX][4] >> 24) & 0xFF;
 		base = (rawValue >> 4) * 10 + (rawValue & 0xF);
 		_rtl8821ae_phy_set_txpower_by_rate_base(hw, BAND_ON_2_4G, path, HT_MCS0_MCS7, RF_1TX, base);
 
-		rawValue = (u16) (rtlphy->tx_power_by_rate_offset[BAND_ON_2_4G][path][RF_2TX][6] >> 24) & 0xFF;
+		rawValue = (u16)(rtlphy->tx_power_by_rate_offset[BAND_ON_2_4G][path][RF_2TX][6] >> 24) & 0xFF;
 		base = (rawValue >> 4) * 10 + (rawValue & 0xF);
 		_rtl8821ae_phy_set_txpower_by_rate_base(hw, BAND_ON_2_4G, path, HT_MCS8_MCS15, RF_2TX, base);
 
-		rawValue = (u16) (rtlphy->tx_power_by_rate_offset[BAND_ON_2_4G][path][RF_1TX][8] >> 24) & 0xFF;
+		rawValue = (u16)(rtlphy->tx_power_by_rate_offset[BAND_ON_2_4G][path][RF_1TX][8] >> 24) & 0xFF;
 		base = (rawValue >> 4) * 10 + (rawValue & 0xF);
 		_rtl8821ae_phy_set_txpower_by_rate_base(hw, BAND_ON_2_4G, path, VHT_1SSMCS0_1SSMCS9, RF_1TX, base);
 
-		rawValue = (u16) (rtlphy->tx_power_by_rate_offset[BAND_ON_2_4G][path][RF_2TX][11] >> 8) & 0xFF;
+		rawValue = (u16)(rtlphy->tx_power_by_rate_offset[BAND_ON_2_4G][path][RF_2TX][11] >> 8) & 0xFF;
 		base = (rawValue >> 4) * 10 + (rawValue & 0xF);
 		_rtl8821ae_phy_set_txpower_by_rate_base(hw, BAND_ON_2_4G, path, VHT_2SSMCS0_2SSMCS9, RF_2TX, base);
 
-		rawValue = (u16) (rtlphy->tx_power_by_rate_offset[BAND_ON_5G][path][RF_1TX][2] >> 24) & 0xFF;
+		rawValue = (u16)(rtlphy->tx_power_by_rate_offset[BAND_ON_5G][path][RF_1TX][2] >> 24) & 0xFF;
 		base = (rawValue >> 4) * 10 + (rawValue & 0xF);
 		_rtl8821ae_phy_set_txpower_by_rate_base(hw, BAND_ON_5G, path, OFDM, RF_1TX, base);
 
-		rawValue = (u16) (rtlphy->tx_power_by_rate_offset[BAND_ON_5G][path][RF_1TX][4] >> 24) & 0xFF;
+		rawValue = (u16)(rtlphy->tx_power_by_rate_offset[BAND_ON_5G][path][RF_1TX][4] >> 24) & 0xFF;
 		base = (rawValue >> 4) * 10 + (rawValue & 0xF);
 		_rtl8821ae_phy_set_txpower_by_rate_base(hw, BAND_ON_5G, path, HT_MCS0_MCS7, RF_1TX, base);
 
-		rawValue = (u16) (rtlphy->tx_power_by_rate_offset[BAND_ON_5G][path][RF_2TX][6] >> 24) & 0xFF;
+		rawValue = (u16)(rtlphy->tx_power_by_rate_offset[BAND_ON_5G][path][RF_2TX][6] >> 24) & 0xFF;
 		base = (rawValue >> 4) * 10 + (rawValue & 0xF);
 		_rtl8821ae_phy_set_txpower_by_rate_base(hw, BAND_ON_5G, path, HT_MCS8_MCS15, RF_2TX, base);
 
-		rawValue = (u16) (rtlphy->tx_power_by_rate_offset[BAND_ON_5G][path][RF_1TX][8] >> 24) & 0xFF;
+		rawValue = (u16)(rtlphy->tx_power_by_rate_offset[BAND_ON_5G][path][RF_1TX][8] >> 24) & 0xFF;
 		base = (rawValue >> 4) * 10 + (rawValue & 0xF);
 		_rtl8821ae_phy_set_txpower_by_rate_base(hw, BAND_ON_5G, path, VHT_1SSMCS0_1SSMCS9, RF_1TX, base);
 
-		rawValue = (u16) (rtlphy->tx_power_by_rate_offset[BAND_ON_5G][path][RF_2TX][11] >> 8) & 0xFF;
+		rawValue = (u16)(rtlphy->tx_power_by_rate_offset[BAND_ON_5G][path][RF_2TX][11] >> 8) & 0xFF;
 		base = (rawValue >> 4) * 10 + (rawValue & 0xF);
 		_rtl8821ae_phy_set_txpower_by_rate_base(hw, BAND_ON_5G, path, VHT_2SSMCS0_2SSMCS9, RF_2TX, base);
 	}
@@ -987,14 +987,14 @@ static void _phy_convert_txpower_dbm_to_relative_value(u32 *data, u8 start,
 	for (i = 3; i >= 0; --i) {
 		if (i >= start && i <= end) {
 			/* Get the exact value */
-			temp_value = (u8) (*data >> (i * 8)) & 0xF;
-			temp_value += ((u8) ((*data >> (i * 8 + 4)) & 0xF)) * 10;
+			temp_value = (u8)(*data >> (i * 8)) & 0xF;
+			temp_value += ((u8)((*data >> (i * 8 + 4)) & 0xF)) * 10;
 
 			/* Change the value to a relative value */
 			temp_value = (temp_value > base_val) ? temp_value -
 					base_val : base_val - temp_value;
 		} else {
-			temp_value = (u8) (*data >> (i * 8)) & 0xFF;
+			temp_value = (u8)(*data >> (i * 8)) & 0xFF;
 		}
 		temp_data <<= 8;
 		temp_data |= temp_value;
@@ -1719,7 +1719,7 @@ static bool _rtl8821ae_phy_bb8821a_config_parafile(struct ieee80211_hw *hw)
 		RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG, "AGC Table Fail\n");
 		return false;
 	}
-	rtlphy->cck_high_power = (bool) (rtl_get_bbreg(hw,
+	rtlphy->cck_high_power = (bool)(rtl_get_bbreg(hw,
 			RFPGA0_XA_HSSIPARAMETER2, 0x200));
 	return true;
 }
@@ -1744,9 +1744,9 @@ static bool _rtl8821ae_phy_config_mac_with_headerfile(struct ieee80211_hw *hw)
 		 "Img: MAC_REG_ARRAY LEN %d\n", arraylength);
 	for (i = 0; i < arraylength; i += 2) {
 		v1 = ptrarray[i];
-		v2 = (u8) ptrarray[i + 1];
+		v2 = (u8)ptrarray[i + 1];
 		if (v1 < 0xCDCDCDCD) {
-			rtl_write_byte(rtlpriv, v1, (u8) v2);
+			rtl_write_byte(rtlpriv, v1, (u8)v2);
 			continue;
 		} else {
 			if (!_rtl8821ae_check_condition(hw, v1)) {
@@ -1894,9 +1894,9 @@ static u8 _rtl8821ae_get_rate_section_index(u32 regaddr)
 	u8 index = 0;
 	regaddr &= 0xFFF;
 	if (regaddr >= 0xC20 && regaddr <= 0xC4C)
-		index = (u8) ((regaddr - 0xC20) / 4);
+		index = (u8)((regaddr - 0xC20) / 4);
 	else if (regaddr >= 0xE20 && regaddr <= 0xE4C)
-		index = (u8) ((regaddr - 0xE20) / 4);
+		index = (u8)((regaddr - 0xE20) / 4);
 	else
 		RT_ASSERT(!COMP_INIT,
 			  "Invalid RegAddr 0x%x\n", regaddr);
@@ -2180,13 +2180,13 @@ void rtl8821ae_phy_get_hw_reg_originalvalue(struct ieee80211_hw *hw)
 	struct rtl_phy *rtlphy = &(rtlpriv->phy);
 
 	rtlphy->default_initialgain[0] =
-	    (u8) rtl_get_bbreg(hw, ROFDM0_XAAGCCORE1, MASKBYTE0);
+	    (u8)rtl_get_bbreg(hw, ROFDM0_XAAGCCORE1, MASKBYTE0);
 	rtlphy->default_initialgain[1] =
-	    (u8) rtl_get_bbreg(hw, ROFDM0_XBAGCCORE1, MASKBYTE0);
+	    (u8)rtl_get_bbreg(hw, ROFDM0_XBAGCCORE1, MASKBYTE0);
 	rtlphy->default_initialgain[2] =
-	    (u8) rtl_get_bbreg(hw, ROFDM0_XCAGCCORE1, MASKBYTE0);
+	    (u8)rtl_get_bbreg(hw, ROFDM0_XCAGCCORE1, MASKBYTE0);
 	rtlphy->default_initialgain[3] =
-	    (u8) rtl_get_bbreg(hw, ROFDM0_XDAGCCORE1, MASKBYTE0);
+	    (u8)rtl_get_bbreg(hw, ROFDM0_XDAGCCORE1, MASKBYTE0);
 
 	RT_TRACE(rtlpriv, COMP_INIT, DBG_TRACE,
 		 "Default initial gain (c50=0x%x, c58=0x%x, c60=0x%x, c68=0x%x\n",
@@ -2195,7 +2195,7 @@ void rtl8821ae_phy_get_hw_reg_originalvalue(struct ieee80211_hw *hw)
 		  rtlphy->default_initialgain[2],
 		  rtlphy->default_initialgain[3]);
 
-	rtlphy->framesync = (u8) rtl_get_bbreg(hw,
+	rtlphy->framesync = (u8)rtl_get_bbreg(hw,
 					       ROFDM0_RXDETECTOR3, MASKBYTE0);
 	rtlphy->framesync_c34 = rtl_get_bbreg(hw,
 					      ROFDM0_RXDETECTOR2, MASKDWORD);
@@ -2747,7 +2747,7 @@ static char _rtl8821ae_phy_get_txpower_by_rate(struct ieee80211_hw *hw,
 		break;
 	}
 
-	tx_pwr_diff = (u8) (rtlphy->tx_power_by_rate_offset[band][path]
+	tx_pwr_diff = (u8)(rtlphy->tx_power_by_rate_offset[band][path]
 		[tx_num][rate_section] >> shift) & 0xff;
 
 	/* RegEnableTxPowerLimit == 1 for 8812a & 8821a */
@@ -3480,21 +3480,21 @@ void rtl8821ae_phy_scan_operation_backup(struct ieee80211_hw *hw, u8 operation)
 			iotype = IO_CMD_PAUSE_BAND0_DM_BY_SCAN;
 			rtlpriv->cfg->ops->set_hw_reg(hw,
 						      HW_VAR_IO_CMD,
-						      (u8 *) &iotype);
+						      (u8 *)&iotype);
 
 			break;
 		case SCAN_OPT_BACKUP_BAND1:
 			iotype = IO_CMD_PAUSE_BAND1_DM_BY_SCAN;
 			rtlpriv->cfg->ops->set_hw_reg(hw,
 						      HW_VAR_IO_CMD,
-						      (u8 *) &iotype);
+						      (u8 *)&iotype);
 
 			break;
 		case SCAN_OPT_RESTORE:
 			iotype = IO_CMD_RESUME_DM_BY_SCAN;
 			rtlpriv->cfg->ops->set_hw_reg(hw,
 						      HW_VAR_IO_CMD,
-						      (u8 *) &iotype);
+						      (u8 *)&iotype);
 			break;
 		default:
 			RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG,

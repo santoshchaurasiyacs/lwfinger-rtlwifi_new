@@ -287,34 +287,34 @@ int rtl_pci_resume(struct device *dev);
 
 static inline u8 pci_read8_sync(struct rtl_priv *rtlpriv, u32 addr)
 {
-	return 0xff & readb((u8 __iomem *) rtlpriv->io.pci_mem_start + addr);
+	return 0xff & readb((u8 __iomem *)rtlpriv->io.pci_mem_start + addr);
 }
 
 static inline u16 pci_read16_sync(struct rtl_priv *rtlpriv, u32 addr)
 {
-	return readw((u8 __iomem *) rtlpriv->io.pci_mem_start + addr);
+	return readw((u8 __iomem *)rtlpriv->io.pci_mem_start + addr);
 }
 
 static inline u32 pci_read32_sync(struct rtl_priv *rtlpriv, u32 addr)
 {
-	return readl((u8 __iomem *) rtlpriv->io.pci_mem_start + addr);
+	return readl((u8 __iomem *)rtlpriv->io.pci_mem_start + addr);
 }
 
 static inline void pci_write8_async(struct rtl_priv *rtlpriv, u32 addr, u8 val)
 {
-	writeb(val, (u8 __iomem *) rtlpriv->io.pci_mem_start + addr);
+	writeb(val, (u8 __iomem *)rtlpriv->io.pci_mem_start + addr);
 }
 
 static inline void pci_write16_async(struct rtl_priv *rtlpriv,
 				     u32 addr, u16 val)
 {
-	writew(val, (u8 __iomem *) rtlpriv->io.pci_mem_start + addr);
+	writew(val, (u8 __iomem *)rtlpriv->io.pci_mem_start + addr);
 }
 
 static inline void pci_write32_async(struct rtl_priv *rtlpriv,
 				     u32 addr, u32 val)
 {
-	writel(val, (u8 __iomem *) rtlpriv->io.pci_mem_start + addr);
+	writel(val, (u8 __iomem *)rtlpriv->io.pci_mem_start + addr);
 }
 
 static inline void rtl_pci_raw_write_port_ulong(u32 port, u32 val)

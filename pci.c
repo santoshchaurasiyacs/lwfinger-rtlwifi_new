@@ -609,7 +609,7 @@ static void _rtl_pci_tx_isr(struct ieee80211_hw *hw, int prio)
 
 		pci_unmap_single(rtlpci->pdev,
 				 rtlpriv->cfg->ops->
-					     get_desc((u8 *) entry, true,
+					     get_desc((u8 *)entry, true,
 						      HW_DESC_TXBUFF_ADDR),
 				 skb->len, PCI_DMA_TODEVICE);
 
@@ -621,7 +621,7 @@ static void _rtl_pci_tx_isr(struct ieee80211_hw *hw, int prio)
 			"new ring->idx:%d,free: skb_queue_len:%d, free: seq:%d\n",
 			 ring->idx,
 			 skb_queue_len(&ring->queue),
-			 *(u16 *) (skb->data + 22));
+			 *(u16 *)(skb->data + 22));
 
 		if (prio == TXCMD_QUEUE) {
 			dev_kfree_skb(skb);
@@ -703,26 +703,26 @@ static int _rtl_pci_init_one_rxdesc(struct ieee80211_hw *hw,
 
 	/* just set skb->cb to mapping addr
 	 * for pci_unmap_single use */
-	*((dma_addr_t *) skb->cb) = pci_map_single(rtlpci->pdev,
+	*((dma_addr_t *)skb->cb) = pci_map_single(rtlpci->pdev,
 				skb_tail_pointer(skb), rtlpci->rxbuffersize,
 				PCI_DMA_FROMDEVICE);
-	bufferaddress = *((dma_addr_t *) skb->cb);
+	bufferaddress = *((dma_addr_t *)skb->cb);
 	if (pci_dma_mapping_error(rtlpci->pdev, bufferaddress))
 		return 0;
 	if (rtlpriv->use_new_trx_flow) {
-		rtlpriv->cfg->ops->set_desc(hw, (u8 *) entry, false,
+		rtlpriv->cfg->ops->set_desc(hw, (u8 *)entry, false,
 					    HW_DESC_RX_PREPARE,
-					    (u8 *) &bufferaddress);
+					    (u8 *)&bufferaddress);
 	} else {
-		rtlpriv->cfg->ops->set_desc(hw, (u8 *) entry, false,
+		rtlpriv->cfg->ops->set_desc(hw, (u8 *)entry, false,
 					    HW_DESC_RXBUFF_ADDR,
-					    (u8 *) &bufferaddress);
-		rtlpriv->cfg->ops->set_desc(hw, (u8 *) entry, false,
+					    (u8 *)&bufferaddress);
+		rtlpriv->cfg->ops->set_desc(hw, (u8 *)entry, false,
 					    HW_DESC_RXPKT_LEN,
-					    (u8 *) &rtlpci->rxbuffersize);
-		rtlpriv->cfg->ops->set_desc(hw, (u8 *) entry, false,
+					    (u8 *)&rtlpci->rxbuffersize);
+		rtlpriv->cfg->ops->set_desc(hw, (u8 *)entry, false,
 					    HW_DESC_RXOWN,
-					    (u8 *) &tmp_one);
+					    (u8 *)&tmp_one);
 	}
 
 	return 1;
@@ -818,7 +818,7 @@ static void _rtl_pci_rx_interrupt(struct ieee80211_hw *hw)
 			pdesc = &rtlpci->rx_ring[rxring_idx].desc[
 				rtlpci->rx_ring[rxring_idx].idx];
 
-			own = (u8) rtlpriv->cfg->ops->get_desc((u8 *) pdesc,
+			own = (u8)rtlpriv->cfg->ops->get_desc((u8 *)pdesc,
 							       false,
 							       HW_DESC_OWN);
 			if (own) /* wait data to be filled by hardware */
@@ -828,7 +828,7 @@ static void _rtl_pci_rx_interrupt(struct ieee80211_hw *hw)
 		/* Get here means: data is filled already*/
 		/* AAAAAAttention !!!
 		 * We can NOT access 'skb' before 'pci_unmap_single' */
-		pci_unmap_single(rtlpci->pdev, *((dma_addr_t *) skb->cb),
+		pci_unmap_single(rtlpci->pdev, *((dma_addr_t *)skb->cb),
 				 rtlpci->rxbuffersize, PCI_DMA_FROMDEVICE);
 
 		if (rtlpriv->use_new_trx_flow) {
@@ -839,7 +839,7 @@ static void _rtl_pci_rx_interrupt(struct ieee80211_hw *hw)
 		}
 		memset(&rx_status , 0 , sizeof(rx_status));
 		rtlpriv->cfg->ops->query_rx_desc(hw, &status,
-						 &rx_status, (u8 *) pdesc, skb);
+						 &rx_status, (u8 *)pdesc, skb);
 
 		if (rtlpriv->use_new_trx_flow)
 			rtlpriv->cfg->ops->rx_check_dma_ok(hw,
@@ -947,10 +947,10 @@ end:
 
 			if (rtlpci->rx_ring[rxring_idx].idx ==
 			    rtlpci->rxringcount - 1)
-				rtlpriv->cfg->ops->set_desc(hw, (u8 *) pdesc,
+				rtlpriv->cfg->ops->set_desc(hw, (u8 *)pdesc,
 							    false,
 							    HW_DESC_RXERO,
-							    (u8 *) &tmp_one);
+							    (u8 *)&tmp_one);
 		}
 		rtlpci->rx_ring[rxring_idx].idx =
 				(rtlpci->rx_ring[rxring_idx].idx + 1) %
@@ -1144,14 +1144,14 @@ static void _rtl_pci_prepare_bcn_tasklet(struct ieee80211_hw *hw)
 	if (rtlpriv->use_new_trx_flow)
 		pbuffer_desc = &ring->buffer_desc[0];
 
-	rtlpriv->cfg->ops->fill_tx_desc(hw, hdr, (u8 *) pdesc,
+	rtlpriv->cfg->ops->fill_tx_desc(hw, hdr, (u8 *)pdesc,
 					(u8 *)pbuffer_desc, info, NULL, pskb,
 					BEACON_QUEUE, &tcb_desc);
 
 	__skb_queue_tail(&ring->queue, pskb);
 
-	rtlpriv->cfg->ops->set_desc(hw, (u8 *) pdesc, true, HW_DESC_OWN,
-				    (u8 *) &temp_one);
+	rtlpriv->cfg->ops->set_desc(hw, (u8 *)pdesc, true, HW_DESC_OWN,
+				    (u8 *)&temp_one);
 
 	return;
 }
@@ -1285,14 +1285,14 @@ static int _rtl_pci_init_tx_ring(struct ieee80211_hw *hw,
 	/* init every desc in this ring */
 	if (rtlpriv->use_new_trx_flow == false) {
 		for (i = 0; i < entries; i++) {
-			nextdescaddress = (u32) desc_dma +
+			nextdescaddress = (u32)desc_dma +
 						      ((i +	1) % entries) *
 						      sizeof(*desc);
 
-			rtlpriv->cfg->ops->set_desc(hw, (u8 *) &(desc[i]),
+			rtlpriv->cfg->ops->set_desc(hw, (u8 *)&(desc[i]),
 						    true,
 						    HW_DESC_TX_NEXTDESC_ADDR,
-						    (u8 *) &nextdescaddress);
+						    (u8 *)&nextdescaddress);
 		}
 	}
 	return 0;
@@ -1360,8 +1360,8 @@ static int _rtl_pci_init_rx_ring(struct ieee80211_hw *hw, int rxring_idx)
 						      rxring_idx, i))
 				return -ENOMEM;
 		}
-		rtlpriv->cfg->ops->set_desc(hw, (u8 *) entry, false,
-					    HW_DESC_RXERO, (u8 *) &tmp_one);
+		rtlpriv->cfg->ops->set_desc(hw, (u8 *)entry, false,
+					    HW_DESC_RXERO, (u8 *)&tmp_one);
 	}
 	return 0;
 }
@@ -1384,7 +1384,7 @@ static void _rtl_pci_free_tx_ring(struct ieee80211_hw *hw,
 
 		pci_unmap_single(rtlpci->pdev,
 				 rtlpriv->cfg->ops->get_desc(
-				 (u8 *) entry, true, HW_DESC_TXBUFF_ADDR),
+				 (u8 *)entry, true, HW_DESC_TXBUFF_ADDR),
 				 skb->len, PCI_DMA_TODEVICE);
 		kfree_skb(skb);
 		ring->idx = (ring->idx + 1) % ring->entries;
@@ -1415,7 +1415,7 @@ static void _rtl_pci_free_rx_ring(struct ieee80211_hw *hw, int rxring_idx)
 		if (!skb)
 			continue;
 
-		pci_unmap_single(rtlpci->pdev, *((dma_addr_t *) skb->cb),
+		pci_unmap_single(rtlpci->pdev, *((dma_addr_t *)skb->cb),
 				 rtlpci->rxbuffersize, PCI_DMA_FROMDEVICE);
 		kfree_skb(skb);
 	}
@@ -1508,28 +1508,28 @@ int rtl_pci_reset_trx_ring(struct ieee80211_hw *hw)
 			rtlpci->rx_ring[rxring_idx].idx = 0;
 			for (i = 0; i < rtlpci->rxringcount; i++) {
 				entry = &rtlpci->rx_ring[rxring_idx].desc[i];
-				bufferaddress = rtlpriv->cfg->ops->get_desc((u8 *) entry,
+				bufferaddress = rtlpriv->cfg->ops->get_desc((u8 *)entry,
 					false , HW_DESC_RXBUFF_ADDR);
-				memset((u8 *) entry , 0 ,
+				memset((u8 *)entry , 0 ,
 					sizeof(*rtlpci->rx_ring[rxring_idx].desc));/*clear one entry*/
 				if (rtlpriv->use_new_trx_flow) {
-					rtlpriv->cfg->ops->set_desc(hw, (u8 *) entry, false,
+					rtlpriv->cfg->ops->set_desc(hw, (u8 *)entry, false,
 					    HW_DESC_RX_PREPARE,
-					    (u8 *) &bufferaddress);
+					    (u8 *)&bufferaddress);
 				} else {
-					rtlpriv->cfg->ops->set_desc(hw, (u8 *) entry, false,
+					rtlpriv->cfg->ops->set_desc(hw, (u8 *)entry, false,
 					    HW_DESC_RXBUFF_ADDR,
-					    (u8 *) &bufferaddress);
-					rtlpriv->cfg->ops->set_desc(hw, (u8 *) entry, false,
+					    (u8 *)&bufferaddress);
+					rtlpriv->cfg->ops->set_desc(hw, (u8 *)entry, false,
 					    HW_DESC_RXPKT_LEN,
-					    (u8 *) &rtlpci->rxbuffersize);
-					rtlpriv->cfg->ops->set_desc(hw, (u8 *) entry, false,
+					    (u8 *)&rtlpci->rxbuffersize);
+					rtlpriv->cfg->ops->set_desc(hw, (u8 *)entry, false,
 					    HW_DESC_RXOWN,
-					    (u8 *) &tmp_one);
+					    (u8 *)&tmp_one);
 				}
 			}
-			rtlpriv->cfg->ops->set_desc(hw, (u8 *) entry, false,
-					    HW_DESC_RXERO, (u8 *) &tmp_one);
+			rtlpriv->cfg->ops->set_desc(hw, (u8 *)entry, false,
+					    HW_DESC_RXERO, (u8 *)&tmp_one);
 		}
 		rtlpci->rx_ring[rxring_idx].idx = 0;
 	}
@@ -1667,7 +1667,7 @@ static int rtl_pci_tx(struct ieee80211_hw *hw,
 	if (rtlpriv->use_new_trx_flow) {
 		ptx_bd_desc = &ring->buffer_desc[idx];
 	} else {
-		own = (u8) rtlpriv->cfg->ops->get_desc((u8 *) pdesc,
+		own = (u8)rtlpriv->cfg->ops->get_desc((u8 *)pdesc,
 				true, HW_DESC_OWN);
 
 		if ((own == 1) && (hw_queue != BEACON_QUEUE)) {
@@ -1698,17 +1698,17 @@ static int rtl_pci_tx(struct ieee80211_hw *hw,
 	if (ieee80211_is_data(fc))
 		rtlpriv->cfg->ops->led_control(hw, LED_CTL_TX);
 
-	rtlpriv->cfg->ops->fill_tx_desc(hw, hdr, (u8 *) pdesc,
+	rtlpriv->cfg->ops->fill_tx_desc(hw, hdr, (u8 *)pdesc,
 					(u8 *)ptx_bd_desc, info, sta, skb,
 					hw_queue, ptcb_desc);
 
 	__skb_queue_tail(&ring->queue, skb);
 	if (rtlpriv->use_new_trx_flow) {
-		rtlpriv->cfg->ops->set_desc(hw, (u8 *) pdesc, true,
-					    HW_DESC_OWN, (u8 *) &hw_queue);
+		rtlpriv->cfg->ops->set_desc(hw, (u8 *)pdesc, true,
+					    HW_DESC_OWN, (u8 *)&hw_queue);
 	} else {
-		rtlpriv->cfg->ops->set_desc(hw, (u8 *) pdesc, true,
-					    HW_DESC_OWN, (u8 *) &temp_one);
+		rtlpriv->cfg->ops->set_desc(hw, (u8 *)pdesc, true,
+					    HW_DESC_OWN, (u8 *)&temp_one);
 	}
 
 	if ((ring->entries - skb_queue_len(&ring->queue)) < 2 &&

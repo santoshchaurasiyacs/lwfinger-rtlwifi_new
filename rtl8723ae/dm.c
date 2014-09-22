@@ -198,7 +198,7 @@ static u8 rtl8723e_dm_initial_gain_min_pwdb(struct ieee80211_hw *hw)
 		rssi_val_min = rtlpriv->dm.entry_min_undec_sm_pwdb;
 	}
 
-	return (u8) rssi_val_min;
+	return (u8)rssi_val_min;
 }
 
 static void rtl8723e_dm_false_alarm_counter_statistics(struct ieee80211_hw *hw)
@@ -678,7 +678,7 @@ static void rtl8723e_dm_check_edca_turbo(struct ieee80211_hw *hw)
 			u8 tmp = AC0_BE;
 			rtlpriv->cfg->ops->set_hw_reg(hw,
 						      HW_VAR_AC_PARAM,
-						      (u8 *) (&tmp));
+						      (u8 *)(&tmp));
 			rtlpriv->dm.current_turbo_edca = false;
 		}
 	}
@@ -871,9 +871,9 @@ void rtl8723e_dm_watchdog(struct ieee80211_hw *hw)
 	bool fw_current_inpsmode = false;
 	bool fw_ps_awake = true;
 	rtlpriv->cfg->ops->get_hw_reg(hw, HW_VAR_FW_PSMODE_STATUS,
-				      (u8 *) (&fw_current_inpsmode));
+				      (u8 *)(&fw_current_inpsmode));
 	rtlpriv->cfg->ops->get_hw_reg(hw, HW_VAR_FWLPS_RF_ON,
-				      (u8 *) (&fw_ps_awake));
+				      (u8 *)(&fw_ps_awake));
 
 	if (ppsc->p2p_ps_info.p2p_ps_mode)
 		fw_ps_awake = false;

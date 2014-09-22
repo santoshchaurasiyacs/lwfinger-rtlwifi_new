@@ -224,7 +224,7 @@ void read_efuse_byte(struct ieee80211_hw *hw, u16 _offset, u8 *pbuf)
 	udelay(50);
 	value32 = rtl_read_dword(rtlpriv, rtlpriv->cfg->maps[EFUSE_CTRL]);
 
-	*pbuf = (u8) (value32 & 0xff);
+	*pbuf = (u8)(value32 & 0xff);
 }
 EXPORT_SYMBOL_GPL(read_efuse_byte);
 
@@ -365,7 +365,7 @@ void read_efuse(struct ieee80211_hw *hw, u16 _offset, u16 _size_byte, u8 *pbuf)
 		pbuf[i] = efuse_tbl[_offset + i];
 
 	rtlefuse->efuse_usedbytes = efuse_utilized;
-	efuse_usage = (u8) ((efuse_utilized * 100) / efuse_len);
+	efuse_usage = (u8)((efuse_utilized * 100) / efuse_len);
 	rtlefuse->efuse_usedpercentage = efuse_usage;
 	rtlpriv->cfg->ops->set_hw_reg(hw, HW_VAR_EFUSE_BYTES,
 				      (u8 *)&efuse_utilized);
@@ -425,11 +425,11 @@ void efuse_shadow_read(struct ieee80211_hw *hw, u8 type,
 		       u16 offset, u32 *value)
 {
 	if (type == 1)
-		efuse_shadow_read_1byte(hw, offset, (u8 *) value);
+		efuse_shadow_read_1byte(hw, offset, (u8 *)value);
 	else if (type == 2)
-		efuse_shadow_read_2byte(hw, offset, (u16 *) value);
+		efuse_shadow_read_2byte(hw, offset, (u16 *)value);
 	else if (type == 4)
-		efuse_shadow_read_4byte(hw, offset, (u32 *) value);
+		efuse_shadow_read_4byte(hw, offset, (u32 *)value);
 
 }
 EXPORT_SYMBOL(efuse_shadow_read);
@@ -438,11 +438,11 @@ void efuse_shadow_write(struct ieee80211_hw *hw, u8 type, u16 offset,
 				u32 value)
 {
 	if (type == 1)
-		efuse_shadow_write_1byte(hw, offset, (u8) value);
+		efuse_shadow_write_1byte(hw, offset, (u8)value);
 	else if (type == 2)
-		efuse_shadow_write_2byte(hw, offset, (u16) value);
+		efuse_shadow_write_2byte(hw, offset, (u16)value);
 	else if (type == 4)
-		efuse_shadow_write_4byte(hw, offset, (u32) value);
+		efuse_shadow_write_4byte(hw, offset, (u32)value);
 
 }
 
@@ -500,7 +500,7 @@ bool efuse_shadow_update(struct ieee80211_hw *hw)
 			RT_PRINT_DATA(rtlpriv, COMP_INIT, DBG_LOUD,
 				      "U-efuse\n", tmpdata, 8);
 
-			if (!efuse_pg_packet_write(hw, (u8) offset, word_en,
+			if (!efuse_pg_packet_write(hw, (u8)offset, word_en,
 						   tmpdata)) {
 				RT_TRACE(rtlpriv, COMP_ERR, DBG_WARNING,
 					 "PG section(%#x) fail!!\n", offset);
@@ -608,13 +608,13 @@ static void efuse_shadow_write_4byte(struct ieee80211_hw *hw,
 	struct rtl_efuse *rtlefuse = rtl_efuse(rtl_priv(hw));
 
 	rtlefuse->efuse_map[EFUSE_MODIFY_MAP][offset] =
-	    (u8) (value & 0x000000FF);
+	    (u8)(value & 0x000000FF);
 	rtlefuse->efuse_map[EFUSE_MODIFY_MAP][offset + 1] =
-	    (u8) ((value >> 8) & 0x0000FF);
+	    (u8)((value >> 8) & 0x0000FF);
 	rtlefuse->efuse_map[EFUSE_MODIFY_MAP][offset + 2] =
-	    (u8) ((value >> 16) & 0x00FF);
+	    (u8)((value >> 16) & 0x00FF);
 	rtlefuse->efuse_map[EFUSE_MODIFY_MAP][offset + 3] =
-	    (u8) ((value >> 24) & 0xFF);
+	    (u8)((value >> 24) & 0xFF);
 
 }
 
@@ -625,9 +625,9 @@ int efuse_one_byte_read(struct ieee80211_hw *hw, u16 addr, u8 *data)
 	int bresult;
 
 	rtl_write_byte(rtlpriv, rtlpriv->cfg->maps[EFUSE_CTRL] + 1,
-		       (u8) (addr & 0xff));
+		       (u8)(addr & 0xff));
 	rtl_write_byte(rtlpriv, rtlpriv->cfg->maps[EFUSE_CTRL] + 2,
-		       ((u8) ((addr >> 8) & 0x03)) |
+		       ((u8)((addr >> 8) & 0x03)) |
 		       (rtl_read_byte(rtlpriv,
 				      rtlpriv->cfg->maps[EFUSE_CTRL] + 2) &
 			0xFC));
@@ -661,11 +661,11 @@ static int efuse_one_byte_write(struct ieee80211_hw *hw, u16 addr, u8 data)
 		 "Addr = %x Data=%x\n", addr, data);
 
 	rtl_write_byte(rtlpriv,
-		       rtlpriv->cfg->maps[EFUSE_CTRL] + 1, (u8) (addr & 0xff));
+		       rtlpriv->cfg->maps[EFUSE_CTRL] + 1, (u8)(addr & 0xff));
 	rtl_write_byte(rtlpriv, rtlpriv->cfg->maps[EFUSE_CTRL] + 2,
 		       (rtl_read_byte(rtlpriv,
 			 rtlpriv->cfg->maps[EFUSE_CTRL] +
-			 2) & 0xFC) | (u8) ((addr >> 8) & 0x03));
+			 2) & 0xFC) | (u8)((addr >> 8) & 0x03));
 
 	rtl_write_byte(rtlpriv, rtlpriv->cfg->maps[EFUSE_CTRL], data);
 	rtl_write_byte(rtlpriv, rtlpriv->cfg->maps[EFUSE_CTRL] + 3, 0xF2);

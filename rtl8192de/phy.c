@@ -229,7 +229,7 @@ void rtl92d_phy_set_bb_reg(struct ieee80211_hw *hw,
 		dbi_direct = BIT(3) | BIT(2);
 	if (bitmask != BMASKDWORD) {
 		if (rtlhal->during_mac1init_radioa || rtlhal->during_mac0init_radiob)
-			originalvalue = rtl92de_read_dword_dbi(hw, (u16) regaddr,
+			originalvalue = rtl92de_read_dword_dbi(hw, (u16)regaddr,
 				dbi_direct);
 		else
 			originalvalue = rtl_read_dword(rtlpriv, regaddr);
@@ -237,7 +237,7 @@ void rtl92d_phy_set_bb_reg(struct ieee80211_hw *hw,
 		data = ((originalvalue & (~bitmask)) | (data << bitshift));
 	}
 	if (rtlhal->during_mac1init_radioa || rtlhal->during_mac0init_radiob)
-		rtl92de_write_dword_dbi(hw, (u16) regaddr, data, dbi_direct);
+		rtl92de_write_dword_dbi(hw, (u16)regaddr, data, dbi_direct);
 	else
 		rtl_write_dword(rtlpriv, regaddr, data);
 	RT_TRACE(rtlpriv, COMP_RF, DBG_TRACE, "regaddr(%#x), bitmask(%#x), data(%#x)\n",
@@ -274,9 +274,9 @@ static u32 _rtl92d_phy_rf_serial_read(struct ieee80211_hw *hw,
 		tmplong | BLSSIREADEDGE);
 	udelay(10);
 	if (rfpath == RF90_PATH_A)
-		rfpi_enable = (u8) rtl_get_bbreg(hw, RFPGA0_XA_HSSIPARAMETER1, BIT(8));
+		rfpi_enable = (u8)rtl_get_bbreg(hw, RFPGA0_XA_HSSIPARAMETER1, BIT(8));
 	else if (rfpath == RF90_PATH_B)
-		rfpi_enable = (u8) rtl_get_bbreg(hw, RFPGA0_XB_HSSIPARAMETER1, BIT(8));
+		rfpi_enable = (u8)rtl_get_bbreg(hw, RFPGA0_XB_HSSIPARAMETER1, BIT(8));
 	if (rfpi_enable)
 		retvalue = rtl_get_bbreg(hw, pphyreg->rflssi_readbackpi,
 			BLSSIREADBACKDATA);
@@ -367,7 +367,7 @@ bool rtl92d_phy_mac_config(struct ieee80211_hw *hw)
 	ptrarray = rtl8192de_mac_2tarray;
 	RT_TRACE(rtlpriv, COMP_INIT, DBG_TRACE, "Img:Rtl819XMAC_Array\n");
 	for (i = 0; i < arraylength; i = i + 2)
-		rtl_write_byte(rtlpriv, ptrarray[i], (u8) ptrarray[i + 1]);
+		rtl_write_byte(rtlpriv, ptrarray[i], (u8)ptrarray[i + 1]);
 	if (rtlpriv->rtlhal.macphymode == SINGLEMAC_SINGLEPHY) {
 		/* improve 2-stream TX EVM */
 		/* rtl_write_byte(rtlpriv, 0x14,0x71); */
@@ -820,7 +820,7 @@ static bool _rtl92d_phy_bb_config(struct ieee80211_hw *hw)
 		RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG, "AGC Table Fail\n");
 		return false;
 	}
-	rtlphy->cck_high_power = (bool) (rtl_get_bbreg(hw,
+	rtlphy->cck_high_power = (bool)(rtl_get_bbreg(hw,
 		RFPGA0_XA_HSSIPARAMETER2, 0x200));
 
 	return true;
@@ -966,13 +966,13 @@ void rtl92d_phy_get_hw_reg_originalvalue(struct ieee80211_hw *hw)
 	struct rtl_phy *rtlphy = &(rtlpriv->phy);
 
 	rtlphy->default_initialgain[0] =
-	    (u8) rtl_get_bbreg(hw, ROFDM0_XAAGCCORE1, BMASKBYTE0);
+	    (u8)rtl_get_bbreg(hw, ROFDM0_XAAGCCORE1, BMASKBYTE0);
 	rtlphy->default_initialgain[1] =
-	    (u8) rtl_get_bbreg(hw, ROFDM0_XBAGCCORE1, BMASKBYTE0);
+	    (u8)rtl_get_bbreg(hw, ROFDM0_XBAGCCORE1, BMASKBYTE0);
 	rtlphy->default_initialgain[2] =
-	    (u8) rtl_get_bbreg(hw, ROFDM0_XCAGCCORE1, BMASKBYTE0);
+	    (u8)rtl_get_bbreg(hw, ROFDM0_XCAGCCORE1, BMASKBYTE0);
 	rtlphy->default_initialgain[3] =
-	    (u8) rtl_get_bbreg(hw, ROFDM0_XDAGCCORE1, BMASKBYTE0);
+	    (u8)rtl_get_bbreg(hw, ROFDM0_XDAGCCORE1, BMASKBYTE0);
 	RT_TRACE(rtlpriv, COMP_INIT, DBG_TRACE,
 		 "Default initial gain (c50=0x%x, c58=0x%x, c60=0x%x, c68=0x%x\n",
 		  rtlphy->default_initialgain[0],
@@ -1852,7 +1852,7 @@ static void _rtl92d_phy_reload_mac_registers(struct ieee80211_hw *hw,
 
 	RTPRINT(rtlpriv, FINIT, INIT_IQK, "Reload MAC parameters !\n");
 	for (i = 0; i < (IQK_MAC_REG_NUM - 1); i++)
-		rtl_write_byte(rtlpriv, macreg[i], (u8) macbackup[i]);
+		rtl_write_byte(rtlpriv, macreg[i], (u8)macbackup[i]);
 	rtl_write_byte(rtlpriv, macreg[i], macbackup[i]);
 }
 
@@ -1883,7 +1883,7 @@ static void _rtl92d_phy_mac_setting_calibration(struct ieee80211_hw *hw,
 
 	for (i = 1; i < (IQK_MAC_REG_NUM - 1); i++)
 		rtl_write_byte(rtlpriv, macreg[i], (u8)(macbackup[i] & (~BIT(3))));
-	rtl_write_byte(rtlpriv, macreg[i], (u8) (macbackup[i] & (~BIT(5))));
+	rtl_write_byte(rtlpriv, macreg[i], (u8)(macbackup[i] & (~BIT(5))));
 }
 
 static void _rtl92d_phy_patha_standby(struct ieee80211_hw *hw)
@@ -1951,7 +1951,7 @@ static void _rtl92d_phy_iq_calibrate(struct ieee80211_hw *hw,
 	}
 	_rtl92d_phy_path_adda_on(hw, adda_reg, true, is2t);
 	if (t == 0)
-		rtlphy->rfpi_enable = (u8) rtl_get_bbreg(hw,
+		rtlphy->rfpi_enable = (u8)rtl_get_bbreg(hw,
 				RFPGA0_XA_HSSIPARAMETER1, BIT(8));
 
 	/*  Switch BB to PI mode to do IQ Calibration. */
@@ -2115,7 +2115,7 @@ static void _rtl92d_phy_iq_calibrate_5g_normal(struct ieee80211_hw *hw,
 	_rtl92d_phy_mac_setting_calibration(hw, iqk_mac_reg,
 			rtlphy->iqk_mac_backup);
 	if (t == 0)
-		rtlphy->rfpi_enable = (u8) rtl_get_bbreg(hw,
+		rtlphy->rfpi_enable = (u8)rtl_get_bbreg(hw,
 			RFPGA0_XA_HSSIPARAMETER1, BIT(8));
 	/*  Switch BB to PI mode to do IQ Calibration. */
 	if (!rtlphy->rfpi_enable)
@@ -3933,14 +3933,14 @@ static void _rtl92d_dualmac_reconfig_mgntinfo_forselfmac(struct ieee80211_hw *hw
 			rtlpriv->cfg->ops->update_rate_tbl(hw, sta, 0);
 			rcu_read_unlock();
 			rtlpriv->cfg->ops->set_hw_reg(hw, HW_VAR_SHORTGI_DENSITY,
-					(u8 *) (&rtlpriv->mac80211.max_mss_density));
+					(u8 *)(&rtlpriv->mac80211.max_mss_density));
 			rtlpriv->cfg->ops->set_hw_reg(hw, HW_VAR_AMPDU_FACTOR,
 					&rtlpriv->mac80211.current_ampdu_factor);
 			rtlpriv->cfg->ops->set_hw_reg(hw, HW_VAR_AMPDU_MIN_SPACE,
 					&rtlpriv->mac80211.current_ampdu_density);
 			rtlpriv->cfg->ops->set_network_type(hw, rtlpriv->mac80211.vif->type);
 			rtlpriv->cfg->ops->set_hw_reg(hw, HW_VAR_SLOT_TIME,
-					      (u8 *) (&rtlpriv->mac80211.slot_time));
+					      (u8 *)(&rtlpriv->mac80211.slot_time));
 		} else {
 			RT_TRACE(rtlpriv, COMP_EASY_CONCURRENT, DBG_EMERG,
 				"STA change to DMDP DisConnect Case\n");
@@ -3994,7 +3994,7 @@ static void _rtl92d_dualmac_reconfig_mgntinfo_foranothermac(struct ieee80211_hw 
 		buddy_priv->cfg->ops->update_rate_tbl(buddy_hw, sta, 0);
 		rcu_read_unlock();
 		buddy_priv->cfg->ops->set_hw_reg(buddy_hw, HW_VAR_SHORTGI_DENSITY,
-				(u8 *) (&buddy_priv->mac80211.max_mss_density));
+				(u8 *)(&buddy_priv->mac80211.max_mss_density));
 		buddy_priv->cfg->ops->set_hw_reg(buddy_hw, HW_VAR_AMPDU_FACTOR,
 				&buddy_priv->mac80211.current_ampdu_factor);
 		buddy_priv->cfg->ops->set_hw_reg(buddy_hw, HW_VAR_AMPDU_MIN_SPACE,
@@ -4003,7 +4003,7 @@ static void _rtl92d_dualmac_reconfig_mgntinfo_foranothermac(struct ieee80211_hw 
 		pr_info("&&&&&&&&&%s():slot_time is %d\n", __func__,
 			buddy_priv->mac80211.slot_time);
 		buddy_priv->cfg->ops->set_hw_reg(buddy_hw, HW_VAR_SLOT_TIME,
-					      (u8 *) (&buddy_priv->mac80211.slot_time));
+					      (u8 *)(&buddy_priv->mac80211.slot_time));
 	} else {
 		RT_TRACE(rtlpriv, COMP_EASY_CONCURRENT, DBG_LOUD,
 			 "buddy adapter AP case \n");
@@ -4148,7 +4148,7 @@ void rtl92d_easy_concurrent_switch_to_dmdp(struct ieee80211_hw *hw)
 				else if (rtlpriv->mac80211.link_state >= MAC80211_LINKED)
 					sta = rtl_find_sta(hw, rtlpriv->mac80211.bssid);
 				if (sta) {
-					sta_entry = (struct rtl_sta_info *) sta->drv_priv;
+					sta_entry = (struct rtl_sta_info *)sta->drv_priv;
 					sta_entry->mimo_ps = IEEE80211_SMPS_STATIC;
 				}
 				new_mimops_mode = IEEE80211_SMPS_STATIC;

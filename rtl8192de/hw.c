@@ -71,7 +71,7 @@ static void _rtl92de_set_bcn_ctrl_reg(struct ieee80211_hw *hw,
 
 	rtlpci->reg_bcn_ctrl_val |= set_bits;
 	rtlpci->reg_bcn_ctrl_val &= ~clear_bits;
-	rtl_write_byte(rtlpriv, REG_BCN_CTRL, (u8) rtlpci->reg_bcn_ctrl_val);
+	rtl_write_byte(rtlpriv, REG_BCN_CTRL, (u8)rtlpci->reg_bcn_ctrl_val);
 }
 
 static void _rtl92de_stop_tx_beacon(struct ieee80211_hw *hw)
@@ -120,7 +120,7 @@ void rtl92de_get_hw_reg(struct ieee80211_hw *hw, u8 variable, u8 *val)
 
 	switch (variable) {
 	case HW_VAR_RCR: {
-			*((u32 *) (val)) = rtlpci->receive_config;
+			*((u32 *)(val)) = rtlpci->receive_config;
 			break;
 		}
 	case HW_VAR_RF_STATE: {
@@ -132,31 +132,31 @@ void rtl92de_get_hw_reg(struct ieee80211_hw *hw, u8 variable, u8 *val)
 			u32 val_rcr;
 
 			rtlpriv->cfg->ops->get_hw_reg(hw, HW_VAR_RF_STATE,
-						      (u8 *) (&rfState));
+						      (u8 *)(&rfState));
 			if (rfState == ERFOFF) {
-				*((bool *) (val)) = true;
+				*((bool *)(val)) = true;
 			} else {
 				val_rcr = rtl_read_dword(rtlpriv, REG_RCR);
 				val_rcr &= 0x00070000;
 				if (val_rcr)
-					*((bool *) (val)) = false;
+					*((bool *)(val)) = false;
 				else
-					*((bool *) (val)) = true;
+					*((bool *)(val)) = true;
 			}
 			break;
 		}
 	case HW_VAR_FW_PSMODE_STATUS: {
-			*((bool *) (val)) = ppsc->fw_current_inpsmode;
+			*((bool *)(val)) = ppsc->fw_current_inpsmode;
 			break;
 		}
 	case HW_VAR_CORRECT_TSF:{
 			u64 tsf;
-			u32 *ptsf_low = (u32 *) &tsf;
-			u32 *ptsf_high = ((u32 *) &tsf) + 1;
+			u32 *ptsf_low = (u32 *)&tsf;
+			u32 *ptsf_high = ((u32 *)&tsf) + 1;
 
 			*ptsf_high = rtl_read_dword(rtlpriv, (REG_TSFTR + 4));
 			*ptsf_low = rtl_read_dword(rtlpriv, REG_TSFTR);
-			*((u64 *) (val)) = tsf;
+			*((u64 *)(val)) = tsf;
 			break;
 		}
 	case HW_VAR_INT_MIGRATION: {
@@ -192,7 +192,7 @@ void rtl92de_set_hw_reg(struct ieee80211_hw *hw, u8 variable, u8 *val)
 			break;
 		}
 	case HW_VAR_BASIC_RATE: {
-			u16 b_rate_cfg = ((u16 *) val)[0];
+			u16 b_rate_cfg = ((u16 *)val)[0];
 			u8 rate_index = 0;
 
 			b_rate_cfg = b_rate_cfg & 0x15f;
@@ -222,7 +222,7 @@ void rtl92de_set_hw_reg(struct ieee80211_hw *hw, u8 variable, u8 *val)
 			if (!mac->ht_enable)
 				rtl_write_word(rtlpriv, REG_RESP_SIFS_OFDM, 0x0e0e);
 			else
-				rtl_write_word(rtlpriv, REG_RESP_SIFS_OFDM, *((u16 *) val));
+				rtl_write_word(rtlpriv, REG_RESP_SIFS_OFDM, *((u16 *)val));
 			break;
 		}
 	case HW_VAR_SLOT_TIME: {
@@ -233,12 +233,12 @@ void rtl92de_set_hw_reg(struct ieee80211_hw *hw, u8 variable, u8 *val)
 			rtl_write_byte(rtlpriv, REG_SLOT, val[0]);
 			for (e_aci = 0; e_aci < AC_MAX; e_aci++)
 				rtlpriv->cfg->ops->set_hw_reg(hw, HW_VAR_AC_PARAM,
-							      (u8 *) (&e_aci));
+							      (u8 *)(&e_aci));
 			break;
 		}
 	case HW_VAR_ACK_PREAMBLE: {
 			u8 reg_tmp;
-			u8 short_preamble = (bool) (*(u8 *) val);
+			u8 short_preamble = (bool)(*(u8 *)val);
 
 			reg_tmp = (mac->cur_40_prime_sc) << 5;
 			if (short_preamble)
@@ -250,7 +250,7 @@ void rtl92de_set_hw_reg(struct ieee80211_hw *hw, u8 variable, u8 *val)
 			u8 min_spacing_to_set;
 			u8 sec_min_space;
 
-			min_spacing_to_set = *((u8 *) val);
+			min_spacing_to_set = *((u8 *)val);
 			if (min_spacing_to_set <= 7) {
 				sec_min_space = 0;
 				if (min_spacing_to_set < sec_min_space)
@@ -269,7 +269,7 @@ void rtl92de_set_hw_reg(struct ieee80211_hw *hw, u8 variable, u8 *val)
 	case HW_VAR_SHORTGI_DENSITY: {
 			u8 density_to_set;
 
-			density_to_set = *((u8 *) val);
+			density_to_set = *((u8 *)val);
 			mac->min_space_cfg = rtlpriv->rtlhal.minspace_cfg;
 			mac->min_space_cfg |= (density_to_set << 3);
 			RT_TRACE(rtlpriv, COMP_MLME, DBG_LOUD,
@@ -291,13 +291,13 @@ void rtl92de_set_hw_reg(struct ieee80211_hw *hw, u8 variable, u8 *val)
 				regtoSet = 0x66626641;
 			else
 				regtoSet = 0xb972a841;
-			factor_toset = *((u8 *) val);
+			factor_toset = *((u8 *)val);
 			if (factor_toset <= 3) {
 				factor_toset = (1 << (factor_toset + 2));
 				if (factor_toset > 0xf)
 					factor_toset = 0xf;
 				for (index = 0; index < 4; index++) {
-					ptmp_byte = (u8 *) (&regtoSet) + index;
+					ptmp_byte = (u8 *)(&regtoSet) + index;
 					if ((*ptmp_byte & 0xf0) > (factor_toset << 4))
 						*ptmp_byte = (*ptmp_byte & 0x0f) |
 						    (factor_toset << 4);
@@ -313,15 +313,15 @@ void rtl92de_set_hw_reg(struct ieee80211_hw *hw, u8 variable, u8 *val)
 			break;
 		}
 	case HW_VAR_AC_PARAM: {
-			u8 e_aci = *((u8 *) val);
+			u8 e_aci = *((u8 *)val);
 			rtl92d_dm_init_edca_turbo(hw);
 			if (rtlpci->acm_method != EACMWAY2_SW)
 				rtlpriv->cfg->ops->set_hw_reg(hw, HW_VAR_ACM_CTRL,
-							      (u8 *) (&e_aci));
+							      (u8 *)(&e_aci));
 			break;
 		}
 	case HW_VAR_ACM_CTRL: {
-			u8 e_aci = *((u8 *) val);
+			u8 e_aci = *((u8 *)val);
 			union aci_aifsn *p_aci_aifsn =
 			    (union aci_aifsn *)(&(mac->ac[0].aifs));
 			u8 acm = p_aci_aifsn->f.acm;
@@ -370,11 +370,11 @@ void rtl92de_set_hw_reg(struct ieee80211_hw *hw, u8 variable, u8 *val)
 			break;
 		}
 	case HW_VAR_RCR: {
-		rtl_write_dword(rtlpriv, REG_RCR, ((u32 *) (val))[0]);
-		rtlpci->receive_config = ((u32 *) (val))[0];
+		rtl_write_dword(rtlpriv, REG_RCR, ((u32 *)(val))[0]);
+		rtlpci->receive_config = ((u32 *)(val))[0];
 		break; }
 	case HW_VAR_RETRY_LIMIT: {
-		u8 retry_limit = ((u8 *) (val))[0];
+		u8 retry_limit = ((u8 *)(val))[0];
 
 		rtl_write_word(rtlpriv, REG_RL,
 			       retry_limit << RETRY_LIMIT_SHORT_SHIFT |
@@ -384,28 +384,28 @@ void rtl92de_set_hw_reg(struct ieee80211_hw *hw, u8 variable, u8 *val)
 		rtl_write_byte(rtlpriv, REG_DUAL_TSF_RST, (BIT(0) | BIT(1)));
 		break;
 	case HW_VAR_EFUSE_BYTES:
-		rtlefuse->efuse_usedbytes = *((u16 *) val);
+		rtlefuse->efuse_usedbytes = *((u16 *)val);
 		break;
 	case HW_VAR_EFUSE_USAGE:
-		rtlefuse->efuse_usedpercentage = *((u8 *) val);
+		rtlefuse->efuse_usedpercentage = *((u8 *)val);
 		break;
 	case HW_VAR_IO_CMD:
 		rtl92d_phy_set_io_cmd(hw, (*(enum io_type *)val));
 		break;
 	case HW_VAR_WPA_CONFIG:
-		rtl_write_byte(rtlpriv, REG_SECCFG, *((u8 *) val));
+		rtl_write_byte(rtlpriv, REG_SECCFG, *((u8 *)val));
 		break;
 	case HW_VAR_SET_RPWM:
-		rtl92d_fill_h2c_cmd(hw, H2C_PWRM, 1, (u8 *) (val));
+		rtl92d_fill_h2c_cmd(hw, H2C_PWRM, 1, (u8 *)(val));
 		break;
 	case HW_VAR_H2C_FW_PWRMODE:
 		break;
 	case HW_VAR_FW_PSMODE_STATUS: {
-			ppsc->fw_current_inpsmode = *((bool *) val);
+			ppsc->fw_current_inpsmode = *((bool *)val);
 			break;
 		}
 	case HW_VAR_H2C_FW_JOINBSSRPT: {
-			u8 mstatus = (*(u8 *) val);
+			u8 mstatus = (*(u8 *)val);
 			u8 tmp_regcr, tmp_reg422;
 			bool b_recover = false;
 
@@ -431,11 +431,11 @@ void rtl92de_set_hw_reg(struct ieee80211_hw *hw, u8 variable, u8 *val)
 				rtl_write_byte(rtlpriv, REG_CR + 1,
 					       (tmp_regcr & ~(BIT(0))));
 			}
-			rtl92d_set_fw_joinbss_report_cmd(hw, (*(u8 *) val));
+			rtl92d_set_fw_joinbss_report_cmd(hw, (*(u8 *)val));
 			break;
 		}
 	case HW_VAR_H2C_FW_P2P_PS_OFFLOAD:{
-		rtl92d_set_p2p_ps_offload_cmd(hw, (*(u8 *) val));
+		rtl92d_set_p2p_ps_offload_cmd(hw, (*(u8 *)val));
 		break;
 	}
 	case HW_VAR_AID: {
@@ -447,15 +447,15 @@ void rtl92de_set_hw_reg(struct ieee80211_hw *hw, u8 variable, u8 *val)
 			break;
 		}
 	case HW_VAR_CORRECT_TSF: {
-			u8 btype_ibss = ((u8 *) (val))[0];
+			u8 btype_ibss = ((u8 *)(val))[0];
 
 			if (btype_ibss == true)
 				_rtl92de_stop_tx_beacon(hw);
 			_rtl92de_set_bcn_ctrl_reg(hw, 0, BIT(3));
 			rtl_write_dword(rtlpriv, REG_TSFTR,
-					(u32) (mac->tsf & 0xffffffff));
+					(u32)(mac->tsf & 0xffffffff));
 			rtl_write_dword(rtlpriv, REG_TSFTR + 4,
-					(u32) ((mac->tsf >> 32) & 0xffffffff));
+					(u32)((mac->tsf >> 32) & 0xffffffff));
 			_rtl92de_set_bcn_ctrl_reg(hw, BIT(3), 0);
 			if (btype_ibss == true)
 				_rtl92de_resume_tx_beacon(hw);
@@ -463,7 +463,7 @@ void rtl92de_set_hw_reg(struct ieee80211_hw *hw, u8 variable, u8 *val)
 			break;
 		}
 	case HW_VAR_INT_MIGRATION: {
-			bool bint_migration = *(bool *) (val);
+			bool bint_migration = *(bool *)(val);
 
 			if (bint_migration) {
 				/* Set interrrupt migration timer and
@@ -480,7 +480,7 @@ void rtl92de_set_hw_reg(struct ieee80211_hw *hw, u8 variable, u8 *val)
 			break;
 		}
 	case HW_VAR_INT_AC: {
-			bool bdisable_ac_int = *((bool *) val);
+			bool bdisable_ac_int = *((bool *)val);
 
 			/* Disable four ACs interrupts. */
 			if (bdisable_ac_int) {
@@ -501,7 +501,7 @@ void rtl92de_set_hw_reg(struct ieee80211_hw *hw, u8 variable, u8 *val)
 			break;
 		}
 	case HW_VAR_FW_LPS_ACTION:{
-		bool b_enter_fwlps = *((bool *) val);
+		bool b_enter_fwlps = *((bool *)val);
 		u8 rpwm_val, fw_pwrmode;
 		bool fw_current_inps;
 
@@ -510,27 +510,27 @@ void rtl92de_set_hw_reg(struct ieee80211_hw *hw, u8 variable, u8 *val)
 				fw_current_inps = true;
 				rtlpriv->cfg->ops->set_hw_reg(hw,
 						HW_VAR_FW_PSMODE_STATUS,
-						(u8 *) (&fw_current_inps));
+						(u8 *)(&fw_current_inps));
 				rtlpriv->cfg->ops->set_hw_reg(hw,
 						HW_VAR_H2C_FW_PWRMODE,
-						(u8 *) (&ppsc->fwctrl_psmode));
+						(u8 *)(&ppsc->fwctrl_psmode));
 
 				rtlpriv->cfg->ops->set_hw_reg(hw,
 						HW_VAR_SET_RPWM,
-						(u8 *) (&rpwm_val));
+						(u8 *)(&rpwm_val));
 		} else {
 				rpwm_val = 0x0C;	/* RF on */
 				fw_pwrmode = FW_PS_ACTIVE_MODE;
 				fw_current_inps = false;
 				rtlpriv->cfg->ops->set_hw_reg(hw, HW_VAR_SET_RPWM,
-						(u8 *) (&rpwm_val));
+						(u8 *)(&rpwm_val));
 				rtlpriv->cfg->ops->set_hw_reg(hw,
 						HW_VAR_H2C_FW_PWRMODE,
-						(u8 *) (&fw_pwrmode));
+						(u8 *)(&fw_pwrmode));
 
 				rtlpriv->cfg->ops->set_hw_reg(hw,
 						HW_VAR_FW_PSMODE_STATUS,
-						(u8 *) (&fw_current_inps));
+						(u8 *)(&fw_current_inps));
 		}
 		break; }
 	default:
@@ -1219,12 +1219,12 @@ void rtl92de_set_check_bssid(struct ieee80211_hw *hw, bool check_bssid)
 		return;
 	if (check_bssid == true) {
 		reg_rcr |= (RCR_CBSSID_DATA | RCR_CBSSID_BCN);
-		rtlpriv->cfg->ops->set_hw_reg(hw, HW_VAR_RCR, (u8 *) (&reg_rcr));
+		rtlpriv->cfg->ops->set_hw_reg(hw, HW_VAR_RCR, (u8 *)(&reg_rcr));
 		_rtl92de_set_bcn_ctrl_reg(hw, 0, BIT(4));
 	} else if (check_bssid == false) {
 		reg_rcr &= (~(RCR_CBSSID_DATA | RCR_CBSSID_BCN));
 		_rtl92de_set_bcn_ctrl_reg(hw, BIT(4), 0);
-		rtlpriv->cfg->ops->set_hw_reg(hw, HW_VAR_RCR, (u8 *) (&reg_rcr));
+		rtlpriv->cfg->ops->set_hw_reg(hw, HW_VAR_RCR, (u8 *)(&reg_rcr));
 	}
 }
 
@@ -1731,7 +1731,7 @@ static void _rtl92de_read_txpower_info(struct ieee80211_hw *hw,
 
 	for (rfPath = 0; rfPath < RF6052_MAX_PATH; rfPath++) {
 		for (ch = 0; ch < CHANNEL_MAX_NUMBER; ch++) {
-			group = rtl92d_get_chnlgroup_fromarray((u8) ch);
+			group = rtl92d_get_chnlgroup_fromarray((u8)ch);
 			if (ch < CHANNEL_MAX_NUMBER_2G)
 				rtlefuse->txpwrlevel_cck[rfPath][ch] =
 				    pwrinfo.cck_index[rfPath][group];
@@ -1888,7 +1888,7 @@ static void _rtl92de_read_adapter_info(struct ieee80211_hw *hw)
 	RT_PRINT_DATA(rtlpriv, COMP_INIT, DBG_DMESG, "MAP\n",
 		      hwinfo, HWSET_MAX_SIZE);
 
-	eeprom_id = *((u16 *) &hwinfo[0]);
+	eeprom_id = *((u16 *)&hwinfo[0]);
 	if (eeprom_id != RTL8190_EEPROM_ID) {
 		RT_TRACE(rtlpriv, COMP_ERR, DBG_WARNING,
 			 "EEPROM ID(%#x) is invalid!!\n", eeprom_id);
@@ -1902,14 +1902,14 @@ static void _rtl92de_read_adapter_info(struct ieee80211_hw *hw)
 			 "RTL819X Not boot from eeprom, check it !!");
 		return;
 	}
-	rtlefuse->eeprom_oemid = *(u8 *) &hwinfo[EEPROM_CUSTOMER_ID];
+	rtlefuse->eeprom_oemid = *(u8 *)&hwinfo[EEPROM_CUSTOMER_ID];
 	_rtl92de_read_macphymode_and_bandtype(hw, hwinfo);
 
 	/* VID, DID  SE     0xA-D */
-	rtlefuse->eeprom_vid = *(u16 *) &hwinfo[EEPROM_VID];
-	rtlefuse->eeprom_did = *(u16 *) &hwinfo[EEPROM_DID];
-	rtlefuse->eeprom_svid = *(u16 *) &hwinfo[EEPROM_SVID];
-	rtlefuse->eeprom_smid = *(u16 *) &hwinfo[EEPROM_SMID];
+	rtlefuse->eeprom_vid = *(u16 *)&hwinfo[EEPROM_VID];
+	rtlefuse->eeprom_did = *(u16 *)&hwinfo[EEPROM_DID];
+	rtlefuse->eeprom_svid = *(u16 *)&hwinfo[EEPROM_SVID];
+	rtlefuse->eeprom_smid = *(u16 *)&hwinfo[EEPROM_SMID];
 	RT_TRACE(rtlpriv, COMP_INIT, DBG_LOUD,
 		 "EEPROMId = 0x%4x\n", eeprom_id);
 	RT_TRACE(rtlpriv, COMP_INIT, DBG_LOUD,
@@ -1924,13 +1924,13 @@ static void _rtl92de_read_adapter_info(struct ieee80211_hw *hw)
 	/* Read Permanent MAC address */
 	if (rtlhal->interfaceindex == 0) {
 		for (i = 0; i < 6; i += 2) {
-			usvalue = *(u16 *) &hwinfo[EEPROM_MAC_ADDR_MAC0_92D + i];
-			*((u16 *) (&rtlefuse->dev_addr[i])) = usvalue;
+			usvalue = *(u16 *)&hwinfo[EEPROM_MAC_ADDR_MAC0_92D + i];
+			*((u16 *)(&rtlefuse->dev_addr[i])) = usvalue;
 		}
 	} else {
 		for (i = 0; i < 6; i += 2) {
-			usvalue = *(u16 *) &hwinfo[EEPROM_MAC_ADDR_MAC1_92D + i];
-			*((u16 *) (&rtlefuse->dev_addr[i])) = usvalue;
+			usvalue = *(u16 *)&hwinfo[EEPROM_MAC_ADDR_MAC1_92D + i];
+			*((u16 *)(&rtlefuse->dev_addr[i])) = usvalue;
 		}
 	}
 	rtlpriv->cfg->ops->set_hw_reg(hw, HW_VAR_ETHER_ADDR,
@@ -1954,7 +1954,7 @@ static void _rtl92de_read_adapter_info(struct ieee80211_hw *hw)
 		rtlefuse->channel_plan = COUNTRY_CODE_FCC;
 		break;
 	}
-	rtlefuse->eeprom_version = *(u16 *) &hwinfo[EEPROM_VERSION];
+	rtlefuse->eeprom_version = *(u16 *)&hwinfo[EEPROM_VERSION];
 	rtlefuse->txpwr_fromeprom = true;
 	RT_TRACE(rtlpriv, COMP_INIT, DBG_LOUD,
 		 "EEPROM Customer ID: 0x%2x\n", rtlefuse->eeprom_oemid);
@@ -2096,7 +2096,7 @@ static void rtl92de_update_hal_rate_mask(struct ieee80211_hw *hw,
 	u8 macid = 0;
 	u8 mimo_ps = IEEE80211_SMPS_OFF;
 
-	sta_entry = (struct rtl_sta_info *) sta->drv_priv;
+	sta_entry = (struct rtl_sta_info *)sta->drv_priv;
 	mimo_ps = sta_entry->mimo_ps;
 	wirelessmode = sta_entry->wireless_mode;
 	if (mac->opmode == NL80211_IFTYPE_STATION)
@@ -2201,7 +2201,7 @@ static void rtl92de_update_hal_rate_mask(struct ieee80211_hw *hw,
 	RT_TRACE(rtlpriv, COMP_RATR, DBG_DMESG,
 		 "ratr_bitmap :%x value0:%x value1:%x\n",
 		  ratr_bitmap, value[0], value[1]);
-	rtl92d_fill_h2c_cmd(hw, H2C_RA_MASK, 5, (u8 *) value);
+	rtl92d_fill_h2c_cmd(hw, H2C_RA_MASK, 5, (u8 *)value);
 }
 
 void rtl92de_update_hal_rate_tbl(struct ieee80211_hw *hw,
@@ -2222,12 +2222,12 @@ void rtl92de_update_channel_access_setting(struct ieee80211_hw *hw)
 	u16 sifs_timer;
 
 	rtlpriv->cfg->ops->set_hw_reg(hw, HW_VAR_SLOT_TIME,
-				      (u8 *) &mac->slot_time);
+				      (u8 *)&mac->slot_time);
 	if (!mac->ht_enable)
 		sifs_timer = 0x0a0a;
 	else
 		sifs_timer = 0x1010;
-	rtlpriv->cfg->ops->set_hw_reg(hw, HW_VAR_SIFS, (u8 *) &sifs_timer);
+	rtlpriv->cfg->ops->set_hw_reg(hw, HW_VAR_SIFS, (u8 *)&sifs_timer);
 }
 
 bool rtl92de_gpio_radio_on_off_checking(struct ieee80211_hw *hw, u8 *valid)

@@ -129,7 +129,7 @@ int rtl8723be_init_sw_vars(struct ieee80211_hw *hw)
 				  RCR_APM		|
 				  0);
 
-	rtlpci->irq_mask[0] = (u32) (IMR_PSTIMEOUT	|
+	rtlpci->irq_mask[0] = (u32)(IMR_PSTIMEOUT	|
 				/*   IMR_TBDER		|
 				     IMR_TBDOK		|
 				     IMR_BCNDMAINT0	|*/
@@ -147,7 +147,7 @@ int rtl8723be_init_sw_vars(struct ieee80211_hw *hw)
 
 	rtlpci->irq_mask[1] = (u32)(IMR_RXFOVW | 0);
 
-	rtlpci->sys_irq_mask = (u32) (HSIMR_PDN_INT_EN	|
+	rtlpci->sys_irq_mask = (u32)(HSIMR_PDN_INT_EN	|
 				      HSIMR_RON_INT_EN	|
 				      0);
 

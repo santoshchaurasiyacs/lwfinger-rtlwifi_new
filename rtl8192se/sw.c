@@ -193,7 +193,7 @@ static int rtl92s_init_sw_vars(struct ieee80211_hw *hw)
 			/*| IMR_TBDOK |
 			IMR_TBDER*/);
 
-	rtlpci->irq_mask[1] = (u32) 0;
+	rtlpci->irq_mask[1] = (u32)0;
 
 	rtlpci->shortretry_limit = 0x30;
 	rtlpci->longretry_limit = 0x30;

@@ -221,7 +221,7 @@ static u8 rtl92c_dm_initial_gain_min_pwdb(struct ieee80211_hw *hw)
 		rssi_val_min = rtlpriv->dm.entry_min_undec_sm_pwdb;
 	}
 
-	return (u8) rssi_val_min;
+	return (u8)rssi_val_min;
 }
 
 static void rtl92c_dm_false_alarm_counter_statistics(struct ieee80211_hw *hw)
@@ -746,7 +746,7 @@ static void rtl92c_dm_check_edca_turbo(struct ieee80211_hw *hw)
 			u8 tmp = AC0_BE;
 			rtlpriv->cfg->ops->set_hw_reg(hw,
 						      HW_VAR_AC_PARAM,
-						      (u8 *) (&tmp));
+						      (u8 *)(&tmp));
 			rtlpriv->dm.current_turbo_edca = false;
 		}
 	}
@@ -777,7 +777,7 @@ static void rtl92c_dm_txpower_tracking_callback_thermalmeter(struct ieee80211_hw
 	RT_TRACE(rtlpriv, COMP_POWER_TRACKING, DBG_LOUD,
 		 "rtl92c_dm_txpower_tracking_callback_thermalmeter\n");
 
-	thermalvalue = (u8) rtl_get_rfreg(hw, RF90_PATH_A, RF_T_METER, 0x1f);
+	thermalvalue = (u8)rtl_get_rfreg(hw, RF90_PATH_A, RF_T_METER, 0x1f);
 
 	RT_TRACE(rtlpriv, COMP_POWER_TRACKING, DBG_LOUD,
 		 "Readback Thermal Meter = 0x%x pre thermal meter 0x%x eeprom_thermalmeter 0x%x\n",
@@ -797,7 +797,7 @@ static void rtl92c_dm_txpower_tracking_callback_thermalmeter(struct ieee80211_hw
 
 		for (i = 0; i < OFDM_TABLE_LENGTH; i++) {
 			if (ele_d == (ofdmswing_table[i] & MASKOFDM_D)) {
-				ofdm_index_old[0] = (u8) i;
+				ofdm_index_old[0] = (u8)i;
 
 				RT_TRACE(rtlpriv, COMP_POWER_TRACKING, DBG_LOUD,
 					 "Initial pathA ele_d reg0x%x = 0x%lx, ofdm_index=0x%x\n",
@@ -813,7 +813,7 @@ static void rtl92c_dm_txpower_tracking_callback_thermalmeter(struct ieee80211_hw
 
 			for (i = 0; i < OFDM_TABLE_LENGTH; i++) {
 				if (ele_d == (ofdmswing_table[i] & MASKOFDM_D)) {
-					ofdm_index_old[1] = (u8) i;
+					ofdm_index_old[1] = (u8)i;
 
 					RT_TRACE(rtlpriv, COMP_POWER_TRACKING,
 						 DBG_LOUD,
@@ -833,7 +833,7 @@ static void rtl92c_dm_txpower_tracking_callback_thermalmeter(struct ieee80211_hw
 				if (memcmp((void *)&temp_cck,
 					   (void *)&cckswing_table_ch14[i][2],
 					   4) == 0) {
-					cck_index_old = (u8) i;
+					cck_index_old = (u8)i;
 
 					RT_TRACE(rtlpriv, COMP_POWER_TRACKING,
 						 DBG_LOUD,
@@ -848,7 +848,7 @@ static void rtl92c_dm_txpower_tracking_callback_thermalmeter(struct ieee80211_hw
 					   (void *)
 					   &cckswing_table_ch1ch13[i][2],
 					   4) == 0) {
-					cck_index_old = (u8) i;
+					cck_index_old = (u8)i;
 
 					RT_TRACE(rtlpriv, COMP_POWER_TRACKING,
 						 DBG_LOUD,
@@ -1359,9 +1359,9 @@ void rtl92c_dm_watchdog(struct ieee80211_hw *hw)
 	bool fw_ps_awake = true;
 
 	rtlpriv->cfg->ops->get_hw_reg(hw, HW_VAR_FW_PSMODE_STATUS,
-				      (u8 *) (&fw_current_inpsmode));
+				      (u8 *)(&fw_current_inpsmode));
 	rtlpriv->cfg->ops->get_hw_reg(hw, HW_VAR_FWLPS_RF_ON,
-				      (u8 *) (&fw_ps_awake));
+				      (u8 *)(&fw_ps_awake));
 
 	if (ppsc->p2p_ps_info.p2p_ps_mode)
 		fw_ps_awake = false;

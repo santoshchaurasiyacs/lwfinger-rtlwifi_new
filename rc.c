@@ -56,7 +56,7 @@ static u8 _rtl_rc_get_highest_rix(struct rtl_priv *rtlpriv,
 	 */
 
 	if (sta) {
-		sta_entry = (struct rtl_sta_info *) sta->drv_priv;
+		sta_entry = (struct rtl_sta_info *)sta->drv_priv;
 		wireless_mode = sta_entry->wireless_mode;
 	}
 
@@ -111,7 +111,7 @@ static void _rtl_rc_rate_set_series(struct rtl_priv *rtlpriv,
 		sgi_20 = sta->ht_cap.cap & IEEE80211_HT_CAP_SGI_20;
 		sgi_40 = sta->ht_cap.cap & IEEE80211_HT_CAP_SGI_40;
 		sgi_80 = sta->vht_cap.cap & IEEE80211_VHT_CAP_SHORT_GI_80;
-		sta_entry = (struct rtl_sta_info *) sta->drv_priv;
+		sta_entry = (struct rtl_sta_info *)sta->drv_priv;
 		wireless_mode = sta_entry->wireless_mode;
 	}
 	rate->count = tries;
@@ -216,7 +216,7 @@ static void rtl_tx_status(void *ppriv,
 
 	if (sta) {
 		/* Check if aggregation has to be enabled for this tid */
-		sta_entry = (struct rtl_sta_info *) sta->drv_priv;
+		sta_entry = (struct rtl_sta_info *)sta->drv_priv;
 		if ((sta->ht_cap.ht_supported == true) &&
 				!(skb->protocol == cpu_to_be16(ETH_P_PAE))) {
 			if (ieee80211_is_data_qos(fc)) {

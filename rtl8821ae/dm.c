@@ -643,10 +643,10 @@ static void rtl8821ae_dm_common_info_self_init(struct ieee80211_hw *hw)
 	u8 tmp;
 
 	rtlpriv->dm.cck_high_power =
-		(bool) rtl_get_bbreg(hw, ODM_REG_CCK_RPT_FORMAT_11AC,
+		(bool)rtl_get_bbreg(hw, ODM_REG_CCK_RPT_FORMAT_11AC,
 				     ODM_BIT_CCK_RPT_FORMAT_11AC);
 
-	tmp = (u8) rtl_get_bbreg(hw, ODM_REG_BB_RX_PATH_11AC,
+	tmp = (u8)rtl_get_bbreg(hw, ODM_REG_BB_RX_PATH_11AC,
 				 ODM_BIT_BB_RX_PATH_11AC);
 	if (tmp & BIT(0))
 		rtlpriv->dm.rfpath_rxenable[0] = true;
@@ -822,7 +822,7 @@ static void rtl8821ae_dm_check_rssi_monitor(struct ieee80211_hw *hw)
 			h2c_parameter[3] |= stbc_tx << 1;
 		}
 		h2c_parameter[2] =
-			(u8) (rtlpriv->dm.undec_sm_pwdb & 0xFF);
+			(u8)(rtlpriv->dm.undec_sm_pwdb & 0xFF);
 		h2c_parameter[1] = 0x20;
 		h2c_parameter[0] = 0;
 		if (rtlhal->hw_type == HARDWARE_TYPE_RTL8812AE)
@@ -3019,7 +3019,7 @@ static void rtl8821ae_dm_check_edca_turbo(struct ieee80211_hw *hw)
 		if (rtlpriv->dm.current_turbo_edca) {
 			u8 tmp = AC0_BE;
 			rtlpriv->cfg->ops->set_hw_reg(hw, HW_VAR_AC_PARAM,
-						      (u8 *) (&tmp));
+						      (u8 *)(&tmp));
 		}
 		rtlpriv->dm.current_turbo_edca = false;
 	}
@@ -3201,10 +3201,10 @@ void rtl8821ae_dm_watchdog(struct ieee80211_hw *hw)
 	bool fw_ps_awake = true;
 
 	rtlpriv->cfg->ops->get_hw_reg(hw, HW_VAR_FW_PSMODE_STATUS,
-				      (u8 *) (&fw_current_inpsmode));
+				      (u8 *)(&fw_current_inpsmode));
 
 	rtlpriv->cfg->ops->get_hw_reg(hw, HW_VAR_FWLPS_RF_ON,
-				      (u8 *) (&fw_ps_awake));
+				      (u8 *)(&fw_ps_awake));
 
 	if (ppsc->p2p_ps_info.p2p_ps_mode)
 		fw_ps_awake = false;
