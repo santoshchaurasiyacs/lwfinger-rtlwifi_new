@@ -1505,8 +1505,8 @@ struct rtl_dig {
 	u8 rx_gain_range_max;
 	u8 rx_gain_range_min;
 	u8 rssi_val_min;
-	u8 min_undecorated_pwdb_for_dm;
-	long last_min_undecorated_pwdb_for_dm;
+	u8 min_undec_pwdb_for_dm;
+	long last_min_undec_pwdb_for_dm;
 
 	u8 pre_cck_pd_state;
 	u8 cur_cck_pd_state;

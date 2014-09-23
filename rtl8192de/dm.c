@@ -344,31 +344,31 @@ static void rtl92d_dm_find_minimum_rssi(struct ieee80211_hw *hw)
 	/* Determine the minimum RSSI  */
 	if ((mac->link_state < MAC80211_LINKED) &&
 	    (rtlpriv->dm.entry_min_undec_sm_pwdb == 0)) {
-		rtl_dm_dig->min_undecorated_pwdb_for_dm = 0;
+		rtl_dm_dig->min_undec_pwdb_for_dm = 0;
 		RT_TRACE(rtlpriv, COMP_BB_POWERSAVING, DBG_LOUD,
 			 "Not connected to any\n");
 	}
 	if (mac->link_state >= MAC80211_LINKED) {
 		if (mac->opmode == NL80211_IFTYPE_AP ||
 			mac->opmode == NL80211_IFTYPE_ADHOC) {
-			rtl_dm_dig->min_undecorated_pwdb_for_dm =
+			rtl_dm_dig->min_undec_pwdb_for_dm =
 			    rtlpriv->dm.entry_min_undec_sm_pwdb;
 			RT_TRACE(rtlpriv, COMP_BB_POWERSAVING, DBG_LOUD,
 				 "AP Client PWDB = 0x%lx\n",
 				  rtlpriv->dm.entry_min_undec_sm_pwdb);
 		} else {
-			rtl_dm_dig->min_undecorated_pwdb_for_dm =
+			rtl_dm_dig->min_undec_pwdb_for_dm =
 			    rtlpriv->dm.undec_sm_pwdb;
 			RT_TRACE(rtlpriv, COMP_BB_POWERSAVING, DBG_LOUD,
 				 "STA Default Port PWDB = 0x%x\n",
-				  rtl_dm_dig->min_undecorated_pwdb_for_dm);
+				  rtl_dm_dig->min_undec_pwdb_for_dm);
 		}
 	} else {
-		rtl_dm_dig->min_undecorated_pwdb_for_dm =
+		rtl_dm_dig->min_undec_pwdb_for_dm =
 		    rtlpriv->dm.entry_min_undec_sm_pwdb;
 		RT_TRACE(rtlpriv, COMP_BB_POWERSAVING, DBG_LOUD,
 			 "AP Ext Port or disconnet PWDB = 0x%x\n",
-			  rtl_dm_dig->min_undecorated_pwdb_for_dm);
+			  rtl_dm_dig->min_undec_pwdb_for_dm);
 	}
 
 	if (rtlpriv->dm.supp_phymode_switch) {
@@ -378,21 +378,21 @@ static void rtl92d_dm_find_minimum_rssi(struct ieee80211_hw *hw)
 					RT_TRACE(rtlpriv, COMP_EASY_CONCURRENT, DBG_LOUD,
 						"Slave case of dmsp\n");
 					buddy_priv->dmsp_ctl.rssivalmin_for_anothermacofdmsp =
-						rtl_dm_dig->min_undecorated_pwdb_for_dm;
+						rtl_dm_dig->min_undec_pwdb_for_dm;
 				} else {
 					if (b_getvalue_from_buddy) {
 						RT_TRACE(rtlpriv, COMP_EASY_CONCURRENT, DBG_LOUD,
 							"get new RSSI\n");
 						brestore_rssi = true;
 						rssi_val_min_back_for_mac0 =
-							rtl_dm_dig->min_undecorated_pwdb_for_dm;
-						rtl_dm_dig->min_undecorated_pwdb_for_dm =
+							rtl_dm_dig->min_undec_pwdb_for_dm;
+						rtl_dm_dig->min_undec_pwdb_for_dm =
 							rtlpriv->dmsp_ctl.rssivalmin_for_anothermacofdmsp;
 					}
 					/*dm_1P_CCA()*/
 					if (brestore_rssi) {
 						brestore_rssi = false;
-						rtl_dm_dig->min_undecorated_pwdb_for_dm =
+						rtl_dm_dig->min_undec_pwdb_for_dm =
 							rssi_val_min_back_for_mac0;
 					}
 				}
@@ -401,7 +401,7 @@ static void rtl92d_dm_find_minimum_rssi(struct ieee80211_hw *hw)
 		}
 	}
 	RT_TRACE(rtlpriv, COMP_DIG, DBG_LOUD, "MinUndecoratedPWDBForDM =%d\n",
-			rtl_dm_dig->min_undecorated_pwdb_for_dm);
+			rtl_dm_dig->min_undec_pwdb_for_dm);
 }
 
 static u8 _rtl92d_dm_initial_gain_minpwdb(struct ieee80211_hw *hw)
@@ -542,12 +542,12 @@ static void rtl92d_dm_cck_packet_detection_thresh(struct ieee80211_hw *hw)
 
 	if (rtl_dm_dig->cursta_connectstate == DIG_STA_CONNECT) {
 		if (rtl_dm_dig->pre_cck_pd_state == CCK_PD_STAGE_LOWRSSI) {
-			if (rtl_dm_dig->min_undecorated_pwdb_for_dm <= 25)
+			if (rtl_dm_dig->min_undec_pwdb_for_dm <= 25)
 				rtl_dm_dig->cur_cck_pd_state = CCK_PD_STAGE_LOWRSSI;
 			else
 				rtl_dm_dig->cur_cck_pd_state = CCK_PD_STAGE_HIGHRSSI;
 		} else {
-			if (rtl_dm_dig->min_undecorated_pwdb_for_dm <= 20)
+			if (rtl_dm_dig->min_undec_pwdb_for_dm <= 20)
 				rtl_dm_dig->cur_cck_pd_state = CCK_PD_STAGE_LOWRSSI;
 			else
 				rtl_dm_dig->cur_cck_pd_state = CCK_PD_STAGE_HIGHRSSI;
@@ -686,12 +686,12 @@ static void rtl92d_dm_dig(struct ieee80211_hw *hw)
 		if ((rtlpriv->mac80211.link_state >= MAC80211_LINKED) &&
 		    (rtlpriv->mac80211.vendor == PEER_CISCO)) {
 			RT_TRACE(rtlpriv, COMP_DIG, DBG_LOUD, "IOT_PEER = CISCO\n");
-			if (rtl_dm_dig->last_min_undecorated_pwdb_for_dm >= 50 &&
-				rtl_dm_dig->min_undecorated_pwdb_for_dm < 50) {
+			if (rtl_dm_dig->last_min_undec_pwdb_for_dm >= 50 &&
+				rtl_dm_dig->min_undec_pwdb_for_dm < 50) {
 				rtl_write_byte(rtlpriv, REG_EARLY_MODE_CONTROL, 0x00);
 				RT_TRACE(rtlpriv, COMP_DIG, DBG_LOUD, "Early Mode Off\n");
-			} else if (rtl_dm_dig->last_min_undecorated_pwdb_for_dm <= 55 &&
-				rtl_dm_dig->min_undecorated_pwdb_for_dm > 55) {
+			} else if (rtl_dm_dig->last_min_undec_pwdb_for_dm <= 55 &&
+				rtl_dm_dig->min_undec_pwdb_for_dm > 55) {
 				rtl_write_byte(rtlpriv, REG_EARLY_MODE_CONTROL, 0x0f);
 				RT_TRACE(rtlpriv, COMP_DIG, DBG_LOUD, "Early Mode On\n");
 			}
@@ -699,8 +699,8 @@ static void rtl92d_dm_dig(struct ieee80211_hw *hw)
 			rtl_write_byte(rtlpriv, REG_EARLY_MODE_CONTROL, 0x0f);
 			RT_TRACE(rtlpriv, COMP_DIG, DBG_LOUD, "Early Mode On\n");
 		}
-		rtl_dm_dig->last_min_undecorated_pwdb_for_dm =
-			rtl_dm_dig->min_undecorated_pwdb_for_dm;
+		rtl_dm_dig->last_min_undec_pwdb_for_dm =
+			rtl_dm_dig->min_undec_pwdb_for_dm;
 	}
 	if (rtlpriv->dm.dm_initialgain_enable == false)
 		return;
