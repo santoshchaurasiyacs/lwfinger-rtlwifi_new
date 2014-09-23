@@ -566,11 +566,11 @@ static bool _rtl92ee_cmd_send_packet(struct ieee80211_hw *hw,
 
 	ring = &rtlpci->tx_ring[BEACON_QUEUE];
 
+	spin_lock_irqsave(&rtlpriv->locks.irq_th_lock, flags);
 	pskb = __skb_dequeue(&ring->queue);
 	if (pskb)
 		kfree_skb(pskb);
 
-	spin_lock_irqsave(&rtlpriv->locks.irq_th_lock, flags);
 	/*this is wrong, fill_tx_cmddesc needs update*/
 	pdesc = &ring->desc[0];
 
