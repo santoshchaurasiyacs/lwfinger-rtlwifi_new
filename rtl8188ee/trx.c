@@ -265,15 +265,15 @@ static void _rtl88ee_query_rxphystatus(struct ieee80211_hw *hw,
 				/*VGA_idx = 2~0*/
 				rx_pwr_all = -48 + 2*(2-vga_idx);
 				break;
-			case 5:
+		case 5:
 				/*VGA_idx = 7~5*/
 				rx_pwr_all = -42 + 2*(7-vga_idx);
 				break;
-			case 4:
+		case 4:
 				/*VGA_idx = 7~4*/
 				rx_pwr_all = -36 + 2*(7-vga_idx);
 				break;
-			case 3:
+		case 3:
 				/*VGA_idx = 7~0*/
 				rx_pwr_all = -24 + 2*(7-vga_idx);
 				break;
