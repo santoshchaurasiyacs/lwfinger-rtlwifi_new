@@ -33,6 +33,7 @@
 #define __RTL92E_TABLE__H_
 
 #include <linux/types.h>
+#include "../wifi.h"
 #define RTL8192EE_PHY_REG_ARRAY_LEN	448
 extern u32 RTL8192EE_PHY_REG_ARRAY[];
 #define RTL8192EE_PHY_REG_ARRAY_PG_LEN	168
@@ -45,4 +46,7 @@ extern u32 RTL8192EE_RADIOB_ARRAY[];
 extern u32 RTL8192EE_MAC_ARRAY[];
 #define RTL8192EE_AGC_TAB_ARRAY_LEN	532
 extern u32 RTL8192EE_AGC_TAB_ARRAY[];
+#ifdef ERROR_RESUME
+extern u8 RTL8192EE_FAKE_EFUSE[];
+#endif
 #endif

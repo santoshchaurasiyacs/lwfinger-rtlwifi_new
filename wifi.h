@@ -39,6 +39,7 @@
 #include <net/mac80211.h>
 #include "debug.h"
 
+/*#define ERROR_RESUME*/
 
 #define RF_CHANGE_BY_INIT		0
 #define RF_CHANGE_BY_IPS		BIT(28)

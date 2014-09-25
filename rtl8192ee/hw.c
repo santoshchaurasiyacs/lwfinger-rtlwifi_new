@@ -43,6 +43,7 @@
 #include "hw.h"
 #include "pwrseqcmd.h"
 #include "pwrseq.h"
+#include "table.h"
 
 #define LLT_CONFIG	5
 
@@ -2028,8 +2029,13 @@ static void _rtl92ee_read_adapter_info(struct ieee80211_hw *hw)
 		       HWSET_MAX_SIZE);
 	} else if (rtlefuse->epromtype == EEPROM_93C46) {
 		RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG,
-			 "RTL819X Not boot from eeprom, check it !!");
+			 "RTL819X Not boot from eeprom, check EESK pin!!");
+#ifdef ERROR_RESUME
+		memcpy(hwinfo, RTL8192EE_FAKE_EFUSE,HWSET_MAX_SIZE);
+#else
 		return;
+#endif
+
 	}  else {
 		RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG,
 			 "boot from neither eeprom nor efuse, check it !!");
