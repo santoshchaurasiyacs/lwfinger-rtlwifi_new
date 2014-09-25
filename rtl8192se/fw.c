@@ -132,8 +132,6 @@ static void _rtl92s_firmwareheader_priveupdate(struct ieee80211_hw *hw,
 	pfw_priv->rf_config = _rtl92s_firmware_header_map_rftype(hw);
 }
 
-
-
 static bool _rtl92s_cmd_send_packet(struct ieee80211_hw *hw,
 		struct sk_buff *skb, u8 b_last)
 {

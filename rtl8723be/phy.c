@@ -3127,7 +3127,7 @@ static bool _rtl8723be_phy_set_rf_power_state(struct ieee80211_hw *hw,
 			ring = &pcipriv->dev.tx_ring[queue_id];
 			/* Don't check BEACON Q.
 			 * BEACON Q is always not empty,
-			 * because '_rtl8723be_cmd_send_packet' */
+			 * because 'rtl_cmd_send_packet' */
 			if (queue_id == BEACON_QUEUE ||
 			    skb_queue_len(&ring->queue) == 0) {
 				queue_id++;
