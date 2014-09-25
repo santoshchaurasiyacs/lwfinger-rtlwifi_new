@@ -30,6 +30,7 @@
 #include "../wifi.h"
 #include "../pci.h"
 #include "../base.h"
+#include "../core.h"
 #include "reg.h"
 #include "def.h"
 #include "fw.h"
@@ -517,40 +518,6 @@ void rtl8723e_set_fw_pwrmode_cmd(struct ieee80211_hw *hw, u8 mode)
 
 }
 
-static bool _rtl8723e_cmd_send_packet(struct ieee80211_hw *hw,
-				struct sk_buff *skb)
-{
-	struct rtl_priv *rtlpriv = rtl_priv(hw);
-	struct rtl_pci *rtlpci = rtl_pcidev(rtl_pcipriv(hw));
-	struct rtl8192_tx_ring *ring;
-	struct rtl_tx_desc *pdesc;
-	u8 own;
-	unsigned long flags;
-	struct sk_buff *pskb = NULL;
-
-	ring = &rtlpci->tx_ring[BEACON_QUEUE];
-
-	pskb = __skb_dequeue(&ring->queue);
-	if (pskb)
-		kfree_skb(pskb);
-
-	spin_lock_irqsave(&rtlpriv->locks.irq_th_lock, flags);
-
-	pdesc = &ring->desc[0];
-	own = (u8) rtlpriv->cfg->ops->get_desc((u8 *) pdesc,
-			true, HW_DESC_OWN);
-
-	rtlpriv->cfg->ops->fill_tx_cmddesc(hw, (u8 *) pdesc, 1, 1, skb);
-
-	__skb_queue_tail(&ring->queue, skb);
-
-	spin_unlock_irqrestore(&rtlpriv->locks.irq_th_lock, flags);
-
-	rtlpriv->cfg->ops->tx_polling(hw, BEACON_QUEUE);
-
-	return true;
-}
-
 #define BEACON_PG		0 /* ->1 */
 #define PSPOLL_PG		2
 #define NULL_PG			3
@@ -734,7 +701,7 @@ void rtl8723e_set_fw_rsvdpagepkt(struct ieee80211_hw *hw, bool b_dl_finished)
 	memcpy((u8 *) skb_put(skb, totalpacketlen),
 	       &reserved_page_packet, totalpacketlen);
 
-	rtstatus = _rtl8723e_cmd_send_packet(hw, skb);
+	rtstatus = rtl_cmd_send_packet(hw, skb);
 
 	if (rtstatus)
 		b_dlok = true;
