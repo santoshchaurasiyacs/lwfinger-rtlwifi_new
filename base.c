@@ -1619,6 +1619,9 @@ void rtl_watchdog_wq_callback(void *data)
 			rtl_lps_leave(hw);
 	}
 
+	rtlpriv->link_info.num_rx_packets_unicast = rtlpriv->link_info.num_rx_inperiod;
+	rtlpriv->link_info.num_tx_packets_unicast = rtlpriv->link_info.num_tx_inperiod;
+
 	rtlpriv->link_info.num_rx_inperiod = 0;
 	rtlpriv->link_info.num_tx_inperiod = 0;
 	for (tid = 0; tid <= 7; tid++)

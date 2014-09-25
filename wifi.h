@@ -1920,6 +1920,8 @@ struct rt_link_detect {
 	u32 num_tx_inperiod;
 	u32 num_rx_inperiod;
 
+	u32 num_tx_packets_unicast;
+	u32 num_rx_packets_unicast;
 	bool busytraffic;
 	bool tx_busy_traffic;
 	bool rx_busy_traffic;

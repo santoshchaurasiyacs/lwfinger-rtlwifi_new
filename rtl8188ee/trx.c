@@ -672,6 +672,7 @@ void rtl88ee_tx_fill_desc(struct ieee80211_hw *hw,
 	dma_addr_t mapping;
 	u8 bw_40 = 0;
 	u8 short_gi = 0;
+	u32 packets_count = 0;
 
 	if (mac->opmode == NL80211_IFTYPE_STATION) {
 		bw_40 = mac->bw_40;
@@ -714,8 +715,26 @@ void rtl88ee_tx_fill_desc(struct ieee80211_hw *hw,
 			SET_TX_DESC_OFFSET(pdesc, USB_HWDESC_HEADER_LEN);
 		}
 
-		ptcb_desc->use_driver_rate = true;
-		SET_TX_DESC_TX_RATE(pdesc, rtlpriv->cfg->maps[RTL_RC_OFDM_RATE54M]);
+		ptcb_desc->use_driver_rate = false;
+
+		if(mac->mode == WIRELESS_MODE_N_24G) {
+			packets_count = rtlpriv->link_info.num_rx_packets_unicast +
+					rtlpriv->link_info.num_tx_packets_unicast;
+			ptcb_desc->use_driver_rate = true;
+			if(packets_count > 15000)
+				ptcb_desc->use_driver_rate = false;
+			else if(packets_count > 7000) {
+				ptcb_desc->hw_rate = 0x10;
+			} else if(packets_count > 2000) {
+				ptcb_desc->hw_rate = 0x0b;
+			} else if(packets_count > 1000) {
+				ptcb_desc->hw_rate = 0x09;
+			} else {
+				ptcb_desc->hw_rate = 0x08;
+			}
+		}
+
+		SET_TX_DESC_TX_RATE(pdesc, ptcb_desc->hw_rate);
 		if (ptcb_desc->hw_rate > DESC92C_RATEMCS0)
 			short_gi = (ptcb_desc->use_shortgi) ? 1 : 0;
 		else
