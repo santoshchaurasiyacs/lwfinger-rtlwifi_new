@@ -123,11 +123,8 @@ static void _rtl8723be_set_fw_clock_on(struct ieee80211_hw *hw, u8 rpwm_val,
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_hal *rtlhal = rtl_hal(rtl_priv(hw));
-	bool b_support_remote_wake_up;
 	u32 count = 0, isr_regaddr, content;
 	bool b_schedule_timer = b_need_turn_off_ckk;
-	rtlpriv->cfg->ops->get_hw_reg(hw, HAL_DEF_WOWLAN,
-				      (u8 *)(&b_support_remote_wake_up));
 
 	if (!rtlhal->fw_ready)
 		return;
