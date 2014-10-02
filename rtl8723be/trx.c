@@ -39,6 +39,8 @@
 #include "dm.h"
 #include "fw.h"
 
+#include <linux/vermagic.h>
+
 static u8 _rtl8723be_map_hwqueue_to_fwqueue(struct sk_buff *skb, u8 hw_queue)
 {
 	__le16 fc = rtl_get_fc(skb);
@@ -572,7 +574,9 @@ bool rtl8723be_rx_query_desc(struct ieee80211_hw *hw,
 				return false;
 		}
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,15,0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,15,0)) ||	\
+    ((LINUX_VERSION_CODE >= KERNEL_VERSION(3,13,0)) &&	\
+    defined(UTS_UBUNTU_RELEASE_ABI))
 		if ((!_ieee80211_is_robust_mgmt_frame(hdr)) &&
 #else
 		if ((!ieee80211_is_robust_mgmt_frame(hdr)) &&
