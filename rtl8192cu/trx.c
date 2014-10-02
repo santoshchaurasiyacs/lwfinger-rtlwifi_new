@@ -39,6 +39,8 @@
 #include "mac.h"
 #include "trx.h"
 
+#include <linux/vermagic.h>
+
 static int _ConfigVerTOutEP(struct ieee80211_hw *hw)
 {
 	u8 ep_cfg, txqsele;
