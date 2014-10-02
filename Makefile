@@ -62,62 +62,51 @@ all:
 	@cp btcoexist/$(SYMBOL_FILE) rtl8821ae/
 	+@make -C rtl8821ae/
 install: all
-	@find /lib/modules/$(shell uname -r) -name "rtl_pci.ko" -exec rm {} \;
-	@find /lib/modules/$(shell uname -r) -name "rtl_usb.ko" -exec rm {} \;
-	@find /lib/modules/$(shell uname -r) -name "rtlwifi.ko" -exec rm {} \;
-	@find /lib/modules/$(shell uname -r) -name "rtl8192c_common.ko" -exec rm {} \;
-	@find /lib/modules/$(shell uname -r) -name "btcoexist.ko" -exec rm {} \;
-	@find /lib/modules/$(shell uname -r) -name "rtl8188ee.ko" -exec rm {} \;
-	@find /lib/modules/$(shell uname -r) -name "rtl8192ce.ko" -exec rm {} \;
-	@find /lib/modules/$(shell uname -r) -name "rtl8192de.ko" -exec rm {} \;
-	@find /lib/modules/$(shell uname -r) -name "rtl8192ee.ko" -exec rm {} \;
-	@find /lib/modules/$(shell uname -r) -name "rtl8192se.ko" -exec rm {} \;
-	@find /lib/modules/$(shell uname -r) -name "rtl8723be.ko" -exec rm {} \;
-	@find /lib/modules/$(shell uname -r) -name "rtl8821ae.ko" -exec rm {} \;
-	@rm -fr $(FIRMWAREDIR)/`uname -r`/rtlwifi
+ifeq (,$(wildcard ./backup_drivers.tar))
+	@echo Making backups
+	@tar cPf backup_drivers.tar $(MODDESTDIR)
+endif
 
-	$(shell rm -fr $(MODDESTDIR))
-	$(shell mkdir $(MODDESTDIR))
-	$(shell mkdir $(MODDESTDIR)/btcoexist)
-	$(shell mkdir $(MODDESTDIR)/rtl8188ee)
-	$(shell mkdir $(MODDESTDIR)/rtl8192c)
-	$(shell mkdir $(MODDESTDIR)/rtl8192ce)
-	$(shell mkdir $(MODDESTDIR)/rtl8192de)
-	$(shell mkdir $(MODDESTDIR)/rtl8192ee)
-	$(shell mkdir $(MODDESTDIR)/rtl8192se)
-	$(shell mkdir $(MODDESTDIR)/rtl8723ae)
-	$(shell mkdir $(MODDESTDIR)/rtl8723be)
-	$(shell mkdir $(MODDESTDIR)/rtl8821ae)
-	@install -p -m 644 rtl_pci.ko $(MODDESTDIR)	
-	@install -p -m 644 rtl_usb.ko $(MODDESTDIR)	
-	@install -p -m 644 rtlwifi.ko $(MODDESTDIR)	
-	@install -p -m 644 ./btcoexist/btcoexist.ko $(MODDESTDIR)/btcoexist
-	@install -p -m 644 ./rtl8192se/rtl8192se.ko $(MODDESTDIR)/rtl8192se
-	@install -p -m 644 ./rtl8192c/rtl8192c-common.ko $(MODDESTDIR)/rtl8192c
-	@install -p -m 644 ./rtl8192ce/rtl8192ce.ko $(MODDESTDIR)/rtl8192ce
-	@install -p -m 644 ./rtl8192de/rtl8192de.ko $(MODDESTDIR)/rtl8192de
-	@install -p -m 644 ./rtl8723ae/rtl8723ae.ko $(MODDESTDIR)/rtl8723ae
-	@install -p -m 644 ./rtl8188ee/rtl8188ee.ko $(MODDESTDIR)/rtl8188ee
-	@install -p -m 644 ./rtl8723be/rtl8723be.ko $(MODDESTDIR)/rtl8723be
-	@install -p -m 644 ./rtl8192ee/rtl8192ee.ko $(MODDESTDIR)/rtl8192ee
-	@install -p -m 644 ./rtl8821ae/rtl8821ae.ko $(MODDESTDIR)/rtl8821ae
+	@mkdir -p $(MODDESTDIR)/btcoexist
+	@mkdir -p $(MODDESTDIR)/rtl8188ee
+	@mkdir -p $(MODDESTDIR)/rtl8192c
+	@mkdir -p $(MODDESTDIR)/rtl8192ce
+	@mkdir -p $(MODDESTDIR)/rtl8192cu
+	@mkdir -p $(MODDESTDIR)/rtl8192de
+	@mkdir -p $(MODDESTDIR)/rtl8192ee
+	@mkdir -p $(MODDESTDIR)/rtl8192se
+	@mkdir -p $(MODDESTDIR)/rtl8723ae
+	@mkdir -p $(MODDESTDIR)/rtl8723be
+	@mkdir -p $(MODDESTDIR)/rtl8821ae
+	@install -p -D -m 644 rtl_pci.ko $(MODDESTDIR)	
+	@install -p -D -m 644 rtl_usb.ko $(MODDESTDIR)	
+	@install -p -D -m 644 rtlwifi.ko $(MODDESTDIR)	
+	@install -p -D -m 644 ./btcoexist/btcoexist.ko $(MODDESTDIR)/btcoexist
+	@install -p -D -m 644 ./rtl8188ee/rtl8188ee.ko $(MODDESTDIR)/rtl8188ee
+	@install -p -D -m 644 ./rtl8192c/rtl8192c-common.ko $(MODDESTDIR)/rtl8192c
+	@install -p -D -m 644 ./rtl8192ce/rtl8192ce.ko $(MODDESTDIR)/rtl8192ce
+	@install -p -D -m 644 ./rtl8192cu/rtl8192cu.ko $(MODDESTDIR)/rtl8192cu
+	@install -p -D -m 644 ./rtl8192de/rtl8192de.ko $(MODDESTDIR)/rtl8192de
+	@install -p -D -m 644 ./rtl8192ee/rtl8192ee.ko $(MODDESTDIR)/rtl8192ee
+	@install -p -D -m 644 ./rtl8192se/rtl8192se.ko $(MODDESTDIR)/rtl8192se
+	@install -p -D -m 644 ./rtl8723ae/rtl8723ae.ko $(MODDESTDIR)/rtl8723ae
+	@install -p -D -m 644 ./rtl8723be/rtl8723be.ko $(MODDESTDIR)/rtl8723be
+	@install -p -D -m 644 ./rtl8821ae/rtl8821ae.ko $(MODDESTDIR)/rtl8821ae
 	
 	@depmod -a
 
-	@#copy firmware img to target fold
-	@#$(shell [ -d "$(FIRMWAREDIR)/`uname -r`" ] && cp -fr firmware/rtlwifi/ $(FIRMWAREDIR)/`uname -r`/.)
-	@#$(shell [ ! -d "$(FIRMWAREDIR)/`uname -r`" ] && cp -fr firmware/rtlwifi/ $(FIRMWAREDIR)/.)
+	@#copy firmware images to target folder
 	@cp -fr firmware/rtlwifi/ $(FIRMWAREDIR)/
 	@echo "Install rtlwifi SUCCESS"
 
 uninstall:
-	$(shell [ -d "$(MODDESTDIR)" ] && rm -fr $(MODDESTDIR))
+ifneq (,$(wildcard ./backup_drivers.tar))
+	@echo Restoring backups
+	@tar xvPf backup_drivers.tar
+endif
 	
 	@depmod -a
 	
-	@#delete the firmware img
-	@rm -fr /lib/firmware/rtlwifi/
-	@rm -fr /lib/firmware/`uname -r`/rtlwifi/
 	@echo "Uninstall rtlwifi SUCCESS"
 
 clean:
