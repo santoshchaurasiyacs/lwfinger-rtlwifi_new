@@ -102,11 +102,14 @@ static void _rtl92ee_return_beacon_queue_skb(struct ieee80211_hw *hw)
 		struct rtl_tx_buffer_desc *entry =
 						&ring->buffer_desc[ring->idx];
 		struct sk_buff *skb = __skb_dequeue(&ring->queue);
+		dma_addr_t dma_addr = rtlpriv->cfg->ops->get_desc(
+                                 (u8 *)entry, true, HW_DESC_TXBUFF_ADDR);
 
-		pci_unmap_single(rtlpci->pdev,
-				 rtlpriv->cfg->ops->get_desc(
-				 (u8 *) entry, true, HW_DESC_TXBUFF_ADDR),
-				 skb->len, PCI_DMA_TODEVICE);
+		if (dma_addr) {
+			pci_unmap_single(rtlpci->pdev, dma_addr,
+					 skb->len, PCI_DMA_TODEVICE);
+			pr_info("********* unmapping needed *******\n");
+		}
 		kfree_skb(skb);
 		ring->idx = (ring->idx + 1) % ring->entries;
 	}
