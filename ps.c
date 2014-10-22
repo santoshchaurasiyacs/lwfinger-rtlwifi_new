@@ -316,7 +316,7 @@ void rtl_ips_nic_on(struct ieee80211_hw *hw)
 
 	cancel_delayed_work(&rtlpriv->works.ips_nic_off_wq);
 
-	spin_lock(&rtlpriv->locks.ips_lock);
+	spin_lock_bh(&rtlpriv->locks.ips_lock);
 	if (ppsc->inactiveps) {
 		rtstate = ppsc->rfpwr_state;
 
@@ -333,7 +333,7 @@ void rtl_ips_nic_on(struct ieee80211_hw *hw)
 									ppsc->inactive_pwrstate);
 		}
 	}
-	spin_unlock(&rtlpriv->locks.ips_lock);
+	spin_unlock_bh(&rtlpriv->locks.ips_lock);
 }
 EXPORT_SYMBOL_GPL(rtl_ips_nic_on);
 

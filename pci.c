@@ -977,14 +977,13 @@ static irqreturn_t _rtl_pci_interrupt(int irq, void *dev_id)
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_pci *rtlpci = rtl_pcidev(rtl_pcipriv(hw));
 	struct rtl_hal *rtlhal = rtl_hal(rtl_priv(hw));
-	unsigned long flags;
 	u32 inta = 0;
 	u32 intb = 0;
 
 	if (rtlpci->irq_enabled == 0)
 		return IRQ_HANDLED;
 
-	spin_lock_irqsave(&rtlpriv->locks.irq_th_lock , flags);
+	spin_lock(&rtlpriv->locks.irq_th_lock);
 	rtlpriv->cfg->ops->disable_interrupt(hw);
 
 	/*read ISR: 4/8bytes */
@@ -1121,7 +1120,7 @@ static irqreturn_t _rtl_pci_interrupt(int irq, void *dev_id)
 
 done:
 	rtlpriv->cfg->ops->enable_interrupt(hw);
-	spin_unlock_irqrestore(&rtlpriv->locks.irq_th_lock, flags);
+	spin_unlock(&rtlpriv->locks.irq_th_lock);
 	return IRQ_HANDLED;
 }
 
@@ -1755,7 +1754,7 @@ static int rtl_pci_tx(struct ieee80211_hw *hw,
 	    hw_queue != BEACON_QUEUE) {
 
 		RT_TRACE(rtlpriv, COMP_ERR, DBG_LOUD,
-			 "less desc left, stop skb_queue@%d, ring->idx = %d,idx = %d, skb_queue_len = 0x%d\n",
+			 "less desc left, stop skb_queue@%d, ring->idx = %d, idx = %d, skb_queue_len = 0x%d\n",
 			  hw_queue, ring->idx, idx,
 			  skb_queue_len(&ring->queue));
 

@@ -143,7 +143,7 @@ bool rtl92c_phy_bb_config(struct ieee80211_hw *hw)
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	u16 regval;
 	u32 regvaldw;
-	u8 b_reg_hwparafile = 1;
+	u8 reg_hwparafile = 1;
 
 	_rtl92c_phy_init_bb_rf_register_definition(hw);
 	regval = rtl_read_word(rtlpriv, REG_SYS_FUNC_EN);
@@ -158,7 +158,7 @@ bool rtl92c_phy_bb_config(struct ieee80211_hw *hw)
 	rtl_write_byte(rtlpriv, REG_AFE_XTAL_CTRL + 1, 0x80);
 	regvaldw = rtl_read_dword(rtlpriv, REG_LEDCFG0);
 	rtl_write_dword(rtlpriv, REG_LEDCFG0, regvaldw | BIT(23));
-	if (b_reg_hwparafile == 1)
+	if (reg_hwparafile == 1)
 		rtstatus = _rtl92c_phy_bb8192c_config_parafile(hw);
 	return rtstatus;
 }

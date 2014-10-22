@@ -78,11 +78,11 @@
 #define REG_PCIE_MIO_INTF			0x00E4
 #define REG_PCIE_MIO_INTD			0x00E8
 #define REG_HPON_FSM				0x00EC
-#define REG_SYS_CFG				0x00F0
+#define REG_SYS_CFG					0x00F0
 #define REG_GPIO_OUTSTS				0x00F4
 
-#define REG_CR					0x0100
-#define REG_PBP					0x0104
+#define REG_CR						0x0100
+#define REG_PBP						0x0104
 #define REG_TRXDMA_CTRL				0x010C
 #define REG_TRXFF_BNDY				0x0114
 #define REG_TRXFF_STATUS			0x0118

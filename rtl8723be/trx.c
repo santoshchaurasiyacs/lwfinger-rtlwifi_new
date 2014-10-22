@@ -420,7 +420,7 @@ static void _rtl8723be_translate_rx_signal_stuff(struct ieee80211_hw *hw,
 	 * this assignment is neccesary,
 	 * otherwise it counld be true in this case
 	 * the situation is much worse in Kernel 3.10*/
-	if (ieee80211_is_beacon(hdr->frame_control))
+	if (ieee80211_is_beacon(fc))
 		packet_beacon = true;
 	else
 		packet_beacon = false;

@@ -229,11 +229,10 @@ static void rtl_process_pwdb(struct ieee80211_hw *hw, struct rtl_stats *pstatus)
 		     (pstatus->rx_pwdb_all)) / (RX_SMOOTH_FACTOR);
 	}
 
-	if (sta) {
+	if (sta)
 		drv_priv->rssi_stat.undec_sm_pwdb = undec_sm_pwdb;
-	} else {
+	else
 		rtlpriv->dm.undec_sm_pwdb = undec_sm_pwdb;
-	}
 	rcu_read_unlock();
 
 	rtl_update_rxsignalstatistics(hw, pstatus);

@@ -490,7 +490,7 @@ static void _rtl88ee_translate_rx_signal_stuff(struct ieee80211_hw *hw,
 	    (ether_addr_equal(praddr, rtlefuse->dev_addr));
 #endif
 
-	if (ieee80211_is_beacon(hdr->frame_control))
+	if (ieee80211_is_beacon(fc))
 		packet_beacon = true;
 	else
 		packet_beacon = false;
