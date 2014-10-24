@@ -38,6 +38,9 @@
 #include "halbtc8723b2ant.h"
 #include "halbtc8821a2ant.h"
 #include "halbtc8821a1ant.h"
+#include "halbtc8812a2ant.h"
+#include "halbtc8812a1ant.h"
+#include "halbtc8812a_ext.h"
 
 #define GetDefaultAdapter(padapter)	padapter
 

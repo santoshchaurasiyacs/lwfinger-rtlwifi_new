@@ -38,7 +38,7 @@
 #include <linux/usb.h>
 #include <net/mac80211.h>
 #include "debug.h"
-
+#include "btcoexist/halbtc8812a_ext.h"
 /*#define ERROR_RESUME*/
 
 #define RF_CHANGE_BY_INIT		0
@@ -2245,6 +2245,7 @@ struct rtl_works {
 	struct workqueue_struct *rtl_wq;
 	struct delayed_work watchdog_wq;
 	struct delayed_work ips_nic_off_wq;
+	struct delayed_work socket_wq;
 
 	/* For SW LPS */
 	struct delayed_work ps_work;
@@ -2406,6 +2407,11 @@ struct rtl_btc_ops {
 	bool (*btc_is_bt_disabled)(struct rtl_priv *rtlpriv);
 	void (*btc_special_packet_notify)(struct rtl_priv *rtlpriv,
 					u8 pkt_type);
+	void (*btc_set_hci_version) (u16 hci_version);
+	void (*btc_set_bt_patch_version) (u16 bt_hci_version, u16 bt_patch_version);
+	void (*btc_stack_update_profile_info) (void);
+	void (*btc_init_socket) (struct rtl_priv *rtlpriv);
+	void (*btc_close_socket) (struct rtl_priv *rtlpriv);
 };
 
 struct rtl_bt_coexist {
@@ -2493,6 +2499,9 @@ struct rtl_priv {
 	struct rtl_dm dm;
 	struct rtl_security sec;
 	struct rtl_efuse efuse;
+
+    /*troy add for 8812AE+8761AU coex*/
+    struct bt_coex_info coex_info;
 
 	struct rtl_ps_ctl psc;
 	struct rate_adaptive ra;

@@ -76,20 +76,6 @@
 #define C2H_EVT_HOST_CLOSE		0x00
 #define C2H_EVT_FW_CLOSE		0xFF
 
-enum bt_traffic_mode {
-	BT_MOTOR_EXT_BE = 0x00,
-	BT_MOTOR_EXT_GUL = 0x01,
-	BT_MOTOR_EXT_GUB = 0x02,
-	BT_MOTOR_EXT_GULB = 0x03
-};
-
-enum bt_traffic_mode_profile {
-	BT_PROFILE_NONE,
-	BT_PROFILE_A2DP,
-	BT_PROFILE_PAN,
-	BT_PROFILE_HID,
-	BT_PROFILE_SCO
-};
 
 /*
 enum hci_ext_bt_operation {

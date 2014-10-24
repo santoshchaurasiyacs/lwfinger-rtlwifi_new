@@ -1342,16 +1342,14 @@ static void halbtc8192e2ant_set_switch_sstype(struct btc_coexist *btcoexist, u8 
 		btcoexist->btc_write_1byte(btcoexist, 0xd04, 0x1);
 		btcoexist->btc_write_4byte(btcoexist, 0x90c, 0x81111111);
 		/* switch cck patch */
-		btcoexist->btc_write_1byte_bitmask(btcoexist, 0xe77, 0x4, 0x1);
-		btcoexist->btc_write_1byte(btcoexist, 0xa07, 0x81);
+
 		mimops = BTC_MIMO_PS_STATIC;
 	} else if (sstype == 2) {
 		halbtc8192e2ant_ps_tdma(btcoexist, FORCE_EXEC, false, 0);
 		btcoexist->btc_write_1byte(btcoexist, 0xc04, 0x33);
 		btcoexist->btc_write_1byte(btcoexist, 0xd04, 0x3);
 		btcoexist->btc_write_4byte(btcoexist, 0x90c, 0x81121313);
-		btcoexist->btc_write_1byte_bitmask(btcoexist, 0xe77, 0x4, 0x0);
-		btcoexist->btc_write_1byte(btcoexist, 0xa07, 0x41);
+
 		mimops = BTC_MIMO_PS_DYNAMIC;
 	}
 	/* set rx 1ss or 2ss */

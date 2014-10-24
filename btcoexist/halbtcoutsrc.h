@@ -64,6 +64,7 @@ enum btc_chip_type {
 enum btc_msg_type {
 	BTC_MSG_INTERFACE	= 0x0,
 	BTC_MSG_ALGORITHM	= 0x1,
+	BTC_MSG_SOCKET	= 0x2,
 	BTC_MSG_MAX
 };
 
@@ -72,6 +73,12 @@ extern u32 btc_dbg_type[];
 /* following is for BTC_MSG_INTERFACE */
 #define		INTF_INIT				BIT0
 #define		INTF_NOTIFY				BIT2
+
+/* following is for BTC_MSG_SOCKET */
+#define		SOCKET_INIT				BIT0
+#define		SOCKET_CRITICAL				BIT1
+#define		SOCKET_NORMAL				BIT2
+
 
 /* following is for BTC_ALGORITHM */
 #define		ALGO_BT_RSSI_STATE			BIT0
@@ -380,7 +387,7 @@ typedef u16 (*bfp_btc_r2)(void *btc_context, u32 reg_addr);
 
 typedef u32 (*bfp_btc_r4)(void *btc_context, u32 reg_addr);
 
-typedef void (*bfp_btc_w1)(void *btc_context, u32 reg_addr, u32 data);
+typedef void (*bfp_btc_w1)(void *btc_context, u32 reg_addr, u8 data);
 
 typedef void (*bfp_btc_w1_bit_mak)(void *btc_context, u32 reg_addr,
 				   u8 bit_mask, u8 data1b);
@@ -570,4 +577,18 @@ void exhalbtc_signal_compensation(struct btc_coexist *btcoexist,
 				  u8 *rssi_wifi, u8 *rssi_bt);
 void exhalbtc_lps_leave(struct btc_coexist *btcoexist);
 void exhalbtc_low_wifi_traffic_notify(struct btc_coexist *btcoexist);
+
+
+/**************for 8812AE BTCOEX**************/
+#define BT_SendEventExtBtCoexControl(Adapter, bNeedDbgRsp, dataLen, pData) rtl_btcoex_SendEventExtBtCoexControl(Adapter, bNeedDbgRsp, dataLen, pData)
+#define BT_SendEventExtBtInfoControl(Adapter, dataLen, pData) rtl_btcoex_SendEventExtBtInfoControl(Adapter, dataLen, pData)
+void rtl_btcoex_SendEventExtBtCoexControl(struct rtl_priv *rtlpriv, u8 bNeedDbgRsp, u8 dataLen, void *pData);
+void rtl_btcoex_SendEventExtBtInfoControl(struct rtl_priv *rtlpriv, u8 dataLen, void *pData);
+
+void rtl_btcoex_dump_tx_msg(u8 *tx_msg, u8 len, u8 *msg_name);
+u8 rtl_btcoex_sendmsgbysocket(struct rtl_priv *rtlpriv, u8 *msg, u8 msg_size, bool force);
+void rtl_btcoex_SendScanNotify(struct rtl_priv *rtlpriv, u8 scanType);
+void rtl_btcoex_init_socket(struct rtl_priv *rtlpriv);
+void rtl_btcoex_close_socket(struct rtl_priv *rtlpriv);
+
 #endif

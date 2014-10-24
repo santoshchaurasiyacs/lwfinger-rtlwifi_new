@@ -48,8 +48,22 @@ static struct rtl_btc_ops rtl_btc_operation = {
 	.btc_is_disable_edca_turbo = rtl_btc_is_disable_edca_turbo,
 	.btc_is_bt_disabled = rtl_btc_is_bt_disabled,
 	.btc_special_packet_notify = rtl_btc_special_packet_notify,
+    .btc_set_hci_version = rtl_btc_set_hci_version,
+	.btc_set_bt_patch_version = rtl_btc_set_bt_patch_version,
+	.btc_stack_update_profile_info = rtl_btc_stack_update_profile_info,
+	.btc_init_socket = rtl_btc_init_socket,
+	.btc_close_socket = rtl_btc_close_socket,
 };
 
+void rtl_btc_init_socket(struct rtl_priv *rtlpriv)
+{
+	rtl_btcoex_init_socket(rtlpriv);
+}
+
+void rtl_btc_close_socket(struct rtl_priv *rtlpriv)
+{
+	rtl_btcoex_close_socket(rtlpriv);
+}
 
 void rtl_btc_init_variables(struct rtl_priv *rtlpriv)
 {
@@ -80,6 +94,18 @@ void rtl_btc_init_hal_vars(struct rtl_priv *rtlpriv)
 
 }
 
+void rtl_btc_stack_update_profile_info()
+{
+	exhalbtc_stack_update_profile_info();
+}
+void rtl_btc_set_bt_patch_version(u16 bt_hci_version, u16 bt_patch_version)
+{
+	exhalbtc_set_bt_patch_version(bt_hci_version, bt_patch_version);
+}
+void rtl_btc_set_hci_version(u16 hci_version)
+{
+    exhalbtc_set_hci_version(hci_version);
+}
 
 void rtl_btc_init_hw_config(struct rtl_priv *rtlpriv)
 {
@@ -101,6 +127,13 @@ void rtl_btc_lps_notify(struct rtl_priv *rtlpriv, u8 type)
 
 void rtl_btc_scan_notify(struct rtl_priv *rtlpriv, u8 scantype)
 {
+    /*for 8812AE+8761AU*/
+	struct bt_coex_info *pcoex_info = &rtlpriv->coex_info;
+	PBT_MGNT	pBtMgnt=&pcoex_info->BtMgnt;
+	if(pBtMgnt->ext_config.enable_wifi_scan_notify)
+		rtl_btcoex_SendScanNotify(rtlpriv, scantype);
+
+
 	exhalbtc_scan_notify(&gl_bt_coexist, scantype);
 }
 

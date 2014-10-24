@@ -49,7 +49,11 @@ bool rtl_btc_is_limited_dig(struct rtl_priv *rtlpriv);
 bool rtl_btc_is_disable_edca_turbo(struct rtl_priv *rtlpriv);
 bool rtl_btc_is_bt_disabled(struct rtl_priv *rtlpriv);
 void rtl_btc_special_packet_notify(struct rtl_priv *rtlpriv, u8 pkt_type);
-
+void rtl_btc_set_hci_version(u16 hci_version);
+void rtl_btc_set_bt_patch_version(u16 bt_hci_version, u16 bt_patch_version);
+void rtl_btc_stack_update_profile_info(void);
+void rtl_btc_init_socket(struct rtl_priv *rtlpriv);
+void rtl_btc_close_socket(struct rtl_priv *rtlpriv);
 
 /*extern struct rtl_btc_ops rtl_btc_operation;*/
 extern struct rtl_btc_ops *rtl_btc_get_ops_pointer(void);
