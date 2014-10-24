@@ -40,7 +40,9 @@
 #define RTL_SUPPORTED_CTRL_FILTER	0xFF
 
 extern const struct ieee80211_ops rtl_ops;
-void rtl_fw_cb(const struct firmware *firmware, void *context);
+void rtl_fw_cb(const struct firmware *firmware, void *context ,bool is_wowlan);
+void rtl_normal_fw_cb(const struct firmware *firmware, void *context);
+void rtl_wowlan_fw_cb(const struct firmware *firmware, void *context);
 void rtl_addr_delay(u32 addr);
 void rtl_rfreg_delay(struct ieee80211_hw *hw, enum radio_path rfpath, u32 addr,
 		     u32 mask, u32 data);

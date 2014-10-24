@@ -179,7 +179,7 @@ static int rtl92d_init_sw_vars(struct ieee80211_hw *hw)
 	/* request fw */
 	err = request_firmware_nowait(THIS_MODULE, 1, rtlpriv->cfg->fw_name,
 				      rtlpriv->io.dev, GFP_KERNEL, hw,
-				      rtl_fw_cb);
+				      rtl_normal_fw_cb);
 	if (err) {
 		RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG,
 			 "Failed to request firmware!\n");

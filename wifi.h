@@ -2192,6 +2192,7 @@ struct rtl_hal_cfg {
 	char *name;
 	char *fw_name;
 	char *alt_fw_name;
+	char *wowlan_fw_name;
 	struct rtl_hal_ops *ops;
 	struct rtl_mod_params *mod_params;
 	struct rtl_hal_usbint_cfg *usb_interface_cfg;
@@ -2477,8 +2478,6 @@ struct rtl_bt_coexist {
 
 struct rtl_priv {
 	struct ieee80211_hw *hw;
-	/* Used to load a second firmware */
-	void (*rtl_fw_second_cb)(struct rtl_priv *rtlpriv);
 	struct list_head list;
 	struct completion firmware_loading_complete;
 #ifdef VIF_TODO

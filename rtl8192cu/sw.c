@@ -86,7 +86,7 @@ static int rtl92cu_init_sw_vars(struct ieee80211_hw *hw)
 	rtlpriv->max_fw_size = 0x4000;
 	err = request_firmware_nowait(THIS_MODULE, 1,
 				      rtlpriv->cfg->fw_name, rtlpriv->io.dev,
-				      GFP_KERNEL, hw, rtl_fw_cb);
+				      GFP_KERNEL, hw, rtl_normal_fw_cb);
 	return err;
 }
 
