@@ -114,20 +114,6 @@ static void rtl92se_fw_cb(const struct firmware *firmware, void *context)
 	memcpy(pfirmware->sz_fw_tmpbuffer, firmware->data, firmware->size);
 	pfirmware->sz_fw_tmpbufferlen = firmware->size;
 	release_firmware(firmware);
-
-	err = ieee80211_register_hw(hw);
-	if (err) {
-		RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG,
-			 "Can't register mac80211 hw\n");
-		return;
-	} else {
-		rtlpriv->mac80211.mac80211_registered = 1;
-	}
-	rtlpci->irq_alloc = 1;
-	set_bit(RTL_STATUS_INTERFACE_START, &rtlpriv->status);
-
-	/*init rfkill */
-	rtl_init_rfkill(hw);
 }
 
 static int rtl92s_init_sw_vars(struct ieee80211_hw *hw)
@@ -225,8 +211,8 @@ static int rtl92s_init_sw_vars(struct ieee80211_hw *hw)
 	rtlpriv->rtlhal.pfirmware = vzalloc(sizeof(struct rt_firmware));
 	if (!rtlpriv->rtlhal.pfirmware)
 		return 1;
-
-	rtlpriv->max_fw_size = RTL8190_MAX_FIRMWARE_CODE_SIZE;
+	/*HEADER+IMEM+EMEM*/
+	rtlpriv->max_fw_size = RTL8190_MAX_FIRMWARE_CODE_SIZE*2 + sizeof(struct fw_hdr);
 
 	pr_info("Driver for Realtek RTL8192SE/RTL8191SE\n"
 		"Loading firmware %s\n", rtlpriv->cfg->fw_name);
