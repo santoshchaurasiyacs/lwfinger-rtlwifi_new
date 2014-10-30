@@ -963,7 +963,7 @@ static int rtl_op_sta_add(struct ieee80211_hw *hw,
 			sta_entry->wireless_mode = WIRELESS_MODE_A;
 			if (sta->ht_cap.ht_supported == true)
 				sta_entry->wireless_mode = WIRELESS_MODE_N_5G;
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 8, 0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 10, 0))
 			if (sta->vht_cap.vht_supported == true)
 				sta_entry->wireless_mode = WIRELESS_MODE_AC_5G;
 #endif
@@ -1167,7 +1167,7 @@ static void rtl_op_bss_info_changed(struct ieee80211_hw *hw,
 					mac->mode = WIRELESS_MODE_N_5G;
 			}
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 8, 0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 10, 0))
 			if (sta->vht_cap.vht_supported) {
 				if (rtlhal->current_bandtype == BAND_ON_5G)
 					mac->mode = WIRELESS_MODE_AC_5G;
@@ -1313,7 +1313,7 @@ static void rtl_op_bss_info_changed(struct ieee80211_hw *hw,
 				mac->mode = WIRELESS_MODE_N_5G;
 		}
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 8, 0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 10, 0))
 		if (sta->vht_cap.vht_supported) {
 			if (rtlhal->current_bandtype == BAND_ON_5G)
 				mac->mode = WIRELESS_MODE_AC_5G;
@@ -1341,7 +1341,7 @@ static void rtl_op_bss_info_changed(struct ieee80211_hw *hw,
 			 * */
 		}
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 8, 0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 10, 0))
 		if (sta->vht_cap.vht_supported)
 			mac->vht_enable = true;
 #endif

@@ -244,7 +244,7 @@ static void _rtl_init_hw_ht_capab(struct ieee80211_hw *hw,
 	}
 }
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 8, 0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 10, 0))
 static void _rtl_init_hw_vht_capab(struct ieee80211_hw *hw,
 					struct ieee80211_sta_vht_cap *vht_cap)
 {
@@ -360,7 +360,7 @@ static void _rtl_init_mac80211(struct ieee80211_hw *hw)
 		/* <3> init ht cap base on ant_num */
 		_rtl_init_hw_ht_capab(hw, &sband->ht_cap);
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 8, 0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 10, 0))
 		_rtl_init_hw_vht_capab(hw, &sband->vht_cap);
 #endif
 		/* <4> set mac->sband to wiphy->sband */
@@ -394,7 +394,7 @@ static void _rtl_init_mac80211(struct ieee80211_hw *hw)
 			/* <3> init ht cap base on ant_num */
 			_rtl_init_hw_ht_capab(hw, &sband->ht_cap);
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 8, 0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 10, 0))
 			_rtl_init_hw_vht_capab(hw, &sband->vht_cap);
 #endif
 			/* <4> set mac->sband to wiphy->sband */
