@@ -89,11 +89,8 @@ static void rtl92s_init_aspm_vars(struct ieee80211_hw *hw)
 static void rtl92se_fw_cb(const struct firmware *firmware, void *context)
 {
 	struct ieee80211_hw *hw = context;
-	struct rtl_pci_priv *pcipriv = rtl_pcipriv(hw);
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
-	struct rtl_pci *rtlpci = rtl_pcidev(pcipriv);
 	struct rt_firmware *pfirmware = NULL;
-	int err;
 
 	RT_TRACE(rtlpriv, COMP_ERR, DBG_LOUD,
 		 "Firmware callback routine entered!\n");

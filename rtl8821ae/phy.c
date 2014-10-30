@@ -719,16 +719,7 @@ static void _rtl8821ae_config_rf_reg(struct ieee80211_hw *hw,
 	)
 {
 	if (addr == 0xfe || addr == 0xffe) {
-
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 14, 0))
-		/* In order not to disturb BT music when
-		wifi init.(1ant NIC only) */
 		mdelay(50);
-#else
-		/*using msleep,3,14 kernel will bug*/
-		msleep(50);
-#endif
-
 	} else {
 		rtl_set_rfreg(hw, rfpath, regaddr, RFREG_OFFSET_MASK, data);
 		udelay(1);

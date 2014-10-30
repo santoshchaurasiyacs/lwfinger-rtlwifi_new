@@ -472,7 +472,11 @@ static void _rtl_add_wowlan_patterns(struct ieee80211_hw *hw,
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_mac *mac = &(rtlpriv->mac80211);
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 12, 0))
 	struct cfg80211_pkt_pattern *patterns = wow->patterns;
+#else
+	struct cfg80211_wowlan_trig_pkt_pattern *patterns = wow->patterns;
+#endif
 	struct rtl_wow_pattern rtl_pattern;
 	const u8 *pattern_os, *mask_os;
 	u8 mask[MAX_WOL_BIT_MASK_SIZE] = {0};
