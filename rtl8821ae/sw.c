@@ -223,16 +223,7 @@ int rtl8821ae_init_sw_vars(struct ieee80211_hw *hw)
 			 "Failed to request firmware!\n");
 		return 1;
 	}
-	/*load wowlan firmware*/
-	pr_info("Using firmware %s\n", rtlpriv->cfg->wowlan_fw_name);
-	err = request_firmware_nowait(THIS_MODULE, 1, rtlpriv->cfg->wowlan_fw_name,
-				      rtlpriv->io.dev, GFP_KERNEL, hw,
-				      rtl_wowlan_fw_cb);
-	if (err) {
-		RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG,
-			 "Failed to request firmware!\n");
-		return 1;
-	}
+
 
 	return 0;
 }

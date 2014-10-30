@@ -108,7 +108,12 @@ void rtl_fw_cb(const struct firmware *firmware, void *context, bool is_wowlan)
 
 	RT_TRACE(rtlpriv, COMP_ERR, DBG_LOUD,
 		 "Firmware callback routine entered!\n");
-	complete(&rtlpriv->firmware_loading_complete);
+
+	if(rtlpriv->cfg->wowlan_fw_name == NULL && is_wowlan == false)
+		complete(&rtlpriv->firmware_loading_complete);
+	if(rtlpriv->cfg->wowlan_fw_name && is_wowlan == true)
+		complete(&rtlpriv->firmware_loading_complete);	
+
 	if (!firmware) {
 		if (rtlpriv->cfg->alt_fw_name) {
 			err = request_firmware(&firmware,
@@ -133,11 +138,27 @@ found_alt:
 	if(!is_wowlan) {
 		memcpy(rtlpriv->rtlhal.pfirmware, firmware->data, firmware->size);
 		rtlpriv->rtlhal.fwsize = firmware->size;
+		release_firmware(firmware);
+
+		if(rtlpriv->cfg->wowlan_fw_name) {
+			/*load wowlan firmware*/
+			pr_info("Using firmware %s\n", rtlpriv->cfg->wowlan_fw_name);
+			err = request_firmware_nowait(THIS_MODULE, 1, rtlpriv->cfg->wowlan_fw_name,
+						      rtlpriv->io.dev, GFP_KERNEL, hw,
+						      rtl_wowlan_fw_cb);
+			if (err) {
+				RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG,
+					 "Failed to request firmware!\n");
+			}
+		}
+
+
 	} else {
 		memcpy(rtlpriv->rtlhal.wowlan_firmware, firmware->data,firmware->size);
 		rtlpriv->rtlhal.wowlan_fwsize = firmware->size;
+		release_firmware(firmware);
 	}
-	release_firmware(firmware);
+	
 }
 void rtl_normal_fw_cb(const struct firmware *firmware, void *context)
 {
