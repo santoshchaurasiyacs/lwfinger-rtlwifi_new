@@ -244,7 +244,7 @@ static void rtl_pci_disable_aspm(struct ieee80211_hw *hw)
 
 	if (pcibridge_vendor == PCI_BRIDGE_VENDOR_UNKNOWN) {
 		RT_TRACE(rtlpriv, COMP_POWER, DBG_TRACE,
-			 "PCI(Bridge) UNKNOWN.\n");
+			 "PCI(Bridge) UNKNOWN\n");
 
 		return;
 	}
@@ -295,7 +295,7 @@ static void rtl_pci_enable_aspm(struct ieee80211_hw *hw)
 
 	if (pcibridge_vendor == PCI_BRIDGE_VENDOR_UNKNOWN) {
 		RT_TRACE(rtlpriv, COMP_POWER, DBG_TRACE,
-			 "PCI(Bridge) UNKNOWN.\n");
+			 "PCI(Bridge) UNKNOWN\n");
 		return;
 	}
 
@@ -1768,11 +1768,11 @@ static int rtl_pci_init(struct ieee80211_hw *hw, struct pci_dev *pdev)
 	err = _rtl_pci_init_trx_ring(hw);
 	if (err) {
 		RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG,
-			 "tx ring initialization failed");
+			 "tx ring initialization failed\n");
 		return err;
 	}
 
-	return 1;
+	return 0;
 }
 
 static int rtl_pci_start(struct ieee80211_hw *hw)
@@ -1956,11 +1956,11 @@ static bool _rtl_pci_find_adapter(struct pci_dev *pdev,
 		if (revisionid == 0 || revisionid == 1) {
 			if (revisionid == 0) {
 				RT_TRACE(rtlpriv, COMP_INIT, DBG_LOUD,
-					 "Find 92DE MAC0.\n");
+					 "Find 92DE MAC0\n");
 				rtlhal->interfaceindex = 0;
 			} else if (revisionid == 1) {
 				RT_TRACE(rtlpriv, COMP_INIT, DBG_LOUD,
-					 "Find 92DE MAC1.\n");
+					 "Find 92DE MAC1\n");
 				rtlhal->interfaceindex = 1;
 			}
 		} else {
@@ -2231,20 +2231,20 @@ int rtl_pci_probe(struct pci_dev *pdev,
 	err = rtl_init_core(hw);
 	if (err) {
 		RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG,
-			 "Can't allocate sw for mac80211.\n");
+			 "Can't allocate sw for mac80211\n");
 		goto fail3;
 	}
 
-	err = !rtl_pci_init(hw, pdev);
+	err = rtl_pci_init(hw, pdev);
 	if (err) {
-		RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG, "Failed to init PCI.\n");
+		RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG, "Failed to init PCI\n");
 		goto fail3;
 	}
 
 	err = ieee80211_register_hw(hw);
 	if (err) {
 		RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG,
-			 "Can't register mac80211 hw.\n");
+			 "Can't register mac80211 hw\n");
 		goto fail3;
 	} else {
 		rtlpriv->mac80211.mac80211_registered = 1;
