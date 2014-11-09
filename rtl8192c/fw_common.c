@@ -755,6 +755,46 @@ static void rtl92c_set_p2p_ctw_period_cmd(struct ieee80211_hw *hw, u8 ctwindow)
 	rtl92c_fill_h2c_cmd(hw, H2C_P2P_PS_CTW_CMD, 1, u1_ctwindow_period);
 }
 
+/* refactored routine */
+static void set_noa_data(struct rtl_priv *rtlpriv,
+			 struct rtl_p2p_ps_info *p2pinfo,
+			 struct p2p_ps_offload_t *p2p_ps_offload)
+{
+	int i;
+	u32	start_time, tsf_low;
+
+	/* hw only support 2 set of NoA */
+	for (i = 0 ; i < p2pinfo->noa_num ; i++) {
+		/* To control the reg setting for which NOA*/
+		rtl_write_byte(rtlpriv, 0x5cf, (i << 4));
+		if (i == 0)
+			p2p_ps_offload->noa0_en = 1;
+		else
+			p2p_ps_offload->noa1_en = 1;
+
+		/* config P2P NoA Descriptor Register */
+		rtl_write_dword(rtlpriv, 0x5E0,
+				p2pinfo->noa_duration[i]);
+		rtl_write_dword(rtlpriv, 0x5E4,
+				p2pinfo->noa_interval[i]);
+
+		/*Get Current TSF value */
+		tsf_low = rtl_read_dword(rtlpriv, REG_TSFTR);
+
+		start_time = p2pinfo->noa_start_time[i];
+		if (p2pinfo->noa_count_type[i] != 1) {
+			while (start_time <= (tsf_low+(50*1024))) {
+				start_time += p2pinfo->noa_interval[i];
+				if (p2pinfo->noa_count_type[i] != 255)
+					p2pinfo->noa_count_type[i]--;
+			}
+		}
+		rtl_write_dword(rtlpriv, 0x5E8, start_time);
+		rtl_write_dword(rtlpriv, 0x5EC,
+				p2pinfo->noa_count_type[i]);
+	}
+}
+
 void rtl92c_set_p2p_ps_offload_cmd(struct ieee80211_hw *hw, u8 p2p_ps_state)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
@@ -762,9 +802,7 @@ void rtl92c_set_p2p_ps_offload_cmd(struct ieee80211_hw *hw, u8 p2p_ps_state)
 	struct rtl_hal *rtlhal = rtl_hal(rtl_priv(hw));
 	struct rtl_p2p_ps_info *p2pinfo = &(rtlps->p2p_ps_info);
 	struct p2p_ps_offload_t *p2p_ps_offload = &rtlhal->p2p_ps_offload;
-	u8	i;
 	u16	ctwindow;
-	u32	start_time, tsf_low;
 
 	switch (p2p_ps_state) {
 	case P2P_PS_DISABLE:
@@ -780,34 +818,8 @@ void rtl92c_set_p2p_ps_offload_cmd(struct ieee80211_hw *hw, u8 p2p_ps_state)
 				rtl92c_set_p2p_ctw_period_cmd(hw, ctwindow);
 			}
 
-			/* hw only support 2 set of NoA */
-			for (i = 0 ; i < p2pinfo->noa_num ; i++) {
-				/* To control the register setting for which NOA*/
-				rtl_write_byte(rtlpriv, 0x5cf, (i << 4));
-				if (i == 0)
-					p2p_ps_offload->noa0_en = 1;
-				else
-					p2p_ps_offload->noa1_en = 1;
-
-				/* config P2P NoA Descriptor Register */
-				rtl_write_dword(rtlpriv, 0x5E0, p2pinfo->noa_duration[i]);
-				rtl_write_dword(rtlpriv, 0x5E4, p2pinfo->noa_interval[i]);
-
-				/*Get Current TSF value */
-				tsf_low = rtl_read_dword(rtlpriv, REG_TSFTR);
-
-				start_time = p2pinfo->noa_start_time[i];
-				if (p2pinfo->noa_count_type[i] != 1) {
-					while (start_time <= (tsf_low+(50*1024))) {
-						start_time += p2pinfo->noa_interval[i];
-						if (p2pinfo->noa_count_type[i] != 255)
-							p2pinfo->noa_count_type[i]--;
-					}
-				}
-				rtl_write_dword(rtlpriv, 0x5E8, start_time);
-				rtl_write_dword(rtlpriv, 0x5EC, p2pinfo->noa_count_type[i]);
-
-			}
+			/* call refactored routine */
+			set_noa_data(rtlpriv, p2pinfo, p2p_ps_offload);
 
 			if ((p2pinfo->opp_ps == 1) || (p2pinfo->noa_num > 0)) {
 				/* rst p2p circuit */
