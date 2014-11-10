@@ -43,6 +43,7 @@
 #include "hw.h"
 #include "../rtl8192c/phy_common.h"
 #include "../rtl8192c/dm_common.h"
+#include "../rtl8192c/fw_common.h"
 
 #define LLT_CONFIG	5
 
