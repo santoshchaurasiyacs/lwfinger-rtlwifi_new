@@ -2606,7 +2606,7 @@ static void rtl8188ee_bt_var_init(struct ieee80211_hw *hw)
 
 	if (rtlpriv->btcoexist.reg_bt_iso == 2)
 		rtlpriv->btcoexist.bt_ant_isolation =
-				rtlpriv->btcoexist.eeprom_bt_ant_isolation;
+				rtlpriv->btcoexist.bt_ant_isolation;
 	else
 		rtlpriv->btcoexist.bt_ant_isolation =
 				rtlpriv->btcoexist.reg_bt_iso;
@@ -2647,13 +2647,13 @@ void rtl8188ee_read_bt_coexist_info_from_hwpg(struct ieee80211_hw *hw,
 		value = hwinfo[EEPROM_RF_BT_SETTING_88E];
 		rtlpriv->btcoexist.eeprom_bt_type = ((value & 0xe) >> 1);
 		rtlpriv->btcoexist.eeprom_bt_ant_num = (value & 0x1);
-		rtlpriv->btcoexist.eeprom_bt_ant_isolation = ((value & 0x10) >> 4);
+		rtlpriv->btcoexist.bt_ant_isolation = ((value & 0x10) >> 4);
 		rtlpriv->btcoexist.eeprom_bt_radio_shared = ((value & 0x20) >> 5);
 	} else {
 		rtlpriv->btcoexist.eeprom_bt_coexist = 0;
 		rtlpriv->btcoexist.eeprom_bt_type = BT_2WIRE;
 		rtlpriv->btcoexist.eeprom_bt_ant_num = ANT_X2;
-		rtlpriv->btcoexist.eeprom_bt_ant_isolation = 0;
+		rtlpriv->btcoexist.bt_ant_isolation = 0;
 		rtlpriv->btcoexist.eeprom_bt_radio_shared = BT_RADIO_SHARED;
 	}
 

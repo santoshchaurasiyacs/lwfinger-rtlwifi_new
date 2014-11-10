@@ -1695,7 +1695,7 @@ struct rtl_efuse {
 	u8 eeprom_pwrlimit_ht40[CHANNEL_GROUP_MAX];
 	u8 eeprom_chnlarea_txpwr_cck[2][CHANNEL_GROUP_MAX_2G];
 	u8 eeprom_chnlarea_txpwr_ht40_1s[2][CHANNEL_GROUP_MAX];
-	u8 eeprom_chnlarea_txpwr_ht40_2sdif[2][CHANNEL_GROUP_MAX];
+	u8 eprom_chnl_txpwr_ht40_2sdf[2][CHANNEL_GROUP_MAX];
 
 	u8 internal_pa_5g[2];	/* pathA / pathB */
 	u8 eeprom_c9;
@@ -2384,7 +2384,7 @@ struct rtl_bt_coexist {
 	u8 eeprom_bt_coexist;
 	u8 eeprom_bt_type;
 	u8 eeprom_bt_ant_num;
-	u8 eeprom_bt_ant_isolation;
+	u8 bt_ant_isolation;
 	u8 eeprom_bt_radio_shared;
 
 	u8 bt_coexistence;
@@ -2392,7 +2392,6 @@ struct rtl_bt_coexist {
 	u8 bt_coexist_type;
 	u8 bt_state;
 	u8 bt_cur_state;	/* 0:on, 1:off */
-	u8 bt_ant_isolation;	/* 0:good, 1:bad */
 	u8 bt_pape_ctrl;	/* 0:SW, 1:SW/HW dynamic */
 	u8 bt_service;
 	u8 bt_radio_shared_type;

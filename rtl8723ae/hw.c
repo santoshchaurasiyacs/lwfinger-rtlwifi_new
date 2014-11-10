@@ -1446,9 +1446,9 @@ static void _rtl8723e_read_txpower_info_from_hwpg(struct ieee80211_hw *hw,
 			tempval = hwinfo[EEPROM_TXPOWERHT40_2SDIFF + i];
 		else
 			tempval = EEPROM_DEFAULT_HT40_2SDIFF;
-		rtlefuse->eeprom_chnlarea_txpwr_ht40_2sdif[RF90_PATH_A][i] =
+		rtlefuse->eprom_chnl_txpwr_ht40_2sdf[RF90_PATH_A][i] =
 		    (tempval & 0xf);
-		rtlefuse->eeprom_chnlarea_txpwr_ht40_2sdif[RF90_PATH_B][i] =
+		rtlefuse->eprom_chnl_txpwr_ht40_2sdf[RF90_PATH_B][i] =
 		    ((tempval & 0xf0) >> 4);
 	}
 
@@ -1466,7 +1466,7 @@ static void _rtl8723e_read_txpower_info_from_hwpg(struct ieee80211_hw *hw,
 		for (i = 0; i < 3; i++)
 			RTPRINT(rtlpriv, FINIT, INIT_EEPROM,
 				"RF(%d) EEPROM HT40 2S Diff Area(%d) = 0x%x\n", rf_path, i,
-				 rtlefuse->eeprom_chnlarea_txpwr_ht40_2sdif[rf_path][i]);
+				 rtlefuse->eprom_chnl_txpwr_ht40_2sdf[rf_path][i]);
 
 	for (rf_path = 0; rf_path < 2; rf_path++) {
 		for (i = 0; i < 14; i++) {
@@ -1478,11 +1478,11 @@ static void _rtl8723e_read_txpower_info_from_hwpg(struct ieee80211_hw *hw,
 				rtlefuse->eeprom_chnlarea_txpwr_ht40_1s[rf_path][index];
 
 			if ((rtlefuse->eeprom_chnlarea_txpwr_ht40_1s[rf_path][index] -
-				rtlefuse->eeprom_chnlarea_txpwr_ht40_2sdif[rf_path][index])
+				rtlefuse->eprom_chnl_txpwr_ht40_2sdf[rf_path][index])
 				> 0) {
 				rtlefuse->txpwrlevel_ht40_2s[rf_path][i] =
 					rtlefuse->eeprom_chnlarea_txpwr_ht40_1s[rf_path][index] -
-					rtlefuse->eeprom_chnlarea_txpwr_ht40_2sdif[rf_path][index];
+					rtlefuse->eprom_chnl_txpwr_ht40_2sdf[rf_path][index];
 			} else {
 				rtlefuse->txpwrlevel_ht40_2s[rf_path][i] = 0;
 			}
@@ -2443,7 +2443,7 @@ static void rtl8723e_bt_var_init(struct ieee80211_hw *hw)
 						rtlpriv->btcoexist.eeprom_bt_type;
 
 		rtlpriv->btcoexist.bt_ant_isolation =
-				rtlpriv->btcoexist.eeprom_bt_ant_isolation;
+				rtlpriv->btcoexist.bt_ant_isolation;
 
 	rtlpriv->btcoexist.bt_radio_shared_type =
 					rtlpriv->btcoexist.eeprom_bt_radio_shared;
@@ -2525,13 +2525,13 @@ void rtl8723e_read_bt_coexist_info_from_hwpg(struct ieee80211_hw *hw,
 		value = hwinfo[RF_OPTION4];
 		rtlpriv->btcoexist.eeprom_bt_type = BT_RTL8723A;
 		rtlpriv->btcoexist.eeprom_bt_ant_num = (value & 0x1);
-		rtlpriv->btcoexist.eeprom_bt_ant_isolation = ((value & 0x10) >> 4);
+		rtlpriv->btcoexist.bt_ant_isolation = ((value & 0x10) >> 4);
 		rtlpriv->btcoexist.eeprom_bt_radio_shared = ((value & 0x20) >> 5);
 	} else {
 		rtlpriv->btcoexist.eeprom_bt_coexist = 0;
 		rtlpriv->btcoexist.eeprom_bt_type = BT_RTL8723A;
 		rtlpriv->btcoexist.eeprom_bt_ant_num = ANT_X2;
-		rtlpriv->btcoexist.eeprom_bt_ant_isolation = 0;
+		rtlpriv->btcoexist.bt_ant_isolation = 0;
 		rtlpriv->btcoexist.eeprom_bt_radio_shared = BT_RADIO_SHARED;
 	}
 
