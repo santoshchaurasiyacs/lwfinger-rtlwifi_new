@@ -176,7 +176,7 @@ int rtl8723e_init_sw_vars(struct ieee80211_hw *hw)
 
 	if (IS_VENDOR_8723_A_CUT(rtlhal->version))
 		rtlpriv->cfg->fw_name = "rtlwifi/rtl8723fw.bin";
-	else if (IS_81xxC_VENDOR_UMC_B_CUT(rtlhal->version))
+	else if (IS_81XXC_VENDOR_UMC_B_CUT(rtlhal->version))
 		rtlpriv->cfg->fw_name = "rtlwifi/rtl8723fw_B.bin";
 
 	rtlpriv->max_fw_size = 0x6000;

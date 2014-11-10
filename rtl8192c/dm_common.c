@@ -1593,7 +1593,7 @@ void rtl92c_dm_bt_coexist(struct ieee80211_hw *hw)
 
 		if (b_wifi_connect_change || bt_state_change || b_rssi_state_change) {
 			u8 tmp1byte = 0;
-			if (IS_81xxC_VENDOR_UMC_B_CUT(rtlhal->version)
+			if (IS_81XXC_VENDOR_UMC_B_CUT(rtlhal->version)
 				&& rtlpriv->btcoexist.bt_coexistence) {
 					tmp1byte |= BIT(5);
 			}

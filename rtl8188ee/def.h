@@ -176,7 +176,7 @@
 											((IS_CHIP_VENDOR_UMC(version)) ? \
 											((GET_CVID_CUT_VERSION(version)) ? \
 											false : true) : false):false)
-#define IS_81xxC_VENDOR_UMC_B_CUT(version)	(IS_81XXC(version) ? \
+#define IS_81XXC_VENDOR_UMC_B_CUT(version)	(IS_81XXC(version) ? \
 											(IS_CHIP_VENDOR_UMC(version) ? \
 											((GET_CVID_CUT_VERSION(version) == \
 											B_CUT_VERSION) ? true \

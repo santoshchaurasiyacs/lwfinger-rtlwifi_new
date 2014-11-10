@@ -158,7 +158,7 @@ enum version_8192c {
 #define IS_VENDOR_UMC_A_CUT(version) \
 	((IS_CHIP_VENDOR_UMC(version)) ? \
 	((GET_CVID_CUT_VERSION(version)) ? false : true) : false)
-#define IS_81xxC_VENDOR_UMC_B_CUT(version)	\
+#define IS_81XXC_VENDOR_UMC_B_CUT(version)	\
 	((IS_CHIP_VENDOR_UMC(version)) ? \
 	((GET_CVID_CUT_VERSION(version) == \
 		CHIP_VENDOR_UMC_B_CUT) ? true : false):false)
