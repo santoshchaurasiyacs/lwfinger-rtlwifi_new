@@ -198,14 +198,14 @@ static u32 _rtl92ee_phy_rf_serial_read(struct ieee80211_hw *hw,
 		rfpi_enable = (u8)rtl_get_bbreg(hw, RFPGA0_XB_HSSIPARAMETER1,
 						 BIT(8));
 	if (rfpi_enable)
-		retvalue = rtl_get_bbreg(hw, pphyreg->rflssi_readbackpi,
+		retvalue = rtl_get_bbreg(hw, pphyreg->rf_rbpi,
 					 BLSSIREADBACKDATA);
 	else
-		retvalue = rtl_get_bbreg(hw, pphyreg->rflssi_readback,
+		retvalue = rtl_get_bbreg(hw, pphyreg->rf_rb,
 					 BLSSIREADBACKDATA);
 	RT_TRACE(rtlpriv, COMP_RF, DBG_TRACE,
 		 "RFR-%d Addr[0x%x]=0x%x\n",
-		  rfpath, pphyreg->rflssi_readback, retvalue);
+		  rfpath, pphyreg->rf_rb, retvalue);
 	return retvalue;
 }
 
@@ -1088,14 +1088,14 @@ static void _rtl92ee_phy_init_bb_rf_register_definition(struct ieee80211_hw *hw)
 	rtlphy->phyreg_def[RF90_PATH_A].rfhssi_para2 = RFPGA0_XA_HSSIPARAMETER2;
 	rtlphy->phyreg_def[RF90_PATH_B].rfhssi_para2 = RFPGA0_XB_HSSIPARAMETER2;
 
-	rtlphy->phyreg_def[RF90_PATH_A].rflssi_readback =
+	rtlphy->phyreg_def[RF90_PATH_A].rf_rb =
 							 RFPGA0_XA_LSSIREADBACK;
-	rtlphy->phyreg_def[RF90_PATH_B].rflssi_readback =
+	rtlphy->phyreg_def[RF90_PATH_B].rf_rb =
 							 RFPGA0_XB_LSSIREADBACK;
 
-	rtlphy->phyreg_def[RF90_PATH_A].rflssi_readbackpi =
+	rtlphy->phyreg_def[RF90_PATH_A].rf_rbpi =
 						      TRANSCEIVEA_HSPI_READBACK;
-	rtlphy->phyreg_def[RF90_PATH_B].rflssi_readbackpi =
+	rtlphy->phyreg_def[RF90_PATH_B].rf_rbpi =
 						      TRANSCEIVEB_HSPI_READBACK;
 }
 

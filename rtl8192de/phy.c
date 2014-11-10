@@ -278,13 +278,13 @@ static u32 _rtl92d_phy_rf_serial_read(struct ieee80211_hw *hw,
 	else if (rfpath == RF90_PATH_B)
 		rfpi_enable = (u8)rtl_get_bbreg(hw, RFPGA0_XB_HSSIPARAMETER1, BIT(8));
 	if (rfpi_enable)
-		retvalue = rtl_get_bbreg(hw, pphyreg->rflssi_readbackpi,
+		retvalue = rtl_get_bbreg(hw, pphyreg->rf_rbpi,
 			BLSSIREADBACKDATA);
 	else
-		retvalue = rtl_get_bbreg(hw, pphyreg->rflssi_readback,
+		retvalue = rtl_get_bbreg(hw, pphyreg->rf_rb,
 			BLSSIREADBACKDATA);
 	RT_TRACE(rtlpriv, COMP_RF, DBG_TRACE, "RFR-%d Addr[0x%x]=0x%x\n",
-		rfpath, pphyreg->rflssi_readback, retvalue);
+		rfpath, pphyreg->rf_rb, retvalue);
 	return retvalue;
 
 }
@@ -454,13 +454,13 @@ static void _rtl92d_phy_init_bb_rf_register_definition(struct ieee80211_hw *hw)
 
 	/* RF switch Control */
 	/* TR/Ant switch control */
-	rtlphy->phyreg_def[RF90_PATH_A].rfswitch_control =
+	rtlphy->phyreg_def[RF90_PATH_A].rfsw_ctrl =
 		RFPGA0_XAB_SWITCHCONTROL;
-	rtlphy->phyreg_def[RF90_PATH_B].rfswitch_control =
+	rtlphy->phyreg_def[RF90_PATH_B].rfsw_ctrl =
 	    RFPGA0_XAB_SWITCHCONTROL;
-	rtlphy->phyreg_def[RF90_PATH_C].rfswitch_control =
+	rtlphy->phyreg_def[RF90_PATH_C].rfsw_ctrl =
 	    RFPGA0_XCD_SWITCHCONTROL;
-	rtlphy->phyreg_def[RF90_PATH_D].rfswitch_control =
+	rtlphy->phyreg_def[RF90_PATH_D].rfsw_ctrl =
 	    RFPGA0_XCD_SWITCHCONTROL;
 
 	/* AGC control 1 */
@@ -476,13 +476,13 @@ static void _rtl92d_phy_init_bb_rf_register_definition(struct ieee80211_hw *hw)
 	rtlphy->phyreg_def[RF90_PATH_D].rfagc_control2 = ROFDM0_XDAGCCORE2;
 
 	/* RX AFE control 1 */
-	rtlphy->phyreg_def[RF90_PATH_A].rfrxiq_imbalance =
+	rtlphy->phyreg_def[RF90_PATH_A].rfrxiq_imbal =
 	    ROFDM0_XARXIQIMBALANCE;
-	rtlphy->phyreg_def[RF90_PATH_B].rfrxiq_imbalance =
+	rtlphy->phyreg_def[RF90_PATH_B].rfrxiq_imbal =
 	    ROFDM0_XBRXIQIMBALANCE;
-	rtlphy->phyreg_def[RF90_PATH_C].rfrxiq_imbalance =
+	rtlphy->phyreg_def[RF90_PATH_C].rfrxiq_imbal =
 	    ROFDM0_XCRXIQIMBALANCE;
-	rtlphy->phyreg_def[RF90_PATH_D].rfrxiq_imbalance =
+	rtlphy->phyreg_def[RF90_PATH_D].rfrxiq_imbal =
 	    ROFDM0_XDRXIQIMBALANCE;
 
 	/*RX AFE control 1 */
@@ -492,13 +492,13 @@ static void _rtl92d_phy_init_bb_rf_register_definition(struct ieee80211_hw *hw)
 	rtlphy->phyreg_def[RF90_PATH_D].rfrx_afe = ROFDM0_XDRXAFE;
 
 	/* Tx AFE control 1 */
-	rtlphy->phyreg_def[RF90_PATH_A].rftxiq_imbalance =
+	rtlphy->phyreg_def[RF90_PATH_A].rftxiq_imbal =
 	    ROFDM0_XATxIQIMBALANCE;
-	rtlphy->phyreg_def[RF90_PATH_B].rftxiq_imbalance =
+	rtlphy->phyreg_def[RF90_PATH_B].rftxiq_imbal =
 	    ROFDM0_XBTxIQIMBALANCE;
-	rtlphy->phyreg_def[RF90_PATH_C].rftxiq_imbalance =
+	rtlphy->phyreg_def[RF90_PATH_C].rftxiq_imbal =
 	    ROFDM0_XCTxIQIMBALANCE;
-	rtlphy->phyreg_def[RF90_PATH_D].rftxiq_imbalance =
+	rtlphy->phyreg_def[RF90_PATH_D].rftxiq_imbal =
 	    ROFDM0_XDTxIQIMBALANCE;
 
 	/* Tx AFE control 2 */
@@ -508,19 +508,19 @@ static void _rtl92d_phy_init_bb_rf_register_definition(struct ieee80211_hw *hw)
 	rtlphy->phyreg_def[RF90_PATH_D].rftx_afe = ROFDM0_XDTxAFE;
 
 	/* Tranceiver LSSI Readback SI mode */
-	rtlphy->phyreg_def[RF90_PATH_A].rflssi_readback =
+	rtlphy->phyreg_def[RF90_PATH_A].rf_rb =
 	    RFPGA0_XA_LSSIREADBACK;
-	rtlphy->phyreg_def[RF90_PATH_B].rflssi_readback =
+	rtlphy->phyreg_def[RF90_PATH_B].rf_rb =
 	    RFPGA0_XB_LSSIREADBACK;
-	rtlphy->phyreg_def[RF90_PATH_C].rflssi_readback =
+	rtlphy->phyreg_def[RF90_PATH_C].rf_rb =
 	    RFPGA0_XC_LSSIREADBACK;
-	rtlphy->phyreg_def[RF90_PATH_D].rflssi_readback =
+	rtlphy->phyreg_def[RF90_PATH_D].rf_rb =
 	    RFPGA0_XD_LSSIREADBACK;
 
 	/* Tranceiver LSSI Readback PI mode */
-	rtlphy->phyreg_def[RF90_PATH_A].rflssi_readbackpi =
+	rtlphy->phyreg_def[RF90_PATH_A].rf_rbpi =
 	    TRANSCEIVERA_HSPI_READBACK;
-	rtlphy->phyreg_def[RF90_PATH_B].rflssi_readbackpi =
+	rtlphy->phyreg_def[RF90_PATH_B].rf_rbpi =
 	    TRANSCEIVERB_HSPI_READBACK;
 }
 

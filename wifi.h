@@ -305,15 +305,15 @@ struct bb_reg_def {
 	u32 rftxgain_stage;
 	u32 rfhssi_para1;
 	u32 rfhssi_para2;
-	u32 rfswitch_control;
+	u32 rfsw_ctrl;
 	u32 rfagc_control1;
 	u32 rfagc_control2;
-	u32 rfrxiq_imbalance;
+	u32 rfrxiq_imbal;
 	u32 rfrx_afe;
-	u32 rftxiq_imbalance;
+	u32 rftxiq_imbal;
 	u32 rftx_afe;
-	u32 rflssi_readback;
-	u32 rflssi_readbackpi;
+	u32 rf_rb;
+	u32 rf_rbpi;
 };
 
 enum io_type {

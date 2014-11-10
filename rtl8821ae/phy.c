@@ -2225,11 +2225,11 @@ static void _rtl8821ae_phy_init_bb_rf_register_definition(struct ieee80211_hw *h
 	rtlphy->phyreg_def[RF90_PATH_A].rfhssi_para2 = RHSSIREAD_8821AE;
 	rtlphy->phyreg_def[RF90_PATH_B].rfhssi_para2 = RHSSIREAD_8821AE;
 
-	rtlphy->phyreg_def[RF90_PATH_A].rflssi_readback = RA_SIREAD_8821A;
-	rtlphy->phyreg_def[RF90_PATH_B].rflssi_readback = RB_SIREAD_8821A;
+	rtlphy->phyreg_def[RF90_PATH_A].rf_rb = RA_SIREAD_8821A;
+	rtlphy->phyreg_def[RF90_PATH_B].rf_rb = RB_SIREAD_8821A;
 
-	rtlphy->phyreg_def[RF90_PATH_A].rflssi_readbackpi = RA_PIREAD_8821A;
-	rtlphy->phyreg_def[RF90_PATH_B].rflssi_readbackpi = RB_PIREAD_8821A;
+	rtlphy->phyreg_def[RF90_PATH_A].rf_rbpi = RA_PIREAD_8821A;
+	rtlphy->phyreg_def[RF90_PATH_B].rf_rbpi = RB_PIREAD_8821A;
 }
 
 void rtl8821ae_phy_get_txpower_level(struct ieee80211_hw *hw, long *powerlevel)
