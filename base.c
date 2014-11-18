@@ -1235,12 +1235,34 @@ bool rtl_action_proc(struct ieee80211_hw *hw, struct sk_buff *skb, u8 is_tx)
 }
 EXPORT_SYMBOL_GPL(rtl_action_proc);
 
-/*should call before software enc*/
-u8 rtl_is_special_data(struct ieee80211_hw *hw, struct sk_buff *skb, u8 is_tx)
+
+/*
+
+
+3 funcs call me:
+
+1.RX
+2.rtl_tx_status
+3._rtl_rc_get_highest_rix
+
+1 and 2 have enc header
+3 does not have
+
+data in 2 and 3 are same.
+
+
+
+if return false in _rtl_rc_get_highest_rix,this will cause rate too high when EAPOL
+,after a while,connection will fail
+*/
+
+
+u8 rtl_is_special_data(struct ieee80211_hw *hw, struct sk_buff *skb, u8 is_tx, bool with_encrypt_header)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_ps_ctl *ppsc = rtl_psc(rtl_priv(hw));
 	__le16 fc = rtl_get_fc(skb);
+	struct rtl_mac *mac = rtl_mac(rtl_priv(hw));
 	u16 ether_type;
 	u8 mac_hdr_len = ieee80211_get_hdrlen_from_skb(skb);
    	u8 encrypt_header_len = 0;
@@ -1249,19 +1271,25 @@ u8 rtl_is_special_data(struct ieee80211_hw *hw, struct sk_buff *skb, u8 is_tx)
 	if (!ieee80211_is_data(fc))
 		goto end;
 
-	switch(rtlpriv->sec.pairwise_enc_algorithm) {
-	case WEP40_ENCRYPTION:
-	case WEP104_ENCRYPTION:
-		encrypt_header_len = 4;/*WEP_IV_LEN*/
-		break;
-	case TKIP_ENCRYPTION:
-		encrypt_header_len = 8;/*TKIP_IV_LEN*/
-		break;
-	case AESCCMP_ENCRYPTION:
-		encrypt_header_len = 8;/*CCMP_HDR_LEN;*/
-		break;
-	default:
-	break;
+	/* mac80211 use sw IV */
+	/* give len when tx will cause fail */
+	if (with_encrypt_header && mac->link_state >= MAC80211_LINKED) {
+		switch(rtlpriv->sec.pairwise_enc_algorithm) {
+		case WEP40_ENCRYPTION:
+		case WEP104_ENCRYPTION:
+			encrypt_header_len = 4;/*WEP_IV_LEN*/
+			break;
+		case TKIP_ENCRYPTION:
+			encrypt_header_len = 8;/*TKIP_IV_LEN*/
+			break;
+		case AESCCMP_ENCRYPTION:
+			encrypt_header_len = 8;/*CCMP_HDR_LEN;*/
+			break;
+		default:
+			RT_TRACE(rtlpriv, (COMP_SEND | COMP_RECV),
+					 DBG_LOUD, "ecrypt not set!\n");
+			break;
+		}
 	}
 
 	ether_type = be16_to_cpup((__be16 *)
@@ -1281,6 +1309,9 @@ u8 rtl_is_special_data(struct ieee80211_hw *hw, struct sk_buff *skb, u8 is_tx)
 				 * 68 : UDP BOOTP client
 				 * 67 : UDP BOOTP server
 				 */
+				if(!with_encrypt_header)
+					return true;
+
 				RT_TRACE(rtlpriv, (COMP_SEND | COMP_RECV),
 					 DBG_DMESG, "dhcp %s !!\n",
 						     (is_tx) ? "Tx" : "Rx");
@@ -1299,6 +1330,10 @@ u8 rtl_is_special_data(struct ieee80211_hw *hw, struct sk_buff *skb, u8 is_tx)
 			}
 		}
 	} else if (ETH_P_ARP == ether_type) {
+
+		if(!with_encrypt_header)
+			return true;
+
 		if (is_tx) {
 			rtlpriv->ra.is_special_data = true;
 			if (rtlpriv->cfg->ops->get_btc_status())
@@ -1307,9 +1342,12 @@ u8 rtl_is_special_data(struct ieee80211_hw *hw, struct sk_buff *skb, u8 is_tx)
 			rtl_lps_leave(hw);
 			ppsc->last_delaylps_stamp_jiffies = jiffies;
 		}
-
+		RT_TRACE(rtlpriv, (COMP_SEND | COMP_RECV),
+					 DBG_DMESG, "ARP %s !!\n", (is_tx) ? "Tx" : "Rx");
 		return true;
 	} else if (ETH_P_PAE == ether_type) {
+		if(!with_encrypt_header)
+			return true;
 		RT_TRACE(rtlpriv, (COMP_SEND | COMP_RECV), DBG_DMESG,
 			 "802.1X %s EAPOL pkt!!\n", (is_tx) ? "Tx" : "Rx");
 
