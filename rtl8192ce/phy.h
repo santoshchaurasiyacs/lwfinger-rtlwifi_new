@@ -143,6 +143,5 @@ bool _rtl92ce_phy_config_bb_with_headerfile(struct ieee80211_hw *hw,
 bool _rtl92ce_phy_config_bb_with_pgheaderfile(struct ieee80211_hw *hw,
 					      u8 configtype);
 void rtl92c_phy_set_bw_mode_callback(struct ieee80211_hw *hw);
-void rtl92c_phy_scan_operation_backup(struct ieee80211_hw *hw, u8 operation);
 
 #endif
