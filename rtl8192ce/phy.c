@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Copyright(c) 2009-2010  Realtek Corporation.
+ * Copyright(c) 2009-2012  Realtek Corporation.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of version 2 of the GNU General Public License as
@@ -30,13 +30,14 @@
 #include "../wifi.h"
 #include "../pci.h"
 #include "../ps.h"
+#include "../core.h"
 #include "reg.h"
 #include "def.h"
 #include "phy.h"
+#include "../rtl8192c/phy_common.h"
 #include "rf.h"
 #include "dm.h"
 #include "table.h"
-#include "../rtl8192c/phy_common.h"
 
 static bool _rtl92c_phy_config_mac_with_headerfile(struct ieee80211_hw *hw);
 void _rtl92c_phy_sw_rf_seting(struct ieee80211_hw *hw, u8 channel);
@@ -73,6 +74,46 @@ u32 rtl92c_phy_query_rf_reg(struct ieee80211_hw *hw,
 		  regaddr, rfpath, bitmask, original_value);
 
 	return readback_value;
+}
+
+bool rtl92c_phy_mac_config(struct ieee80211_hw *hw)
+{
+	struct rtl_priv *rtlpriv = rtl_priv(hw);
+	struct rtl_hal *rtlhal = rtl_hal(rtl_priv(hw));
+	bool is92c = IS_92C_SERIAL(rtlhal->version);
+	bool rtstatus = _rtl92c_phy_config_mac_with_headerfile(hw);
+
+	if (is92c)
+		rtl_write_byte(rtlpriv, 0x14, 0x71);
+	else
+		rtl_write_byte(rtlpriv, 0x04CA, 0x0A);
+	return rtstatus;
+}
+
+bool rtl92c_phy_bb_config(struct ieee80211_hw *hw)
+{
+	bool rtstatus = true;
+	struct rtl_priv *rtlpriv = rtl_priv(hw);
+	u16 regval;
+	u32 regvaldw;
+	u8 b_reg_hwparafile = 1;
+
+	_rtl92c_phy_init_bb_rf_register_definition(hw);
+	regval = rtl_read_word(rtlpriv, REG_SYS_FUNC_EN);
+	rtl_write_word(rtlpriv, REG_SYS_FUNC_EN,
+		       regval | BIT(13) | BIT(0) | BIT(1));
+	rtl_write_byte(rtlpriv, REG_AFE_PLL_CTRL, 0x83);
+	rtl_write_byte(rtlpriv, REG_AFE_PLL_CTRL + 1, 0xdb);
+	rtl_write_byte(rtlpriv, REG_RF_CTRL, RF_EN | RF_RSTB | RF_SDMRSTB);
+	rtl_write_byte(rtlpriv, REG_SYS_FUNC_EN,
+		       FEN_PPLL | FEN_PCIEA | FEN_DIO_PCIE |
+		       FEN_BB_GLB_RSTN | FEN_BBRSTB);
+	rtl_write_byte(rtlpriv, REG_AFE_XTAL_CTRL + 1, 0x80);
+	regvaldw = rtl_read_dword(rtlpriv, REG_LEDCFG0);
+	rtl_write_dword(rtlpriv, REG_LEDCFG0, regvaldw | BIT(23));
+	if (b_reg_hwparafile == 1)
+		rtstatus = _rtl92c_phy_bb8192c_config_parafile(hw);
+	return rtstatus;
 }
 
 void rtl92c_phy_set_rf_reg(struct ieee80211_hw *hw,
@@ -123,46 +164,6 @@ void rtl92c_phy_set_rf_reg(struct ieee80211_hw *hw,
 
 }
 
-bool rtl92c_phy_mac_config(struct ieee80211_hw *hw)
-{
-	struct rtl_priv *rtlpriv = rtl_priv(hw);
-	struct rtl_hal *rtlhal = rtl_hal(rtl_priv(hw));
-	bool is92c = IS_92C_SERIAL(rtlhal->version);
-	bool rtstatus = _rtl92c_phy_config_mac_with_headerfile(hw);
-
-	if (is92c)
-		rtl_write_byte(rtlpriv, 0x14, 0x71);
-	else
-		rtl_write_byte(rtlpriv, 0x04CA, 0x0A);
-	return rtstatus;
-}
-
-bool rtl92c_phy_bb_config(struct ieee80211_hw *hw)
-{
-	bool rtstatus = true;
-	struct rtl_priv *rtlpriv = rtl_priv(hw);
-	u16 regval;
-	u32 regvaldw;
-	u8 b_reg_hwparafile = 1;
-
-	_rtl92c_phy_init_bb_rf_register_definition(hw);
-	regval = rtl_read_word(rtlpriv, REG_SYS_FUNC_EN);
-	rtl_write_word(rtlpriv, REG_SYS_FUNC_EN,
-		       regval | BIT(13) | BIT(0) | BIT(1));
-	rtl_write_byte(rtlpriv, REG_AFE_PLL_CTRL, 0x83);
-	rtl_write_byte(rtlpriv, REG_AFE_PLL_CTRL + 1, 0xdb);
-	rtl_write_byte(rtlpriv, REG_RF_CTRL, RF_EN | RF_RSTB | RF_SDMRSTB);
-	rtl_write_byte(rtlpriv, REG_SYS_FUNC_EN,
-		       FEN_PPLL | FEN_PCIEA | FEN_DIO_PCIE |
-		       FEN_BB_GLB_RSTN | FEN_BBRSTB);
-	rtl_write_byte(rtlpriv, REG_AFE_XTAL_CTRL + 1, 0x80);
-	regvaldw = rtl_read_dword(rtlpriv, REG_LEDCFG0);
-	rtl_write_dword(rtlpriv, REG_LEDCFG0, regvaldw | BIT(23));
-	if (b_reg_hwparafile == 1)
-		rtstatus = _rtl92c_phy_bb8192c_config_parafile(hw);
-	return rtstatus;
-}
-
 static bool _rtl92c_phy_config_mac_with_headerfile(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
@@ -203,18 +204,7 @@ bool _rtl92ce_phy_config_bb_with_headerfile(struct ieee80211_hw *hw,
 	}
 	if (configtype == BASEBAND_CONFIG_PHY_REG) {
 		for (i = 0; i < phy_reg_arraylen; i = i + 2) {
-			if (phy_regarray_table[i] == 0xfe)
-				mdelay(50);
-			else if (phy_regarray_table[i] == 0xfd)
-				mdelay(5);
-			else if (phy_regarray_table[i] == 0xfc)
-				mdelay(1);
-			else if (phy_regarray_table[i] == 0xfb)
-				udelay(50);
-			else if (phy_regarray_table[i] == 0xfa)
-				udelay(5);
-			else if (phy_regarray_table[i] == 0xf9)
-				udelay(1);
+			rtl_addr_delay(phy_regarray_table[i]);
 			rtl_set_bbreg(hw, phy_regarray_table[i], MASKDWORD,
 				      phy_regarray_table[i + 1]);
 			udelay(1);
@@ -250,19 +240,7 @@ bool _rtl92ce_phy_config_bb_with_pgheaderfile(struct ieee80211_hw *hw,
 
 	if (configtype == BASEBAND_CONFIG_PHY_REG) {
 		for (i = 0; i < phy_regarray_pg_len; i = i + 3) {
-			if (phy_regarray_table_pg[i] == 0xfe)
-				mdelay(50);
-			else if (phy_regarray_table_pg[i] == 0xfd)
-				mdelay(5);
-			else if (phy_regarray_table_pg[i] == 0xfc)
-				mdelay(1);
-			else if (phy_regarray_table_pg[i] == 0xfb)
-				udelay(50);
-			else if (phy_regarray_table_pg[i] == 0xfa)
-				udelay(5);
-			else if (phy_regarray_table_pg[i] == 0xf9)
-				udelay(1);
-
+			rtl_addr_delay(phy_regarray_table_pg[i]);
 			_rtl92c_store_pwrIndex_diffrate_offset(hw,
 							       phy_regarray_table_pg[i],
 							       phy_regarray_table_pg[i + 1],
@@ -279,7 +257,6 @@ bool _rtl92ce_phy_config_bb_with_pgheaderfile(struct ieee80211_hw *hw,
 bool rtl92c_phy_config_rf_with_headerfile(struct ieee80211_hw *hw,
 					  enum radio_path rfpath)
 {
-
 	int i;
 	bool rtstatus = true;
 	u32 *radioa_array_table;
@@ -312,46 +289,16 @@ bool rtl92c_phy_config_rf_with_headerfile(struct ieee80211_hw *hw,
 	switch (rfpath) {
 	case RF90_PATH_A:
 		for (i = 0; i < radioa_arraylen; i = i + 2) {
-			if (radioa_array_table[i] == 0xfe)
-				mdelay(50);
-			else if (radioa_array_table[i] == 0xfd)
-				mdelay(5);
-			else if (radioa_array_table[i] == 0xfc)
-				mdelay(1);
-			else if (radioa_array_table[i] == 0xfb)
-				udelay(50);
-			else if (radioa_array_table[i] == 0xfa)
-				udelay(5);
-			else if (radioa_array_table[i] == 0xf9)
-				udelay(1);
-			else {
-				rtl_set_rfreg(hw, rfpath, radioa_array_table[i],
-					      RFREG_OFFSET_MASK,
-					      radioa_array_table[i + 1]);
-				udelay(1);
-			}
+			rtl_rfreg_delay(hw, rfpath, radioa_array_table[i],
+					RFREG_OFFSET_MASK,
+					radioa_array_table[i + 1]);
 		}
 		break;
 	case RF90_PATH_B:
 		for (i = 0; i < radiob_arraylen; i = i + 2) {
-			if (radiob_array_table[i] == 0xfe) {
-				mdelay(50);
-			} else if (radiob_array_table[i] == 0xfd)
-				mdelay(5);
-			else if (radiob_array_table[i] == 0xfc)
-				mdelay(1);
-			else if (radiob_array_table[i] == 0xfb)
-				udelay(50);
-			else if (radiob_array_table[i] == 0xfa)
-				udelay(5);
-			else if (radiob_array_table[i] == 0xf9)
-				udelay(1);
-			else {
-				rtl_set_rfreg(hw, rfpath, radiob_array_table[i],
-					      RFREG_OFFSET_MASK,
-					      radiob_array_table[i + 1]);
-				udelay(1);
-			}
+			rtl_rfreg_delay(hw, rfpath, radiob_array_table[i],
+					RFREG_OFFSET_MASK,
+					radiob_array_table[i + 1]);
 		}
 		break;
 	case RF90_PATH_C:

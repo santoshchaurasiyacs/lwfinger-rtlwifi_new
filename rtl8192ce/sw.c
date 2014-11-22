@@ -237,10 +237,8 @@ static struct rtl_hal_ops rtl8192ce_hal_ops = {
 	.allow_all_destaddr = rtl92ce_allow_all_destaddr,
 	.get_bbreg = rtl92c_phy_query_bb_reg,
 	.set_bbreg = rtl92c_phy_set_bb_reg,
-	.get_rfreg = rtl92c_phy_query_rf_reg,
 	.set_rfreg = rtl92c_phy_set_rf_reg,
-	.get_btc_status = rtl92c_get_btc_status,
-	.rx_command_packet = rtl92ce_rx_command_packet,
+	.get_rfreg = rtl92c_phy_query_rf_reg,
 	.phy_rf6052_config = rtl92c_phy_rf6052_config,
 	.phy_rf6052_set_cck_txpower = rtl92c_phy_rf6052_set_cck_txpower,
 	.phy_rf6052_set_ofdm_txpower = rtl92c_phy_rf6052_set_ofdm_txpower,
@@ -248,6 +246,7 @@ static struct rtl_hal_ops rtl8192ce_hal_ops = {
 	.config_bb_with_pgheaderfile = _rtl92ce_phy_config_bb_with_pgheaderfile,
 	.phy_lc_calibrate = _rtl92ce_phy_lc_calibrate,
 	.phy_set_bw_mode_callback = rtl92c_phy_set_bw_mode_callback,
+	.get_btc_status = rtl92c_get_btc_status,
 };
 
 static struct rtl_mod_params rtl92ce_mod_params = {
