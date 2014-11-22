@@ -1298,27 +1298,19 @@ bool rtl_action_proc(struct ieee80211_hw *hw, struct sk_buff *skb, u8 is_tx)
 }
 EXPORT_SYMBOL_GPL(rtl_action_proc);
 
-
-/*
-
-
-3 funcs call me:
-
-1.RX
-2.rtl_tx_status
-3._rtl_rc_get_highest_rix
-
-1 and 2 have enc header
-3 does not have
-
-data in 2 and 3 are same.
-
-
-
-if return false in _rtl_rc_get_highest_rix,this will cause rate too high when EAPOL
-,after a while,connection will fail
-*/
-
+/* This function is called by 3 routines:
+ * 1.RX
+ * 2.rtl_tx_status
+ * 3._rtl_rc_get_highest_rix
+ *
+ * 1 and 2 have encryption header
+ * 3 does not
+ *
+ * data in 2 and 3 are same.
+ *
+ * if we return false to _rtl_rc_get_highest_rix(), this will cause the rate
+ * to be too high when EAPOL. After a while, the connection will fail
+ */
 
 u8 rtl_is_special_data(struct ieee80211_hw *hw, struct sk_buff *skb, u8 is_tx, bool with_encrypt_header)
 {
@@ -1374,12 +1366,12 @@ u8 rtl_is_special_data(struct ieee80211_hw *hw, struct sk_buff *skb, u8 is_tx, b
 				 * 68 : UDP BOOTP client
 				 * 67 : UDP BOOTP server
 				 */
-				if(!with_encrypt_header)
+				if (!with_encrypt_header)
 					return true;
 
 				RT_TRACE(rtlpriv, (COMP_SEND | COMP_RECV),
 					 DBG_DMESG, "dhcp %s !!\n",
-						     (is_tx) ? "Tx" : "Rx");
+					 (is_tx) ? "Tx" : "Rx");
 
 				if (is_tx) {
 					rtlpriv->ra.is_special_data = true;
@@ -1395,8 +1387,7 @@ u8 rtl_is_special_data(struct ieee80211_hw *hw, struct sk_buff *skb, u8 is_tx, b
 			}
 		}
 	} else if (ETH_P_ARP == ether_type) {
-
-		if(!with_encrypt_header)
+		if (!with_encrypt_header)
 			return true;
 
 		if (is_tx) {
@@ -1411,7 +1402,7 @@ u8 rtl_is_special_data(struct ieee80211_hw *hw, struct sk_buff *skb, u8 is_tx, b
 					 DBG_DMESG, "ARP %s !!\n", (is_tx) ? "Tx" : "Rx");
 		return true;
 	} else if (ETH_P_PAE == ether_type) {
-		if(!with_encrypt_header)
+		if (!with_encrypt_header)
 			return true;
 		RT_TRACE(rtlpriv, (COMP_SEND | COMP_RECV), DBG_DMESG,
 			 "802.1X %s EAPOL pkt!!\n", (is_tx) ? "Tx" : "Rx");
