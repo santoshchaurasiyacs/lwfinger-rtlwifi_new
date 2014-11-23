@@ -400,7 +400,7 @@ static void _rtl8723e_translate_rx_signal_stuff(struct ieee80211_hw *hw,
 	struct ieee80211_hdr *hdr;
 	u8 *tmp_buf;
 	u8 *praddr;
-	/*u8 *psaddr;*/
+	u8 *psaddr;
 	u16 fc, type;
 	bool packet_matchbssid, packet_toself, packet_beacon;
 
@@ -410,7 +410,8 @@ static void _rtl8723e_translate_rx_signal_stuff(struct ieee80211_hw *hw,
 	fc = le16_to_cpu(hdr->frame_control);
 	type = WLAN_FC_GET_TYPE(fc);
 	praddr = hdr->addr1;
-	/*psaddr = ieee80211_get_SA(hdr);*/
+	psaddr = ieee80211_get_SA(hdr);
+	memcpy(pstatus->psaddr, psaddr, ETH_ALEN);
 
 	packet_matchbssid = ((IEEE80211_FTYPE_CTL != type) &&
 	     (ether_addr_equal(mac->bssid, (fc & IEEE80211_FCTL_TODS) ?
