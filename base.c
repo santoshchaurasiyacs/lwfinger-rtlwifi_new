@@ -1192,6 +1192,37 @@ EXPORT_SYMBOL_GPL(rtl_tx_mgmt_proc);
 
 struct sk_buff *rtl_make_del_ba(struct ieee80211_hw *hw, u8 *sa,
 				u8 *bssid, u16 tid);
+
+static void process_agg_start(struct ieee80211_hw *hw,
+			      struct ieee80211_hdr *hdr, u16 tid)
+{
+	struct rtl_priv *rtlpriv = rtl_priv(hw);
+	struct ieee80211_rx_status rx_status = { 0 };
+	struct sk_buff *skb_delba = NULL;
+
+	skb_delba = rtl_make_del_ba(hw, hdr->addr2, hdr->addr3, tid);
+	if (skb_delba) {
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 10, 0))
+		rx_status.freq = hw->conf.chandef.chan->center_freq;
+		rx_status.band = hw->conf.chandef.chan->band;
+#else
+		rx_status.freq = hw->conf.channel->center_freq;
+		rx_status.band = hw->conf.channel->band;
+#endif
+		rx_status.flag |= RX_FLAG_DECRYPTED;
+		rx_status.flag |= RX_FLAG_MACTIME_START;
+		rx_status.rate_idx = 0;
+		rx_status.signal = 50 + 10;
+		memcpy(IEEE80211_SKB_RXCB(skb_delba),
+		       &rx_status, sizeof(rx_status));
+		RT_PRINT_DATA(rtlpriv, COMP_INIT, DBG_DMESG,
+			      "fake del\n",
+			      skb_delba->data,
+			      skb_delba->len);
+		ieee80211_rx_irqsafe(hw, skb_delba);
+	}
+}
+
 bool rtl_action_proc(struct ieee80211_hw *hw, struct sk_buff *skb, u8 is_tx)
 {
 	struct rtl_mac *mac = rtl_mac(rtl_priv(hw));
@@ -1224,8 +1255,6 @@ bool rtl_action_proc(struct ieee80211_hw *hw, struct sk_buff *skb, u8 is_tx)
 				struct rtl_tid_data *tid_data;
 				struct ieee80211_mgmt *mgmt = (void *)skb->data;
 				u16 capab = 0, tid = 0;
-				struct sk_buff *skb_delba = NULL;
-				struct ieee80211_rx_status rx_status = { 0 };
 
 				rcu_read_lock();
 				sta = rtl_find_sta(hw, hdr->addr3);
@@ -1247,35 +1276,8 @@ bool rtl_action_proc(struct ieee80211_hw *hw, struct sk_buff *skb, u8 is_tx)
 					IEEE80211_ADDBA_PARAM_TID_MASK) >> 2;
 				tid_data = &sta_entry->tids[tid];
 				if (tid_data->agg.rx_agg_state ==
-				    RTL_RX_AGG_START) {
-					skb_delba = rtl_make_del_ba(hw,
-									hdr->addr2,
-									hdr->addr3,
-									tid);
-					if (skb_delba) {
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 10, 0))
-						rx_status.freq =
-							hw->conf.chandef.chan->center_freq;
-						rx_status.band =
-							hw->conf.chandef.chan->band;
-#else
-						rx_status.freq =
-							hw->conf.channel->center_freq;
-						rx_status.band =
-							hw->conf.channel->band;
-#endif
-						rx_status.flag |= RX_FLAG_DECRYPTED;
-						rx_status.flag |= RX_FLAG_MACTIME_MPDU;
-						rx_status.rate_idx = 0;
-						rx_status.signal = 50 + 10;
-						memcpy(IEEE80211_SKB_RXCB(skb_delba),
-							&rx_status, sizeof(rx_status));
-						RT_PRINT_DATA(rtlpriv, COMP_INIT,
-							DBG_DMESG, "fake del\n",
-							skb_delba->data, skb_delba->len);
-						ieee80211_rx_irqsafe(hw, skb_delba);
-					}
-				}
+				    RTL_RX_AGG_START)
+					process_agg_start(hw, hdr, tid);
 				rcu_read_unlock();
 			}
 			break;
@@ -1297,6 +1299,17 @@ bool rtl_action_proc(struct ieee80211_hw *hw, struct sk_buff *skb, u8 is_tx)
 	return true;
 }
 EXPORT_SYMBOL_GPL(rtl_action_proc);
+
+static void setup_arp_tx(struct rtl_priv *rtlpriv, struct rtl_ps_ctl *ppsc)
+{
+	rtlpriv->ra.is_special_data = true;
+	if (rtlpriv->cfg->ops->get_btc_status())
+		rtlpriv->btcoexist.btc_ops->btc_special_packet_notify(
+					rtlpriv, 1);
+	rtlpriv->enter_ps = false;
+	schedule_work(&rtlpriv->works.lps_change_work);
+	ppsc->last_delaylps_stamp_jiffies = jiffies;
+}
 
 /* This function is called by 3 routines:
  * 1.RX
@@ -1373,15 +1386,8 @@ u8 rtl_is_special_data(struct ieee80211_hw *hw, struct sk_buff *skb, u8 is_tx, b
 					 DBG_DMESG, "dhcp %s !!\n",
 					 (is_tx) ? "Tx" : "Rx");
 
-				if (is_tx) {
-					rtlpriv->ra.is_special_data = true;
-					if (rtlpriv->cfg->ops->get_btc_status())
-						rtlpriv->btcoexist.btc_ops->btc_special_packet_notify(
-									rtlpriv, 1);
-					rtl_lps_leave(hw);
-					ppsc->last_delaylps_stamp_jiffies =
-									jiffies;
-				}
+				if (is_tx)
+					setup_arp_tx(rtlpriv, ppsc);
 
 				return true;
 			}
@@ -1390,14 +1396,8 @@ u8 rtl_is_special_data(struct ieee80211_hw *hw, struct sk_buff *skb, u8 is_tx, b
 		if (!with_encrypt_header)
 			return true;
 
-		if (is_tx) {
-			rtlpriv->ra.is_special_data = true;
-			if (rtlpriv->cfg->ops->get_btc_status())
-				rtlpriv->btcoexist.btc_ops->btc_special_packet_notify(
-							rtlpriv, 1);
-			rtl_lps_leave(hw);
-			ppsc->last_delaylps_stamp_jiffies = jiffies;
-		}
+		if (is_tx)
+			setup_arp_tx(rtlpriv, ppsc);
 		RT_TRACE(rtlpriv, (COMP_SEND | COMP_RECV),
 					 DBG_DMESG, "ARP %s !!\n", (is_tx) ? "Tx" : "Rx");
 		return true;
@@ -1468,12 +1468,6 @@ int rtl_tx_agg_stop(struct ieee80211_hw *hw, struct ieee80211_vif *vif,
 	if (sta == NULL)
 		return -EINVAL;
 
-	/* Comparing an array to null is not useful */
-	/*if (!sta->addr) {
-		RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG, "ra = NULL\n");
-		return -EINVAL;
-	}*/
-
 	RT_TRACE(rtlpriv, COMP_SEND, DBG_DMESG,
 		 "on ra = %pM tid = %d\n", sta->addr, tid);
 
@@ -1523,12 +1517,6 @@ int rtl_rx_agg_stop(struct ieee80211_hw *hw,
 	if (sta == NULL)
 		return -EINVAL;
 
-	/* Comparing an array to null is not useful */
-	/*if (!sta->addr) {
-		RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG, "ra = NULL\n");
-		return -EINVAL;
-	}*/
-
 	RT_TRACE(rtlpriv, COMP_SEND, DBG_DMESG,
 		 "on ra = %pM tid = %d\n", sta->addr, tid);
 
@@ -1548,12 +1536,6 @@ int rtl_tx_agg_oper(struct ieee80211_hw *hw,
 
 	if (sta == NULL)
 		return -EINVAL;
-
-	/* Comparing an array to null is not useful */
-	/*if (!sta->addr) {
-		RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG, "ra = NULL\n");
-		return -EINVAL;
-	}*/
 
 	RT_TRACE(rtlpriv, COMP_SEND, DBG_DMESG,
 		 "on ra = %pM tid = %d\n", sta->addr, tid);
