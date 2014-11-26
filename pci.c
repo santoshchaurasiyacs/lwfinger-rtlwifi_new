@@ -380,17 +380,17 @@ static bool rtl_pci_check_buddy_priv(struct ieee80211_hw *hw,
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_pci_priv *pcipriv = rtl_pcipriv(hw);
-	bool b_find_buddy_priv = false;
-	struct rtl_priv *temp_priv = NULL;
+	bool find_buddy_priv = false;
+	struct rtl_priv *tpriv = NULL;
 	struct rtl_pci_priv *temp_pcipriv = NULL;
 
 	if (!list_empty(&rtlpriv->glb_var->glb_priv_list)) {
-		list_for_each_entry(temp_priv, &rtlpriv->glb_var->glb_priv_list,
+		list_for_each_entry(tpriv, &rtlpriv->glb_var->glb_priv_list,
 			list) {
-			if (temp_priv == NULL)
+			if (tpriv == NULL)
 				break;
 
-			temp_pcipriv = (struct rtl_pci_priv *)temp_priv->priv;
+			temp_pcipriv = (struct rtl_pci_priv *)tpriv->priv;
 			RT_TRACE(rtlpriv, COMP_INIT, DBG_LOUD,
 				"pcipriv->ndis_adapter.funcnumber %x\n",
 				pcipriv->ndis_adapter.funcnumber);
@@ -404,19 +404,19 @@ static bool rtl_pci_check_buddy_priv(struct ieee80211_hw *hw,
 			     temp_pcipriv->ndis_adapter.devnumber) &&
 			    (pcipriv->ndis_adapter.funcnumber !=
 			     temp_pcipriv->ndis_adapter.funcnumber)) {
-				b_find_buddy_priv = true;
+				find_buddy_priv = true;
 				break;
 			}
 		}
 	}
 
 	RT_TRACE(rtlpriv, COMP_INIT, DBG_LOUD,
-		"b_find_buddy_priv %d\n", b_find_buddy_priv);
+		"find_buddy_priv %d\n", find_buddy_priv);
 
-	if (b_find_buddy_priv)
-		*buddy_priv = temp_priv;
+	if (find_buddy_priv)
+		*buddy_priv = tpriv;
 
-	return b_find_buddy_priv;
+	return find_buddy_priv;
 }
 
 static void rtl_pci_get_linkcontrol_field(struct ieee80211_hw *hw)
