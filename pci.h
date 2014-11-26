@@ -257,7 +257,6 @@ struct mp_adapter {
 	u16 pcibridge_vendorid;
 	u16 pcibridge_deviceid;
 
-	u32 pcicfg_addrport;
 	u8 num4bytes;
 
 	u8 pcibridge_pciehdr_offset;
