@@ -80,7 +80,7 @@ endif
 	@mkdir -p $(MODDESTDIR)/rtl8821ae
 	@install -p -D -m 644 rtl_pci.ko $(MODDESTDIR)	
 	@install -p -D -m 644 rtl_usb.ko $(MODDESTDIR)	
-	@install -p -D -m 644 rtlwifi.ko $(MODDESTDIR)	
+	@install -p -D -m 644 rtlwifi.ko $(MODDESTDIR)
 	@install -p -D -m 644 ./btcoexist/btcoexist.ko $(MODDESTDIR)/btcoexist
 	@install -p -D -m 644 ./rtl8188ee/rtl8188ee.ko $(MODDESTDIR)/rtl8188ee
 	@install -p -D -m 644 ./rtl8192c/rtl8192c-common.ko $(MODDESTDIR)/rtl8192c
@@ -92,7 +92,18 @@ endif
 	@install -p -D -m 644 ./rtl8723ae/rtl8723ae.ko $(MODDESTDIR)/rtl8723ae
 	@install -p -D -m 644 ./rtl8723be/rtl8723be.ko $(MODDESTDIR)/rtl8723be
 	@install -p -D -m 644 ./rtl8821ae/rtl8821ae.ko $(MODDESTDIR)/rtl8821ae
-	
+#Handle the compression option for modules in 3.18+
+ifeq ($(CONFIG_MODULE_COMPRESS_GZIP), y)
+	@gzip $(MODDESTDIR)/*.ko
+	@gzip $(MODDESTDIR)/btcoexist/*.ko
+	@gzip $(MODDESTDIR)/rtl8*/*.ko
+endif
+ifeq ($(CONFIG_MODULE_COMPRESS_XY), y)
+	@xy $(MODDESTDIR)/*.ko
+	@xy $(MODDESTDIR)/btcoexist/*.ko
+	@xy $(MODDESTDIR)/rtl8*/*.ko
+endif
+
 	@depmod -a
 
 	@#copy firmware images to target folder
