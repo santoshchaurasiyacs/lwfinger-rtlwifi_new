@@ -8,6 +8,14 @@ PWD := $(shell pwd)
 CLR_MODULE_FILES := *.mod.c *.mod *.o .*.cmd *.ko *~ .tmp_versions* modules.order Module.symvers
 SYMBOL_FILE := Module.symvers
 
+#Handle the compression option for modules in 3.18+
+ifneq ("","$(wildcard $(MODDESTDIR)/*.ko.gz)")
+COMPRESS_GZIP := y
+endif
+ifneq ("","$(wildcard $(MODDESTDIR)/*.ko.xz)")
+COMPRESS_XZ := y
+endif
+
 EXTRA_CFLAGS += -O2
 obj-m := rtlwifi.o
 PCI_MAIN_OBJS	:=	\
@@ -92,16 +100,15 @@ endif
 	@install -p -D -m 644 ./rtl8723ae/rtl8723ae.ko $(MODDESTDIR)/rtl8723ae
 	@install -p -D -m 644 ./rtl8723be/rtl8723be.ko $(MODDESTDIR)/rtl8723be
 	@install -p -D -m 644 ./rtl8821ae/rtl8821ae.ko $(MODDESTDIR)/rtl8821ae
-#Handle the compression option for modules in 3.18+
-ifeq ($(CONFIG_MODULE_COMPRESS_GZIP), y)
-	@gzip $(MODDESTDIR)/*.ko
-	@gzip $(MODDESTDIR)/btcoexist/*.ko
-	@gzip $(MODDESTDIR)/rtl8*/*.ko
+ifeq ($(COMPRESS_GZIP), y)
+	@gzip -f $(MODDESTDIR)/*.ko
+	@gzip -f $(MODDESTDIR)/btcoexist/*.ko
+	@gzip -f $(MODDESTDIR)/rtl8*/*.ko
 endif
-ifeq ($(CONFIG_MODULE_COMPRESS_XY), y)
-	@xy $(MODDESTDIR)/*.ko
-	@xy $(MODDESTDIR)/btcoexist/*.ko
-	@xy $(MODDESTDIR)/rtl8*/*.ko
+ifeq ($(COMPRESS_XY), y)
+	@xy -f $(MODDESTDIR)/*.ko
+	@xy -f $(MODDESTDIR)/btcoexist/*.ko
+	@xz -f $(MODDESTDIR)/rtl8*/*.ko
 endif
 
 	@depmod -a
