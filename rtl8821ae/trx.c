@@ -51,231 +51,6 @@ static u8 _rtl8821ae_map_hwqueue_to_fwqueue(struct sk_buff *skb, u8 hw_queue)
 	return skb->priority;
 }
 
-/* mac80211's rate_idx is like this:
- *
- * 2.4G band:rx_status->band == IEEE80211_BAND_2GHZ
- *
- * B/G rate:
- * (rx_status->flag & RX_FLAG_HT) = 0,
- * DESC_RATE1M-->DESC_RATE54M ==> idx is 0-->11,
- *
- * N rate:
- * (rx_status->flag & RX_FLAG_HT) = 1,
- * DESC_RATEMCS0-->DESC_RATEMCS15 ==> idx is 0-->15
- *
- * 5G band:rx_status->band == IEEE80211_BAND_5GHZ
- * A rate:
- * (rx_status->flag & RX_FLAG_HT) = 0,
- * DESC_RATE6M-->DESC_RATE54M ==> idx is 0-->7,
- *
- * N rate:
- * (rx_status->flag & RX_FLAG_HT) = 1,
- * DESC_RATEMCS0-->DESC_RATEMCS15 ==> idx is 0-->15
- */
-static int _rtl8821ae_rate_mapping(struct ieee80211_hw *hw,
-	bool isht, bool isvht, u8 desc_rate)
-{
-	int rate_idx;
-
-	if (false == isht) {
-		if (IEEE80211_BAND_2GHZ == hw->conf.chandef.chan->band) {
-			switch (desc_rate) {
-			case DESC_RATE1M:
-				rate_idx = 0;
-				break;
-			case DESC_RATE2M:
-				rate_idx = 1;
-				break;
-			case DESC_RATE5_5M:
-				rate_idx = 2;
-				break;
-			case DESC_RATE11M:
-				rate_idx = 3;
-				break;
-			case DESC_RATE6M:
-				rate_idx = 4;
-				break;
-			case DESC_RATE9M:
-				rate_idx = 5;
-				break;
-			case DESC_RATE12M:
-				rate_idx = 6;
-				break;
-			case DESC_RATE18M:
-				rate_idx = 7;
-				break;
-			case DESC_RATE24M:
-				rate_idx = 8;
-				break;
-			case DESC_RATE36M:
-				rate_idx = 9;
-				break;
-			case DESC_RATE48M:
-				rate_idx = 10;
-				break;
-			case DESC_RATE54M:
-				rate_idx = 11;
-				break;
-			default:
-				rate_idx = 0;
-				break;
-			}
-		} else {
-			switch (desc_rate) {
-			case DESC_RATE6M:
-				rate_idx = 0;
-				break;
-			case DESC_RATE9M:
-				rate_idx = 1;
-				break;
-			case DESC_RATE12M:
-				rate_idx = 2;
-				break;
-			case DESC_RATE18M:
-				rate_idx = 3;
-				break;
-			case DESC_RATE24M:
-				rate_idx = 4;
-				break;
-			case DESC_RATE36M:
-				rate_idx = 5;
-				break;
-			case DESC_RATE48M:
-				rate_idx = 6;
-				break;
-			case DESC_RATE54M:
-				rate_idx = 7;
-				break;
-			default:
-				rate_idx = 0;
-				break;
-			}
-		}
-	} else {
-		switch (desc_rate) {
-		case DESC_RATEMCS0:
-			rate_idx = 0;
-			break;
-		case DESC_RATEMCS1:
-			rate_idx = 1;
-			break;
-		case DESC_RATEMCS2:
-			rate_idx = 2;
-			break;
-		case DESC_RATEMCS3:
-			rate_idx = 3;
-			break;
-		case DESC_RATEMCS4:
-			rate_idx = 4;
-			break;
-		case DESC_RATEMCS5:
-			rate_idx = 5;
-			break;
-		case DESC_RATEMCS6:
-			rate_idx = 6;
-			break;
-		case DESC_RATEMCS7:
-			rate_idx = 7;
-			break;
-		case DESC_RATEMCS8:
-			rate_idx = 8;
-			break;
-		case DESC_RATEMCS9:
-			rate_idx = 9;
-			break;
-		case DESC_RATEMCS10:
-			rate_idx = 10;
-			break;
-		case DESC_RATEMCS11:
-			rate_idx = 11;
-			break;
-		case DESC_RATEMCS12:
-			rate_idx = 12;
-			break;
-		case DESC_RATEMCS13:
-			rate_idx = 13;
-			break;
-		case DESC_RATEMCS14:
-			rate_idx = 14;
-			break;
-		case DESC_RATEMCS15:
-			rate_idx = 15;
-			break;
-		default:
-			rate_idx = 0;
-			break;
-		}
-	}
-
-	if (true == isvht) {
-		switch (desc_rate) {
-		case DESC_RATEVHT1SS_MCS0:
-			rate_idx = 0;
-			break;
-		case DESC_RATEVHT1SS_MCS1:
-			rate_idx = 1;
-			break;
-		case DESC_RATEVHT1SS_MCS2:
-			rate_idx = 2;
-			break;
-		case DESC_RATEVHT1SS_MCS3:
-			rate_idx = 3;
-			break;
-		case DESC_RATEVHT1SS_MCS4:
-			rate_idx = 4;
-			break;
-		case DESC_RATEVHT1SS_MCS5:
-			rate_idx = 5;
-			break;
-		case DESC_RATEVHT1SS_MCS6:
-			rate_idx = 6;
-			break;
-		case DESC_RATEVHT1SS_MCS7:
-			rate_idx = 7;
-			break;
-		case DESC_RATEVHT1SS_MCS8:
-			rate_idx = 8;
-			break;
-		case DESC_RATEVHT1SS_MCS9:
-			rate_idx = 9;
-			break;
-		case DESC_RATEVHT2SS_MCS0:
-			rate_idx = 0;
-			break;
-		case DESC_RATEVHT2SS_MCS1:
-			rate_idx = 1;
-			break;
-		case DESC_RATEVHT2SS_MCS2:
-			rate_idx = 2;
-			break;
-		case DESC_RATEVHT2SS_MCS3:
-			rate_idx = 3;
-			break;
-		case DESC_RATEVHT2SS_MCS4:
-			rate_idx = 4;
-			break;
-		case DESC_RATEVHT2SS_MCS5:
-			rate_idx = 5;
-			break;
-		case DESC_RATEVHT2SS_MCS6:
-			rate_idx = 6;
-			break;
-		case DESC_RATEVHT2SS_MCS7:
-			rate_idx = 7;
-			break;
-		case DESC_RATEVHT2SS_MCS8:
-			rate_idx = 8;
-			break;
-		case DESC_RATEVHT2SS_MCS9:
-			rate_idx = 9;
-			break;
-		default:
-			rate_idx = 0;
-			break;
-		}
-	}
-	return rate_idx;
-}
 static u16 odm_cfo(char value)
 {
 	int ret_val;
@@ -461,8 +236,8 @@ static void _rtl8821ae_query_rxphystatus(struct ieee80211_hw *hw,
 		pstatus->recvsignalpower = rx_pwr_all;
 
 		/* (3)EVM of HT rate */
-		if ((pstatus->is_ht && pstatus->rate >= DESC_RATEMCS8 &&
-		    pstatus->rate <= DESC_RATEMCS15)
+		if ((pstatus->is_ht && pstatus->rate >= DESC92_RATEMCS8 &&
+		    pstatus->rate <= DESC92_RATEMCS15)
 		    || (pstatus->is_vht
 		    && pstatus->rate >= DESC_RATEVHT2SS_MCS0
 		    && pstatus->rate <= DESC_RATEVHT2SS_MCS9))
@@ -623,7 +398,7 @@ static bool rtl8821ae_get_rxdesc_is_ht(struct ieee80211_hw *hw, u8 *pdesc)
 
 	RT_TRACE(rtlpriv, COMP_RXDESC, DBG_LOUD, "rx_rate=0x%02x.\n", rx_rate);
 
-	if ((rx_rate >= DESC_RATEMCS0) && (rx_rate <= DESC_RATEMCS15))
+	if ((rx_rate >= DESC92_RATEMCS0) && (rx_rate <= DESC92_RATEMCS15))
 		return true;
 	else
 		return false;
@@ -767,8 +542,8 @@ bool rtl8821ae_rx_query_desc(struct ieee80211_hw *hw,
 	 * supported rates or MCS index if HT rates
 	 * are use (RX_FLAG_HT)*/
 	/* Notice: this is diff with windows define */
-	rx_status->rate_idx = _rtl8821ae_rate_mapping(hw, status->is_ht,
-					status->is_vht, status->rate);
+	rx_status->rate_idx = rtlwifi_rate_mapping(hw, status->is_ht,
+						   status->is_vht, status->rate);
 
 	rx_status->mactime = status->timestamp_low;
 	if (phystatus == true) {
@@ -951,7 +726,7 @@ void rtl8821ae_tx_fill_desc(struct ieee80211_hw *hw,
 
 		/* ptcb_desc->use_driver_rate = true; */
 		SET_TX_DESC_TX_RATE(pdesc, ptcb_desc->hw_rate);
-		if (ptcb_desc->hw_rate > DESC_RATEMCS0)
+		if (ptcb_desc->hw_rate > DESC92_RATEMCS0)
 			short_gi = (ptcb_desc->use_shortgi) ? 1 : 0;
 		else
 			short_gi = (ptcb_desc->use_shortpreamble) ? 1 : 0;
@@ -973,7 +748,7 @@ void rtl8821ae_tx_fill_desc(struct ieee80211_hw *hw,
 	/*	SET_TX_DESC_RTS_BW(pdesc, 0);*/
 		SET_TX_DESC_RTS_SC(pdesc, ptcb_desc->rts_sc);
 		SET_TX_DESC_RTS_SHORT(pdesc,
-			((ptcb_desc->rts_rate <= DESC_RATE54M) ?
+			((ptcb_desc->rts_rate <= DESC92_RATE54M) ?
 			(ptcb_desc->rts_use_shortpreamble ? 1 : 0) :
 			(ptcb_desc->rts_use_shortgi ? 1 : 0)));
 
@@ -1052,10 +827,10 @@ void rtl8821ae_tx_fill_desc(struct ieee80211_hw *hw,
 	SET_TX_DESC_TX_BUFFER_ADDRESS(pdesc, mapping);
 	/* if (rtlpriv->dm.useramask) { */
 	if (1) {
-		SET_TX_DESC_RATE_ID(pdesc, ptcb_desc->ratr_index);
+		SET_TX_DESC92_RATE_ID(pdesc, ptcb_desc->ratr_index);
 		SET_TX_DESC_MACID(pdesc, ptcb_desc->mac_id);
 	} else {
-		SET_TX_DESC_RATE_ID(pdesc, 0xC + ptcb_desc->ratr_index);
+		SET_TX_DESC92_RATE_ID(pdesc, 0xC + ptcb_desc->ratr_index);
 		SET_TX_DESC_MACID(pdesc, ptcb_desc->mac_id);
 	}
 /*	if (ieee80211_is_data_qos(fc))
@@ -1102,7 +877,7 @@ void rtl8821ae_tx_fill_cmddesc(struct ieee80211_hw *hw,
 	SET_TX_DESC_OFFSET(pdesc, USB_HWDESC_HEADER_LEN);
 
 	SET_TX_DESC_USE_RATE(pdesc, 1);
-	SET_TX_DESC_TX_RATE(pdesc, DESC_RATE1M);
+	SET_TX_DESC_TX_RATE(pdesc, DESC92_RATE1M);
 	SET_TX_DESC_DISABLE_FB(pdesc, 1);
 
 	SET_TX_DESC_DATA_BW(pdesc, 0);

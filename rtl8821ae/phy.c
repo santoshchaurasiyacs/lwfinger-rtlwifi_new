@@ -2290,52 +2290,52 @@ static char _rtl8821ae_phy_get_ratesection_intxpower_byrate(u8 path, u8 rate)
 {
 	char rate_section = 0;
 	switch (rate) {
-	case DESC_RATE1M:
-	case DESC_RATE2M:
-	case DESC_RATE5_5M:
-	case DESC_RATE11M:
+	case DESC92_RATE1M:
+	case DESC92_RATE2M:
+	case DESC92_RATE5_5M:
+	case DESC92_RATE11M:
 		rate_section = 0;
 		break;
 
-	case DESC_RATE6M:
-	case DESC_RATE9M:
-	case DESC_RATE12M:
-	case DESC_RATE18M:
+	case DESC92_RATE6M:
+	case DESC92_RATE9M:
+	case DESC92_RATE12M:
+	case DESC92_RATE18M:
 		rate_section = 1;
 		break;
 
-	case DESC_RATE24M:
-	case DESC_RATE36M:
-	case DESC_RATE48M:
-	case DESC_RATE54M:
+	case DESC92_RATE24M:
+	case DESC92_RATE36M:
+	case DESC92_RATE48M:
+	case DESC92_RATE54M:
 		rate_section = 2;
 		break;
 
-	case DESC_RATEMCS0:
-	case DESC_RATEMCS1:
-	case DESC_RATEMCS2:
-	case DESC_RATEMCS3:
+	case DESC92_RATEMCS0:
+	case DESC92_RATEMCS1:
+	case DESC92_RATEMCS2:
+	case DESC92_RATEMCS3:
 		rate_section = 3;
 		break;
 
-	case DESC_RATEMCS4:
-	case DESC_RATEMCS5:
-	case DESC_RATEMCS6:
-	case DESC_RATEMCS7:
+	case DESC92_RATEMCS4:
+	case DESC92_RATEMCS5:
+	case DESC92_RATEMCS6:
+	case DESC92_RATEMCS7:
 		rate_section = 4;
 		break;
 
-	case DESC_RATEMCS8:
-	case DESC_RATEMCS9:
-	case DESC_RATEMCS10:
-	case DESC_RATEMCS11:
+	case DESC92_RATEMCS8:
+	case DESC92_RATEMCS9:
+	case DESC92_RATEMCS10:
+	case DESC92_RATEMCS11:
 		rate_section = 5;
 		break;
 
-	case DESC_RATEMCS12:
-	case DESC_RATEMCS13:
-	case DESC_RATEMCS14:
-	case DESC_RATEMCS15:
+	case DESC92_RATEMCS12:
+	case DESC92_RATEMCS13:
+	case DESC92_RATEMCS14:
+	case DESC92_RATEMCS15:
 		rate_section = 6;
 		break;
 
@@ -2425,43 +2425,43 @@ static char _rtl8812ae_phy_get_txpower_limit(struct ieee80211_hw *hw,
 		bandwidth_temp = 2;
 
 	switch (rate) {
-	case DESC_RATE1M:
-	case DESC_RATE2M:
-	case DESC_RATE5_5M:
-	case DESC_RATE11M:
+	case DESC92_RATE1M:
+	case DESC92_RATE2M:
+	case DESC92_RATE5_5M:
+	case DESC92_RATE11M:
 		rate_section = 0;
 		break;
 
-	case DESC_RATE6M:
-	case DESC_RATE9M:
-	case DESC_RATE12M:
-	case DESC_RATE18M:
-	case DESC_RATE24M:
-	case DESC_RATE36M:
-	case DESC_RATE48M:
-	case DESC_RATE54M:
+	case DESC92_RATE6M:
+	case DESC92_RATE9M:
+	case DESC92_RATE12M:
+	case DESC92_RATE18M:
+	case DESC92_RATE24M:
+	case DESC92_RATE36M:
+	case DESC92_RATE48M:
+	case DESC92_RATE54M:
 		rate_section = 1;
 		break;
 
-	case DESC_RATEMCS0:
-	case DESC_RATEMCS1:
-	case DESC_RATEMCS2:
-	case DESC_RATEMCS3:
-	case DESC_RATEMCS4:
-	case DESC_RATEMCS5:
-	case DESC_RATEMCS6:
-	case DESC_RATEMCS7:
+	case DESC92_RATEMCS0:
+	case DESC92_RATEMCS1:
+	case DESC92_RATEMCS2:
+	case DESC92_RATEMCS3:
+	case DESC92_RATEMCS4:
+	case DESC92_RATEMCS5:
+	case DESC92_RATEMCS6:
+	case DESC92_RATEMCS7:
 		rate_section = 2;
 		break;
 
-	case DESC_RATEMCS8:
-	case DESC_RATEMCS9:
-	case DESC_RATEMCS10:
-	case DESC_RATEMCS11:
-	case DESC_RATEMCS12:
-	case DESC_RATEMCS13:
-	case DESC_RATEMCS14:
-	case DESC_RATEMCS15:
+	case DESC92_RATEMCS8:
+	case DESC92_RATEMCS9:
+	case DESC92_RATEMCS10:
+	case DESC92_RATEMCS11:
+	case DESC92_RATEMCS12:
+	case DESC92_RATEMCS13:
+	case DESC92_RATEMCS14:
+	case DESC92_RATEMCS15:
 		rate_section = 3;
 		break;
 
@@ -2578,7 +2578,7 @@ static char _rtl8821ae_phy_get_txpower_by_rate(struct ieee80211_hw *hw,
 	tx_num = RF_TX_NUM_NONIMPLEMENT;
 
 	if (tx_num == RF_TX_NUM_NONIMPLEMENT) {
-		if ((rate >= DESC_RATEMCS8 && rate <= DESC_RATEMCS15) ||
+		if ((rate >= DESC92_RATEMCS8 && rate <= DESC92_RATEMCS15) ||
 			(rate >= DESC_RATEVHT2SS_MCS2 && rate <= DESC_RATEVHT2SS_MCS9))
 			tx_num = RF_2TX;
 		else
@@ -2586,94 +2586,94 @@ static char _rtl8821ae_phy_get_txpower_by_rate(struct ieee80211_hw *hw,
 	}
 
 	switch (rate) {
-	case DESC_RATE1M:
+	case DESC92_RATE1M:
 		shift = 0;
 	break;
-	case DESC_RATE2M:
+	case DESC92_RATE2M:
 		shift = 8;
 	break;
-	case DESC_RATE5_5M:
+	case DESC92_RATE5_5M:
 		shift = 16;
 	break;
-	case DESC_RATE11M:
+	case DESC92_RATE11M:
 		shift = 24;
 	break;
 
-	case DESC_RATE6M:
+	case DESC92_RATE6M:
 		shift = 0;
 	break;
-	case DESC_RATE9M:
+	case DESC92_RATE9M:
 		shift = 8;
 	break;
-	case DESC_RATE12M:
+	case DESC92_RATE12M:
 		shift = 16;
 	break;
-	case DESC_RATE18M:
+	case DESC92_RATE18M:
 		shift = 24;
 	break;
 
-	case DESC_RATE24M:
+	case DESC92_RATE24M:
 		shift = 0;
 	break;
-	case DESC_RATE36M:
+	case DESC92_RATE36M:
 		shift = 8;
 	break;
-	case DESC_RATE48M:
+	case DESC92_RATE48M:
 		shift = 16;
 	break;
-	case DESC_RATE54M:
+	case DESC92_RATE54M:
 		shift = 24;
 	break;
 
-	case DESC_RATEMCS0:
+	case DESC92_RATEMCS0:
 		shift = 0;
 	break;
-	case DESC_RATEMCS1:
+	case DESC92_RATEMCS1:
 		shift = 8;
 	break;
-	case DESC_RATEMCS2:
+	case DESC92_RATEMCS2:
 		shift = 16;
 	break;
-	case DESC_RATEMCS3:
+	case DESC92_RATEMCS3:
 		shift = 24;
 	break;
 
-	case DESC_RATEMCS4:
+	case DESC92_RATEMCS4:
 		shift = 0;
 	break;
-	case DESC_RATEMCS5:
+	case DESC92_RATEMCS5:
 		shift = 8;
 	break;
-	case DESC_RATEMCS6:
+	case DESC92_RATEMCS6:
 		shift = 16;
 	break;
-	case DESC_RATEMCS7:
+	case DESC92_RATEMCS7:
 		shift = 24;
 	break;
 
-	case DESC_RATEMCS8:
+	case DESC92_RATEMCS8:
 		shift = 0;
 	break;
-	case DESC_RATEMCS9:
+	case DESC92_RATEMCS9:
 		shift = 8;
 	break;
-	case DESC_RATEMCS10:
+	case DESC92_RATEMCS10:
 		shift = 16;
 	break;
-	case DESC_RATEMCS11:
+	case DESC92_RATEMCS11:
 		shift = 24;
 	break;
 
-	case DESC_RATEMCS12:
+	case DESC92_RATEMCS12:
 		shift = 0;
 	break;
-	case DESC_RATEMCS13:
+	case DESC92_RATEMCS13:
 		shift = 8;
 	break;
-	case DESC_RATEMCS14:
+	case DESC92_RATEMCS14:
 		shift = 16;
 	break;
-	case DESC_RATEMCS15:
+	case DESC92_RATEMCS15:
 		shift = 24;
 	break;
 
@@ -2800,58 +2800,58 @@ static u8 _rtl8821ae_get_txpower_index(struct ieee80211_hw *hw, u8 path,
 	if (in_24g) {
 		if (RX_HAL_IS_CCK_RATE(rate))
 			txpower = rtlefuse->txpwrlevel_cck[path][index];
-		else if (DESC_RATE6M <= rate)
+		else if (DESC92_RATE6M <= rate)
 			txpower = rtlefuse->txpwrlevel_ht40_1s[path][index];
 		else
 			RT_TRACE(rtlpriv, COMP_POWER_TRACKING, DBG_LOUD, "invalid rate\n");
 
-		if (DESC_RATE6M <= rate && rate <= DESC_RATE54M && !RX_HAL_IS_CCK_RATE(rate))
+		if (DESC92_RATE6M <= rate && rate <= DESC92_RATE54M && !RX_HAL_IS_CCK_RATE(rate))
 			txpower += rtlefuse->txpwr_legacyhtdiff[path][TX_1S];
 
 		if (bandwidth == HT_CHANNEL_WIDTH_20) {
-			if ((DESC_RATEMCS0 <= rate && rate <= DESC_RATEMCS15) ||
+			if ((DESC92_RATEMCS0 <= rate && rate <= DESC92_RATEMCS15) ||
 				(DESC_RATEVHT1SS_MCS0 <= rate && rate <= DESC_RATEVHT2SS_MCS9))
 				txpower += rtlefuse->txpwr_ht20diff[path][TX_1S];
-			if ((DESC_RATEMCS8 <= rate && rate <= DESC_RATEMCS15) ||
+			if ((DESC92_RATEMCS8 <= rate && rate <= DESC92_RATEMCS15) ||
 				(DESC_RATEVHT2SS_MCS0 <= rate && rate <= DESC_RATEVHT2SS_MCS9))
 				txpower += rtlefuse->txpwr_ht20diff[path][TX_2S];
 		} else if (bandwidth == HT_CHANNEL_WIDTH_20_40) {
-			if ((DESC_RATEMCS0 <= rate && rate <= DESC_RATEMCS15) ||
+			if ((DESC92_RATEMCS0 <= rate && rate <= DESC92_RATEMCS15) ||
 				(DESC_RATEVHT1SS_MCS0 <= rate && rate <= DESC_RATEVHT2SS_MCS9))
 				txpower += rtlefuse->txpwr_ht40diff[path][TX_1S];
-			if ((DESC_RATEMCS8 <= rate && rate <= DESC_RATEMCS15) ||
+			if ((DESC92_RATEMCS8 <= rate && rate <= DESC92_RATEMCS15) ||
 				(DESC_RATEVHT2SS_MCS0 <= rate && rate <= DESC_RATEVHT2SS_MCS9))
 				txpower += rtlefuse->txpwr_ht40diff[path][TX_2S];
 		} else if (bandwidth == HT_CHANNEL_WIDTH_80) {
-			if ((DESC_RATEMCS0 <= rate && rate <= DESC_RATEMCS15) ||
+			if ((DESC92_RATEMCS0 <= rate && rate <= DESC92_RATEMCS15) ||
 				(DESC_RATEVHT1SS_MCS0 <= rate && rate <= DESC_RATEVHT2SS_MCS9))
 				txpower += rtlefuse->txpwr_ht40diff[path][TX_1S];
-			if ((DESC_RATEMCS8 <= rate && rate <= DESC_RATEMCS15) ||
+			if ((DESC92_RATEMCS8 <= rate && rate <= DESC92_RATEMCS15) ||
 				(DESC_RATEVHT2SS_MCS0 <= rate && rate <= DESC_RATEVHT2SS_MCS9))
 				txpower += rtlefuse->txpwr_ht40diff[path][TX_2S];
 		}
 
 	} else {
-		if (DESC_RATE6M <= rate)
+		if (DESC92_RATE6M <= rate)
 			txpower = rtlefuse->txpwr_5g_bw40base[path][index];
 	    else
 		RT_TRACE(rtlpriv, COMP_POWER_TRACKING, DBG_WARNING, "INVALID Rate.\n");
 
-	if (DESC_RATE6M <= rate && rate <= DESC_RATE54M && !RX_HAL_IS_CCK_RATE(rate))
+	if (DESC92_RATE6M <= rate && rate <= DESC92_RATE54M && !RX_HAL_IS_CCK_RATE(rate))
 		txpower += rtlefuse->txpwr_5g_ofdmdiff[path][TX_1S];
 
 	    if (bandwidth == HT_CHANNEL_WIDTH_20) {
-		if ((DESC_RATEMCS0 <= rate && rate <= DESC_RATEMCS15) ||
+		if ((DESC92_RATEMCS0 <= rate && rate <= DESC92_RATEMCS15) ||
 				(DESC_RATEVHT1SS_MCS0 <= rate && rate <= DESC_RATEVHT2SS_MCS9))
 			txpower += rtlefuse->txpwr_5g_bw20diff[path][TX_1S];
-		if ((DESC_RATEMCS8 <= rate && rate <= DESC_RATEMCS15) ||
+		if ((DESC92_RATEMCS8 <= rate && rate <= DESC92_RATEMCS15) ||
 				(DESC_RATEVHT2SS_MCS0 <= rate && rate <= DESC_RATEVHT2SS_MCS9))
 			txpower += rtlefuse->txpwr_5g_bw20diff[path][TX_2S];
 	    } else if (bandwidth == HT_CHANNEL_WIDTH_20_40) {
-		if ((DESC_RATEMCS0 <= rate && rate <= DESC_RATEMCS15) ||
+		if ((DESC92_RATEMCS0 <= rate && rate <= DESC92_RATEMCS15) ||
 				(DESC_RATEVHT1SS_MCS0 <= rate && rate <= DESC_RATEVHT2SS_MCS9))
 			txpower += rtlefuse->txpwr_5g_bw40diff[path][TX_1S];
-		if ((DESC_RATEMCS8 <= rate && rate <= DESC_RATEMCS15) ||
+		if ((DESC92_RATEMCS8 <= rate && rate <= DESC92_RATEMCS15) ||
 				(DESC_RATEVHT2SS_MCS0 <= rate && rate <= DESC_RATEVHT2SS_MCS9))
 			txpower += rtlefuse->txpwr_5g_bw40diff[path][TX_2S];
 	    } else if (bandwidth == HT_CHANNEL_WIDTH_80) {
@@ -2861,11 +2861,11 @@ static u8 _rtl8821ae_get_txpower_index(struct ieee80211_hw *hw, u8 path,
 				if (channel_5g_80m[i] == channel)
 					index = i;
 
-		if ((DESC_RATEMCS0 <= rate && rate <= DESC_RATEMCS15) ||
+		if ((DESC92_RATEMCS0 <= rate && rate <= DESC92_RATEMCS15) ||
 			(DESC_RATEVHT1SS_MCS0 <= rate && rate <= DESC_RATEVHT2SS_MCS9))
 			txpower = rtlefuse->txpwr_5g_bw80base[path][index]
 				+ rtlefuse->txpwr_5g_bw80diff[path][TX_1S];
-		if ((DESC_RATEMCS8 <= rate && rate <= DESC_RATEMCS15) ||
+		if ((DESC92_RATEMCS8 <= rate && rate <= DESC92_RATEMCS15) ||
 			(DESC_RATEVHT2SS_MCS0 <= rate && rate <= DESC_RATEVHT2SS_MCS9))
 			txpower = rtlefuse->txpwr_5g_bw80base[path][index]
 				+ rtlefuse->txpwr_5g_bw80diff[path][TX_1S]
@@ -2882,7 +2882,7 @@ static u8 _rtl8821ae_get_txpower_index(struct ieee80211_hw *hw, u8 path,
 	else
 		txpower += powerdiff_byrate;
 
-	if (rate > DESC_RATE11M)
+	if (rate > DESC92_RATE11M)
 		txpower += rtlpriv->dm.remnant_ofdm_swing_idx[path];
 	else
 		txpower += rtlpriv->dm.remnant_cck_idx;
@@ -2900,121 +2900,121 @@ static void _rtl8821ae_phy_set_txpower_index(struct ieee80211_hw *hw,
 
 	if (path == RF90_PATH_A) {
 		switch (rate) {
-		case DESC_RATE1M:
+		case DESC92_RATE1M:
 			rtl_set_bbreg(hw, RTXAGC_A_CCK11_CCK1,
 				MASKBYTE0, power_index);
 			break;
-		case DESC_RATE2M:
+		case DESC92_RATE2M:
 			rtl_set_bbreg(hw, RTXAGC_A_CCK11_CCK1,
 				MASKBYTE1, power_index);
 			break;
-		case DESC_RATE5_5M:
+		case DESC92_RATE5_5M:
 			rtl_set_bbreg(hw, RTXAGC_A_CCK11_CCK1,
 				MASKBYTE2, power_index);
 			break;
-		case DESC_RATE11M:
+		case DESC92_RATE11M:
 			rtl_set_bbreg(hw, RTXAGC_A_CCK11_CCK1,
 				MASKBYTE3, power_index);
 			break;
 
-		case DESC_RATE6M:
+		case DESC92_RATE6M:
 			rtl_set_bbreg(hw, RTXAGC_A_OFDM18_OFDM6,
 				MASKBYTE0, power_index);
 			break;
-		case DESC_RATE9M:
+		case DESC92_RATE9M:
 			rtl_set_bbreg(hw, RTXAGC_A_OFDM18_OFDM6,
 				MASKBYTE1, power_index);
 			break;
-		case DESC_RATE12M:
+		case DESC92_RATE12M:
 			rtl_set_bbreg(hw, RTXAGC_A_OFDM18_OFDM6,
 				MASKBYTE2, power_index);
 			break;
-		case DESC_RATE18M:
+		case DESC92_RATE18M:
 			rtl_set_bbreg(hw, RTXAGC_A_OFDM18_OFDM6,
 				MASKBYTE3, power_index);
 			break;
 
-		case DESC_RATE24M:
+		case DESC92_RATE24M:
 			rtl_set_bbreg(hw, RTXAGC_A_OFDM54_OFDM24,
 				MASKBYTE0, power_index);
 			break;
-		case DESC_RATE36M:
+		case DESC92_RATE36M:
 			rtl_set_bbreg(hw, RTXAGC_A_OFDM54_OFDM24,
 				MASKBYTE1, power_index);
 			break;
-		case DESC_RATE48M:
+		case DESC92_RATE48M:
 			rtl_set_bbreg(hw, RTXAGC_A_OFDM54_OFDM24,
 				MASKBYTE2, power_index);
 			break;
-		case DESC_RATE54M:
+		case DESC92_RATE54M:
 			rtl_set_bbreg(hw, RTXAGC_A_OFDM54_OFDM24,
 				MASKBYTE3, power_index);
 			break;
 
-		case DESC_RATEMCS0:
+		case DESC92_RATEMCS0:
 			rtl_set_bbreg(hw, RTXAGC_A_MCS03_MCS00,
 				MASKBYTE0, power_index);
 			break;
-		case DESC_RATEMCS1:
+		case DESC92_RATEMCS1:
 			rtl_set_bbreg(hw, RTXAGC_A_MCS03_MCS00,
 				MASKBYTE1, power_index);
 			break;
-		case DESC_RATEMCS2:
+		case DESC92_RATEMCS2:
 			rtl_set_bbreg(hw, RTXAGC_A_MCS03_MCS00,
 				MASKBYTE2, power_index);
 			break;
-		case DESC_RATEMCS3:
+		case DESC92_RATEMCS3:
 			rtl_set_bbreg(hw, RTXAGC_A_MCS03_MCS00,
 				MASKBYTE3, power_index);
 			break;
 
-		case DESC_RATEMCS4:
+		case DESC92_RATEMCS4:
 			rtl_set_bbreg(hw, RTXAGC_A_MCS07_MCS04,
 				MASKBYTE0, power_index);
 			break;
-		case DESC_RATEMCS5:
+		case DESC92_RATEMCS5:
 			rtl_set_bbreg(hw, RTXAGC_A_MCS07_MCS04,
 				MASKBYTE1, power_index);
 			break;
-		case DESC_RATEMCS6:
+		case DESC92_RATEMCS6:
 			rtl_set_bbreg(hw, RTXAGC_A_MCS07_MCS04,
 				MASKBYTE2, power_index);
 			break;
-		case DESC_RATEMCS7:
+		case DESC92_RATEMCS7:
 			rtl_set_bbreg(hw, RTXAGC_A_MCS07_MCS04,
 				MASKBYTE3, power_index);
 			break;
 
-		case DESC_RATEMCS8:
+		case DESC92_RATEMCS8:
 			rtl_set_bbreg(hw, RTXAGC_A_MCS11_MCS08,
 				MASKBYTE0, power_index);
 			break;
-		case DESC_RATEMCS9:
+		case DESC92_RATEMCS9:
 			rtl_set_bbreg(hw, RTXAGC_A_MCS11_MCS08,
 				MASKBYTE1, power_index);
 			break;
-		case DESC_RATEMCS10:
+		case DESC92_RATEMCS10:
 			rtl_set_bbreg(hw, RTXAGC_A_MCS11_MCS08,
 				MASKBYTE2, power_index);
 			break;
-		case DESC_RATEMCS11:
+		case DESC92_RATEMCS11:
 			rtl_set_bbreg(hw, RTXAGC_A_MCS11_MCS08,
 				MASKBYTE3, power_index);
 			break;
 
-		case DESC_RATEMCS12:
+		case DESC92_RATEMCS12:
 			rtl_set_bbreg(hw, RTXAGC_A_MCS15_MCS12,
 				MASKBYTE0, power_index);
 			break;
-		case DESC_RATEMCS13:
+		case DESC92_RATEMCS13:
 			rtl_set_bbreg(hw, RTXAGC_A_MCS15_MCS12,
 				MASKBYTE1, power_index);
 			break;
-		case DESC_RATEMCS14:
+		case DESC92_RATEMCS14:
 			rtl_set_bbreg(hw, RTXAGC_A_MCS15_MCS12,
 				MASKBYTE2, power_index);
 			break;
-		case DESC_RATEMCS15:
+		case DESC92_RATEMCS15:
 			rtl_set_bbreg(hw, RTXAGC_A_MCS15_MCS12,
 				MASKBYTE3, power_index);
 			break;
@@ -3111,121 +3111,121 @@ static void _rtl8821ae_phy_set_txpower_index(struct ieee80211_hw *hw,
 		}
 	} else if (path == RF90_PATH_B) {
 		switch (rate) {
-		case DESC_RATE1M:
+		case DESC92_RATE1M:
 			rtl_set_bbreg(hw, RTXAGC_B_CCK11_CCK1,
 				MASKBYTE0, power_index);
 			break;
-		case DESC_RATE2M:
+		case DESC92_RATE2M:
 			rtl_set_bbreg(hw, RTXAGC_B_CCK11_CCK1,
 				MASKBYTE1, power_index);
 			break;
-		case DESC_RATE5_5M:
+		case DESC92_RATE5_5M:
 			rtl_set_bbreg(hw, RTXAGC_B_CCK11_CCK1,
 				MASKBYTE2, power_index);
 			break;
-		case DESC_RATE11M:
+		case DESC92_RATE11M:
 			rtl_set_bbreg(hw, RTXAGC_B_CCK11_CCK1,
 				MASKBYTE3, power_index);
 			break;
 
-		case DESC_RATE6M:
+		case DESC92_RATE6M:
 			rtl_set_bbreg(hw, RTXAGC_B_OFDM18_OFDM6,
 				MASKBYTE0, power_index);
 			break;
-		case DESC_RATE9M:
+		case DESC92_RATE9M:
 			rtl_set_bbreg(hw, RTXAGC_B_OFDM18_OFDM6,
 				MASKBYTE1, power_index);
 			break;
-		case DESC_RATE12M:
+		case DESC92_RATE12M:
 			rtl_set_bbreg(hw, RTXAGC_B_OFDM18_OFDM6,
 				MASKBYTE2, power_index);
 			break;
-		case DESC_RATE18M:
+		case DESC92_RATE18M:
 			rtl_set_bbreg(hw, RTXAGC_B_OFDM18_OFDM6,
 				MASKBYTE3, power_index);
 			break;
 
-		case DESC_RATE24M:
+		case DESC92_RATE24M:
 			rtl_set_bbreg(hw, RTXAGC_B_OFDM54_OFDM24,
 				MASKBYTE0, power_index);
 			break;
-		case DESC_RATE36M:
+		case DESC92_RATE36M:
 			rtl_set_bbreg(hw, RTXAGC_B_OFDM54_OFDM24,
 				MASKBYTE1, power_index);
 			break;
-		case DESC_RATE48M:
+		case DESC92_RATE48M:
 			rtl_set_bbreg(hw, RTXAGC_B_OFDM54_OFDM24,
 				MASKBYTE2, power_index);
 			break;
-		case DESC_RATE54M:
+		case DESC92_RATE54M:
 			rtl_set_bbreg(hw, RTXAGC_B_OFDM54_OFDM24,
 				MASKBYTE3, power_index);
 			break;
 
-		case DESC_RATEMCS0:
+		case DESC92_RATEMCS0:
 			rtl_set_bbreg(hw, RTXAGC_B_MCS03_MCS00,
 				MASKBYTE0, power_index);
 			break;
-		case DESC_RATEMCS1:
+		case DESC92_RATEMCS1:
 			rtl_set_bbreg(hw, RTXAGC_B_MCS03_MCS00,
 				MASKBYTE1, power_index);
 			break;
-		case DESC_RATEMCS2:
+		case DESC92_RATEMCS2:
 			rtl_set_bbreg(hw, RTXAGC_B_MCS03_MCS00,
 				MASKBYTE2, power_index);
 			break;
-		case DESC_RATEMCS3:
+		case DESC92_RATEMCS3:
 			rtl_set_bbreg(hw, RTXAGC_B_MCS03_MCS00,
 				MASKBYTE3, power_index);
 			break;
 
-		case DESC_RATEMCS4:
+		case DESC92_RATEMCS4:
 			rtl_set_bbreg(hw, RTXAGC_B_MCS07_MCS04,
 				MASKBYTE0, power_index);
 			break;
-		case DESC_RATEMCS5:
+		case DESC92_RATEMCS5:
 			rtl_set_bbreg(hw, RTXAGC_B_MCS07_MCS04,
 				MASKBYTE1, power_index);
 			break;
-		case DESC_RATEMCS6:
+		case DESC92_RATEMCS6:
 			rtl_set_bbreg(hw, RTXAGC_B_MCS07_MCS04,
 				MASKBYTE2, power_index);
 			break;
-		case DESC_RATEMCS7:
+		case DESC92_RATEMCS7:
 			rtl_set_bbreg(hw, RTXAGC_B_MCS07_MCS04,
 				MASKBYTE3, power_index);
 			break;
 
-		case DESC_RATEMCS8:
+		case DESC92_RATEMCS8:
 			rtl_set_bbreg(hw, RTXAGC_B_MCS11_MCS08,
 				MASKBYTE0, power_index);
 			break;
-		case DESC_RATEMCS9:
+		case DESC92_RATEMCS9:
 			rtl_set_bbreg(hw, RTXAGC_B_MCS11_MCS08,
 				MASKBYTE1, power_index);
 			break;
-		case DESC_RATEMCS10:
+		case DESC92_RATEMCS10:
 			rtl_set_bbreg(hw, RTXAGC_B_MCS11_MCS08,
 				MASKBYTE2, power_index);
 			break;
-		case DESC_RATEMCS11:
+		case DESC92_RATEMCS11:
 			rtl_set_bbreg(hw, RTXAGC_B_MCS11_MCS08,
 				MASKBYTE3, power_index);
 			break;
 
-		case DESC_RATEMCS12:
+		case DESC92_RATEMCS12:
 			rtl_set_bbreg(hw, RTXAGC_B_MCS15_MCS12,
 				MASKBYTE0, power_index);
 			break;
-		case DESC_RATEMCS13:
+		case DESC92_RATEMCS13:
 			rtl_set_bbreg(hw, RTXAGC_B_MCS15_MCS12,
 				MASKBYTE1, power_index);
 			break;
-		case DESC_RATEMCS14:
+		case DESC92_RATEMCS14:
 			rtl_set_bbreg(hw, RTXAGC_B_MCS15_MCS12,
 				MASKBYTE2, power_index);
 			break;
-		case DESC_RATEMCS15:
+		case DESC92_RATEMCS15:
 			rtl_set_bbreg(hw, RTXAGC_B_MCS15_MCS12,
 				MASKBYTE3, power_index);
 			break;
@@ -3355,12 +3355,12 @@ static void _rtl8821ae_phy_txpower_training_by_path(struct ieee80211_hw *hw,
 	if (path == RF90_PATH_A) {
 		power_level =
 			_rtl8821ae_get_txpower_index(hw, RF90_PATH_A,
-			DESC_RATEMCS7, bw, channel);
+			DESC92_RATEMCS7, bw, channel);
 		offset =  RA_TXPWRTRAING;
 	} else {
 		power_level =
 			_rtl8821ae_get_txpower_index(hw, RF90_PATH_B,
-			DESC_RATEMCS7, bw, channel);
+			DESC92_RATEMCS7, bw, channel);
 		offset =  RB_TXPWRTRAING;
 	}
 
@@ -3382,21 +3382,21 @@ void rtl8821ae_phy_set_txpower_level_by_path(struct ieee80211_hw *hw, u8 channel
 	/* struct rtl_efuse *rtlefuse = rtl_efuse(rtl_priv(hw)); */
 	struct rtl_hal *rtlhal = rtl_hal(rtl_priv(hw));
 	struct rtl_phy *rtlphy = &(rtl_priv(hw)->phy);
-	u8 cck_rates[]  = {DESC_RATE1M, DESC_RATE2M, DESC_RATE5_5M,
-			      DESC_RATE11M};
+	u8 cck_rates[]  = {DESC92_RATE1M, DESC92_RATE2M, DESC92_RATE5_5M,
+			      DESC92_RATE11M};
 	u8 sizes_of_cck_retes = 4;
-	u8 ofdm_rates[]  = {DESC_RATE6M, DESC_RATE9M, DESC_RATE12M,
-				DESC_RATE18M, DESC_RATE24M, DESC_RATE36M,
-				DESC_RATE48M, DESC_RATE54M};
+	u8 ofdm_rates[]  = {DESC92_RATE6M, DESC92_RATE9M, DESC92_RATE12M,
+				DESC92_RATE18M, DESC92_RATE24M, DESC92_RATE36M,
+				DESC92_RATE48M, DESC92_RATE54M};
 	u8 sizes_of_ofdm_retes = 8;
-	u8 ht_rates_1t[]  = {DESC_RATEMCS0, DESC_RATEMCS1, DESC_RATEMCS2,
-				DESC_RATEMCS3, DESC_RATEMCS4, DESC_RATEMCS5,
-				DESC_RATEMCS6, DESC_RATEMCS7};
+	u8 ht_rates_1t[]  = {DESC92_RATEMCS0, DESC92_RATEMCS1, DESC92_RATEMCS2,
+				DESC92_RATEMCS3, DESC92_RATEMCS4, DESC92_RATEMCS5,
+				DESC92_RATEMCS6, DESC92_RATEMCS7};
 	u8 sizes_of_ht_retes_1t = 8;
-	u8 ht_rates_2t[]  = {DESC_RATEMCS8, DESC_RATEMCS9,
-				DESC_RATEMCS10, DESC_RATEMCS11,
-				DESC_RATEMCS12, DESC_RATEMCS13,
-				DESC_RATEMCS14, DESC_RATEMCS15};
+	u8 ht_rates_2t[]  = {DESC92_RATEMCS8, DESC92_RATEMCS9,
+				DESC92_RATEMCS10, DESC92_RATEMCS11,
+				DESC92_RATEMCS12, DESC92_RATEMCS13,
+				DESC92_RATEMCS14, DESC92_RATEMCS15};
 	u8 sizes_of_ht_retes_2t = 8;
 	u8 vht_rates_1t[]  = {DESC_RATEVHT1SS_MCS0, DESC_RATEVHT1SS_MCS1,
 				DESC_RATEVHT1SS_MCS2, DESC_RATEVHT1SS_MCS3,
