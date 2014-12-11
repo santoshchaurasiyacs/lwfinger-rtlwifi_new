@@ -253,7 +253,6 @@ static struct rtl_hal_ops rtl8192ee_hal_ops = {
 	.is_tx_desc_closed = rtl92ee_is_tx_desc_closed,
 	.tx_polling = rtl92ee_tx_polling,
 	.enable_hw_sec = rtl92ee_enable_hw_security_config,
-	.set_key = rtl92ee_set_key,
 	.init_sw_leds = rtl92ee_init_sw_leds,
 	.allow_all_destaddr = rtl92ee_allow_all_destaddr,
 	.get_bbreg = rtl92ee_phy_query_bb_reg,
