@@ -49,9 +49,7 @@ void rtl92de_update_hal_rate_tbl(struct ieee80211_hw *hw,
 void rtl92de_update_channel_access_setting(struct ieee80211_hw *hw);
 bool rtl92de_gpio_radio_on_off_checking(struct ieee80211_hw *hw, u8 *valid);
 void rtl92de_enable_hw_security_config(struct ieee80211_hw *hw);
-void rtl92de_set_key(struct ieee80211_hw *hw, u32 key_index,
-		u8 *p_macaddr, bool is_group, u8 enc_algo,
-		bool is_wepkey, bool clear_all);
+
 
 extern void rtl92de_write_dword_dbi(struct ieee80211_hw *hw, u16 offset,
 		u32 value, u8 direct);

@@ -279,7 +279,6 @@ static struct rtl_hal_ops rtl8192se_hal_ops = {
 	.is_tx_desc_closed = rtl92se_is_tx_desc_closed,
 	.tx_polling = rtl92se_tx_polling,
 	.enable_hw_sec = rtl92se_enable_hw_security_config,
-	.set_key = rtl92se_set_key,
 	.init_sw_leds = rtl92se_init_sw_leds,
 	.allow_all_destaddr = rtl92se_allow_all_destaddr,
 	.get_bbreg = rtl92s_phy_query_bb_reg,

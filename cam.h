@@ -35,22 +35,32 @@
 #define CFG_DEFAULT_KEY					BIT(5)
 #define CFG_VALID					BIT(15)
 
-#define PAIRWISE_KEYIDX					0
-#define CAM_PAIRWISE_KEY_POSITION			4
+
+#define CAM_PAIRWISE_KEY_OFFSET			4
+#define TOTAL_CAM_ENTRY			32
 
 #define	CAM_CONFIG_USEDK				1
 #define	CAM_CONFIG_NO_USEDK				0
 
+enum rtl_cam_key_type {
+	wep_only = 0,
+	group_key,
+	pairwise_key,
+	invalid_key
+};
 extern void rtl_cam_reset_all_entry(struct ieee80211_hw *hw);
-extern u8 rtl_cam_add_one_entry(struct ieee80211_hw *hw, u8 *mac_addr,
-				u32 ul_key_id, u32 ul_entry_idx, u32 ul_enc_alg,
-				u32 ul_default_key, u8 *key_content);
+u8 rtl_cam_add_one_entry(struct ieee80211_hw *hw, u8 *mac_addr,
+			 u32 ul_key_id, u32 ul_entry_idx, u32 ul_enc_alg,
+			 u8 *key_content);
 int rtl_cam_delete_one_entry(struct ieee80211_hw *hw, u8 *mac_addr,
 			     u32 ul_key_id);
 void rtl_cam_mark_invalid(struct ieee80211_hw *hw, u8 uc_index);
 void rtl_cam_empty_entry(struct ieee80211_hw *hw, u8 uc_index);
 void rtl_cam_reset_sec_info(struct ieee80211_hw *hw);
-u8 rtl_cam_get_free_entry(struct ieee80211_hw *hw, u8 *sta_addr);
-void rtl_cam_del_entry(struct ieee80211_hw *hw, u8 *sta_addr);
+u8 rtl_cam_get_free_entry(struct ieee80211_hw *hw, struct ieee80211_sta *sta, u8 key_index);
+void rtl_cam_del_entry(struct ieee80211_hw *hw, struct ieee80211_sta *sta, u8 key_index);
+s8 rtl_cam_set_key(struct ieee80211_hw *hw, struct ieee80211_sta *sta, struct ieee80211_key_conf *key,
+						enum rtl_cam_key_type cam_key_type);
+void rtl_cam_clear_one_entry(struct ieee80211_hw *hw,u32 entry_idx);
 
 #endif
