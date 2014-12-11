@@ -52,10 +52,10 @@
 	false : true) : false)
 
 #define RX_HAL_IS_CCK_RATE(_pdesc)\
-	(_pdesc->rxmcs == DESC92_RATE1M ||		\
-	 _pdesc->rxmcs == DESC92_RATE2M ||		\
-	 _pdesc->rxmcs == DESC92_RATE5_5M ||		\
-	 _pdesc->rxmcs == DESC92_RATE11M)
+	(_pdesc->rxmcs == DESC_RATE1M ||		\
+	 _pdesc->rxmcs == DESC_RATE2M ||		\
+	 _pdesc->rxmcs == DESC_RATE5_5M ||		\
+	 _pdesc->rxmcs == DESC_RATE11M)
 
 #define IS_HARDWARE_TYPE_8192CE(rtlhal)			\
 	(rtlhal->hw_type == HARDWARE_TYPE_RTL8192CE)

@@ -190,8 +190,8 @@ static void _rtl92ee_query_rxphystatus(struct ieee80211_hw *hw,
 		pstatus->recvsignalpower = rx_pwr_all;
 
 		/* (3)EVM of HT rate */
-		if (pstatus->rate >= DESC92_RATEMCS8 &&
-		    pstatus->rate <= DESC92_RATEMCS15)
+		if (pstatus->rate >= DESC_RATEMCS8 &&
+		    pstatus->rate <= DESC_RATEMCS15)
 			max_spatial_stream = 2;
 		else
 			max_spatial_stream = 1;
@@ -745,13 +745,13 @@ void rtl92ee_tx_fill_desc(struct ieee80211_hw *hw,
 		} else {
 			if (rtlpriv->ra.is_special_data == true) {
 				ptcb_desc->use_driver_rate = true;
-				SET_TX_DESC_TX_RATE(pdesc, DESC92_RATE11M);
+				SET_TX_DESC_TX_RATE(pdesc, DESC_RATE11M);
 			} else {
 				ptcb_desc->use_driver_rate = false;
 			}
 		}
 
-		if (ptcb_desc->hw_rate > DESC92_RATEMCS0)
+		if (ptcb_desc->hw_rate > DESC_RATEMCS0)
 			short_gi = (ptcb_desc->use_shortgi) ? 1 : 0;
 		else
 			short_gi = (ptcb_desc->use_shortpreamble) ? 1 : 0;
@@ -771,7 +771,7 @@ void rtl92ee_tx_fill_desc(struct ieee80211_hw *hw,
 		SET_TX_DESC_RTS_RATE(pdesc, ptcb_desc->rts_rate);
 		SET_TX_DESC_RTS_SC(pdesc, ptcb_desc->rts_sc);
 		SET_TX_DESC_RTS_SHORT(pdesc,
-				((ptcb_desc->rts_rate <= DESC92_RATE54M) ?
+				((ptcb_desc->rts_rate <= DESC_RATE54M) ?
 				 (ptcb_desc->rts_use_shortpreamble ? 1 : 0) :
 				 (ptcb_desc->rts_use_shortgi ? 1 : 0)));
 
@@ -884,7 +884,7 @@ void rtl92ee_tx_fill_cmddesc(struct ieee80211_hw *hw,
 	if (firstseg)
 		SET_TX_DESC_OFFSET(pdesc, txdesc_len);
 
-	SET_TX_DESC_TX_RATE(pdesc, DESC92_RATE1M);
+	SET_TX_DESC_TX_RATE(pdesc, DESC_RATE1M);
 
 	SET_TX_DESC_SEQ(pdesc, 0);
 

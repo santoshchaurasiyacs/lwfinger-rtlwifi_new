@@ -533,10 +533,10 @@
 	memset(__pdesc, 0, min_t(size_t, _size, TX_DESC_NEXT_DESC_OFFSET))
 
 #define RX_HAL_IS_CCK_RATE(rxmcs)\
-	(rxmcs == DESC92_RATE1M ||\
-	 rxmcs == DESC92_RATE2M ||\
-	 rxmcs == DESC92_RATE5_5M ||\
-	 rxmcs == DESC92_RATE11M)
+	(rxmcs == DESC_RATE1M ||\
+	 rxmcs == DESC_RATE2M ||\
+	 rxmcs == DESC_RATE5_5M ||\
+	 rxmcs == DESC_RATE11M)
 
 struct rx_fwinfo_92c {
 	u8 gain_trsw[4];

@@ -39,11 +39,11 @@
 #define RX_MPDU_QUEUE					0
 
 #define IS_HT_RATE(_rate)	\
-	(_rate >= DESC92_RATEMCS0)
+	(_rate >= DESC_RATEMCS0)
 #define IS_CCK_RATE(_rate)	\
-	(_rate >= DESC92_RATE1M && _rate <= DESC92_RATE11M)
+	(_rate >= DESC_RATE1M && _rate <= DESC_RATE11M)
 #define IS_OFDM_RATE(_rate)	\
-	(_rate >= DESC92_RATE6M && _rate <= DESC92_RATE54M)
+	(_rate >= DESC_RATE6M && _rate <= DESC_RATE54M)
 
 
 enum version_8192e {

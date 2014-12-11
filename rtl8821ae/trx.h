@@ -92,7 +92,7 @@
 	SET_BITS_TO_LE_4BYTE(__pdesc+4, 14, 1, __val)
 #define SET_TX_DESC_PIFS(__pdesc, __val)			\
 	SET_BITS_TO_LE_4BYTE(__pdesc+4, 15, 1, __val)
-#define SET_TX_DESC92_RATE_ID(__pdesc, __val)		\
+#define SET_TX_DESC_RATE_ID(__pdesc, __val)		\
 	SET_BITS_TO_LE_4BYTE(__pdesc+4, 16, 5, __val)
 #define SET_TX_DESC_EN_DESC_ID(__pdesc, __val)		\
 	SET_BITS_TO_LE_4BYTE(__pdesc+4, 21, 1, __val)
@@ -364,10 +364,10 @@ do {								\
 } while (0);
 
 #define RX_HAL_IS_CCK_RATE(rxmcs)\
-	(rxmcs == DESC92_RATE1M ||\
-	 rxmcs == DESC92_RATE2M ||\
-	 rxmcs == DESC92_RATE5_5M ||\
-	 rxmcs == DESC92_RATE11M)
+	(rxmcs == DESC_RATE1M ||\
+	 rxmcs == DESC_RATE2M ||\
+	 rxmcs == DESC_RATE5_5M ||\
+	 rxmcs == DESC_RATE11M)
 
 #define IS_LITTLE_ENDIAN	1
 

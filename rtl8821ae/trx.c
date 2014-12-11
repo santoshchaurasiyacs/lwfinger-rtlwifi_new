@@ -236,8 +236,8 @@ static void _rtl8821ae_query_rxphystatus(struct ieee80211_hw *hw,
 		pstatus->recvsignalpower = rx_pwr_all;
 
 		/* (3)EVM of HT rate */
-		if ((pstatus->is_ht && pstatus->rate >= DESC92_RATEMCS8 &&
-		    pstatus->rate <= DESC92_RATEMCS15)
+		if ((pstatus->is_ht && pstatus->rate >= DESC_RATEMCS8 &&
+		    pstatus->rate <= DESC_RATEMCS15)
 		    || (pstatus->is_vht
 		    && pstatus->rate >= DESC_RATEVHT2SS_MCS0
 		    && pstatus->rate <= DESC_RATEVHT2SS_MCS9))
@@ -398,7 +398,7 @@ static bool rtl8821ae_get_rxdesc_is_ht(struct ieee80211_hw *hw, u8 *pdesc)
 
 	RT_TRACE(rtlpriv, COMP_RXDESC, DBG_LOUD, "rx_rate=0x%02x.\n", rx_rate);
 
-	if ((rx_rate >= DESC92_RATEMCS0) && (rx_rate <= DESC92_RATEMCS15))
+	if ((rx_rate >= DESC_RATEMCS0) && (rx_rate <= DESC_RATEMCS15))
 		return true;
 	else
 		return false;
@@ -726,7 +726,7 @@ void rtl8821ae_tx_fill_desc(struct ieee80211_hw *hw,
 
 		/* ptcb_desc->use_driver_rate = true; */
 		SET_TX_DESC_TX_RATE(pdesc, ptcb_desc->hw_rate);
-		if (ptcb_desc->hw_rate > DESC92_RATEMCS0)
+		if (ptcb_desc->hw_rate > DESC_RATEMCS0)
 			short_gi = (ptcb_desc->use_shortgi) ? 1 : 0;
 		else
 			short_gi = (ptcb_desc->use_shortpreamble) ? 1 : 0;
@@ -748,7 +748,7 @@ void rtl8821ae_tx_fill_desc(struct ieee80211_hw *hw,
 	/*	SET_TX_DESC_RTS_BW(pdesc, 0);*/
 		SET_TX_DESC_RTS_SC(pdesc, ptcb_desc->rts_sc);
 		SET_TX_DESC_RTS_SHORT(pdesc,
-			((ptcb_desc->rts_rate <= DESC92_RATE54M) ?
+			((ptcb_desc->rts_rate <= DESC_RATE54M) ?
 			(ptcb_desc->rts_use_shortpreamble ? 1 : 0) :
 			(ptcb_desc->rts_use_shortgi ? 1 : 0)));
 
@@ -827,10 +827,10 @@ void rtl8821ae_tx_fill_desc(struct ieee80211_hw *hw,
 	SET_TX_DESC_TX_BUFFER_ADDRESS(pdesc, mapping);
 	/* if (rtlpriv->dm.useramask) { */
 	if (1) {
-		SET_TX_DESC92_RATE_ID(pdesc, ptcb_desc->ratr_index);
+		SET_TX_DESC_RATE_ID(pdesc, ptcb_desc->ratr_index);
 		SET_TX_DESC_MACID(pdesc, ptcb_desc->mac_id);
 	} else {
-		SET_TX_DESC92_RATE_ID(pdesc, 0xC + ptcb_desc->ratr_index);
+		SET_TX_DESC_RATE_ID(pdesc, 0xC + ptcb_desc->ratr_index);
 		SET_TX_DESC_MACID(pdesc, ptcb_desc->mac_id);
 	}
 /*	if (ieee80211_is_data_qos(fc))
@@ -877,7 +877,7 @@ void rtl8821ae_tx_fill_cmddesc(struct ieee80211_hw *hw,
 	SET_TX_DESC_OFFSET(pdesc, USB_HWDESC_HEADER_LEN);
 
 	SET_TX_DESC_USE_RATE(pdesc, 1);
-	SET_TX_DESC_TX_RATE(pdesc, DESC92_RATE1M);
+	SET_TX_DESC_TX_RATE(pdesc, DESC_RATE1M);
 	SET_TX_DESC_DISABLE_FB(pdesc, 1);
 
 	SET_TX_DESC_DATA_BW(pdesc, 0);

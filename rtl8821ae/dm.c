@@ -1397,88 +1397,88 @@ u8 rtl8821ae_hw_rate_to_mrate(
 	u8 ret_rate = MGN_1M;
 
 	switch (rate) {
-	case DESC92_RATE1M:
+	case DESC_RATE1M:
 		ret_rate = MGN_1M;
 	break;
-	case DESC92_RATE2M:
+	case DESC_RATE2M:
 		ret_rate = MGN_2M;
 	break;
-	case DESC92_RATE5_5M:
+	case DESC_RATE5_5M:
 		ret_rate = MGN_5_5M;
 	break;
-	case DESC92_RATE11M:
+	case DESC_RATE11M:
 		ret_rate = MGN_11M;
 	break;
-	case DESC92_RATE6M:
+	case DESC_RATE6M:
 		ret_rate = MGN_6M;
 	break;
-	case DESC92_RATE9M:
+	case DESC_RATE9M:
 		ret_rate = MGN_9M;
 	break;
-	case DESC92_RATE12M:
+	case DESC_RATE12M:
 		ret_rate = MGN_12M;
 	break;
-	case DESC92_RATE18M:
+	case DESC_RATE18M:
 		ret_rate = MGN_18M;
 	break;
-	case DESC92_RATE24M:
+	case DESC_RATE24M:
 		ret_rate = MGN_24M;
 	break;
-	case DESC92_RATE36M:
+	case DESC_RATE36M:
 		ret_rate = MGN_36M;
 	break;
-	case DESC92_RATE48M:
+	case DESC_RATE48M:
 		ret_rate = MGN_48M;
 	break;
-	case DESC92_RATE54M:
+	case DESC_RATE54M:
 		ret_rate = MGN_54M;
 	break;
-	case DESC92_RATEMCS0:
+	case DESC_RATEMCS0:
 		ret_rate = MGN_MCS0;
 	break;
-	case DESC92_RATEMCS1:
+	case DESC_RATEMCS1:
 		ret_rate = MGN_MCS1;
 	break;
-	case DESC92_RATEMCS2:
+	case DESC_RATEMCS2:
 		ret_rate = MGN_MCS2;
 	break;
-	case DESC92_RATEMCS3:
+	case DESC_RATEMCS3:
 		ret_rate = MGN_MCS3;
 	break;
-	case DESC92_RATEMCS4:
+	case DESC_RATEMCS4:
 		ret_rate = MGN_MCS4;
 	break;
-	case DESC92_RATEMCS5:
+	case DESC_RATEMCS5:
 		ret_rate = MGN_MCS5;
 	break;
-	case DESC92_RATEMCS6:
+	case DESC_RATEMCS6:
 		ret_rate = MGN_MCS6;
 	break;
-	case DESC92_RATEMCS7:
+	case DESC_RATEMCS7:
 		ret_rate = MGN_MCS7;
 	break;
-	case DESC92_RATEMCS8:
+	case DESC_RATEMCS8:
 		ret_rate = MGN_MCS8;
 	break;
-	case DESC92_RATEMCS9:
+	case DESC_RATEMCS9:
 		ret_rate = MGN_MCS9;
 	break;
-	case DESC92_RATEMCS10:
+	case DESC_RATEMCS10:
 		ret_rate = MGN_MCS10;
 	break;
-	case DESC92_RATEMCS11:
+	case DESC_RATEMCS11:
 		ret_rate = MGN_MCS11;
 	break;
-	case DESC92_RATEMCS12:
+	case DESC_RATEMCS12:
 		ret_rate = MGN_MCS12;
 	break;
-	case DESC92_RATEMCS13:
+	case DESC_RATEMCS13:
 		ret_rate = MGN_MCS13;
 	break;
-	case DESC92_RATEMCS14:
+	case DESC_RATEMCS14:
 		ret_rate = MGN_MCS14;
 	break;
-	case DESC92_RATEMCS15:
+	case DESC_RATEMCS15:
 		ret_rate = MGN_MCS15;
 	break;
 	case DESC_RATEVHT1SS_MCS0:
