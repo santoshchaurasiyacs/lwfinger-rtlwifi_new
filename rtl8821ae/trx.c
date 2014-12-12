@@ -11,10 +11,6 @@
  * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
  * more details.
  *
- * You should have received a copy of the GNU General Public License along with
- * this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110, USA
- *
  * The full GNU General Public License is included in this distribution in the
  * file called LICENSE.
  *
@@ -39,6 +35,7 @@
 #include "dm.h"
 #include "phy.h"
 #include "fw.h"
+
 static u8 _rtl8821ae_map_hwqueue_to_fwqueue(struct sk_buff *skb, u8 hw_queue)
 {
 	__le16 fc = rtl_get_fc(skb);
@@ -67,11 +64,11 @@ static u16 odm_cfo(char value)
 	return ret_val;
 }
 
-static void _rtl8821ae_query_rxphystatus(struct ieee80211_hw *hw,
-			struct rtl_stats *pstatus, u8 *pdesc,
-			struct rx_fwinfo_8821ae *p_drvinfo,
-			bool bpacket_match_bssid,
-			bool bpacket_toself, bool packet_beacon)
+static void query_rxphystatus(struct ieee80211_hw *hw,
+			      struct rtl_stats *pstatus, u8 *pdesc,
+			      struct rx_fwinfo_8821ae *p_drvinfo,
+			      bool bpacket_match_bssid,
+			      bool bpacket_toself, bool packet_beacon)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct phy_status_rpt *p_phystrpt = (struct phy_status_rpt *)p_drvinfo;
@@ -96,9 +93,10 @@ static void _rtl8821ae_query_rxphystatus(struct ieee80211_hw *hw,
 
 		cck_agc_rpt = p_phystrpt->cfosho[0];
 
-		/* (1)Hardware does not provide RSSI for CCK */
-		/* (2)PWDB, Average PWDB cacluated by
-		 * hardware (for rate adaptive) */
+		/* (1)Hardware does not provide RSSI for CCK
+		 * (2)PWDB, Average PWDB cacluated by
+		 * hardware (for rate adaptive)
+		 */
 		cck_highpwr = (u8)rtlpriv->dm.cck_high_power;
 
 		lan_idx = ((cck_agc_rpt & 0xE0) >> 5);
@@ -146,33 +144,34 @@ static void _rtl8821ae_query_rxphystatus(struct ieee80211_hw *hw,
 			}
 			rx_pwr_all += 6;
 			pwdb_all = rtl_query_rxpwrpercentage(rx_pwr_all);
-			if (cck_highpwr == false) {
+			if (!cck_highpwr) {
 				if (pwdb_all >= 80)
 					pwdb_all =
-						((pwdb_all-80)<<1)+((pwdb_all-80)>>1)+80;
+					  ((pwdb_all - 80)<<1) +
+					 ((pwdb_all - 80)>>1) + 80;
 				else if ((pwdb_all <= 78) && (pwdb_all >= 20))
 					pwdb_all += 3;
 				if (pwdb_all > 100)
 					pwdb_all = 100;
 			}
 		} else { /* 8821 */
-			char Pout = -6;
+			char pout = -6;
 
 			switch (lan_idx) {
 			case 5:
-				rx_pwr_all = Pout - 32 - (2*vga_idx);
+				rx_pwr_all = pout - 32 - (2*vga_idx);
 					break;
 			case 4:
-				rx_pwr_all = Pout - 24 - (2*vga_idx);
+				rx_pwr_all = pout - 24 - (2*vga_idx);
 					break;
 			case 2:
-				rx_pwr_all = Pout - 11 - (2*vga_idx);
+				rx_pwr_all = pout - 11 - (2*vga_idx);
 					break;
 			case 1:
-				rx_pwr_all = Pout + 5 - (2*vga_idx);
+				rx_pwr_all = pout + 5 - (2*vga_idx);
 					break;
 			case 0:
-				rx_pwr_all = Pout + 21 - (2*vga_idx);
+				rx_pwr_all = pout + 21 - (2*vga_idx);
 					break;
 			}
 			pwdb_all = rtl_query_rxpwrpercentage(rx_pwr_all);
@@ -185,9 +184,9 @@ static void _rtl8821ae_query_rxphystatus(struct ieee80211_hw *hw,
 		if (bpacket_match_bssid) {
 			u8 sq;
 
-			if (pstatus->rx_pwdb_all > 40)
+			if (pstatus->rx_pwdb_all > 40) {
 				sq = 100;
-			else {
+			} else {
 				sq = p_phystrpt->pwdb_all;
 				if (sq > 64)
 					sq = 0;
@@ -205,7 +204,6 @@ static void _rtl8821ae_query_rxphystatus(struct ieee80211_hw *hw,
 	} else {
 		/* (1)Get RSSI for HT rate */
 		for (i = RF90_PATH_A; i < RF6052_MAX_PATH; i++) {
-
 			/* we will judge RF RX path now. */
 			if (rtlpriv->dm.rfpath_rxenable[i])
 				rf_rx_num++;
@@ -217,8 +215,8 @@ static void _rtl8821ae_query_rxphystatus(struct ieee80211_hw *hw,
 			total_rssi += rssi;
 
 			/* Get Rx snr value in DB */
-			pstatus->rx_snr[i] = rtlpriv->stats.rx_snr_db[i] =
-					p_phystrpt->rxsnr[i] / 2;
+			pstatus->rx_snr[i] = p_phystrpt->rxsnr[i] / 2;
+			rtlpriv->stats.rx_snr_db[i] = p_phystrpt->rxsnr[i] / 2;
 
 			pstatus->cfo_short[i] = odm_cfo(p_phystrpt->cfosho[i]);
 			pstatus->cfo_tail[i] = odm_cfo(p_phystrpt->cfotail[i]);
@@ -227,7 +225,8 @@ static void _rtl8821ae_query_rxphystatus(struct ieee80211_hw *hw,
 		}
 
 		/* (2)PWDB, Average PWDB cacluated by
-		 * hardware (for rate adaptive) */
+		 * hardware (for rate adaptive)
+		 */
 		rx_pwr_all = ((p_drvinfo->pwdb_all >> 1) & 0x7f) - 110;
 
 		pwdb_all = rtl_query_rxpwrpercentage(rx_pwr_all);
@@ -237,10 +236,10 @@ static void _rtl8821ae_query_rxphystatus(struct ieee80211_hw *hw,
 
 		/* (3)EVM of HT rate */
 		if ((pstatus->is_ht && pstatus->rate >= DESC_RATEMCS8 &&
-		    pstatus->rate <= DESC_RATEMCS15)
-		    || (pstatus->is_vht
-		    && pstatus->rate >= DESC_RATEVHT2SS_MCS0
-		    && pstatus->rate <= DESC_RATEVHT2SS_MCS9))
+		     pstatus->rate <= DESC_RATEMCS15) ||
+		    (pstatus->is_vht &&
+		     pstatus->rate >= DESC_RATEVHT2SS_MCS0 &&
+		     pstatus->rate <= DESC_RATEVHT2SS_MCS9))
 			max_spatial_stream = 2;
 		else
 			max_spatial_stream = 1;
@@ -251,7 +250,8 @@ static void _rtl8821ae_query_rxphystatus(struct ieee80211_hw *hw,
 
 			if (bpacket_match_bssid) {
 				/* Fill value in RFD, Get the first
-				 * spatial stream only */
+				 * spatial stream only
+				 */
 				if (i == 0)
 					pstatus->signalquality = evm;
 				pstatus->rx_mimo_signalquality[i] = evm;
@@ -268,7 +268,8 @@ static void _rtl8821ae_query_rxphystatus(struct ieee80211_hw *hw,
 	}
 
 	/* UI BSS List signal strength(in percentage),
-	 * make it good looking, from 0~100. */
+	 * make it good looking, from 0~100.
+	 */
 	if (is_cck)
 		pstatus->signalstrength = (u8)(rtl_signal_scale_mapping(hw,
 			pwdb_all));
@@ -280,9 +281,10 @@ static void _rtl8821ae_query_rxphystatus(struct ieee80211_hw *hw,
 	rtldm->fat_table.antsel_rx_keep_1 = p_phystrpt->antidx_antb;
 }
 
-static void _rtl8821ae_translate_rx_signal_stuff(struct ieee80211_hw *hw,
-		struct sk_buff *skb, struct rtl_stats *pstatus,
-		u8 *pdesc, struct rx_fwinfo_8821ae *p_drvinfo)
+static void translate_rx_signal_stuff(struct ieee80211_hw *hw,
+				      struct sk_buff *skb,
+				      struct rtl_stats *pstatus, u8 *pdesc,
+				      struct rx_fwinfo_8821ae *p_drvinfo)
 {
 	struct rtl_mac *mac = rtl_mac(rtl_priv(hw));
 	struct rtl_efuse *rtlefuse = rtl_efuse(rtl_priv(hw));
@@ -290,14 +292,14 @@ static void _rtl8821ae_translate_rx_signal_stuff(struct ieee80211_hw *hw,
 	u8 *tmp_buf;
 	u8 *praddr;
 	u8 *psaddr;
-	u16 fc;
+	__le16 fc;
 	u16 type;
 	bool packet_matchbssid, packet_toself, packet_beacon;
 
 	tmp_buf = skb->data + pstatus->rx_drvinfo_size + pstatus->rx_bufshift;
 
 	hdr = (struct ieee80211_hdr *)tmp_buf;
-	fc = le16_to_cpu(hdr->frame_control);
+	fc = hdr->frame_control;
 	type = WLAN_FC_GET_TYPE(hdr->frame_control);
 	praddr = hdr->addr1;
 	psaddr = ieee80211_get_SA(hdr);
@@ -331,9 +333,9 @@ static void _rtl8821ae_translate_rx_signal_stuff(struct ieee80211_hw *hw,
 			rtl_priv(hw)->dm.dbginfo.num_non_be_pkt++;
 	}
 
-	_rtl8821ae_query_rxphystatus(hw, pstatus, pdesc, p_drvinfo,
-				   packet_matchbssid, packet_toself,
-				   packet_beacon);
+	query_rxphystatus(hw, pstatus, pdesc, p_drvinfo,
+			  packet_matchbssid, packet_toself,
+			  packet_beacon);
 	/*_rtl8821ae_smart_antenna(hw, pstatus); */
 	rtl_process_phyinfo(hw, tmp_buf, pstatus);
 }
@@ -342,46 +344,47 @@ static void _rtl8821ae_insert_emcontent(struct rtl_tcb_desc *ptcb_desc,
 				      u8 *virtualaddress)
 {
 	u32 dwtmp = 0;
+
 	memset(virtualaddress, 0, 8);
 
 	SET_EARLYMODE_PKTNUM(virtualaddress, ptcb_desc->empkt_num);
-	if (ptcb_desc->empkt_num == 1)
+	if (ptcb_desc->empkt_num == 1) {
 		dwtmp = ptcb_desc->empkt_len[0];
-	else {
+	} else {
 		dwtmp = ptcb_desc->empkt_len[0];
 		dwtmp += ((dwtmp%4)?(4-dwtmp%4):0)+4;
 		dwtmp += ptcb_desc->empkt_len[1];
 	}
 	SET_EARLYMODE_LEN0(virtualaddress, dwtmp);
 
-	if (ptcb_desc->empkt_num <= 3)
+	if (ptcb_desc->empkt_num <= 3) {
 		dwtmp = ptcb_desc->empkt_len[2];
-	else {
+	} else {
 		dwtmp = ptcb_desc->empkt_len[2];
 		dwtmp += ((dwtmp%4)?(4-dwtmp%4):0)+4;
 		dwtmp += ptcb_desc->empkt_len[3];
 	}
 	SET_EARLYMODE_LEN1(virtualaddress, dwtmp);
-	if (ptcb_desc->empkt_num <= 5)
+	if (ptcb_desc->empkt_num <= 5) {
 		dwtmp = ptcb_desc->empkt_len[4];
-	else {
+	} else {
 		dwtmp = ptcb_desc->empkt_len[4];
 		dwtmp += ((dwtmp%4)?(4-dwtmp%4):0)+4;
 		dwtmp += ptcb_desc->empkt_len[5];
 	}
 	SET_EARLYMODE_LEN2_1(virtualaddress, dwtmp & 0xF);
 	SET_EARLYMODE_LEN2_2(virtualaddress, dwtmp >> 4);
-	if (ptcb_desc->empkt_num <= 7)
+	if (ptcb_desc->empkt_num <= 7) {
 		dwtmp = ptcb_desc->empkt_len[6];
-	else {
+	} else {
 		dwtmp = ptcb_desc->empkt_len[6];
 		dwtmp += ((dwtmp%4)?(4-dwtmp%4):0)+4;
 		dwtmp += ptcb_desc->empkt_len[7];
 	}
 	SET_EARLYMODE_LEN3(virtualaddress, dwtmp);
-	if (ptcb_desc->empkt_num <= 9)
+	if (ptcb_desc->empkt_num <= 9) {
 		dwtmp = ptcb_desc->empkt_len[8];
-	else {
+	} else {
 		dwtmp = ptcb_desc->empkt_len[8];
 		dwtmp += ((dwtmp%4)?(4-dwtmp%4):0)+4;
 		dwtmp += ptcb_desc->empkt_len[9];
@@ -400,8 +403,7 @@ static bool rtl8821ae_get_rxdesc_is_ht(struct ieee80211_hw *hw, u8 *pdesc)
 
 	if ((rx_rate >= DESC_RATEMCS0) && (rx_rate <= DESC_RATEMCS15))
 		return true;
-	else
-		return false;
+	return false;
 }
 
 static bool rtl8821ae_get_rxdesc_is_vht(struct ieee80211_hw *hw, u8 *pdesc)
@@ -415,8 +417,7 @@ static bool rtl8821ae_get_rxdesc_is_vht(struct ieee80211_hw *hw, u8 *pdesc)
 
 	if (rx_rate >= DESC_RATEVHT1SS_MCS0)
 		return true;
-	else
-		return false;
+	return false;
 }
 
 static u8 rtl8821ae_get_rx_vht_nss(struct ieee80211_hw *hw, u8 *pdesc)
@@ -425,11 +426,11 @@ static u8 rtl8821ae_get_rx_vht_nss(struct ieee80211_hw *hw, u8 *pdesc)
 	u8 vht_nss = 0;
 
 	rx_rate = GET_RX_DESC_RXMCS(pdesc);
-	if ((rx_rate >= DESC_RATEVHT1SS_MCS0)
-		&& (rx_rate <= DESC_RATEVHT1SS_MCS9))
+	if ((rx_rate >= DESC_RATEVHT1SS_MCS0) &&
+	    (rx_rate <= DESC_RATEVHT1SS_MCS9))
 		vht_nss = 1;
-	else if ((rx_rate >= DESC_RATEVHT2SS_MCS0)
-		&& (rx_rate <= DESC_RATEVHT2SS_MCS9))
+	else if ((rx_rate >= DESC_RATEVHT2SS_MCS0) &&
+		 (rx_rate <= DESC_RATEVHT2SS_MCS9))
 		vht_nss = 2;
 
 	return vht_nss;
@@ -550,9 +551,7 @@ bool rtl8821ae_rx_query_desc(struct ieee80211_hw *hw,
 		p_drvinfo = (struct rx_fwinfo_8821ae *)(skb->data +
 						     status->rx_bufshift);
 
-		_rtl8821ae_translate_rx_signal_stuff(hw,
-						   skb, status, pdesc,
-						   p_drvinfo);
+		translate_rx_signal_stuff(hw, skb, status, pdesc, p_drvinfo);
 	}
 	rx_status->signal = status->recvsignalpower + 10;
 	if (status->packet_report_type == TX_REPORT2) {
@@ -782,7 +781,6 @@ void rtl8821ae_tx_fill_desc(struct ieee80211_hw *hw,
 			default:
 				SET_TX_DESC_SEC_TYPE(pdesc, 0x0);
 				break;
-
 			}
 		}
 
@@ -793,24 +791,6 @@ void rtl8821ae_tx_fill_desc(struct ieee80211_hw *hw,
 			ptcb_desc->disable_ratefallback ? 1 : 0);
 		SET_TX_DESC_USE_RATE(pdesc, ptcb_desc->use_driver_rate ? 1 : 0);
 
-#if 0
-		if (ieee80211_is_data_qos(fc)) {
-			SET_TX_DESC_USE_RATE(pdesc, 1);
-			SET_TX_DESC_TX_RATE(pdesc, DESC_RATEVHT2SS_MCS9);
-
-		/* SET_TX_DESC_RETRY_LIMIT_ENABLE(pdesc, 1); */
-		/* SET_TX_DESC_DATA_RETRY_LIMIT(pdesc, 0x3f); */
-		}
-#endif
-
-		/*SET_TX_DESC_PWR_STATUS(pdesc, pwr_status);*/
-		/* Set TxRate and RTSRate in TxDesc  */
-		/* This prevent Tx initial rate of new-coming packets */
-		/* from being overwritten by retried  packet rate.*/
-		if (!ptcb_desc->use_driver_rate) {
-			/*SET_TX_DESC_RTS_RATE(pdesc, 0x08); */
-			/* SET_TX_DESC_TX_RATE(pdesc, 0x0b); */
-		}
 		if (ieee80211_is_data_qos(fc)) {
 			if (mac->rdg_en) {
 				RT_TRACE(rtlpriv, COMP_SEND, DBG_TRACE,
