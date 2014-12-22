@@ -931,12 +931,14 @@ static void _rtl_pci_rx_interrupt(struct ieee80211_hw *hw)
 		}
 end:
 		if (rtlpriv->use_new_trx_flow) {
-			_rtl_pci_init_one_rxdesc(hw, (u8 *)buffer_desc,
+			if (!_rtl_pci_init_one_rxdesc(hw, (u8 *)buffer_desc,
 						 rxring_idx,
-					       rtlpci->rx_ring[rxring_idx].idx);
+					       rtlpci->rx_ring[rxring_idx].idx))
+				return;
 		} else {
-			_rtl_pci_init_one_rxdesc(hw, (u8 *)pdesc, rxring_idx,
-					       rtlpci->rx_ring[rxring_idx].idx);
+			if (!_rtl_pci_init_one_rxdesc(hw, (u8 *)pdesc, rxring_idx,
+					       rtlpci->rx_ring[rxring_idx].idx))
+				return;
 
 			if (rtlpci->rx_ring[rxring_idx].idx ==
 			    rtlpci->rxringcount - 1)
