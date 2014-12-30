@@ -629,11 +629,7 @@ u8 rtl_btcoex_sendmsgbysocket(struct rtl_priv *rtlpriv, u8 *msg, u8 msg_size, bo
 
 	//u8 i;
 	u8 error; 
-#if (LINUX_VERSION_CODE <= KERNEL_VERSION(3, 18, 0))
 	struct msghdr	udpmsg; 
-#else
-	struct user_msghdr udpmsg;
-#endif
 	mm_segment_t	oldfs; 
 	struct iovec	iov; 
 	struct bt_coex_info *pcoex_info = &rtlpriv->coex_info;
@@ -658,8 +654,10 @@ u8 rtl_btcoex_sendmsgbysocket(struct rtl_priv *rtlpriv, u8 *msg, u8 msg_size, bo
 	iov.iov_len	 = msg_size;
  	udpmsg.msg_name	 = &pcoex_info->bt_addr; 
 	udpmsg.msg_namelen	= sizeof(struct sockaddr_in); 
+#if (LINUX_VERSION_CODE <= KERNEL_VERSION(3, 18, 0))
 	udpmsg.msg_iov	 = &iov; 
 	udpmsg.msg_iovlen	= 1; 
+#endif
 	udpmsg.msg_control	= NULL; 
 	udpmsg.msg_controllen = 0; 
 	udpmsg.msg_flags	= MSG_DONTWAIT | MSG_NOSIGNAL; 

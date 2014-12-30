@@ -947,12 +947,12 @@ end:
 		skb = new_skb;
 no_new:
 		if (rtlpriv->use_new_trx_flow) {
-			if (!_rtl_pci_init_one_rxdesc(hw, (u8 *)buffer_desc,
+			if (!_rtl_pci_init_one_rxdesc(hw, skb, (u8 *)buffer_desc,
 						 rxring_idx,
 					       rtlpci->rx_ring[rxring_idx].idx))
 				return;
 		} else {
-			if (!_rtl_pci_init_one_rxdesc(hw, (u8 *)pdesc, rxring_idx,
+			if (!_rtl_pci_init_one_rxdesc(hw, skb, (u8 *)pdesc, rxring_idx,
 					       rtlpci->rx_ring[rxring_idx].idx))
 				return;
 
