@@ -52,9 +52,6 @@ void rtl92ee_update_hal_rate_tbl(struct ieee80211_hw *hw,
 void rtl92ee_update_channel_access_setting(struct ieee80211_hw *hw);
 bool rtl92ee_gpio_radio_on_off_checking(struct ieee80211_hw *hw, u8 *valid);
 void rtl92ee_enable_hw_security_config(struct ieee80211_hw *hw);
-void rtl92ee_set_key(struct ieee80211_hw *hw, u32 key_index,
-		     u8 *p_macaddr, bool is_group, u8 enc_algo,
-		     bool is_wepkey, bool clear_all);
 void rtl92ee_read_bt_coexist_info_from_hwpg(struct ieee80211_hw *hw,
 					    bool autoload_fail, u8 *hwinfo);
 void rtl92ee_bt_reg_init(struct ieee80211_hw *hw);

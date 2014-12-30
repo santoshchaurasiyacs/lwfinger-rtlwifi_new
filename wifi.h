@@ -73,8 +73,6 @@
 #define QBSS_LOAD_SIZE			5
 #define MAX_WMMELE_LENGTH		64
 
-#define TOTAL_CAM_ENTRY			32
-
 /*slot time for 11g. */
 #define RTL_SLOT_TIME_9			9
 #define RTL_SLOT_TIME_20		20
@@ -918,6 +916,7 @@ struct rtl_sta_info {
 
 	/* just used for ap adhoc or mesh*/
 	struct rssi_sta rssi_stat;
+	u8 cam_entry_id;
 } __packed;
 
 #ifdef VIF_TODO
@@ -1477,17 +1476,12 @@ struct rtl_security {
 	enum rt_enc_alg pairwise_enc_algorithm;
 	/*Encryption Algorithm for Brocast/Multicast */
 	enum rt_enc_alg group_enc_algorithm;
-	/*Cam Entry Bitmap */
-	u32 hwsec_cam_bitmap;
-	u8 hwsec_cam_sta_addr[TOTAL_CAM_ENTRY][ETH_ALEN];
-	/*local Key buffer, indx 0 is for
-	   pairwise key 1-4 is for agoup key. */
-	u8 key_buf[KEY_BUF_SIZE][MAX_KEY_LEN];
-	u8 key_len[KEY_BUF_SIZE];
 
-	/*The pointer of Pairwise Key,
-	   it always points to KeyBuf[4] */
-	u8 *pairwise_key;
+	/*Cam Entry Bitmap */
+	u32 cam_bitmap;
+
+
+
 };
 
 struct rtl_dig {

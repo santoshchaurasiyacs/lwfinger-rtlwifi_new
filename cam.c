@@ -28,9 +28,128 @@
  *****************************************************************************/
 #include "wifi.h"
 #include "cam.h"
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,2,0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 2, 0))
 #include <linux/export.h>
 #endif
+
+
+s8 rtl_cam_set_key(struct ieee80211_hw *hw, struct ieee80211_sta *sta,
+			struct ieee80211_key_conf *key,
+		       enum rtl_cam_key_type cam_key_type)
+{
+	struct rtl_priv *rtlpriv = rtl_priv(hw);
+	struct rtl_mac *mac = rtl_mac(rtl_priv(hw));
+	struct rtl_efuse *rtlefuse = rtl_efuse(rtl_priv(hw));
+
+	u8 entry_id = 0;
+	u8 enc_algo = 0;
+	u8 key_index = 0;
+	u8 macaddr[ETH_ALEN];
+	u8 key_data[128] = {0};
+	enum rt_enc_alg enc_alg_in_driver = NO_ENCRYPTION;
+
+	static u8 cam_const_addr[4][6] = {
+		{0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
+		{0x00, 0x00, 0x00, 0x00, 0x00, 0x01},
+		{0x00, 0x00, 0x00, 0x00, 0x00, 0x02},
+		{0x00, 0x00, 0x00, 0x00, 0x00, 0x03}
+	};
+	static u8 cam_const_broad[] = {
+		0xff, 0xff, 0xff, 0xff, 0xff, 0xff
+	};
+
+
+
+	key_index = key->keyidx;
+	memcpy(key_data, key->key, key->keylen);/* avoid  (key->len) < 128*/
+
+	switch (key->cipher) {
+	case WLAN_CIPHER_SUITE_WEP40:
+		enc_algo = rtlpriv->cfg->maps[SEC_CAM_WEP40];
+		enc_alg_in_driver = WEP40_ENCRYPTION;
+		break;
+	case WLAN_CIPHER_SUITE_WEP104:
+		enc_algo = rtlpriv->cfg->maps[SEC_CAM_WEP104];
+		enc_alg_in_driver = WEP104_ENCRYPTION;
+		break;
+	case WLAN_CIPHER_SUITE_TKIP:
+		enc_algo = rtlpriv->cfg->maps[SEC_CAM_TKIP];
+		enc_alg_in_driver = TKIP_ENCRYPTION;
+		break;
+	case WLAN_CIPHER_SUITE_CCMP:
+		enc_algo = rtlpriv->cfg->maps[SEC_CAM_AES];
+		enc_alg_in_driver = AESCCMP_ENCRYPTION;
+		break;
+	case WLAN_CIPHER_SUITE_AES_CMAC:
+	/* dead code here, already returned not support in rtl_op_set_key*/
+		RT_TRACE(rtlpriv, COMP_SEC, DBG_DMESG,
+			 "not support,use software CMAC encrypiton\n");
+		return -1;
+		/* no need to break */
+	default:
+		RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG,
+				 "switch case not process\n");
+		enc_algo = rtlpriv->cfg->maps[SEC_CAM_AES];
+		break;
+	}
+
+
+	/* wep + wep_group */
+	if (cam_key_type == wep_only) {
+			RT_TRACE(rtlpriv, COMP_SEC, DBG_DMESG, "set WEP(group/pairwise) key\n");
+			rtlpriv->sec.pairwise_enc_algorithm = enc_alg_in_driver;
+			rtlpriv->sec.group_enc_algorithm = enc_alg_in_driver;
+			memcpy(macaddr, cam_const_addr[key_index], ETH_ALEN);
+
+	/* group */
+	} else if (cam_key_type == group_key) {
+			RT_TRACE(rtlpriv, COMP_SEC, DBG_DMESG, "set group key\n");
+			rtlpriv->sec.group_enc_algorithm = enc_alg_in_driver;
+			memcpy(macaddr, cam_const_broad, ETH_ALEN);
+	/* pairwise key */
+	} else if (cam_key_type == pairwise_key) {
+			RT_TRACE(rtlpriv, COMP_SEC, DBG_DMESG, "set pairwise key\n");
+			rtlpriv->sec.pairwise_enc_algorithm = enc_alg_in_driver;
+			memcpy(macaddr, sta->addr, ETH_ALEN);/* real addr */
+	} else {
+			RT_TRACE(rtlpriv, COMP_SEC, DBG_DMESG,
+				"not support key type\n");
+			return -1;
+	}
+
+
+	/* this is dead code */
+	/* adhoc encrypt is done in mac80211,not there*/
+	/* refer to:To support IBSS, use sw-crypto for GTK */
+	/* for ADHOC pairwise,use rtlefuse->dev_addr */
+	if (mac->opmode == NL80211_IFTYPE_ADHOC) {
+		memcpy(macaddr, rtlefuse->dev_addr, ETH_ALEN);
+	}
+
+
+	/*
+		macaddr:
+		key_index: passed from mac80211
+		entry_id: free entry of total 32 in hardware
+		enc_algo:wep,tkip,ccmp
+		key_data:key in binary
+
+		when group key or wep key, sta is null
+
+	*/
+
+	/* entry_id from 0 to 31 */
+	entry_id = rtl_cam_get_free_entry(hw, sta, key_index);
+	if (TOTAL_CAM_ENTRY == entry_id)
+		return -1;
+
+	rtl_cam_clear_one_entry(hw, entry_id);
+	rtl_cam_add_one_entry(hw, macaddr, key_index, entry_id, enc_algo, key_data);
+
+
+	return 0;
+}
+
 
 void rtl_cam_reset_sec_info(struct ieee80211_hw *hw)
 {
@@ -39,9 +158,7 @@ void rtl_cam_reset_sec_info(struct ieee80211_hw *hw)
 	rtlpriv->sec.use_defaultkey = false;
 	rtlpriv->sec.pairwise_enc_algorithm = NO_ENCRYPTION;
 	rtlpriv->sec.group_enc_algorithm = NO_ENCRYPTION;
-	memset(rtlpriv->sec.key_buf, 0, KEY_BUF_SIZE * MAX_KEY_LEN);
-	memset(rtlpriv->sec.key_len, 0, KEY_BUF_SIZE);
-	rtlpriv->sec.pairwise_key = NULL;
+
 }
 
 static void rtl_cam_program_entry(struct ieee80211_hw *hw, u32 entry_no,
@@ -56,7 +173,9 @@ static void rtl_cam_program_entry(struct ieee80211_hw *hw, u32 entry_no,
 	RT_PRINT_DATA(rtlpriv, COMP_SEC, DBG_DMESG, "Key content :",
 			key_cont_128, 16);
 
-	for (entry_i = 0; entry_i < CAM_CONTENT_COUNT; entry_i++) {
+	/* 2-5 fill 128key,6-7 are reserved */
+	for (entry_i = 0; entry_i < CAM_CONTENT_COUNT - 2 ; entry_i++) {
+
 		target_command = entry_i + CAM_CONTENT_COUNT * entry_no;
 		target_command = target_command | BIT(31) | BIT(16);
 
@@ -123,16 +242,15 @@ static void rtl_cam_program_entry(struct ieee80211_hw *hw, u32 entry_no,
 
 u8 rtl_cam_add_one_entry(struct ieee80211_hw *hw, u8 *mac_addr,
 			 u32 ul_key_id, u32 ul_entry_idx, u32 ul_enc_alg,
-			 u32 ul_default_key, u8 *key_content)
+			 u8 *key_content)
 {
 	u32 us_config;
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 
 	RT_TRACE(rtlpriv, COMP_SEC, DBG_DMESG,
-		 "EntryNo:%x, ulKeyId=%x, ulEncAlg=%x, "
-		  "ulUseDK=%x MacAddr %pM\n",
+		 "CAM_ENTRY_ID:%d, KEY_ID=%d, ENC_ALG=%02x,MacAddr %pM\n",
 		  ul_entry_idx, ul_key_id, ul_enc_alg,
-		  ul_default_key, mac_addr);
+		  mac_addr);
 
 	if (ul_key_id == TOTAL_CAM_ENTRY) {
 		RT_TRACE(rtlpriv, COMP_ERR, DBG_WARNING,
@@ -140,20 +258,26 @@ u8 rtl_cam_add_one_entry(struct ieee80211_hw *hw, u8 *mac_addr,
 		return 0;
 	}
 
-	if (ul_default_key == 1)
-		us_config = CFG_VALID | ((u16) (ul_enc_alg) << 2);
-	else
-		us_config = CFG_VALID | ((ul_enc_alg) << 2) | ul_key_id;
 
-	rtl_cam_program_entry(hw, ul_entry_idx, mac_addr,
-		(u8 *) key_content, us_config);
+	us_config = CFG_VALID | ((ul_enc_alg) << 2) | ul_key_id;
 
-	RT_TRACE(rtlpriv, COMP_SEC, DBG_DMESG, "end\n");
+	rtl_cam_program_entry(hw, ul_entry_idx, mac_addr, (u8 *) key_content, us_config);
 
 	return 1;
 
 }
 EXPORT_SYMBOL(rtl_cam_add_one_entry);
+
+/* troy add */
+void rtl_cam_clear_one_entry(struct ieee80211_hw *hw, u32 entry_idx)
+{
+	u32 us_config = 0;
+	u8 null_key[128] = { 0 };
+	u8 null_sta[6] = { 0 };
+
+	rtl_cam_program_entry(hw, entry_idx, null_sta, (u8 *) null_key, us_config);
+
+}
 
 int rtl_cam_delete_one_entry(struct ieee80211_hw *hw,
 			     u8 *mac_addr, u32 ul_key_id)
@@ -284,72 +408,72 @@ void rtl_cam_empty_entry(struct ieee80211_hw *hw, u8 uc_index)
 }
 EXPORT_SYMBOL(rtl_cam_empty_entry);
 
-u8 rtl_cam_get_free_entry(struct ieee80211_hw *hw, u8 *sta_addr)
+
+
+
+u8 rtl_cam_get_free_entry(struct ieee80211_hw *hw, struct ieee80211_sta *sta, u8 key_index)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
-	u32 bitmap = (rtlpriv->sec.hwsec_cam_bitmap) >> 4;
-	u8 entry_idx = 0;
-	u8 i, *addr;
+	u32 bitmap = rtlpriv->sec.cam_bitmap;
+	u8 entry_idx = 0;/* return val */
 
-	if (NULL == sta_addr) {
+	struct rtl_sta_info *sta_entry = NULL;
+	bool found = false;
+
+	if (NULL == sta) {
+		entry_idx = key_index;
+		rtlpriv->sec.cam_bitmap |= BIT(0) << entry_idx;
+		found = true;
+	} else {
+
+		for (entry_idx = CAM_PAIRWISE_KEY_OFFSET; entry_idx < TOTAL_CAM_ENTRY; entry_idx++) {
+
+			if (((bitmap >> entry_idx) & BIT(0)) == 0) {
+				rtlpriv->sec.cam_bitmap |= BIT(0) << entry_idx;
+				sta_entry = (struct rtl_sta_info *) sta->drv_priv;
+				sta_entry->cam_entry_id = entry_idx;
+				found = true;
+				break;
+			}
+		}
+	}
+
+	if (found) {
 		RT_TRACE(rtlpriv, COMP_SEC, DBG_EMERG,
-			"sta_addr is NULL.\n");
+				"key_index=%d,cam_bitmap: 0x%x entry_idx=%d\n",
+				 key_index, rtlpriv->sec.cam_bitmap, entry_idx);
+		return entry_idx;
+	} else {
+		RT_TRACE(rtlpriv, COMP_SEC, DBG_EMERG,
+				"critical error! no entry found!!!\n");
 		return TOTAL_CAM_ENTRY;
 	}
-	/* Does STA already exist? */
-	for (i = 4; i < TOTAL_CAM_ENTRY; i++) {
-		addr = rtlpriv->sec.hwsec_cam_sta_addr[i];
-		if (memcmp(addr, sta_addr, ETH_ALEN) == 0)
-			return i;
-	}
-	/* Get a free CAM entry. */
-	for (entry_idx = 4; entry_idx < TOTAL_CAM_ENTRY; entry_idx++) {
-		if ((bitmap & BIT(0)) == 0) {
-			RT_TRACE(rtlpriv, COMP_SEC, DBG_EMERG,
-				"-----hwsec_cam_bitmap: 0x%x entry_idx=%d\n",
-				 rtlpriv->sec.hwsec_cam_bitmap, entry_idx);
-			rtlpriv->sec.hwsec_cam_bitmap |= BIT(0) << entry_idx;
-			memcpy(rtlpriv->sec.hwsec_cam_sta_addr[entry_idx],
-			       sta_addr, ETH_ALEN);
-			return entry_idx;
-		}
-		bitmap = bitmap >> 1;
-	}
-	return TOTAL_CAM_ENTRY;
 }
 EXPORT_SYMBOL(rtl_cam_get_free_entry);
 
-void rtl_cam_del_entry(struct ieee80211_hw *hw, u8 *sta_addr)
+void rtl_cam_del_entry(struct ieee80211_hw *hw, struct ieee80211_sta *sta, u8 key_index)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
-	u32 bitmap;
-	u8 i, *addr;
+	struct rtl_sta_info *sta_entry = NULL;
 
-	if (NULL == sta_addr) {
-		RT_TRACE(rtlpriv, COMP_SEC, DBG_EMERG,
-			"sta_addr is NULL.\n");
-		return;
-	}
+	u8 entry_id;
 
-	if ((sta_addr[0]|sta_addr[1]|sta_addr[2]|sta_addr[3]|
-				sta_addr[4]|sta_addr[5]) == 0) {
-		RT_TRACE(rtlpriv, COMP_SEC, DBG_EMERG,
-			"sta_addr is 00:00:00:00:00:00.\n");
-		return;
+	if (NULL != sta) {
+		RT_TRACE(rtlpriv, COMP_SEC, DBG_DMESG, "delete according to cam id\n");
+		sta_entry = (struct rtl_sta_info *) sta->drv_priv;
+		entry_id = sta_entry->cam_entry_id;
+
+	} else {
+
+		RT_TRACE(rtlpriv, COMP_SEC, DBG_DMESG, "delete according to key id\n");
+		entry_id = key_index;
 	}
-	/* Does STA already exist? */
-	for (i = 4; i < TOTAL_CAM_ENTRY; i++) {
-		addr = rtlpriv->sec.hwsec_cam_sta_addr[i];
-		bitmap = (rtlpriv->sec.hwsec_cam_bitmap) >> i;
-		if (((bitmap & BIT(0)) == BIT(0)) &&
-		    (memcmp(addr, sta_addr, ETH_ALEN) == 0)) {
-			/* Remove from HW Security CAM */
-			memset(rtlpriv->sec.hwsec_cam_sta_addr[i], 0, ETH_ALEN);
-			rtlpriv->sec.hwsec_cam_bitmap &= ~(BIT(0) << i);
-			RT_TRACE(rtlpriv, COMP_SEC, DBG_DMESG,
-				"&&&&&&&&&del entry %d\n", i);
-		}
-	}
+	rtlpriv->sec.cam_bitmap &= ~(BIT(0) << entry_id);
+	rtl_cam_clear_one_entry(hw, entry_id);
+
+
+	RT_TRACE(rtlpriv, COMP_SEC, DBG_EMERG, "cam_bitmap: 0x%x\n", rtlpriv->sec.cam_bitmap);
+
 	return;
 }
 EXPORT_SYMBOL(rtl_cam_del_entry);

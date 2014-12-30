@@ -37,9 +37,6 @@
 void rtl92c_read_chip_version(struct ieee80211_hw *hw);
 bool rtl92c_llt_write(struct ieee80211_hw *hw, u32 address, u32 data);
 bool rtl92c_init_llt_table(struct ieee80211_hw *hw, u32 boundary);
-void rtl92c_set_key(struct ieee80211_hw *hw, u32 key_index,
-		     u8 *p_macaddr, bool is_group, u8 enc_algo,
-		     bool is_wepkey, bool clear_all);
 void rtl92c_enable_interrupt(struct ieee80211_hw *hw);
 void rtl92c_disable_interrupt(struct ieee80211_hw *hw);
 void rtl92c_set_qos(struct ieee80211_hw *hw, int aci);

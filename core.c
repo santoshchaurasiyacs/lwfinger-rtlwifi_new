@@ -36,7 +36,7 @@
 
 #include "btcoexist/rtl_btc.h"
 #include <linux/firmware.h>
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,2,0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 2, 0))
 #include <linux/export.h>
 #endif
 
@@ -109,10 +109,10 @@ void rtl_fw_cb(const struct firmware *firmware, void *context, bool is_wowlan)
 	RT_TRACE(rtlpriv, COMP_ERR, DBG_LOUD,
 		 "Firmware callback routine entered!\n");
 
-	if(rtlpriv->cfg->wowlan_fw_name == NULL && is_wowlan == false)
+	if (rtlpriv->cfg->wowlan_fw_name == NULL && is_wowlan == false)
 		complete(&rtlpriv->firmware_loading_complete);
-	if(rtlpriv->cfg->wowlan_fw_name && is_wowlan == true)
-		complete(&rtlpriv->firmware_loading_complete);	
+	if (rtlpriv->cfg->wowlan_fw_name && is_wowlan == true)
+		complete(&rtlpriv->firmware_loading_complete);
 
 	if (!firmware) {
 		if (rtlpriv->cfg->alt_fw_name) {
@@ -135,12 +135,12 @@ found_alt:
 		release_firmware(firmware);
 		return;
 	}
-	if(!is_wowlan) {
+	if (!is_wowlan) {
 		memcpy(rtlpriv->rtlhal.pfirmware, firmware->data, firmware->size);
 		rtlpriv->rtlhal.fwsize = firmware->size;
 		release_firmware(firmware);
 
-		if(rtlpriv->cfg->wowlan_fw_name) {
+		if (rtlpriv->cfg->wowlan_fw_name) {
 			/*load wowlan firmware*/
 			pr_info("Using firmware %s\n", rtlpriv->cfg->wowlan_fw_name);
 			err = request_firmware_nowait(THIS_MODULE, 1, rtlpriv->cfg->wowlan_fw_name,
@@ -154,21 +154,21 @@ found_alt:
 
 
 	} else {
-		memcpy(rtlpriv->rtlhal.wowlan_firmware, firmware->data,firmware->size);
+		memcpy(rtlpriv->rtlhal.wowlan_firmware, firmware->data, firmware->size);
 		rtlpriv->rtlhal.wowlan_fwsize = firmware->size;
 		release_firmware(firmware);
 	}
-	
+
 }
 void rtl_normal_fw_cb(const struct firmware *firmware, void *context)
 {
-	rtl_fw_cb(firmware,context,false);
+	rtl_fw_cb(firmware, context, false);
 }
 EXPORT_SYMBOL(rtl_normal_fw_cb);
 
 void rtl_wowlan_fw_cb(const struct firmware *firmware, void *context)
 {
-	rtl_fw_cb(firmware,context,true);
+	rtl_fw_cb(firmware, context, true);
 }
 EXPORT_SYMBOL(rtl_wowlan_fw_cb);
 
@@ -188,7 +188,7 @@ static int rtl_op_start(struct ieee80211_hw *hw)
 	if (!err)
 	{
 		/*add troy for 8812AE bt coex*/
-		if(1 == rtlpriv->btcoexist.btc_info.btcoexist &&
+		if (1 == rtlpriv->btcoexist.btc_info.btcoexist &&
 			rtlhal->hw_type == HARDWARE_TYPE_RTL8812AE)
 		{
 			printk("now that bt exists ,init socket for 8812AE");
@@ -236,7 +236,7 @@ static void rtl_op_stop(struct ieee80211_hw *hw)
 	}
 	rtlpriv->intf_ops->adapter_stop(hw);
 
-	if(1 == rtlpriv->btcoexist.btc_info.btcoexist &&
+	if (1 == rtlpriv->btcoexist.btc_info.btcoexist &&
 		rtlhal->hw_type == HARDWARE_TYPE_RTL8812AE)
 	{
 		printk("close socket for 8812AE + 8761AU\n");
@@ -247,7 +247,7 @@ static void rtl_op_stop(struct ieee80211_hw *hw)
 
 
 
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,7,0))
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(3, 7, 0))
 static void rtl_op_tx(struct ieee80211_hw *hw, struct sk_buff *skb)
 #else
 static void rtl_op_tx(struct ieee80211_hw *hw,
@@ -269,7 +269,7 @@ static void rtl_op_tx(struct ieee80211_hw *hw,
 
 
 
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,7,0))
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(3, 7, 0))
 	if (!rtlpriv->intf_ops->waitq_insert(hw, skb))
 		rtlpriv->intf_ops->adapter_tx(hw, skb, &tcb_desc);
 #else
@@ -297,7 +297,7 @@ static int rtl_op_add_interface(struct ieee80211_hw *hw,
 	}
 
 /*This flag is not defined before kernel 3.4*/
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,4,0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 4, 0))
 	vif->driver_flags |= IEEE80211_VIF_BEACON_FILTER;
 #endif
 
@@ -1051,7 +1051,7 @@ static int _rtl_get_hal_qnum(u16 queue)
  *for mac80211 VO=0, VI=1, BE=2, BK=3
  *for rtl819x  BE=0, BK=1, VI=2, VO=3
  */
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,2,0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 2, 0))
 static int rtl_op_conf_tx(struct ieee80211_hw *hw,
 			  struct ieee80211_vif *vif, u16 queue,
 			  const struct ieee80211_tx_queue_params *param)
@@ -1385,7 +1385,7 @@ out:
 	mutex_unlock(&rtlpriv->locks.conf_mutex);
 }
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,2,0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 2, 0))
 static u64 rtl_op_get_tsf(struct ieee80211_hw *hw, struct ieee80211_vif *vif)
 #else
 static u64 rtl_op_get_tsf(struct ieee80211_hw *hw)
@@ -1398,7 +1398,7 @@ static u64 rtl_op_get_tsf(struct ieee80211_hw *hw)
 	return tsf;
 }
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,2,0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 2, 0))
 static void rtl_op_set_tsf(struct ieee80211_hw *hw,
 			   struct ieee80211_vif *vif, u64 tsf)
 #else
@@ -1413,7 +1413,7 @@ static void rtl_op_set_tsf(struct ieee80211_hw *hw, u64 tsf)
 	rtlpriv->cfg->ops->set_hw_reg(hw, HW_VAR_CORRECT_TSF, (u8 *) (&bibss));
 }
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,2,0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 2, 0))
 static void rtl_op_reset_tsf(struct ieee80211_hw *hw, struct ieee80211_vif *vif)
 #else
 static void rtl_op_reset_tsf(struct ieee80211_hw *hw)
@@ -1455,7 +1455,7 @@ static int rtl_op_ampdu_action(struct ieee80211_hw *hw,
 			 "IEEE80211_AMPDU_TX_START: TID:%d\n", tid);
 		return rtl_tx_agg_start(hw, vif, sta, tid, ssn);
 		break;
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,9,0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 9, 0))
 	case IEEE80211_AMPDU_TX_STOP_CONT:
 	case IEEE80211_AMPDU_TX_STOP_FLUSH:
 	case IEEE80211_AMPDU_TX_STOP_FLUSH_CONT:
@@ -1561,15 +1561,17 @@ static int rtl_op_set_key(struct ieee80211_hw *hw, enum set_key_cmd cmd,
 			  struct ieee80211_key_conf *key)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
-	u8 key_type = NO_ENCRYPTION;
-	u8 key_idx;
-	bool group_key = false;
-	bool wep_only = false;
+	enum rtl_cam_key_type cam_key_type = invalid_key;
 	int err = 0;
-	u8 mac_addr[ETH_ALEN];
-	u8 bcast_addr[ETH_ALEN] = { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff };
-	u8 zero_addr[ETH_ALEN] = { 0 };
+	u8 key_idx = 0;
+	static u8 bcast_addr[] = {
+		0xff, 0xff, 0xff, 0xff, 0xff, 0xff
+	};
 
+
+
+
+	/************** <0> disable routine**********************/
 	if (rtlpriv->cfg->mod_params->sw_crypto || rtlpriv->sec.use_sw_sec) {
 		RT_TRACE(rtlpriv, COMP_ERR, DBG_WARNING,
 			 "not open hw encryption\n");
@@ -1578,167 +1580,110 @@ static int rtl_op_set_key(struct ieee80211_hw *hw, enum set_key_cmd cmd,
 	/* To support IBSS, use sw-crypto for GTK */
 	if (((vif->type == NL80211_IFTYPE_ADHOC) ||
 	    (vif->type == NL80211_IFTYPE_MESH_POINT)) &&
-	   !(key->flags & IEEE80211_KEY_FLAG_PAIRWISE))
+	   !(key->flags & IEEE80211_KEY_FLAG_PAIRWISE)) {
+		RT_TRACE(rtlpriv, COMP_ERR, DBG_WARNING,
+			 "not supprorted\n");
 		return -ENOSPC;
+	}
+	switch (key->cipher) {
+	case WLAN_CIPHER_SUITE_AES_CMAC:
+			RT_TRACE(rtlpriv, COMP_SEC, DBG_DMESG,
+			 "not support,use software CMAC encrypiton\n");
+		return -ENOSPC;
+		/* no need to break */
+
+	default:
+	    break;
+    }
+	/************** <0> disable routine**********************/
+
+
+
+	/***************** debug info *****************/
 	RT_TRACE(rtlpriv, COMP_SEC, DBG_DMESG,
-		 "%s hardware based encryption for keyidx: %d, mac: %pM\n",
-		  cmd == SET_KEY ? "Using" : "Disabling", key->keyidx,
+		 "CMD=%s ,%s,keyidx: %d, sta_address: %pM,",
+		  cmd == SET_KEY ? "SET_KEY" : "DISABLE_KEY",
+		  (key->flags & IEEE80211_KEY_FLAG_PAIRWISE) ? "pairwise key" : "group key",
+		  key->keyidx,
 		  sta ? sta->addr : bcast_addr);
+
+
+	switch (vif->type) {
+	case NL80211_IFTYPE_AP:
+		RT_TRACE(rtlpriv, COMP_SEC, DBG_DMESG, "AP,\n");
+	break;
+	case NL80211_IFTYPE_STATION:
+		RT_TRACE(rtlpriv, COMP_SEC, DBG_DMESG, "STA,\n");
+	break;
+	case NL80211_IFTYPE_ADHOC:
+		RT_TRACE(rtlpriv, COMP_SEC, DBG_DMESG, "ADHOC,\n");
+	break;
+	default:
+
+	break;
+	}
+	/**************** debug info ****************/
+
+
+
+
 	rtlpriv->sec.being_setkey = true;
 	rtl_ips_nic_on(hw);
 	mutex_lock(&rtlpriv->locks.conf_mutex);
-	/* <1> get encryption alg */
 
-	switch (key->cipher) {
-	case WLAN_CIPHER_SUITE_WEP40:
-		key_type = WEP40_ENCRYPTION;
-		RT_TRACE(rtlpriv, COMP_SEC, DBG_DMESG, "alg:WEP40\n");
-		break;
-	case WLAN_CIPHER_SUITE_WEP104:
-		RT_TRACE(rtlpriv, COMP_SEC, DBG_DMESG, "alg:WEP104\n");
-		key_type = WEP104_ENCRYPTION;
-		break;
-	case WLAN_CIPHER_SUITE_TKIP:
-		key_type = TKIP_ENCRYPTION;
-		RT_TRACE(rtlpriv, COMP_SEC, DBG_DMESG, "alg:TKIP\n");
-		break;
-	case WLAN_CIPHER_SUITE_CCMP:
-		key_type = AESCCMP_ENCRYPTION;
-		RT_TRACE(rtlpriv, COMP_SEC, DBG_DMESG, "alg:CCMP\n");
-		break;
-	case WLAN_CIPHER_SUITE_AES_CMAC:
-		/* HW don't support CMAC encryption,
-		 * use software CMAC encryption */
-		key_type = AESCMAC_ENCRYPTION;
-		RT_TRACE(rtlpriv, COMP_SEC, DBG_DMESG, "alg:CMAC\n");
-		RT_TRACE(rtlpriv, COMP_SEC, DBG_DMESG,
-			 "HW don't support CMAC encryption, use software CMAC encrypiton\n");
-		err = -EOPNOTSUPP;
-		goto out_unlock;
-	default:
-		RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG,
-			 "alg_err:%x!!!!:\n", key->cipher);
-		goto out_unlock;
-	}
-	if (key_type == WEP40_ENCRYPTION ||
-	   key_type == WEP104_ENCRYPTION ||
-	   vif->type == NL80211_IFTYPE_ADHOC)
+	/**************** determine key_type ****************/
+	if (key->flags & IEEE80211_KEY_FLAG_PAIRWISE)
+		cam_key_type = pairwise_key;
+	else
+		cam_key_type = group_key;
+	if (key->cipher == WLAN_CIPHER_SUITE_WEP40 ||
+	   key->cipher == WLAN_CIPHER_SUITE_WEP104 ||
+	   vif->type == NL80211_IFTYPE_ADHOC) {
+		/* REG_CR setting*/
 		rtlpriv->sec.use_defaultkey = true;
-
-	/* <2> get key_idx */
-	key_idx = (u8) (key->keyidx);
-	if (key_idx > 3)
-		goto out_unlock;
-	/* <3> if pairwise key enable_hw_sec */
-	group_key = !(key->flags & IEEE80211_KEY_FLAG_PAIRWISE);
-
-	/* wep always be group key, but there are two conditions:
-	 * 1) wep only: is just for wep enc, in this condition
-	 * rtlpriv->sec.pairwise_enc_algorithm == NO_ENCRYPTION
-	 * will be true & enable_hw_sec will be set when wep
-	 * ke setting.
-	 * 2) wep(group) + AES(pairwise): some AP like cisco
-	 * may use it, in this condition enable_hw_sec will not
-	 * be set when wep key setting */
-	/* we must reset sec_info after lingked before set key,
-	 * or some flag will be wrong*/
-	if (vif->type == NL80211_IFTYPE_AP ||
-		vif->type == NL80211_IFTYPE_MESH_POINT) {
-		if (!group_key || key_type == WEP40_ENCRYPTION ||
-			key_type == WEP104_ENCRYPTION) {
-			if (group_key)
-				wep_only = true;
-			rtlpriv->cfg->ops->enable_hw_sec(hw);
-		}
-	} else {
-		if ((!group_key) || (vif->type == NL80211_IFTYPE_ADHOC) ||
-		    rtlpriv->sec.pairwise_enc_algorithm == NO_ENCRYPTION) {
-			if (rtlpriv->sec.pairwise_enc_algorithm ==
-			    NO_ENCRYPTION &&
-			   (key_type == WEP40_ENCRYPTION ||
-			    key_type == WEP104_ENCRYPTION))
-				wep_only = true;
-			rtlpriv->sec.pairwise_enc_algorithm = key_type;
-			RT_TRACE(rtlpriv, COMP_SEC, DBG_DMESG,
-				 "set enable_hw_sec, key_type:%x(OPEN:0 WEP40:1 TKIP:2 AES:4 WEP104:5)\n", key_type);
-			rtlpriv->cfg->ops->enable_hw_sec(hw);
-		}
+		cam_key_type = wep_only;
 	}
+	/**************** determine key_type ****************/
+
+
+
+	rtlpriv->cfg->ops->enable_hw_sec(hw);
+
+
 	/* <4> set key based on cmd */
 	switch (cmd) {
 	case SET_KEY:
-		if (wep_only) {
-			RT_TRACE(rtlpriv, COMP_SEC, DBG_DMESG,
-				 "set WEP(group/pairwise) key\n");
-			/* Pairwise key with an assigned MAC address. */
-			rtlpriv->sec.pairwise_enc_algorithm = key_type;
-			rtlpriv->sec.group_enc_algorithm = key_type;
-			/*set local buf about wep key. */
-			memcpy(rtlpriv->sec.key_buf[key_idx],
-			       key->key, key->keylen);
-			rtlpriv->sec.key_len[key_idx] = key->keylen;
-			memcpy(mac_addr, zero_addr, ETH_ALEN);
-		} else if (group_key) {	/* group key */
-			RT_TRACE(rtlpriv, COMP_SEC, DBG_DMESG,
-				 "set group key\n");
-			/* group key */
-			rtlpriv->sec.group_enc_algorithm = key_type;
-			/*set local buf about group key. */
-			memcpy(rtlpriv->sec.key_buf[key_idx],
-			       key->key, key->keylen);
-			rtlpriv->sec.key_len[key_idx] = key->keylen;
-			memcpy(mac_addr, bcast_addr, ETH_ALEN);
-		} else {	/* pairwise key */
-			RT_TRACE(rtlpriv, COMP_SEC, DBG_DMESG,
-				 "set pairwise key\n");
-			if (!sta) {
-				RT_ASSERT(false,
-					  "pairwise key without mac_addr\n");
 
-				err = -EOPNOTSUPP;
-				goto out_unlock;
-			}
-			/* Pairwise key with an assigned MAC address. */
-			rtlpriv->sec.pairwise_enc_algorithm = key_type;
-			/*set local buf about pairwise key. */
-			memcpy(rtlpriv->sec.key_buf[PAIRWISE_KEYIDX],
-			       key->key, key->keylen);
-			rtlpriv->sec.key_len[PAIRWISE_KEYIDX] = key->keylen;
-			rtlpriv->sec.pairwise_key =
-			    rtlpriv->sec.key_buf[PAIRWISE_KEYIDX];
-			memcpy(mac_addr, sta->addr, ETH_ALEN);
+		if (-1 == rtl_cam_set_key(hw, sta, key , cam_key_type)) {
+			err = -EOPNOTSUPP;
+			goto out_unlock;
 		}
-		rtlpriv->cfg->ops->set_key(hw, key_idx, mac_addr,
-					   group_key, key_type, wep_only,
-					   false);
+
+
 		/* <5> tell mac80211 do something: */
 		/*must use sw generate IV, or can not work !!!!. */
 		key->flags |= IEEE80211_KEY_FLAG_GENERATE_IV;
-		key->hw_key_idx = key_idx;
-		if (key_type == TKIP_ENCRYPTION)
+		key->hw_key_idx = (u8) (key->keyidx);
+		if (key->cipher == WLAN_CIPHER_SUITE_TKIP)
 			key->flags |= IEEE80211_KEY_FLAG_GENERATE_MMIC;
 		/*use software CCMP encryption for management frames (MFP) */
-		if (key_type == AESCCMP_ENCRYPTION)
+		if (key->cipher == WLAN_CIPHER_SUITE_CCMP)
 			key->flags |= IEEE80211_KEY_FLAG_SW_MGMT;
+
+
+
 		break;
 	case DISABLE_KEY:
-		RT_TRACE(rtlpriv, COMP_SEC, DBG_DMESG,
-			 "disable key delete one entry\n");
-		/*set local buf about wep key. */
-		if (vif->type == NL80211_IFTYPE_AP ||
-			vif->type == NL80211_IFTYPE_MESH_POINT) {
-			if (sta)
-				rtl_cam_del_entry(hw, sta->addr);
-		}
-		memset(rtlpriv->sec.key_buf[key_idx], 0, key->keylen);
-		rtlpriv->sec.key_len[key_idx] = 0;
-		memcpy(mac_addr, zero_addr, ETH_ALEN);
+
 		/*
 		 *mac80211 will delete entrys one by one,
 		 *so don't use rtl_cam_reset_all_entry
 		 *or clear all entry here.
 		 */
-		rtl_cam_delete_one_entry(hw, mac_addr, key_idx);
+
+		key_idx = key->keyidx;
+
+		rtl_cam_del_entry(hw , sta, key_idx);
 		break;
 	default:
 		RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG,
