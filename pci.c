@@ -932,7 +932,7 @@ no_new:
 						 rxring_idx,
 						 rtlpci->rx_ring[rxring_idx].idx);
 		} else {
-			_rtl_pci_init_one_rxdesc(hw, skb, (u8 *)buffer_desc,
+			_rtl_pci_init_one_rxdesc(hw, skb, (u8 *)pdesc,
 						 rxring_idx,
 						 rtlpci->rx_ring[rxring_idx].idx);
 
