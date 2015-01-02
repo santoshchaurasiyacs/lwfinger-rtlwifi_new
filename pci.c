@@ -818,13 +818,6 @@ static void _rtl_pci_rx_interrupt(struct ieee80211_hw *hw)
 				return;
 		}
 
-		/* get a new skb - if fail, old one will be reused */
-		new_skb = dev_alloc_skb(rtlpci->rxbuffersize);
-		if (unlikely(!new_skb)) {
-			pr_err("Allocation of new skb failed in %s\n",
-			       __func__);
-			goto no_new;
-		}
 		/* Reaching this point means: data is filled already
 		 * AAAAAAttention !!!
 		 * We can NOT access 'skb' before 'pci_unmap_single'
@@ -952,7 +945,7 @@ no_new:
 						 rxring_idx,
 						 rtlpci->rx_ring[rxring_idx].idx);
 		} else {
-			_rtl_pci_init_one_rxdesc(hw, skb, (u8 *)buffer_desc,
+			_rtl_pci_init_one_rxdesc(hw, skb, (u8 *)pdesc,
 						 rxring_idx,
 						 rtlpci->rx_ring[rxring_idx].idx);
 
