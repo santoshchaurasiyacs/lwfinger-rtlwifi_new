@@ -1319,12 +1319,13 @@ bool rtl_action_proc(struct ieee80211_hw *hw, struct sk_buff *skb, u8 is_tx)
 }
 EXPORT_SYMBOL_GPL(rtl_action_proc);
 
-static void setup_arp_tx(struct rtl_priv *rtlpriv, struct rtl_ps_ctl *ppsc)
+static void setup_special_tx(struct rtl_priv *rtlpriv, struct rtl_ps_ctl *ppsc,
+				int type)
 {
 	rtlpriv->ra.is_special_data = true;
 	if (rtlpriv->cfg->ops->get_btc_status())
 		rtlpriv->btcoexist.btc_ops->btc_special_packet_notify(
-					rtlpriv, 1);
+					rtlpriv, type);
 	rtlpriv->enter_ps = false;
 	schedule_work(&rtlpriv->works.lps_change_work);
 	ppsc->last_delaylps_stamp_jiffies = jiffies;
@@ -1413,7 +1414,8 @@ u8 rtl_is_special_data(struct ieee80211_hw *hw, struct sk_buff *skb,
 					 (is_tx) ? "Tx" : "Rx");
 
 				if (is_tx)
-					setup_arp_tx(rtlpriv, ppsc);
+					setup_special_tx(rtlpriv, ppsc,
+						PACKET_DHCP);
 
 				return true;
 			}
@@ -1423,7 +1425,7 @@ u8 rtl_is_special_data(struct ieee80211_hw *hw, struct sk_buff *skb,
 			return true;
 
 		if (is_tx)
-			setup_arp_tx(rtlpriv, ppsc);
+			setup_special_tx(rtlpriv, ppsc, PACKET_ARP);
 		RT_TRACE(rtlpriv, (COMP_SEND | COMP_RECV),
 					 DBG_DMESG, "ARP %s !!\n", (is_tx) ? "Tx" : "Rx");
 		return true;
@@ -1433,11 +1435,8 @@ u8 rtl_is_special_data(struct ieee80211_hw *hw, struct sk_buff *skb,
 		RT_TRACE(rtlpriv, (COMP_SEND | COMP_RECV), DBG_DMESG,
 			 "802.1X %s EAPOL pkt!!\n", (is_tx) ? "Tx" : "Rx");
 
-		if (is_tx) {
-			rtlpriv->ra.is_special_data = true;
-			rtl_lps_leave(hw);
-			ppsc->last_delaylps_stamp_jiffies = jiffies;
-		}
+		if (is_tx)
+			setup_special_tx(rtlpriv, ppsc, PACKET_EAPOL);
 
 		return true;
 	} else if (0x86DD == ether_type) {
