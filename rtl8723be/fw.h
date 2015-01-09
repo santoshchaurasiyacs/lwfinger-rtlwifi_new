@@ -165,6 +165,10 @@ enum rtl8723b_c2h_evt {
 	SET_BITS_TO_LE_1BYTE((__ph2ccmd)+1, 0, 8, __val)
 #define SET_H2CCMD_RSVDPAGE_LOC_NULL_DATA(__ph2ccmd, __val)		\
 	SET_BITS_TO_LE_1BYTE((__ph2ccmd)+2, 0, 8, __val)
+#define SET_H2CCMD_RSVDPAGE_LOC_QOS_NULL_DATA(__ph2ccmd, __val)	\
+	SET_BITS_TO_LE_1BYTE((__ph2ccmd)+3, 0, 8, __val)
+#define SET_H2CCMD_RSVDPAGE_LOC_BT_QOS_NULL_DATA(__ph2ccmd, __val)	\
+	SET_BITS_TO_LE_1BYTE((__ph2ccmd)+4, 0, 8, __val)
 
 
 int rtl8723be_download_fw(struct ieee80211_hw *hw, bool buse_wake_on_wlan_fw);
