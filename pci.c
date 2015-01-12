@@ -587,6 +587,11 @@ static void _rtl_pci_tx_isr(struct ieee80211_hw *hw, int prio)
 		else
 			entry = (u8 *)(&ring->desc[ring->idx]);
 
+		if(rtlpriv->cfg->ops->get_available_desc(hw, prio) <= 1) {
+			printk("no available desc!\n");
+			return;
+		}
+
 		if (!rtlpriv->cfg->ops->is_tx_desc_closed(hw, prio, ring->idx))
 			return;
 
@@ -651,10 +656,9 @@ static void _rtl_pci_tx_isr(struct ieee80211_hw *hw, int prio)
 
 		ieee80211_tx_status_irqsafe(hw, skb);
 
-		if ((ring->entries - skb_queue_len(&ring->queue))
-				== 2) {
+		if ((ring->entries - skb_queue_len(&ring->queue)) <= 4) {
 
-			RT_TRACE(rtlpriv, COMP_ERR, DBG_LOUD,
+			RT_TRACE(rtlpriv, COMP_ERR, DBG_DMESG,
 					"more desc left, wake skb_queue@%d,ring->idx = %d, skb_queue_len = 0x%d\n",
 					 prio, ring->idx,
 					 skb_queue_len(&ring->queue));
@@ -804,7 +808,7 @@ static void _rtl_pci_rx_interrupt(struct ieee80211_hw *hw)
 			rx_remained_cnt =
 				rtlpriv->cfg->ops->rx_desc_buff_remained_cnt(hw,
 								      hw_queue);
-			if (rx_remained_cnt < 1)
+			if (rx_remained_cnt == 0)
 				return;
 
 		} else {	/* rx descriptor */
@@ -863,13 +867,14 @@ static void _rtl_pci_rx_interrupt(struct ieee80211_hw *hw)
 			RT_TRACE(rtlpriv, COMP_ERR, DBG_WARNING,
 			"skb->end - skb->tail = %d, len is %d\n",
 			skb->end - skb->tail, len);
-			break;
+			dev_kfree_skb_any(skb);
+			goto new_trx_end;
 		}
 
 		/* handle command packet here */
 		if (rtlpriv->cfg->ops->rx_command_packet(hw, status, skb)) {
 				dev_kfree_skb_any(skb);
-				goto end;
+				goto new_trx_end;
 		}
 
 		/*
@@ -921,23 +926,23 @@ static void _rtl_pci_rx_interrupt(struct ieee80211_hw *hw)
 		} else {
 			dev_kfree_skb_any(skb);
 		}
+new_trx_end:
 		if (rtlpriv->use_new_trx_flow) {
 			rtlpci->rx_ring[hw_queue].next_rx_rp += 1;
-			rtlpci->rx_ring[hw_queue].next_rx_rp %=
-							RTL_PCI_MAX_RX_COUNT;
+			rtlpci->rx_ring[hw_queue].next_rx_rp %= RX_DESC_NUM_92E;
 
 			rx_remained_cnt--;
-			if (1/*rx_remained_cnt == 0*/) {
-				rtl_write_word(rtlpriv, 0x3B4,
-					rtlpci->rx_ring[hw_queue].next_rx_rp);
-			}
+
+			rtl_write_word(rtlpriv, 0x3B4, rtlpci->rx_ring[hw_queue].next_rx_rp);
+
 		}
 		if (((rtlpriv->link_info.num_rx_inperiod +
 		      rtlpriv->link_info.num_tx_inperiod) > 8) ||
 		    (rtlpriv->link_info.num_rx_inperiod > 2)) {
 			rtl_lps_leave(hw);
 		}
-end:
+
+
 		skb = new_skb;
 no_new:
 		if (rtlpriv->use_new_trx_flow) {
@@ -1707,6 +1712,14 @@ static int rtl_pci_tx(struct ieee80211_hw *hw,
 					       flags);
 			return skb->len;
 		}
+	}
+
+	if(rtlpriv->cfg->ops->get_available_desc(hw, hw_queue) == 0) {
+			RT_TRACE(rtlpriv, COMP_ERR, DBG_WARNING, "get_available_desc fail\n");
+			spin_unlock_irqrestore(&rtlpriv->locks.irq_th_lock,
+					       flags);
+			return skb->len;
+
 	}
 
 	if (ieee80211_is_data_qos(fc)) {
