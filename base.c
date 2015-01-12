@@ -1796,11 +1796,19 @@ void rtl_watchdog_wq_callback(void *data)
 		else
 			benter_ps = true;
 
+		/* PS is controlled by coex. */
+		if (rtlpriv->cfg->ops->get_btc_status() &&
+			rtlpriv->btcoexist.btc_ops->btc_is_bt_ctrl_lps(rtlpriv))
+			goto label_lps_done;
+
 		/* LeisurePS only work in infra mode. */
 		if (benter_ps)
 			rtl_lps_enter(hw);
 		else
 			rtl_lps_leave(hw);
+
+label_lps_done:
+		;
 	}
 
 	rtlpriv->link_info.num_rx_packets_unicast = rtlpriv->link_info.num_rx_inperiod;
