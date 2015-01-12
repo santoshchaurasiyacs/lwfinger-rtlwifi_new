@@ -528,6 +528,11 @@ bool rtl92ee_rx_query_desc(struct ieee80211_hw *hw,
 	struct ieee80211_hdr *hdr;
 
 	u32 phystatus = GET_RX_DESC_PHYST(pdesc);
+	if (GET_RX_STATUS_DESC_RPT_SEL(pdesc) == 0)
+		status->packet_report_type = NORMAL_RX;
+	else
+		status->packet_report_type = C2H_PACKET;
+
 	status->length = (u16) GET_RX_DESC_PKT_LEN(pdesc);
 	status->rx_drvinfo_size = (u8) GET_RX_DESC_DRV_INFO_SIZE(pdesc) *
 				  RX_DRV_INFO_SIZE_UNIT;
@@ -659,48 +664,35 @@ void rtl92ee_rx_check_dma_ok(struct ieee80211_hw *hw, u8 *header_desc,
 	}
 }
 
+
 u16 rtl92ee_rx_desc_buff_remained_cnt(struct ieee80211_hw *hw , u8 queue_index)
 {
 	struct rtl_pci *rtlpci = rtl_pcidev(rtl_pcipriv(hw));
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
-	u16 read_point = 0 , write_point = 0 , remind_cnt = 0;
+	u16 desc_idx_hw = 0 , desc_idx_host = 0 , remind_cnt = 0;
 	u32 tmp_4byte = 0;
-	static u16 last_read_point;
-	static bool start_rx;
+
+	u32 rw_mask = 0x1ff;
+
 
 	tmp_4byte = rtl_read_dword(rtlpriv, REG_RXQ_TXBD_IDX);
-	read_point = (u16)((tmp_4byte>>16) & 0x7ff);
-	write_point = (u16)(tmp_4byte & 0x7ff);
+	desc_idx_hw = (u16)((tmp_4byte>>16) & rw_mask);
+	desc_idx_host = (u16)(tmp_4byte & rw_mask);
 
-	if (write_point != rtlpci->rx_ring[queue_index].next_rx_rp) {
-		RT_TRACE(rtlpriv, COMP_RXDESC, DBG_DMESG,
-			 "!!!write point is 0x%x, reg 0x3B4 value is 0x%x\n",
-			  write_point, tmp_4byte);
-		tmp_4byte = rtl_read_dword(rtlpriv, REG_RXQ_TXBD_IDX);
-		read_point = (u16)((tmp_4byte>>16) & 0x7ff);
-		write_point = (u16)(tmp_4byte & 0x7ff);
-	}
 
-	if (read_point > 0)
-		start_rx = true;
-	if (!start_rx)
+
+	/* may be no data, donot rx */
+	if (desc_idx_hw == desc_idx_host)
 		return 0;
 
-	if ((last_read_point > (RX_DESC_NUM_92E / 2)) &&
-	    (read_point <= (RX_DESC_NUM_92E / 2))) {
-		remind_cnt = RX_DESC_NUM_92E - write_point;
-	} else {
-		remind_cnt = (read_point >= write_point) ?
-			     (read_point - write_point) :
-			     (RX_DESC_NUM_92E - write_point + read_point);
-	}
 
-	if (remind_cnt == 0)
-		return 0;
+	remind_cnt = (desc_idx_hw > desc_idx_host) ? (desc_idx_hw - desc_idx_host) : (RX_DESC_NUM_92E - (desc_idx_host - desc_idx_hw));
 
-	rtlpci->rx_ring[queue_index].next_rx_rp = write_point;
 
-	last_read_point = read_point;
+
+	rtlpci->rx_ring[queue_index].next_rx_rp = desc_idx_host;
+
+
 	return remind_cnt;
 }
 
@@ -741,7 +733,8 @@ static u16 get_desc_address_from_queue_index(u16 queue_index)
 	return desc_address;
 }
 
-void rtl92ee_get_available_desc(struct ieee80211_hw *hw , u8 q_idx)
+/*free  desc that can be used */
+u16 rtl92ee_get_available_desc(struct ieee80211_hw *hw , u8 q_idx)
 {
 	struct rtl_pci *rtlpci = rtl_pcidev(rtl_pcipriv(hw));
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
@@ -750,15 +743,24 @@ void rtl92ee_get_available_desc(struct ieee80211_hw *hw , u8 q_idx)
 	u32 tmp_4byte;
 	tmp_4byte = rtl_read_dword(rtlpriv,
 				   get_desc_address_from_queue_index(q_idx));
-	current_tx_read_point = (u16)((tmp_4byte >> 16) & 0x0fff);
-	current_tx_write_point = (u16)((tmp_4byte) & 0x0fff);
+	current_tx_read_point = (u16)((tmp_4byte >> 16) & 0x01ff);
+	current_tx_write_point = (u16)((tmp_4byte) & 0x01ff);
 
-	point_diff = ((current_tx_read_point > current_tx_write_point) ?
-		      (current_tx_read_point - current_tx_write_point) :
-		      (TX_DESC_NUM_92E - current_tx_write_point +
-		       current_tx_read_point));
+
+	if(current_tx_read_point == current_tx_write_point)
+		point_diff = TX_DESC_NUM_92E -1;
+	else if (current_tx_read_point < current_tx_write_point)
+		point_diff = TX_DESC_NUM_92E - (current_tx_write_point - current_tx_read_point) -1;
+	else
+		point_diff = current_tx_read_point - current_tx_write_point -1;
+
+	if (0 == point_diff) {
+
+		printk("CR:%d,CW:%d\n",current_tx_read_point,current_tx_write_point);
+	}
 
 	rtlpci->tx_ring[q_idx].avl_desc = point_diff;
+	return point_diff;
 }
 
 void rtl92ee_pre_fill_tx_bd_desc(struct ieee80211_hw *hw,
@@ -895,7 +897,7 @@ void rtl92ee_tx_fill_desc(struct ieee80211_hw *hw,
 	mapping = pci_map_single(rtlpci->pdev, skb->data, skb->len,
 				 PCI_DMA_TODEVICE);
 	if (pci_dma_mapping_error(rtlpci->pdev, mapping)) {
-		RT_TRACE(rtlpriv, COMP_SEND, DBG_TRACE,
+		RT_TRACE(rtlpriv, COMP_SEND, DBG_DMESG,
 			 "DMA mapping error");
 		return;
 	}
@@ -1061,7 +1063,7 @@ void rtl92ee_tx_fill_cmddesc(struct ieee80211_hw *hw,
 	u8 txdesc_len = 40;
 
 	if (pci_dma_mapping_error(rtlpci->pdev, mapping)) {
-		RT_TRACE(rtlpriv, COMP_SEND, DBG_TRACE,
+		RT_TRACE(rtlpriv, COMP_SEND, DBG_DMESG,
 			 "DMA mapping error");
 		return;
 	}
@@ -1110,8 +1112,6 @@ void rtl92ee_set_desc(struct ieee80211_hw *hw, u8 *pdesc, bool istx,
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	u16 cur_tx_rp = 0;
 	u16 cur_tx_wp = 0;
-	static u16 last_txw_point;
-	static bool over_run;
 	u32 tmp = 0;
 	u8 q_idx = *val;
 
@@ -1120,50 +1120,45 @@ void rtl92ee_set_desc(struct ieee80211_hw *hw, u8 *pdesc, bool istx,
 		case HW_DESC_TX_NEXTDESC_ADDR:
 			SET_TX_DESC_NEXT_DESC_ADDRESS(pdesc, *(u32 *) val);
 			break;
-		case HW_DESC_OWN:{
+			case HW_DESC_OWN:{
 			struct rtl_pci *rtlpci = rtl_pcidev(rtl_pcipriv(hw));
 			struct rtl8192_tx_ring *ring = &rtlpci->tx_ring[q_idx];
 			u16 max_tx_desc = ring->entries;
+			u16 point_diff = 0;
 			if (q_idx == BEACON_QUEUE) {
 				ring->cur_tx_wp = ring->cur_tx_rp = 0;
 				SET_TX_BUFF_DESC_OWN(pdesc, 1);
 				return;
 			}
 
-			ring->cur_tx_wp = ((ring->cur_tx_wp + 1) % max_tx_desc);
 
-			if (over_run) {
-				ring->cur_tx_wp = 0;
-				over_run = false;
-			}
-			if (ring->avl_desc > 1) {
-				ring->avl_desc--;
 
-				rtl_write_word(rtlpriv,
-				       get_desc_address_from_queue_index(q_idx),
-				       ring->cur_tx_wp);
+			tmp = rtl_read_dword(rtlpriv, get_desc_address_from_queue_index(q_idx));
+			cur_tx_rp = (u16)((tmp >> 16) & 0x0fff);
+			cur_tx_wp = (u16)(tmp & 0x0fff);
 
-				if (q_idx == 1)
-					last_txw_point = cur_tx_wp;
-
-			}
-
-			if (ring->avl_desc < (max_tx_desc - 15)) {
-				u16 point_diff = 0;
-				tmp = rtl_read_dword(rtlpriv,
-				      get_desc_address_from_queue_index(q_idx));
-				cur_tx_rp = (u16)((tmp >> 16) & 0x0fff);
-				cur_tx_wp = (u16)(tmp & 0x0fff);
-
-				ring->cur_tx_wp = cur_tx_wp;
-				ring->cur_tx_rp = cur_tx_rp;
-				point_diff = ((cur_tx_rp > cur_tx_wp) ?
+			ring->cur_tx_wp = cur_tx_wp;
+			ring->cur_tx_rp = cur_tx_rp;
+			point_diff = ((cur_tx_rp > cur_tx_wp) ?
 					      (cur_tx_rp - cur_tx_wp) :
 					      (TX_DESC_NUM_92E - 1 -
 					       cur_tx_wp + cur_tx_rp));
 
-				ring->avl_desc = point_diff;
+			ring->avl_desc = point_diff;
+
+
+			ring->cur_tx_wp = ((ring->cur_tx_wp + 1) % max_tx_desc);
+
+			if (ring->avl_desc >= 1) {
+				ring->avl_desc--;
+				rtl_write_word(rtlpriv,
+				       get_desc_address_from_queue_index(q_idx),
+				       ring->cur_tx_wp);
+
+			} else {
+				printk("critical error! ring->avl_desc == 0\n");
 			}
+
 		}
 		break;
 		}
@@ -1232,36 +1227,27 @@ bool rtl92ee_is_tx_desc_closed(struct ieee80211_hw *hw, u8 hw_queue, u16 index)
 {
 	struct rtl_pci *rtlpci = rtl_pcidev(rtl_pcipriv(hw));
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
-	u16 read_point, write_point, available_desc_num;
+	u16 read_point, write_point;
 	bool ret = false;
-	static u8 stop_report_cnt;
 	struct rtl8192_tx_ring *ring = &rtlpci->tx_ring[hw_queue];
+	u16 cur_tx_rp, cur_tx_wp;
+	u32 tmpu32 = 0;
+	tmpu32 = rtl_read_dword(rtlpriv, get_desc_address_from_queue_index(hw_queue));
+	cur_tx_rp = (u16)((tmpu32 >> 16) & 0x01ff);
+	cur_tx_wp = (u16)(tmpu32 & 0x01ff);
 
-	/*checking Read/Write Point each interrupt wastes CPU utilization.*/
-	if (stop_report_cnt > 15 || !rtlpriv->link_info.busytraffic) {
-		u16 point_diff = 0;
-		u16 cur_tx_rp, cur_tx_wp;
-		u32 tmpu32 = 0;
-		tmpu32 = rtl_read_dword(rtlpriv,
-				   get_desc_address_from_queue_index(hw_queue));
-		cur_tx_rp = (u16)((tmpu32 >> 16) & 0x0fff);
-		cur_tx_wp = (u16)(tmpu32 & 0x0fff);
 
-		ring->cur_tx_wp = cur_tx_wp;
-		ring->cur_tx_rp = cur_tx_rp;
-		point_diff = ((cur_tx_rp > cur_tx_wp) ?
-			      (cur_tx_rp - cur_tx_wp) :
-			      (TX_DESC_NUM_92E - cur_tx_wp + cur_tx_rp));
+	ring->cur_tx_wp = cur_tx_wp;
+	ring->cur_tx_rp = cur_tx_rp;
+	ring->avl_desc = ((cur_tx_rp > cur_tx_wp) ? (cur_tx_rp - cur_tx_wp) : (TX_DESC_NUM_92E - cur_tx_wp + cur_tx_rp));
 
-		ring->avl_desc = point_diff;
-	}
 
 	read_point = ring->cur_tx_rp;
 	write_point = ring->cur_tx_wp;
-	available_desc_num = ring->avl_desc;
+
 
 	if (write_point > read_point) {
-		if (index < write_point && index >= read_point)
+		if (index <= write_point && index >= read_point)
 			ret = false;
 		else
 			ret = true;
@@ -1281,13 +1267,6 @@ bool rtl92ee_is_tx_desc_closed(struct ieee80211_hw *hw, u8 hw_queue, u16 index)
 	if (rtlpriv->rtlhal.driver_is_goingto_unload ||
 	    rtlpriv->psc.rfoff_reason > RF_CHANGE_BY_PS)
 		ret = true;
-
-	if (hw_queue < BEACON_QUEUE) {
-		if (!ret)
-			stop_report_cnt++;
-		else
-			stop_report_cnt = 0;
-	}
 
 	return ret;
 }

@@ -564,6 +564,9 @@ static bool _rtl92ee_cmd_send_packet(struct ieee80211_hw *hw,
 	unsigned long flags;
 	struct sk_buff *pskb = NULL;
 
+
+	RT_TRACE(rtlpriv, COMP_ERR, DBG_DMESG, "not fill cmd desc currently  \n");
+	return true;
 	ring = &rtlpci->tx_ring[BEACON_QUEUE];
 
 	spin_lock_irqsave(&rtlpriv->locks.irq_th_lock, flags);
