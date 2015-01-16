@@ -555,40 +555,6 @@ void rtl92ee_set_fw_media_status_rpt_cmd(struct ieee80211_hw *hw, u8 mstatus)
 	rtl92ee_fill_h2c_cmd(hw, H2C_92E_MSRRPT, 3, parm);
 }
 
-static bool _rtl92ee_cmd_send_packet(struct ieee80211_hw *hw,
-				     struct sk_buff *skb)
-{
-	struct rtl_priv *rtlpriv = rtl_priv(hw);
-	struct rtl_pci *rtlpci = rtl_pcidev(rtl_pcipriv(hw));
-	struct rtl8192_tx_ring *ring;
-	struct rtl_tx_desc *pdesc;
-	unsigned long flags;
-	struct sk_buff *pskb = NULL;
-
-
-	RT_TRACE(rtlpriv, COMP_ERR, DBG_DMESG, "not fill cmd desc currently  \n");
-	return true;
-	ring = &rtlpci->tx_ring[BEACON_QUEUE];
-
-	spin_lock_irqsave(&rtlpriv->locks.irq_th_lock, flags);
-	pskb = __skb_dequeue(&ring->queue);
-	if (pskb)
-		kfree_skb(pskb);
-
-	/*this is wrong, fill_tx_cmddesc needs update*/
-	pdesc = &ring->desc[0];
-
-	rtlpriv->cfg->ops->fill_tx_cmddesc(hw, (u8 *) pdesc, 1, 1, skb);
-
-	__skb_queue_tail(&ring->queue, skb);
-
-	spin_unlock_irqrestore(&rtlpriv->locks.irq_th_lock, flags);
-
-	rtlpriv->cfg->ops->tx_polling(hw, BEACON_QUEUE);
-
-	return true;
-}
-
 #define BEACON_PG		0 /* ->1 */
 #define PSPOLL_PG		2
 #define NULL_PG			3
