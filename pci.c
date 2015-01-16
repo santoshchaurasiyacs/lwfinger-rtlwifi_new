@@ -587,7 +587,7 @@ static void _rtl_pci_tx_isr(struct ieee80211_hw *hw, int prio)
 		else
 			entry = (u8 *)(&ring->desc[ring->idx]);
 
-		if (rtlpriv->cfg->ops->get_available_desc(hw, prio) &&
+		if (rtlpriv->cfg->ops->get_available_desc &&
 		    rtlpriv->cfg->ops->get_available_desc(hw, prio) <= 1) {
 			printk("no available desc!\n");
 			return;
@@ -1715,7 +1715,7 @@ static int rtl_pci_tx(struct ieee80211_hw *hw,
 		}
 	}
 
-	if (rtlpriv->cfg->ops->get_available_desc(hw, hw_queue) &&
+	if (rtlpriv->cfg->ops->get_available_desc &&
 	    rtlpriv->cfg->ops->get_available_desc(hw, hw_queue) == 0) {
 		RT_TRACE(rtlpriv, COMP_ERR, DBG_WARNING, "get_available_desc fail\n");
 		spin_unlock_irqrestore(&rtlpriv->locks.irq_th_lock,
