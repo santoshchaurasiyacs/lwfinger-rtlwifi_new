@@ -934,7 +934,7 @@ static void _rtl_pci_rx_interrupt(struct ieee80211_hw *hw)
 new_trx_end:
 		if (rtlpriv->use_new_trx_flow) {
 			rtlpci->rx_ring[hw_queue].next_rx_rp += 1;
-			rtlpci->rx_ring[hw_queue].next_rx_rp %= RX_DESC_NUM_92E;
+			rtlpci->rx_ring[hw_queue].next_rx_rp %= RTL_PCI_MAX_RX_COUNT;
 
 
 			rx_remained_cnt--;

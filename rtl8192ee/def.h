@@ -30,6 +30,9 @@
 #ifndef __RTL92E_DEF_H__
 #define __RTL92E_DEF_H__
 
+#include "../pci.h"
+
+#define RX_DESC_NUM_92E	RTL_PCI_MAX_RX_COUNT
 
 #define HAL_PRIME_CHNL_OFFSET_DONT_CARE			0
 #define HAL_PRIME_CHNL_OFFSET_LOWER			1
