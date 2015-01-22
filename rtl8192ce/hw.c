@@ -1506,9 +1506,9 @@ static void _rtl92ce_read_txpower_info_from_hwpg(
 			tempval = hwinfo[EEPROM_TXPOWERHT40_2SDIFF + i];
 		else
 			tempval = EEPROM_DEFAULT_HT40_2SDIFF;
-		rtlefuse->eeprom_chnlarea_txpwr_ht40_2sdif[RF90_PATH_A][i] =
+		rtlefuse->eprom_chnl_txpwr_ht40_2sdf[RF90_PATH_A][i] =
 		    (tempval & 0xf);
-		rtlefuse->eeprom_chnlarea_txpwr_ht40_2sdif[RF90_PATH_B][i] =
+		rtlefuse->eprom_chnl_txpwr_ht40_2sdf[RF90_PATH_B][i] =
 		    ((tempval & 0xf0) >> 4);
 	}
 
@@ -1532,7 +1532,7 @@ static void _rtl92ce_read_txpower_info_from_hwpg(
 				"RF(%d) EEPROM HT40 2S Diff Area(%d) = 0x%x\n",
 				 rf_path, i,
 				 rtlefuse->
-				 eeprom_chnlarea_txpwr_ht40_2sdif[rf_path]
+				 eprom_chnl_txpwr_ht40_2sdf[rf_path]
 				 [i]);
 
 	for (rf_path = 0; rf_path < 2; rf_path++) {
@@ -1548,14 +1548,14 @@ static void _rtl92ce_read_txpower_info_from_hwpg(
 			if ((rtlefuse->
 			     eeprom_chnlarea_txpwr_ht40_1s[rf_path][index] -
 			     rtlefuse->
-			     eeprom_chnlarea_txpwr_ht40_2sdif[rf_path][index])
+			     eprom_chnl_txpwr_ht40_2sdf[rf_path][index])
 			    > 0) {
 				rtlefuse->txpwrlevel_ht40_2s[rf_path][i] =
 				    rtlefuse->
 				    eeprom_chnlarea_txpwr_ht40_1s[rf_path]
 				    [index] -
 				    rtlefuse->
-				    eeprom_chnlarea_txpwr_ht40_2sdif[rf_path]
+				    eprom_chnl_txpwr_ht40_2sdf[rf_path]
 				    [index];
 			} else {
 				rtlefuse->txpwrlevel_ht40_2s[rf_path][i] = 0;
