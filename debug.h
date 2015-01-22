@@ -121,7 +121,7 @@
 
 /* Define init check for module bit*/
 #define	INIT_EEPROM			BIT(0)
-#define	INIT_TxPower			BIT(1)
+#define	INIT_TXPOWER			BIT(1)
 #define	INIT_IQK			BIT(2)
 #define	INIT_RF				BIT(3)
 
