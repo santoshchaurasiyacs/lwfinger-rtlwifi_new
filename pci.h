@@ -318,4 +318,43 @@ static inline void pci_write32_async(struct rtl_priv *rtlpriv,
 	writel(val, (u8 __iomem *) rtlpriv->io.pci_mem_start + addr);
 }
 
+static inline void rtl_pci_raw_write_port_ulong(u32 port, u32 val)
+{
+	outl(val, port);
+}
+
+static inline void rtl_pci_raw_write_port_uchar(u32 port, u8 val)
+{
+	outb(val, port);
+}
+
+static inline void rtl_pci_raw_read_port_uchar(u32 port, u8 *pval)
+{
+	*pval = inb(port);
+}
+
+static inline void rtl_pci_raw_read_port_ushort(u32 port, u16 *pval)
+{
+	*pval = inw(port);
+}
+
+static inline void rtl_pci_raw_read_port_ulong(u32 port, u32 *pval)
+{
+	*pval = inl(port);
+}
+
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,17,0))
+static inline void *
+pci_zalloc_consistent(struct pci_dev *hwdev, size_t size,
+		      dma_addr_t *dma_handle)
+{
+	void *tmp;
+
+	tmp = pci_alloc_consistent(hwdev, size, dma_handle);
+	if (tmp)
+		memset(tmp, 0, size);
+	return tmp;
+}
+#endif
+
 #endif
