@@ -2847,7 +2847,7 @@ void rtl8723be_phy_iq_calibrate(struct ieee80211_hw *hw, bool b_recovery)
 	if (b_recovery) {
 		_rtl8723be_phy_reload_adda_registers(hw, iqk_bb_reg,
 						     rtlphy->iqk_bb_backup, 9);
-		return;
+		goto label_done;
 	}
 	/* Save RF Path */
 	path_sel_bb = rtl_get_bbreg(hw, 0x948, MASKDWORD);
@@ -2948,6 +2948,7 @@ void rtl8723be_phy_iq_calibrate(struct ieee80211_hw *hw, bool b_recovery)
 	rtl_set_bbreg(hw, 0x948, MASKDWORD, path_sel_bb);
 	/* rtl_set_rfreg(hw, RF90_PATH_A, 0xb0, 0xfffff, path_sel_rf); */
 
+label_done:
 	spin_lock(&rtlpriv->locks.iqk_lock);
 	rtlphy->iqk_inprogress = false;
 	spin_unlock(&rtlpriv->locks.iqk_lock);
