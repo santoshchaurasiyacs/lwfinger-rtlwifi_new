@@ -2249,7 +2249,7 @@ static void _rtl92ee_read_adapter_info(struct ieee80211_hw *hw)
 			if (rtlefuse->eeprom_did == 0x818B) {
 				if ((rtlefuse->eeprom_svid == 0x10EC) &&
 				    (rtlefuse->eeprom_smid == 0x001B))
-					rtlhal->oem_id = RT_CID_819x_Lenovo;
+					rtlhal->oem_id = RT_CID_819X_LENOVO;
 			} else {
 				rtlhal->oem_id = RT_CID_DEFAULT;
 			}
