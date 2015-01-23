@@ -18,7 +18,7 @@ endif
 
 EXTRA_CFLAGS += -O2
 obj-m := rtlwifi.o
-PCI_MAIN_OBJS	:=	\
+rtlwifi-objs	:=	\
 		base.o	\
 		cam.o	\
 		core.o	\
@@ -35,40 +35,22 @@ rtl_pci-objs	:=		pci.o
 obj-m	+= rtl_usb.o
 rtl_usb-objs	:=		usb.o
 
-rtlwifi-objs += $(PCI_MAIN_OBJS)
+obj-m	+= btcoexist/
+obj-m	+= rtl8188ee/
+obj-m	+= rtl8192c/
+obj-m	+= rtl8192ce/
+obj-m	+= rtl8192cu/
+obj-m	+= rtl8192de/
+obj-m	+= rtl8192ee/
+obj-m	+= rtl8192se/
+obj-m	+= rtl8723ae/
+obj-m	+= rtl8723be/
+obj-m	+= rtl8821ae/
 
 ccflags-y += -D__CHECK_ENDIAN__
 
 all: 
 	$(MAKE) -C $(KSRC) M=$(PWD) modules
-	@cp $(SYMBOL_FILE) btcoexist/
-	+@make -C btcoexist/
-	@cp $(SYMBOL_FILE) rtl8188ee/
-	+@make -C rtl8188ee/
-	@cp $(SYMBOL_FILE) rtl8192c/
-	+@make -C rtl8192c/
-	@cp $(SYMBOL_FILE) rtl8192ce/
-	@cp rtl8192c/$(SYMBOL_FILE) rtl8192ce/
-	+@make -C rtl8192ce/
-	@cp $(SYMBOL_FILE) rtl8192cu/
-	@cp rtl8192c/$(SYMBOL_FILE) rtl8192cu/
-	+@make -C rtl8192cu/
-	@cp $(SYMBOL_FILE) rtl8192de/
-	+@make -C rtl8192de/
-	@cp $(SYMBOL_FILE) rtl8192ee/
-	@cp btcoexist/$(SYMBOL_FILE) rtl8192ee/
-	+@make -C rtl8192ee/
-	@cp $(SYMBOL_FILE) rtl8192se/
-	+@make -C rtl8192se/
-	@cp $(SYMBOL_FILE) rtl8723ae/
-	@cp btcoexist/$(SYMBOL_FILE) rtl8723ae/
-	+@make -C rtl8723ae/
-	@cp $(SYMBOL_FILE) rtl8723be/
-	@cp btcoexist/$(SYMBOL_FILE) rtl8723be/
-	+@make -C rtl8723be/
-	@cp $(SYMBOL_FILE) rtl8821ae/
-	@cp btcoexist/$(SYMBOL_FILE) rtl8821ae/
-	+@make -C rtl8821ae/
 install: all
 ifeq (,$(wildcard ./backup_drivers.tar))
 	@echo Making backups
@@ -128,23 +110,11 @@ endif
 	@echo "Uninstall rtlwifi SUCCESS"
 
 clean:
-	rm -fr *.mod.c *.mod *.o .*.cmd *.ko *~
-	rm -fr .tmp_versions
-	rm -fr Modules.symvers
-	rm -fr Module.symvers
-	rm -fr Module.markers
-	rm -fr modules.order
-	rm -fr tags
-	@find -name "tags" -exec rm {} \;
-	@rm -fr $(CLR_MODULE_FILES)
-	@make -C btcoexist/ clean
-	@make -C rtl8192c/ clean
-	@make -C rtl8192ce/ clean
-	@make -C rtl8192cu/ clean
-	@make -C rtl8192se/ clean
-	@make -C rtl8192de/ clean
-	@make -C rtl8723ae/ clean
-	@make -C rtl8188ee/ clean
-	@make -C rtl8723be/ clean
-	@make -C rtl8192ee/ clean
-	@make -C rtl8821ae/ clean
+	@rm -fr *.mod.c *.mod *.o .*.cmd *.ko *~
+	@rm -fr rtl8*/*.mod.c rtl8*/*.mod rtl8*/*.o rtl8*/.*.cmd rtl8*/*.ko rtl8*/*~
+	@rm -fr bt*/*.mod.c bt*/*.mod bt*/*.o bt*/.*.cmd bt*/*.ko bt*/*~
+	@rm -fr .tmp_versions
+	@rm -fr Modules.symvers
+	@rm -fr Module.symvers
+	@rm -fr Module.markers
+	@rm -fr modules.order
