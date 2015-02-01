@@ -1303,7 +1303,8 @@ EXPORT_SYMBOL_GPL(rtl_action_proc);
 static void setup_arp_tx(struct rtl_priv *rtlpriv, struct rtl_ps_ctl *ppsc)
 {
 	rtlpriv->ra.is_special_data = true;
-	if (rtlpriv->cfg->ops->get_btc_status())
+	if (rtlpriv->cfg->ops->get_btc_status &&
+	    rtlpriv->cfg->ops->get_btc_status())
 		rtlpriv->btcoexist.btc_ops->btc_special_packet_notify(
 					rtlpriv, 1);
 	rtlpriv->enter_ps = false;
@@ -1741,7 +1742,8 @@ void rtl_watchdog_wq_callback(void *data)
 		}
 	}
 
-	if (rtlpriv->cfg->ops->get_btc_status())
+	if (rtlpriv->cfg->ops->get_btc_status &&
+	    rtlpriv->cfg->ops->get_btc_status())
 		rtlpriv->btcoexist.btc_ops->btc_periodical(rtlpriv);
 
 	rtlpriv->link_info.bcn_rx_inperiod = 0;

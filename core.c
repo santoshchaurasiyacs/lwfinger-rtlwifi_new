@@ -1236,7 +1236,8 @@ static void rtl_op_bss_info_changed(struct ieee80211_hw *hw,
 		ppsc->report_linked = (mstatus == RT_MEDIA_CONNECT) ?
 				      true : false;
 
-		if (rtlpriv->cfg->ops->get_btc_status())
+		if (rtlpriv->cfg->ops->get_btc_status &&
+		    rtlpriv->cfg->ops->get_btc_status())
 			rtlpriv->btcoexist.btc_ops->btc_mediastatus_notify(
 							rtlpriv, mstatus);
 	}
@@ -1507,7 +1508,8 @@ static void rtl_op_sw_scan_start(struct ieee80211_hw *hw)
 		return;
 	}
 
-	if (rtlpriv->cfg->ops->get_btc_status())
+	if (rtlpriv->cfg->ops->get_btc_status &&
+	    rtlpriv->cfg->ops->get_btc_status())
 		rtlpriv->btcoexist.btc_ops->btc_scan_notify(rtlpriv, 1);
 
 	if (rtlpriv->dm.supp_phymode_switch) {
@@ -1563,7 +1565,8 @@ static void rtl_op_sw_scan_complete(struct ieee80211_hw *hw)
 	}
 
 	rtlpriv->cfg->ops->scan_operation_backup(hw, SCAN_OPT_RESTORE);
-	if (rtlpriv->cfg->ops->get_btc_status())
+	if (rtlpriv->cfg->ops->get_btc_status &&
+	    rtlpriv->cfg->ops->get_btc_status())
 		rtlpriv->btcoexist.btc_ops->btc_scan_notify(rtlpriv, 0);
 }
 
