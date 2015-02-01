@@ -465,12 +465,6 @@ do {								\
 #define SET_RX_STATUS__DESC_BUFF_ADDR(__pdesc, __val)	\
 	SET_BITS_TO_LE_4BYTE(__pdesc + 24, 0, 32, __val)
 
-#define RX_HAL_IS_CCK_RATE(rxmcs)\
-	(rxmcs == DESC92S_RATE1M ||\
-	 rxmcs == DESC92S_RATE2M ||\
-	 rxmcs == DESC92S_RATE5_5M ||\
-	 rxmcs == DESC92S_RATE11M)
-
 enum rf_optype {
 	RF_OP_BY_SW_3WIRE = 0,
 	RF_OP_BY_FW,

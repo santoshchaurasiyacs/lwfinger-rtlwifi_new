@@ -79,7 +79,7 @@ void rtl92cu_phy_rf6052_set_cck_txpower(struct ieee80211_hw *hw,
 			turbo_scanoff = true;
 	} else {
 		if ((rtlefuse->eeprom_regulatory != 0) ||
-		    (rtlhal->external_pa))
+		    (rtlefuse->external_pa))
 			turbo_scanoff = true;
 	}
 	if (mac->act_scanning) {
@@ -92,7 +92,7 @@ void rtl92cu_phy_rf6052_set_cck_txpower(struct ieee80211_hw *hw,
 			    (ppowerlevel[idx1] << 24);
 			if (rtlhal->interface == INTF_USB) {
 				if (tx_agc[idx1] > 0x20 &&
-				    rtlhal->external_pa)
+				    rtlefuse->external_pa)
 					tx_agc[idx1] = 0x20;
 			}
 		}

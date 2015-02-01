@@ -36,12 +36,13 @@
 #include "reg.h"
 #include "def.h"
 #include "phy.h"
+#include "../rtl8192c/phy_common.h"
 #include "mac.h"
 #include "dm.h"
+#include "../rtl8192c/dm_common.h"
+#include "../rtl8192c/fw_common.h"
 #include "hw.h"
 #include "../rtl8192ce/hw.h"
-#include "../rtl8192c/phy_common.h"
-#include "../rtl8192c/dm_common.h"
 #include "trx.h"
 #include "led.h"
 #include "table.h"
@@ -182,7 +183,7 @@ static void _rtl92cu_read_txpower_info_from_hwpg(struct ieee80211_hw *hw,
 				eprom_chnl_txpwr_ht40_2sdf[rf_path][i]);
 	for (rf_path = 0; rf_path < 2; rf_path++) {
 		for (i = 0; i < 14; i++) {
-			index = _rtl92c_get_chnl_group((u8) i);
+			index = _rtl92c_get_chnl_group((u8)i);
 			rtlefuse->txpwrlevel_cck[rf_path][i] =
 			    rtlefuse->eeprom_chnlarea_txpwr_cck[rf_path][index];
 			rtlefuse->txpwrlevel_ht40_1s[rf_path][i] =
@@ -224,7 +225,7 @@ static void _rtl92cu_read_txpower_info_from_hwpg(struct ieee80211_hw *hw,
 	}
 	for (rf_path = 0; rf_path < 2; rf_path++) {
 		for (i = 0; i < 14; i++) {
-			index = _rtl92c_get_chnl_group((u8) i);
+			index = _rtl92c_get_chnl_group((u8)i);
 			if (rf_path == RF90_PATH_A) {
 				rtlefuse->pwrgroup_ht20[rf_path][i] =
 				    (rtlefuse->eeprom_pwrlimit_ht20[index]
@@ -251,7 +252,7 @@ static void _rtl92cu_read_txpower_info_from_hwpg(struct ieee80211_hw *hw,
 		}
 	}
 	for (i = 0; i < 14; i++) {
-		index = _rtl92c_get_chnl_group((u8) i);
+		index = _rtl92c_get_chnl_group((u8)i);
 		if (!autoload_fail)
 			tempval = hwinfo[EEPROM_TXPOWERHT20DIFF + index];
 		else
@@ -263,7 +264,7 @@ static void _rtl92cu_read_txpower_info_from_hwpg(struct ieee80211_hw *hw,
 			rtlefuse->txpwr_ht20diff[RF90_PATH_A][i] |= 0xF0;
 		if (rtlefuse->txpwr_ht20diff[RF90_PATH_B][i] & BIT(3))
 			rtlefuse->txpwr_ht20diff[RF90_PATH_B][i] |= 0xF0;
-		index = _rtl92c_get_chnl_group((u8) i);
+		index = _rtl92c_get_chnl_group((u8)i);
 		if (!autoload_fail)
 			tempval = hwinfo[EEPROM_TXPOWER_OFDMDIFF + index];
 		else
@@ -337,7 +338,7 @@ static void _rtl92cu_read_board_type(struct ieee80211_hw *hw, u8 *contents)
 	}
 	rtlefuse->board_type = boardType;
 	if (IS_HIGHT_PA(rtlefuse->board_type))
-		rtlhal->external_pa = 1;
+		rtlefuse->external_pa = 1;
 	pr_info("Board Type %x\n", rtlefuse->board_type);
 }
 
@@ -1012,7 +1013,6 @@ int rtl92cu_hw_init(struct ieee80211_hw *hw)
 		err = 1;
 		goto exit;
 	}
-//	rtlhal->fw_ready = true;
 	rtlhal->last_hmeboxnum = 0; /* h2c */
 	_rtl92cu_phy_param_tab_init(hw);
 	rtl92cu_phy_mac_config(hw);
@@ -1172,13 +1172,13 @@ n. LEDCFG 0x4C[15:0] = 0x8080
 	/* 1. Disable GPIO[7:0] */
 	rtl_write_word(rtlpriv, REG_GPIO_PIN_CTRL+2, 0x0000);
 	value32 = rtl_read_dword(rtlpriv, REG_GPIO_PIN_CTRL) & 0xFFFF00FF;
-	value8 = (u8) (value32&0x000000FF);
+	value8 = (u8)(value32&0x000000FF);
 	value32 |= ((value8<<8) | 0x00FF0000);
 	rtl_write_dword(rtlpriv, REG_GPIO_PIN_CTRL, value32);
 	/* 2. Disable GPIO[10:8] */
 	rtl_write_byte(rtlpriv, REG_GPIO_MUXCFG+3, 0x00);
 	value16 = rtl_read_word(rtlpriv, REG_GPIO_MUXCFG+2) & 0xFF0F;
-	value8 = (u8) (value16&0x000F);
+	value8 = (u8)(value16&0x000F);
 	value16 |= ((value8<<4) | 0x0780);
 	rtl_write_word(rtlpriv, REG_GPIO_PIN_CTRL+2, value16);
 	/* 3. Disable LED0 & 1 */
@@ -1248,7 +1248,7 @@ static void _rtl92cu_set_bcn_ctrl_reg(struct ieee80211_hw *hw,
 
 	rtlusb->reg_bcn_ctrl_val |= set_bits;
 	rtlusb->reg_bcn_ctrl_val &= ~clear_bits;
-	rtl_write_byte(rtlpriv, REG_BCN_CTRL, (u8) rtlusb->reg_bcn_ctrl_val);
+	rtl_write_byte(rtlpriv, REG_BCN_CTRL, (u8)rtlusb->reg_bcn_ctrl_val);
 }
 
 static void _rtl92cu_stop_tx_beacon(struct ieee80211_hw *hw)
@@ -1600,6 +1600,7 @@ void rtl92cu_set_hw_reg(struct ieee80211_hw *hw, u8 variable, u8 *val)
 	struct rtl_efuse *rtlefuse = rtl_efuse(rtl_priv(hw));
 	struct rtl_ps_ctl *ppsc = rtl_psc(rtl_priv(hw));
 	struct rtl_usb *rtlusb = rtl_usbdev(rtl_usbpriv(hw));
+	enum wireless_mode wirelessmode = mac->mode;
 	u8 idx = 0;
 
 	switch (variable) {
@@ -1615,6 +1616,11 @@ void rtl92cu_set_hw_reg(struct ieee80211_hw *hw, u8 variable, u8 *val)
 			u8 rate_index = 0;
 
 			rate_cfg &= 0x15f;
+			/* TODO */
+			/* if (mac->current_network.vender == HT_IOT_PEER_CISCO
+			 *     && ((rate_cfg & 0x150) == 0)) {
+			 *	  rate_cfg |= 0x010;
+			 * } */
 			rate_cfg |= 0x01;
 			rtl_write_byte(rtlpriv, REG_RRSR, rate_cfg & 0xff);
 			rtl_write_byte(rtlpriv, REG_RRSR + 1,
@@ -1635,25 +1641,47 @@ void rtl92cu_set_hw_reg(struct ieee80211_hw *hw, u8 variable, u8 *val)
 			break;
 		}
 	case HW_VAR_SIFS:{
-			rtl_write_byte(rtlpriv, REG_SIFS_CTX + 1, val[0]);
-			rtl_write_byte(rtlpriv, REG_SIFS_TRX + 1, val[1]);
+			rtl_write_byte(rtlpriv, REG_SIFS_CCK + 1, val[0]);
+			rtl_write_byte(rtlpriv, REG_SIFS_OFDM + 1, val[1]);
 			rtl_write_byte(rtlpriv, REG_SPEC_SIFS + 1, val[0]);
 			rtl_write_byte(rtlpriv, REG_MAC_SPEC_SIFS + 1, val[0]);
-			rtl_write_byte(rtlpriv, REG_RESP_SIFS_CCK+1, val[0]);
-			rtl_write_byte(rtlpriv, REG_RESP_SIFS_OFDM+1, val[0]);
+			rtl_write_byte(rtlpriv, REG_R2T_SIFS+1, val[0]);
+			rtl_write_byte(rtlpriv, REG_T2T_SIFS+1, val[0]);
 			RT_TRACE(rtlpriv, COMP_MLME, DBG_LOUD, "HW_VAR_SIFS\n");
 			break;
 		}
 	case HW_VAR_SLOT_TIME:{
 			u8 e_aci;
+			u8 QOS_MODE = 1;
 
 			rtl_write_byte(rtlpriv, REG_SLOT, val[0]);
 			RT_TRACE(rtlpriv, COMP_MLME, DBG_LOUD,
 				 "HW_VAR_SLOT_TIME %x\n", val[0]);
-			for (e_aci = 0; e_aci < AC_MAX; e_aci++)
-				rtlpriv->cfg->ops->set_hw_reg(hw,
-							HW_VAR_AC_PARAM,
-							&e_aci);
+			if (QOS_MODE) {
+				for (e_aci = 0; e_aci < AC_MAX; e_aci++)
+					rtlpriv->cfg->ops->set_hw_reg(hw,
+								HW_VAR_AC_PARAM,
+								&e_aci);
+			} else {
+				u8 sifstime = 0;
+				u8	u1bAIFS;
+
+				if (IS_WIRELESS_MODE_A(wirelessmode) ||
+				    IS_WIRELESS_MODE_N_24G(wirelessmode) ||
+				    IS_WIRELESS_MODE_N_5G(wirelessmode))
+					sifstime = 16;
+				else
+					sifstime = 10;
+				u1bAIFS = sifstime + (2 *  val[0]);
+				rtl_write_byte(rtlpriv, REG_EDCA_VO_PARAM,
+					       u1bAIFS);
+				rtl_write_byte(rtlpriv, REG_EDCA_VI_PARAM,
+					       u1bAIFS);
+				rtl_write_byte(rtlpriv, REG_EDCA_BE_PARAM,
+					       u1bAIFS);
+				rtl_write_byte(rtlpriv, REG_EDCA_BK_PARAM,
+					       u1bAIFS);
+			}
 			break;
 		}
 	case HW_VAR_ACK_PREAMBLE:{
@@ -1911,7 +1939,7 @@ void rtl92cu_set_hw_reg(struct ieee80211_hw *hw, u8 variable, u8 *val)
 					recover = true;
 				rtl_write_byte(rtlpriv, REG_FWHW_TXQ_CTRL + 2,
 					       tmp_reg422 & (~BIT(6)));
-				rtl92c_set_fw_rsvdpagepkt(hw, 0);
+				rtl92c_set_fw_rsvdpagepkt(hw, true);
 				_rtl92cu_set_bcn_ctrl_reg(hw, BIT(3), 0);
 				_rtl92cu_set_bcn_ctrl_reg(hw, 0, BIT(4));
 				if (recover)
@@ -2063,25 +2091,22 @@ static void rtl92cu_update_hal_rate_mask(struct ieee80211_hw *hw,
 	struct rtl_sta_info *sta_entry = NULL;
 	u32 ratr_bitmap;
 	u8 ratr_index;
-	u8 curtxbw_40mhz = (sta->ht_cap.cap &
-				IEEE80211_HT_CAP_SUP_WIDTH_20_40)
-				? 1 : 0;
-	u8 curshortgi_40mhz = (sta->ht_cap.cap &
-				IEEE80211_HT_CAP_SGI_40) ?
+	u8 curtxbw_40mhz = (sta->bandwidth >= IEEE80211_STA_RX_BW_40) ? 1 : 0;
+	u8 curshortgi_40mhz = curtxbw_40mhz &&
+			      (sta->ht_cap.cap & IEEE80211_HT_CAP_SGI_40) ?
 				1 : 0;
-	u8 curshortgi_20mhz = (sta->ht_cap.cap &
-				IEEE80211_HT_CAP_SGI_20) ?
+	u8 curshortgi_20mhz = (sta->ht_cap.cap & IEEE80211_HT_CAP_SGI_20) ?
 				1 : 0;
 	enum wireless_mode wirelessmode = 0;
-	bool b_shortgi = false;
+	bool shortgi = false;
 	u8 rate_mask[5];
 	u8 macid = 0;
-	/*u8 mimo_ps = IEEE80211_SMPS_OFF;*/
+	u8 mimo_ps = IEEE80211_SMPS_OFF;
 
 	sta_entry = (struct rtl_sta_info *) sta->drv_priv;
 	wirelessmode = sta_entry->wireless_mode;
 	if (mac->opmode == NL80211_IFTYPE_STATION ||
-		mac->opmode == NL80211_IFTYPE_MESH_POINT)
+	    mac->opmode == NL80211_IFTYPE_MESH_POINT)
 		curtxbw_40mhz = mac->bw_40;
 	else if (mac->opmode == NL80211_IFTYPE_AP ||
 		mac->opmode == NL80211_IFTYPE_ADHOC)
@@ -2114,64 +2139,64 @@ static void rtl92cu_update_hal_rate_mask(struct ieee80211_hw *hw,
 			ratr_bitmap &= 0x00000ff5;
 		break;
 	case WIRELESS_MODE_A:
-		ratr_index = RATR_INX_WIRELESS_G;
+		ratr_index = RATR_INX_WIRELESS_A;
 		ratr_bitmap &= 0x00000ff0;
 		break;
 	case WIRELESS_MODE_N_24G:
 	case WIRELESS_MODE_N_5G:
 		ratr_index = RATR_INX_WIRELESS_NGB;
 
-		/*if (mimo_ps == IEEE80211_SMPS_STATIC) {
+		if (mimo_ps == IEEE80211_SMPS_STATIC) {
 			if (rssi_level == 1)
 				ratr_bitmap &= 0x00070000;
 			else if (rssi_level == 2)
 				ratr_bitmap &= 0x0007f000;
 			else
 				ratr_bitmap &= 0x0007f005;
-		} else {*/
-		if (rtlphy->rf_type == RF_1T2R ||
-		    rtlphy->rf_type == RF_1T1R) {
-			if (curtxbw_40mhz) {
-				if (rssi_level == 1)
-					ratr_bitmap &= 0x000f0000;
-				else if (rssi_level == 2)
-					ratr_bitmap &= 0x000ff000;
-				else
-					ratr_bitmap &= 0x000ff015;
-			} else {
-				if (rssi_level == 1)
-					ratr_bitmap &= 0x000f0000;
-				else if (rssi_level == 2)
-					ratr_bitmap &= 0x000ff000;
-				else
-					ratr_bitmap &= 0x000ff005;
-			}
 		} else {
-			if (curtxbw_40mhz) {
-				if (rssi_level == 1)
-					ratr_bitmap &= 0x0f0f0000;
-				else if (rssi_level == 2)
-					ratr_bitmap &= 0x0f0ff000;
-				else
-					ratr_bitmap &= 0x0f0ff015;
+			if (rtlphy->rf_type == RF_1T2R ||
+			    rtlphy->rf_type == RF_1T1R) {
+				if (curtxbw_40mhz) {
+					if (rssi_level == 1)
+						ratr_bitmap &= 0x000f0000;
+					else if (rssi_level == 2)
+						ratr_bitmap &= 0x000ff000;
+					else
+						ratr_bitmap &= 0x000ff015;
+				} else {
+					if (rssi_level == 1)
+						ratr_bitmap &= 0x000f0000;
+					else if (rssi_level == 2)
+						ratr_bitmap &= 0x000ff000;
+					else
+						ratr_bitmap &= 0x000ff005;
+				}
 			} else {
-				if (rssi_level == 1)
-					ratr_bitmap &= 0x0f0f0000;
-				else if (rssi_level == 2)
-					ratr_bitmap &= 0x0f0ff000;
-				else
-					ratr_bitmap &= 0x0f0ff005;
+				if (curtxbw_40mhz) {
+					if (rssi_level == 1)
+						ratr_bitmap &= 0x0f0f0000;
+					else if (rssi_level == 2)
+						ratr_bitmap &= 0x0f0ff000;
+					else
+						ratr_bitmap &= 0x0f0ff015;
+				} else {
+					if (rssi_level == 1)
+						ratr_bitmap &= 0x0f0f0000;
+					else if (rssi_level == 2)
+						ratr_bitmap &= 0x0f0ff000;
+					else
+						ratr_bitmap &= 0x0f0ff005;
+				}
 			}
 		}
-		/*}*/
 
 		if ((curtxbw_40mhz && curshortgi_40mhz) ||
 		    (!curtxbw_40mhz && curshortgi_20mhz)) {
 
 			if (macid == 0)
-				b_shortgi = true;
+				shortgi = true;
 			else if (macid == 1)
-				b_shortgi = false;
+				shortgi = false;
 		}
 		break;
 	default:
@@ -2187,14 +2212,12 @@ static void rtl92cu_update_hal_rate_mask(struct ieee80211_hw *hw,
 
 	RT_TRACE(rtlpriv, COMP_RATR, DBG_DMESG,
 		 "ratr_bitmap :%x\n", ratr_bitmap);
-	*(u32 *) &rate_mask = (ratr_bitmap & 0x0fffffff) |
-				       (ratr_index << 28);
-	rate_mask[4] = macid | (b_shortgi ? 0x20 : 0x00) | 0x80;
-	RT_TRACE(rtlpriv, COMP_RATR, DBG_DMESG, "Rate_index:%x, ratr_val:%x, %x:%x:%x:%x:%x\n",
-						 ratr_index, ratr_bitmap,
-						 rate_mask[0], rate_mask[1],
-						 rate_mask[2], rate_mask[3],
-						 rate_mask[4]);
+	*(u32 *)&rate_mask = (ratr_bitmap & 0x0fffffff) |
+				     (ratr_index << 28);
+	rate_mask[4] = macid | (shortgi ? 0x20 : 0x00) | 0x80;
+	RT_TRACE(rtlpriv, COMP_RATR, DBG_DMESG,
+		 "Rate_index:%x, ratr_val:%x, %5phC\n",
+		 ratr_index, ratr_bitmap, rate_mask);
 	memcpy(rtlpriv->rate_mask, rate_mask, 5);
 	/* rtl92c_fill_h2c_cmd() does USB I/O and will result in a
 	 * "scheduled while atomic" if called directly */

@@ -28,8 +28,3 @@
  *****************************************************************************/
 
 #include "../rtl8192ce/reg.h"
-
-#define REG_HSISR			0x005c
-#define AC_PARAM_TXOP_OFFSET		16
-#define MSR_MASK			0x03
-#define RCR_APP_PHYSTS			BIT(28)

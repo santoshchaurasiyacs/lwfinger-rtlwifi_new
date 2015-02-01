@@ -371,12 +371,6 @@ do {								\
 		memset(__pdesc, 0, _size);			\
 } while (0);
 
-#define RX_HAL_IS_CCK_RATE(rxmcs)\
-	(rxmcs == DESC_RATE1M ||\
-	 rxmcs == DESC_RATE2M ||\
-	 rxmcs == DESC_RATE5_5M ||\
-	 rxmcs == DESC_RATE11M)
-
 #define IS_LITTLE_ENDIAN	1
 
 struct phy_rx_agc_info_t {

@@ -41,6 +41,11 @@
 	((le16_to_cpu(_pfwhdr->signature)&0xFFF0) == 0x92C0 ||\
 	(le16_to_cpu(_pfwhdr->signature)&0xFFF0) == 0x88C0)
 
+#define IS_81XXC_VENDOR_UMC_B_CUT(version)	\
+	((IS_CHIP_VENDOR_UMC(version)) ? \
+	((GET_CVID_CUT_VERSION(version) == \
+		CHIP_VENDOR_UMC_B_CUT) ? true : false) : false)
+
 struct rtl92c_firmware_header {
 	__le16 signature;
 	u8 category;

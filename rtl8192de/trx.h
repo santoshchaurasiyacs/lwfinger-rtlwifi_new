@@ -512,12 +512,6 @@ do {								\
 		memset(__pdesc, 0, _size);			\
 } while (0);
 
-#define RX_HAL_IS_CCK_RATE(rxmcs)\
-	(rxmcs == DESC92D_RATE1M ||\
-	 rxmcs == DESC92D_RATE2M ||\
-	 rxmcs == DESC92D_RATE5_5M ||\
-	 rxmcs == DESC92D_RATE11M)
-
 /* For 92D early mode */
 #define SET_EARLYMODE_PKTNUM(__paddr, __value)	\
 	SET_BITS_TO_LE_4BYTE(__paddr, 0, 3, __value)
