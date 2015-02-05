@@ -40,8 +40,6 @@
 #include "debug.h"
 #include "btcoexist/halbtc8812a_ext.h"
 
-#define ERROR_RESUME
-
 #define RF_CHANGE_BY_INIT		0
 #define RF_CHANGE_BY_IPS		BIT(28)
 #define RF_CHANGE_BY_PS			BIT(29)

@@ -44,6 +44,7 @@
 #include "pwrseqcmd.h"
 #include "pwrseq.h"
 #include "table.h"
+#include <linux/firmware.h>
 
 #define LLT_CONFIG	5
 
@@ -2152,7 +2153,10 @@ static void _rtl92ee_read_adapter_info(struct ieee80211_hw *hw)
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_efuse *rtlefuse = rtl_efuse(rtl_priv(hw));
 	struct rtl_hal *rtlhal = rtl_hal(rtl_priv(hw));
+	const struct firmware *fw;
 	u16 i, usvalue;
+	const char fake_efuse_name[] =
+		"rtlwifi/rtl8192ee_fake_efuse_fw.bin.bin";
 	u8 hwinfo[HWSET_MAX_SIZE];
 	u16 eeprom_id;
 
@@ -2164,12 +2168,24 @@ static void _rtl92ee_read_adapter_info(struct ieee80211_hw *hw)
 	} else if (rtlefuse->epromtype == EEPROM_93C46) {
 		RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG,
 			 "RTL819X Not boot from eeprom, check EESK pin!!");
-#ifdef ERROR_RESUME
-		memcpy(hwinfo, RTL8192EE_FAKE_EFUSE,HWSET_MAX_SIZE);
-#else
-		return;
-#endif
-
+		/* This device has the EESK pin problem - load fake efuse */
+		if (request_firmware(&fw, fake_efuse_name, rtlpriv->io.dev)) {
+			/* fake efuse not found */
+			RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG,
+				 "The firmware file %s is not found - abort\n",
+				 fake_efuse_name);
+			return;
+		} else {
+			if (fw->size !=  HWSET_MAX_SIZE) {
+				RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG,
+					 "File %s has wrong size\n",
+					 fake_efuse_name);
+				release_firmware(fw);
+				return;
+			}
+			memcpy(hwinfo, &fw->data, fw->size);
+			release_firmware(fw);
+		}
 	}  else {
 		RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG,
 			 "boot from neither eeprom nor efuse, check it !!");
