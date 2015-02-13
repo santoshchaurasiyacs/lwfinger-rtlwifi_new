@@ -368,6 +368,9 @@ void halbtc_disable_low_power(struct btc_coexist *btcoexist,
 void halbtc_aggregation_check(struct btc_coexist *btcoexist)
 {
 	bool need_to_act = false;
+	static unsigned long pre_time = 0;
+	unsigned long cur_time = 0;
+	struct rtl_priv *rtlpriv = btcoexist->adapter;
 
 	/* ===================================== */
 	/* To void continuous deleteBA=>addBA=>deleteBA=>addBA */
@@ -375,8 +378,15 @@ void halbtc_aggregation_check(struct btc_coexist *btcoexist)
 	/* It can only be called after 8 seconds. */
 	/* ===================================== */
 
+	cur_time = jiffies;
+	if (jiffies_to_msecs(cur_time - pre_time) <= 8000) {
+		/* over 8 seconds you can execute this function again. */
+		return;
+	}
+	pre_time = cur_time;
+
 	if (btcoexist->bt_info.reject_agg_pkt) {
-		;/*TODO: reject*/
+		need_to_act = true;
 		btcoexist->bt_info.pre_reject_agg_pkt =
 			btcoexist->bt_info.reject_agg_pkt;
 	} else {
@@ -403,7 +413,7 @@ void halbtc_aggregation_check(struct btc_coexist *btcoexist)
 		}
 
 		if (need_to_act) {
-			/*TODO: reject=false*/
+			rtl_rx_ampdu_apply(rtlpriv);
 		}
 	}
 

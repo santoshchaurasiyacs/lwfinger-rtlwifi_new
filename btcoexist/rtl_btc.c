@@ -52,6 +52,7 @@ static struct rtl_btc_ops rtl_btc_operation = {
 	.btc_get_lps_val = rtl_btc_get_lps_val,
 	.btc_get_rpwm_val = rtl_btc_get_rpwm_val,
 	.btc_is_bt_ctrl_lps = rtl_btc_is_bt_ctrl_lps,
+	.btc_get_ampdu_cfg = rtl_btc_get_ampdu_cfg,
 	.btc_set_hci_version = rtl_btc_set_hci_version,
 	.btc_record_pwr_mode = rtl_btc_record_pwr_mode,
 	.btc_set_bt_patch_version = rtl_btc_set_bt_patch_version,
@@ -85,6 +86,17 @@ u8 rtl_btc_get_rpwm_val(struct rtl_priv *rtlpriv)
 bool rtl_btc_is_bt_ctrl_lps(struct rtl_priv *rtlpriv)
 {
 	return gl_bt_coexist.bt_info.bt_ctrl_lps;
+}
+
+void rtl_btc_get_ampdu_cfg(struct rtl_priv *rtlpriv, u8 *reject_agg,
+					u8 *ctrl_agg_size, u8 *agg_size)
+{
+	if (reject_agg)
+		*reject_agg = gl_bt_coexist.bt_info.reject_agg_pkt;
+	if (ctrl_agg_size)
+		*ctrl_agg_size = gl_bt_coexist.bt_info.bt_ctrl_agg_buf_size;
+	if (agg_size)
+		*agg_size = gl_bt_coexist.bt_info.agg_buf_size;
 }
 
 void rtl_btc_init_socket(struct rtl_priv *rtlpriv)
