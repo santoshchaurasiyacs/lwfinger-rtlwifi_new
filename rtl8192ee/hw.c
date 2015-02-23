@@ -2157,7 +2157,7 @@ static void _rtl92ee_read_adapter_info(struct ieee80211_hw *hw)
 	u16 i, usvalue;
 	const char fake_efuse_name[] =
 		"rtlwifi/rtl8192ee_fake_efuse_fw.bin.bin";
-	u8 hwinfo[HWSET_MAX_SIZE];
+	u8 hwinfo[HWSET_MAX_SIZE] = {0};
 	u16 eeprom_id;
 
 	if (rtlefuse->epromtype == EEPROM_BOOT_EFUSE) {
