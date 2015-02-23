@@ -2047,7 +2047,7 @@ static void _rtl8723be_read_adapter_info(struct ieee80211_hw *hw,
 	struct rtl_efuse *rtlefuse = rtl_efuse(rtl_priv(hw));
 	struct rtl_hal *rtlhal = rtl_hal(rtl_priv(hw));
 	u16 i, usvalue;
-	u8 hwinfo[HWSET_MAX_SIZE];
+	u8 hwinfo[HWSET_MAX_SIZE] = {0};
 	u16 eeprom_id;
 
 	if (b_pseudo_test) {

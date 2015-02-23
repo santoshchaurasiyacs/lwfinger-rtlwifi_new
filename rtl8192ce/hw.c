@@ -1703,7 +1703,7 @@ static void _rtl92ce_read_adapter_info(struct ieee80211_hw *hw)
 	struct rtl_efuse *rtlefuse = rtl_efuse(rtl_priv(hw));
 	struct rtl_hal *rtlhal = rtl_hal(rtl_priv(hw));
 	u16 i, usvalue;
-	u8 hwinfo[HWSET_MAX_SIZE];
+	u8 hwinfo[HWSET_MAX_SIZE] = {0};
 	u16 eeprom_id;
 
 	if (rtlefuse->epromtype == EEPROM_BOOT_EFUSE) {

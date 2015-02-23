@@ -1717,7 +1717,7 @@ static void _rtl92se_read_adapter_info(struct ieee80211_hw *hw)
 	u16 i, usvalue;
 	u16	eeprom_id;
 	u8 tempval;
-	u8 hwinfo[HWSET_MAX_SIZE_92S];
+	u8 hwinfo[HWSET_MAX_SIZE_92S] = {0};
 	u8 rf_path, index;
 
 	if (rtlefuse->epromtype == EEPROM_93C46) {
