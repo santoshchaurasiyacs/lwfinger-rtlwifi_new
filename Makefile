@@ -1,4 +1,4 @@
-
+SHELL := /bin/sh
 CC = gcc
 KVER  := $(shell uname -r)
 KSRC := /lib/modules/$(KVER)/build
