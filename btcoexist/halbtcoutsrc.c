@@ -507,6 +507,7 @@ bool halbtc_get(void *btc_context, u8 get_type, void *out_buf)
 	u32 *u32_tmp = (u32 *)out_buf;
 	u8 *u8_tmp = (u8 *)out_buf;
 	bool tmp = false;
+	bool ret = true;
 
 
 	if (!halbtc_is_bt_coexist_available(btcoexist))
@@ -515,9 +516,11 @@ bool halbtc_get(void *btc_context, u8 get_type, void *out_buf)
 	switch (get_type) {
 	case BTC_GET_BL_HS_OPERATION:
 		*bool_tmp = false;
+		ret = false;
 		break;
 	case BTC_GET_BL_HS_CONNECTING:
 		*bool_tmp = false;
+		ret = false;
 		break;
 	case BTC_GET_BL_WIFI_CONNECTED:
 		if (rtlpriv->mac80211.opmode == NL80211_IFTYPE_STATION &&
@@ -546,20 +549,26 @@ bool halbtc_get(void *btc_context, u8 get_type, void *out_buf)
 			*bool_tmp = false;
 		break;
 	case BTC_GET_BL_WIFI_ROAM:
-		/*TODO*/
-		*bool_tmp = false;
+		if (mac->link_state == MAC80211_LINKING)
+			*bool_tmp = true;
+		else
+			*bool_tmp = false;
 		break;
 	case BTC_GET_BL_WIFI_4_WAY_PROGRESS:
 		/*TODO*/
 		*bool_tmp = false;
 		break;
 	case BTC_GET_BL_WIFI_UNDER_5G:
-		/*TODO*/
-		*bool_tmp = false;
+		if (rtlhal->current_bandtype == BAND_ON_5G)
+			*bool_tmp = true;
+		else
+			*bool_tmp = false;
 		break;
 	case BTC_GET_BL_WIFI_AP_MODE_ENABLE:
-		/*TODO*/
-		*bool_tmp = false;
+		if (mac->opmode == NL80211_IFTYPE_AP )
+			*bool_tmp = true;
+		else
+			*bool_tmp = false;
 		break;
 	case BTC_GET_BL_WIFI_ENABLE_ENCRYPTION:
 		if (NO_ENCRYPTION == rtlpriv->sec.pairwise_enc_algorithm)
@@ -587,8 +596,8 @@ bool halbtc_get(void *btc_context, u8 get_type, void *out_buf)
 		*s32_tmp = halbtc_get_wifi_rssi(rtlpriv);
 		break;
 	case BTC_GET_S4_HS_RSSI:
-		/*TODO*/
-		*s32_tmp = halbtc_get_wifi_rssi(rtlpriv);
+		*s32_tmp = 0;
+		ret = false;
 		break;
 	case BTC_GET_U4_WIFI_BW:
 		*u32_tmp = halbtc_get_wifi_bw(btcoexist);
@@ -618,8 +627,8 @@ bool halbtc_get(void *btc_context, u8 get_type, void *out_buf)
 		*u8_tmp = halbtc_get_wifi_central_chnl(btcoexist);
 		break;
 	case BTC_GET_U1_WIFI_HS_CHNL:
-		/*TODO:BT_OperateChnl(rtlpriv);*/
-		*u8_tmp = 1;
+		*u8_tmp = 0;
+		ret = false;
 		break;
 	case BTC_GET_U1_AP_NUM:
 		/* driver don't know AP num in Linux,
@@ -639,10 +648,11 @@ bool halbtc_get(void *btc_context, u8 get_type, void *out_buf)
 		break;
 
 	default:
+		ret = false;
 		break;
 	}
 
-	return true;
+	return ret;
 }
 
 bool halbtc_set(void *btc_context, u8 set_type, void *in_buf)
