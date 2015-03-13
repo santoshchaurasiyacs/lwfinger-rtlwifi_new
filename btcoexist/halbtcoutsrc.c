@@ -1095,8 +1095,8 @@ void halbtc_set_bt_reg(void *btc_context, u8 reg_type, u32 offset, u32 set_val)
 
 bool halbtc_set_bt_ant_detection(void *btc_context, u8 tx_time, u8 bt_chnl)
 {
-	/* TODO */
-	return true;
+	/* TODO: Always return _FALSE since we don't implement this yet */
+	return false;
 }
 
 u32 halbtc_get_bt_reg(void *btc_context, u8 reg_type, u32 offset)
@@ -1842,6 +1842,7 @@ void exhalbtc_dbg_control(struct btc_coexist *btcoexist, u8 op_code, u8 op_len,
 	halbtc_normal_low_power(btcoexist);
 }
 
+#if 0
 void exhalbtc_antenna_detection(struct btc_coexist *btcoexist, u32 cent_freq,
 				u32 offset, u32 span, u32 seconds)
 {
@@ -1863,6 +1864,7 @@ void exhalbtc_antenna_detection(struct btc_coexist *btcoexist, u32 cent_freq,
 
 	/* IPSReturn(btcoexist->adapter, 0xff); */
 }
+#endif
 
 void exhalbtc_stack_update_profile_info(void)
 {
