@@ -662,6 +662,7 @@ bool halbtc_set(void *btc_context, u8 set_type, void *in_buf)
 	u8 *u8_tmp = (u8 *)in_buf;
 	u32 *u32_tmp = (u32 *)in_buf;
 	struct rtl_priv *rtlpriv = btcoexist->adapter;
+	bool ret = true;
 
 	if (!halbtc_is_bt_coexist_available(btcoexist))
 		return false;
@@ -706,7 +707,8 @@ bool halbtc_set(void *btc_context, u8 set_type, void *in_buf)
 
 	/* the following are some action which will be triggered */
 	case BTC_SET_ACT_GET_BT_RSSI:
-		/*TODO: BTHCI_SendGetBtRssiEvent(rtlpriv);*/
+		/*BTHCI_SendGetBtRssiEvent(rtlpriv);*/
+		ret = false;
 		break;
 	case BTC_SET_ACT_AGGREGATE_CTRL:
 		halbtc_aggregation_check(btcoexist);
@@ -768,7 +770,6 @@ bool halbtc_set(void *btc_context, u8 set_type, void *in_buf)
 	}
 	break;
 	case BTC_SET_ACT_CTRL_8723B_ANT:
-		/*TODO*/
 		/*
 		{
 			u8	data_len = *u8_tmp;
@@ -779,13 +780,14 @@ bool halbtc_set(void *btc_context, u8 set_type, void *in_buf)
 			BT_set8723bAnt(adapter, data_len, &tmp_buf[0]);
 		}
 		*/
+		ret = false;
 		break;
 	/* ===================== */
 	default:
 		break;
 	}
 
-	return true;
+	return ret;
 }
 
 void halbtc_display_coex_statistics(struct btc_coexist *btcoexist)
