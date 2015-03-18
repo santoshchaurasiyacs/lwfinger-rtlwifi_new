@@ -439,13 +439,13 @@ u8 rtl_cam_get_free_entry(struct ieee80211_hw *hw, struct ieee80211_sta *sta, u8
 	}
 
 	if (found) {
-		RT_TRACE(rtlpriv, COMP_SEC, DBG_EMERG,
-				"key_index=%d,cam_bitmap: 0x%x entry_idx=%d\n",
-				 key_index, rtlpriv->sec.cam_bitmap, entry_idx);
+		RT_TRACE(rtlpriv, COMP_SEC, DBG_LOUD,
+			 "key_index=%d,cam_bitmap: 0x%x entry_idx=%d\n",
+			  key_index, rtlpriv->sec.cam_bitmap, entry_idx);
 		return entry_idx;
 	} else {
 		RT_TRACE(rtlpriv, COMP_SEC, DBG_EMERG,
-				"critical error! no entry found!!!\n");
+			 "critical error! no entry found!!!\n");
 		return TOTAL_CAM_ENTRY;
 	}
 }
