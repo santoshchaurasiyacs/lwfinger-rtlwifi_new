@@ -596,7 +596,8 @@ static void _rtl_pci_tx_isr(struct ieee80211_hw *hw, int prio)
 			return;
 		}
 
-		if (!rtlpriv->cfg->ops->is_tx_desc_closed(hw, prio, ring->idx))
+		if (prio != BEACON_QUEUE &&
+		    !rtlpriv->cfg->ops->is_tx_desc_closed(hw, prio, ring->idx))
 			return;
 
 		ring->idx = (ring->idx + 1) % ring->entries;
