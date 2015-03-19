@@ -2430,6 +2430,7 @@ struct rtl_btc_ops {
 	u8   (*btc_get_lps_val)(struct rtl_priv *rtlpriv);
 	u8   (*btc_get_rpwm_val)(struct rtl_priv *rtlpriv);
 	bool (*btc_is_bt_ctrl_lps)(struct rtl_priv *rtlpriv);
+	bool (*btc_is_bt_lps_on)(struct rtl_priv *rtlpriv);
 	void (*btc_get_ampdu_cfg)(struct rtl_priv *rtlpriv, u8 *reject_agg,
 					u8 *ctrl_agg_size, u8 *agg_size);
 	void (*btc_set_hci_version) (u16 hci_version);

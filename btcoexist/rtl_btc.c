@@ -52,6 +52,7 @@ static struct rtl_btc_ops rtl_btc_operation = {
 	.btc_get_lps_val = rtl_btc_get_lps_val,
 	.btc_get_rpwm_val = rtl_btc_get_rpwm_val,
 	.btc_is_bt_ctrl_lps = rtl_btc_is_bt_ctrl_lps,
+	.btc_is_bt_lps_on = rtl_btc_is_bt_lps_on,
 	.btc_get_ampdu_cfg = rtl_btc_get_ampdu_cfg,
 	.btc_set_hci_version = rtl_btc_set_hci_version,
 	.btc_record_pwr_mode = rtl_btc_record_pwr_mode,
@@ -86,6 +87,11 @@ u8 rtl_btc_get_rpwm_val(struct rtl_priv *rtlpriv)
 bool rtl_btc_is_bt_ctrl_lps(struct rtl_priv *rtlpriv)
 {
 	return gl_bt_coexist.bt_info.bt_ctrl_lps;
+}
+
+bool rtl_btc_is_bt_lps_on(struct rtl_priv *rtlpriv)
+{
+	return gl_bt_coexist.bt_info.bt_lps_on;
 }
 
 void rtl_btc_get_ampdu_cfg(struct rtl_priv *rtlpriv, u8 *reject_agg,
