@@ -386,7 +386,7 @@ void rtl_lps_set_psmode(struct ieee80211_hw *hw, u8 rt_psmode)
 	if (mac->link_state != MAC80211_LINKED)
 		return;
 
-	if (ppsc->dot11_psmode == rt_psmode)
+	if (ppsc->dot11_psmode == rt_psmode && rt_psmode == EACTIVE)
 		return;
 
 	/* Update power save mode configured. */
@@ -470,7 +470,7 @@ void rtl_lps_enter(struct ieee80211_hw *hw)
 
 	/* Idle for a while if we connect to AP a while ago. */
 	if (mac->cnt_after_linked >= 2) {
-		if (ppsc->dot11_psmode == EACTIVE) {
+		/*if (ppsc->dot11_psmode == EACTIVE)*/ {
 			RT_TRACE(rtlpriv, COMP_POWER, DBG_LOUD,
 				 "Enter 802.11 power save mode...\n");
 
