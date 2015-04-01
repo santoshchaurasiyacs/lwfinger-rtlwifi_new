@@ -379,6 +379,7 @@ static int rtl_cfgvendor_coex_4way(struct wiphy *wiphy,
 	tmp = (rtl_data_to_int(rtlpriv, data, len) ? true : false);
 
 	rtlpriv->btcoexist.btc_info.in_4way = tmp;
+	rtlpriv->btcoexist.btc_info.in_4way_ts = jiffies;
 
 	RT_TRACE(rtlpriv, COMP_VENDOR_CMD, DBG_DMESG,
 				 "cfgvendor 4way is %d\n", rtlpriv->btcoexist.btc_info.in_4way);
@@ -1524,6 +1525,10 @@ u8 rtl_is_special_data(struct ieee80211_hw *hw, struct sk_buff *skb,
 					 DBG_DMESG, "ARP %s !!\n", (is_tx) ? "Tx" : "Rx");
 		return true;
 	} else if (ETH_P_PAE == ether_type) {
+		/* EAPOL is seens as in-4way */
+		rtlpriv->btcoexist.btc_info.in_4way = true;
+		rtlpriv->btcoexist.btc_info.in_4way_ts = jiffies;
+
 		if (!with_encrypt_header)
 			return true;
 		RT_TRACE(rtlpriv, (COMP_SEND | COMP_RECV), DBG_DMESG,
@@ -2068,6 +2073,15 @@ label_lps_done:
 
 	if (rtlpriv->cfg->ops->get_btc_status())
 		rtlpriv->btcoexist.btc_ops->btc_periodical(rtlpriv);
+
+	if (rtlpriv->btcoexist.btc_info.in_4way) {
+		if (time_after(jiffies,
+						rtlpriv->btcoexist.btc_info.in_4way_ts
+						+ msecs_to_jiffies(IN_4WAY_TIMEOUT_TIME)))
+		{
+			rtlpriv->btcoexist.btc_info.in_4way = false;
+		}
+	}
 
 	rtlpriv->link_info.bcn_rx_inperiod = 0;
 

@@ -1597,7 +1597,7 @@ static int rtl_op_set_key(struct ieee80211_hw *hw, enum set_key_cmd cmd,
 		0xff, 0xff, 0xff, 0xff, 0xff, 0xff
 	};
 
-
+	rtlpriv->btcoexist.btc_info.in_4way = false;
 
 
 	/************** <0> disable routine**********************/
