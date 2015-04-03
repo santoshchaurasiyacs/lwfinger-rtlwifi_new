@@ -1427,9 +1427,13 @@ static int rtl_op_ampdu_action(struct ieee80211_hw *hw,
 	return 0;
 }
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 19, 0))
 static void rtl_op_sw_scan_start(struct ieee80211_hw *hw,
 				 struct ieee80211_vif *vif,
 				 const u8 *mac_addr)
+#else
+static void rtl_op_sw_scan_start(struct ieee80211_hw *hw)
+#endif
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_mac *mac = rtl_mac(rtl_priv(hw));
@@ -1463,8 +1467,12 @@ static void rtl_op_sw_scan_start(struct ieee80211_hw *hw,
 	rtlpriv->cfg->ops->scan_operation_backup(hw, SCAN_OPT_BACKUP_BAND0);
 }
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 19, 0))
 static void rtl_op_sw_scan_complete(struct ieee80211_hw *hw,
 				    struct ieee80211_vif *vif)
+#else
+static void rtl_op_sw_scan_complete(struct ieee80211_hw *hw)
+#endif
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_mac *mac = rtl_mac(rtl_priv(hw));
