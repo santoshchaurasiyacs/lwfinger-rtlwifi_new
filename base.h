@@ -143,6 +143,8 @@ bool rtl_check_tx_report_acked(struct ieee80211_hw *hw);
 void rtl_wait_tx_report_acked(struct ieee80211_hw *hw, u32 wait_ms);
 
 void rtl_beacon_statistic(struct ieee80211_hw *hw, struct sk_buff *skb);
+void rtl_collect_scan_list(struct ieee80211_hw *hw, struct sk_buff *skb);
+void rtl_scan_list_expire(struct ieee80211_hw *hw);
 void rtl_watch_dog_timer_callback(unsigned long data);
 int rtl_tx_agg_start(struct ieee80211_hw *hw, struct ieee80211_vif *vif,
 	struct ieee80211_sta *sta, u16 tid, u16 *ssn);
