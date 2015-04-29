@@ -175,8 +175,8 @@ int rtl8821ae_init_sw_vars(struct ieee80211_hw *hw)
 	rtlpriv->psc.fwctrl_lps = rtlpriv->cfg->mod_params->fwctrl_lps;
 	if (rtlpriv->cfg->mod_params->disable_watchdog)
 		pr_info("watchdog disabled\n");
-	rtlpriv->psc.reg_fwctrl_lps = 3;
-	rtlpriv->psc.reg_max_lps_awakeintvl = 5;
+	rtlpriv->psc.reg_fwctrl_lps = 2;
+	rtlpriv->psc.reg_max_lps_awakeintvl = 2;
 
 	/* for ASPM, you can close aspm through
 	 * set const_support_pciaspm = 0 */
