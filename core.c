@@ -864,7 +864,7 @@ static int rtl_op_config(struct ieee80211_hw *hw, u32 changed)
 		 */
 		if (rtlpriv->mac80211.offchan_deley) {
 			rtlpriv->mac80211.offchan_deley = false;
-			mdelay(50);
+			mdelay(35);
 		}
 
 		rtlphy->current_channel = wide_chan;
