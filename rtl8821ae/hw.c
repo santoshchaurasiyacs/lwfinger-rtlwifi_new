@@ -4073,7 +4073,6 @@ bool rtl8821ae_gpio_radio_on_off_checking(struct ieee80211_hw *hw, u8 *valid)
 	} else {
 		if (ppsc->reg_rfps_level & RT_RF_OFF_LEVL_HALT_NIC)
 			RT_SET_PS_LEVEL(ppsc, RT_RF_OFF_LEVL_HALT_NIC);
-
 		spin_lock(&rtlpriv->locks.rf_ps_lock);
 		ppsc->rfchange_inprogress = false;
 		spin_unlock(&rtlpriv->locks.rf_ps_lock);
