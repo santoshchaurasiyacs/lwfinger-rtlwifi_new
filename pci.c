@@ -2052,12 +2052,14 @@ static int rtl_pci_intr_mode_msi(struct ieee80211_hw *hw)
 	struct rtl_pci *rtlpci = rtl_pcidev(pcipriv);
 	int ret;
 	ret = pci_enable_msi(rtlpci->pdev);
-	if (ret < 0)
+	if (ret < 0) {
+		pr_info("pci_enable_msi returned %d\n", ret);
 		return ret;
-
+	}
 	ret = request_irq(rtlpci->pdev->irq, &_rtl_pci_interrupt,
 			  IRQF_SHARED, KBUILD_MODNAME, hw);
 	if (ret < 0) {
+		pr_info("MSI disabled\n");
 		pci_disable_msi(rtlpci->pdev);
 		return ret;
 	}
