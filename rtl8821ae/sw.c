@@ -144,7 +144,6 @@ int rtl8821ae_init_sw_vars(struct ieee80211_hw *hw)
 	struct rtl_hal *rtlhal = rtl_hal(rtl_priv(hw));
 
 	rtl8821ae_bt_reg_init(hw);
-	rtlpci->msi_support = rtlpriv->cfg->mod_params->msi_support;
 	rtlpriv->btcoexist.btc_ops = rtl_btc_get_ops_pointer();
 
 	rtlpriv->dm.dm_initialgain_enable = 1;
@@ -223,7 +222,6 @@ int rtl8821ae_init_sw_vars(struct ieee80211_hw *hw)
 		pr_info("watchdog disabled\n");
 	rtlpriv->psc.reg_fwctrl_lps = 3;
 	rtlpriv->psc.reg_max_lps_awakeintvl = 5;
-	rtlpci->msi_support = rtlpriv->cfg->mod_params->msi_support;
 
 	/* for ASPM, you can close aspm through
 	 * set const_support_pciaspm = 0 */
