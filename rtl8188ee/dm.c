@@ -537,9 +537,10 @@ static void rtl88e_dm_dig(struct ieee80211_hw *hw)
 		dm_dig->cur_sta_cstate = DIG_STA_CONNECT;
 	else
 		dm_dig->cur_sta_cstate = DIG_STA_DISCONNECT;
+
 	if (rtlpriv->mac80211.opmode == NL80211_IFTYPE_AP ||
-	rtlpriv->mac80211.opmode == NL80211_IFTYPE_ADHOC)
-	dm_dig->cur_sta_cstate = DIG_STA_DISCONNECT;
+		rtlpriv->mac80211.opmode == NL80211_IFTYPE_ADHOC)
+		dm_dig->cur_sta_cstate = DIG_STA_DISCONNECT;
 
 	dm_dig_max = DM_DIG_MAX;
 	dm_dig_min = DM_DIG_MIN;

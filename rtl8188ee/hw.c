@@ -1838,7 +1838,7 @@ static void _rtl8188e_read_power_value_fromprom(struct ieee80211_hw *hw,
 				else {
 					pwrinfo5g->bw40_diff[rfPath][TxCount] = (hwinfo[eeAddr]&0xf0)>>4;
 					if (pwrinfo5g->bw40_diff[rfPath][TxCount] & BIT(3))
-					pwrinfo5g->bw40_diff[rfPath][TxCount] |= 0xF0;
+						pwrinfo5g->bw40_diff[rfPath][TxCount] |= 0xF0;
 				}
 
 				if (hwinfo[eeAddr] == 0xFF)
@@ -1846,7 +1846,7 @@ static void _rtl8188e_read_power_value_fromprom(struct ieee80211_hw *hw,
 				else {
 					pwrinfo5g->bw20_diff[rfPath][TxCount] = (hwinfo[eeAddr]&0x0f);
 					if (pwrinfo5g->bw20_diff[rfPath][TxCount] & BIT(3))
-					pwrinfo5g->bw20_diff[rfPath][TxCount] |= 0xF0;
+						pwrinfo5g->bw20_diff[rfPath][TxCount] |= 0xF0;
 				}
 				eeAddr++;
 			}

@@ -2027,9 +2027,10 @@ void rtl88e_phy_iq_calibrate(struct ieee80211_hw *hw, bool b_recovery)
 	is13simular = false;
 	for (i = 0; i < 3; i++) {
 		if (get_rf_type(rtlphy) == RF_2T2R)
-		_rtl88e_phy_iq_calibrate(hw, result, i, true);
+			_rtl88e_phy_iq_calibrate(hw, result, i, true);
 		else
-		_rtl88e_phy_iq_calibrate(hw, result, i, false);
+			_rtl88e_phy_iq_calibrate(hw, result, i, false);
+
 		if (i == 1) {
 			is12simular = _rtl88e_phy_simularity_compare(hw,
 								     result, 0,
