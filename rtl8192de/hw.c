@@ -1069,7 +1069,7 @@ int rtl92de_hw_init(struct ieee80211_hw *hw)
 		/* Mac1 */
 		if (!rtlpriv->dm.supp_phymode_switch ||
 			(rtlpriv->dm.supp_phymode_switch && (!rtlhal->slave_of_dmsp)))
-		rtl_set_bbreg(hw, RFPGA0_ANALOGPARAMETER2, BIT(11) | BIT(10), 3);
+			rtl_set_bbreg(hw, RFPGA0_ANALOGPARAMETER2, BIT(11) | BIT(10), 3);
 	}
 
 	_rtl92de_hw_configure(hw);
