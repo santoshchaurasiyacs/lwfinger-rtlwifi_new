@@ -664,7 +664,11 @@ u8 rtl_btcoex_sendmsgbysocket(struct rtl_priv *rtlpriv, u8 *msg, u8 msg_size, bo
 	udpmsg.msg_flags = 0;
 	oldfs = get_fs(); 
 	set_fs(KERNEL_DS); 
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(4, 1, 0))
 	error = sock_sendmsg(pcoex_info->udpsock, &udpmsg, msg_size); 
+#else
+	error = sock_sendmsg(pcoex_info->udpsock, &udpmsg); 
+#endif
 	set_fs(oldfs); 
 	if(error < 0) {
 		BTC_PRINT(BTC_MSG_SOCKET, SOCKET_CRITICAL,"Error when sendimg msg, error:%d\n",error);			
