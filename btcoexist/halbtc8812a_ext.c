@@ -628,7 +628,7 @@ void rtl_btcoex_recvmsgbysocket(void* data) {
 u8 rtl_btcoex_sendmsgbysocket(struct rtl_priv *rtlpriv, u8 *msg, u8 msg_size, bool force) {
 
 	//u8 i;
-	u8 error; 
+	int error;
 	struct msghdr	udpmsg; 
 	mm_segment_t	oldfs; 
 	struct iovec	iov; 
