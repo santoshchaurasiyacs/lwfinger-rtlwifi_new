@@ -1272,7 +1272,7 @@ static void rtl88e_dm_refresh_rate_adaptive_mask(struct ieee80211_hw *hw)
 			rcu_read_lock();
 			sta = rtl_find_sta(hw, mac->bssid);
 			if (sta)
-			rtlpriv->cfg->ops->update_rate_tbl(hw, sta, p_ra->ratr_state);
+				rtlpriv->cfg->ops->update_rate_tbl(hw, sta, p_ra->ratr_state);
 			rcu_read_unlock();
 
 			p_ra->pre_ratr_state = p_ra->ratr_state;
