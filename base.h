@@ -135,6 +135,13 @@ int rtlwifi_rate_mapping(struct ieee80211_hw *hw,
 bool rtl_tx_mgmt_proc(struct ieee80211_hw *hw, struct sk_buff *skb);
 u8 rtl_is_special_data(struct ieee80211_hw *hw, struct sk_buff *skb, u8 is_tx, bool with_encrypt_header);
 
+bool rtl_is_tx_report_skb(struct ieee80211_hw *hw, struct sk_buff *skb);
+u16 rtl_get_tx_report_sn(struct ieee80211_hw *hw);
+void rtl_tx_report_handler(struct ieee80211_hw *hw, u8 *tmp_buf,
+			u8 c2h_cmd_len);
+bool rtl_check_tx_report_acked(struct ieee80211_hw *hw);
+void rtl_wait_tx_report_acked(struct ieee80211_hw *hw, u32 wait_ms);
+
 void rtl_beacon_statistic(struct ieee80211_hw *hw, struct sk_buff *skb);
 void rtl_watch_dog_timer_callback(unsigned long data);
 int rtl_tx_agg_start(struct ieee80211_hw *hw, struct ieee80211_vif *vif,

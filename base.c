@@ -1112,6 +1112,9 @@ void rtl_get_tcb_desc(struct ieee80211_hw *hw,
 	if (txrate)
 		tcb_desc->hw_rate = txrate->hw_value;
 
+	if (rtl_is_tx_report_skb(hw, skb))
+		tcb_desc->use_spe_rpt = 1;
+
 	if (ieee80211_is_data(fc)) {
 		/*
 		 *we set data rate INX 0
@@ -1325,33 +1328,13 @@ static void setup_arp_tx(struct rtl_priv *rtlpriv, struct rtl_ps_ctl *ppsc)
 	ppsc->last_delaylps_stamp_jiffies = jiffies;
 }
 
-/* This function is called by 3 routines:
- * 1.RX
- * 2.rtl_tx_status
- * 3._rtl_rc_get_highest_rix
- *
- * 1 and 2 have encryption header
- * 3 does not
- *
- * data in 2 and 3 are same.
- *
- * if we return false to _rtl_rc_get_highest_rix(), this will cause the rate
- * to be too high when EAPOL. After a while, the connection will fail
- */
-
-u8 rtl_is_special_data(struct ieee80211_hw *hw, struct sk_buff *skb, u8 is_tx, bool with_encrypt_header)
+static const u8 *rtl_skb_ether_type_ptr(struct ieee80211_hw *hw,
+			struct sk_buff *skb, bool with_encrypt_header)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
-	struct rtl_ps_ctl *ppsc = rtl_psc(rtl_priv(hw));
-	__le16 fc = rtl_get_fc(skb);
 	struct rtl_mac *mac = rtl_mac(rtl_priv(hw));
-	u16 ether_type;
 	u8 mac_hdr_len = ieee80211_get_hdrlen_from_skb(skb);
-   	u8 encrypt_header_len = 0;
-	const struct iphdr *ip;
-
-	if (!ieee80211_is_data(fc))
-		goto end;
+	u8 encrypt_header_len = 0;
 
 	/* mac80211 use sw IV */
 	/* give len when tx will cause fail */
@@ -1374,14 +1357,41 @@ u8 rtl_is_special_data(struct ieee80211_hw *hw, struct sk_buff *skb, u8 is_tx, b
 		}
 	}
 
+	return skb->data + mac_hdr_len + SNAP_SIZE + encrypt_header_len;
+}
 
-	ether_type = be16_to_cpup((__be16 *)
-				  (skb->data + mac_hdr_len + SNAP_SIZE + encrypt_header_len));
+/* This function is called by 3 routines:
+ * 1.RX
+ * 2.rtl_tx_status
+ * 3._rtl_rc_get_highest_rix
+ *
+ * 1 and 2 have encryption header
+ * 3 does not
+ *
+ * data in 2 and 3 are same.
+ *
+ * if we return false to _rtl_rc_get_highest_rix(), this will cause the rate
+ * to be too high when EAPOL. After a while, the connection will fail
+ */
 
+u8 rtl_is_special_data(struct ieee80211_hw *hw, struct sk_buff *skb,
+			u8 is_tx, bool with_encrypt_header)
+{
+	struct rtl_priv *rtlpriv = rtl_priv(hw);
+	struct rtl_ps_ctl *ppsc = rtl_psc(rtl_priv(hw));
+	__le16 fc = rtl_get_fc(skb);
+	u16 ether_type;
+	const u8 *ether_type_ptr;
+	const struct iphdr *ip;
+
+	if (!ieee80211_is_data(fc))
+		goto end;
+
+	ether_type_ptr = rtl_skb_ether_type_ptr(hw, skb, with_encrypt_header);
+	ether_type = be16_to_cpup((__be16 *)ether_type_ptr);
 
 	if (ETH_P_IP == ether_type) {
-		ip = (struct iphdr *)((u8 *) skb->data + mac_hdr_len +
-			      SNAP_SIZE + PROTOC_TYPE_SIZE + encrypt_header_len);
+		ip = (struct iphdr *)((u8 *) ether_type_ptr + PROTOC_TYPE_SIZE);
 		if (IPPROTO_UDP == ip->protocol) {
 			struct udphdr *udp = (struct udphdr *)((u8 *) ip +
 							       (ip->ihl << 2));
@@ -1438,6 +1448,85 @@ end:
 }
 EXPORT_SYMBOL_GPL(rtl_is_special_data);
 
+bool rtl_is_tx_report_skb(struct ieee80211_hw *hw, struct sk_buff *skb)
+{
+	u16 ether_type;
+	const u8 *ether_type_ptr;
+
+	ether_type_ptr = rtl_skb_ether_type_ptr(hw, skb, true);
+	ether_type = be16_to_cpup((__be16 *)ether_type_ptr);
+
+	/* EAPOL */
+	if (ETH_P_PAE == ether_type)
+		return true;
+
+	return false;
+}
+
+u16 rtl_get_tx_report_sn(struct ieee80211_hw *hw)
+{
+	struct rtl_priv *rtlpriv = rtl_priv(hw);
+	struct rtl_tx_report *tx_report = &rtlpriv->tx_report;
+	u16 sn;
+
+	sn = atomic_inc_return(&tx_report->sn) & 0x0FFF;
+
+	tx_report->last_sent_sn = sn;
+	tx_report->last_sent_time = jiffies;
+
+	RT_TRACE(rtlpriv, COMP_TX_REPORT, DBG_DMESG,
+			 "Send TX-Report sn=0x%X\n", sn);
+
+	return sn;
+}
+EXPORT_SYMBOL_GPL(rtl_get_tx_report_sn);
+
+void rtl_tx_report_handler(struct ieee80211_hw *hw, u8 *tmp_buf, u8 c2h_cmd_len)
+{
+	struct rtl_priv *rtlpriv = rtl_priv(hw);
+	struct rtl_tx_report *tx_report = &rtlpriv->tx_report;
+	u16 sn;
+
+	sn = ((tmp_buf[7] & 0x0F) << 8) | tmp_buf[6];
+
+	tx_report->last_recv_sn = sn;
+
+	RT_TRACE(rtlpriv, COMP_TX_REPORT, DBG_DMESG,
+			 "Recv TX-Report st=0x%02X sn=0x%X retry=0x%X\n",
+			 tmp_buf[0], sn, tmp_buf[2]);
+}
+EXPORT_SYMBOL_GPL(rtl_tx_report_handler);
+
+bool rtl_check_tx_report_acked(struct ieee80211_hw *hw)
+{
+	struct rtl_priv *rtlpriv = rtl_priv(hw);
+	struct rtl_tx_report *tx_report = &rtlpriv->tx_report;
+
+	if (tx_report->last_sent_sn == tx_report->last_recv_sn)
+		return true;
+
+	if (time_before(tx_report->last_sent_time + 3 * HZ, jiffies)) {
+		RT_TRACE(rtlpriv, COMP_TX_REPORT, DBG_WARNING,
+			 "Check TX-Report timeout!!\n");
+		return true;	/* 3 sec. (timeout) seen as acked */
+	}
+
+	return false;
+}
+
+void rtl_wait_tx_report_acked(struct ieee80211_hw *hw, u32 wait_ms)
+{
+	struct rtl_priv *rtlpriv = rtl_priv(hw);
+	int i;
+
+	for (i = 0; i < wait_ms; i++) {
+		if (rtl_check_tx_report_acked(hw))
+			break;
+		msleep(1);
+		RT_TRACE(rtlpriv, COMP_SEC, DBG_DMESG,
+			"Wait 1ms (%d/%d) to disable key.\n", i, wait_ms);
+	}
+}
 /*********************************************************
  *
  * functions called by core.c

@@ -75,6 +75,7 @@ void rtl_dbgp_flag_init(struct ieee80211_hw *hw)
 		COMP_CHAN |
 		COMP_BT_COEXIST |
 		COMP_IQK |
+		COMP_TX_REPORT |
 		0;
 
 	for (i = 0; i < DBGP_TYPE_MAX; i++)

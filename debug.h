@@ -110,6 +110,7 @@
 #define COMP_EASY_CONCURRENT		BIT(29) /* Reuse of this bit is OK */
 #define COMP_BT_COEXIST			BIT(30)
 #define COMP_IQK			BIT(31)
+#define COMP_TX_REPORT			BIT_ULL(32)
 
 /*--------------------------------------------------------------
 		Define the rt_print components
