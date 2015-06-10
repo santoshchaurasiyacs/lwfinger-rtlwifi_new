@@ -1710,6 +1710,8 @@ static int rtl_op_set_key(struct ieee80211_hw *hw, enum set_key_cmd cmd,
 
 		key_idx = key->keyidx;
 
+		rtl_wait_tx_report_acked(hw, 500); /* wait 500ms for TX ack */
+
 		rtl_cam_del_entry(hw , sta, key_idx);
 		break;
 	default:
