@@ -1645,14 +1645,16 @@ static int rtl_op_set_key(struct ieee80211_hw *hw, enum set_key_cmd cmd,
 	/**************** determine key_type ****************/
 	if (key->flags & IEEE80211_KEY_FLAG_PAIRWISE)
 		cam_key_type = pairwise_key;
-	else
+	else {
 		cam_key_type = group_key;
-	if (key->cipher == WLAN_CIPHER_SUITE_WEP40 ||
-	   key->cipher == WLAN_CIPHER_SUITE_WEP104 ||
-	   vif->type == NL80211_IFTYPE_ADHOC) {
-		/* REG_CR setting*/
-		rtlpriv->sec.use_defaultkey = true;
-		cam_key_type = wep_only;
+
+		if (key->cipher == WLAN_CIPHER_SUITE_WEP40 ||
+		   key->cipher == WLAN_CIPHER_SUITE_WEP104 ||
+		   vif->type == NL80211_IFTYPE_ADHOC) {
+			/* REG_CR setting*/
+			rtlpriv->sec.use_defaultkey = true;
+			cam_key_type = wep_only;
+		}
 	}
 	/**************** determine key_type ****************/
 
