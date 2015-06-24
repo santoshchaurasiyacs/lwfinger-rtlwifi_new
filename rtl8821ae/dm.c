@@ -2172,33 +2172,22 @@ void rtl8812ae_dm_txpower_tracking_callback_thermalmeter(
 				rtldm->thermalvalue);
 		}
 
-		if (thermal_value > rtlefuse->eeprom_thermalmeter) {
+		if (thermal_value > rtlefuse->eeprom_thermalmeter)
 			RT_TRACE(rtlpriv, COMP_POWER_TRACKING, DBG_LOUD,
 				"Temperature(%d) higher than PG value(%d)\n",
 				thermal_value, rtlefuse->eeprom_thermalmeter);
-
-
+		else
 			RT_TRACE(rtlpriv, COMP_POWER_TRACKING, DBG_LOUD,
-				"**********Enter POWER Tracking MIX_MODE**********\n");
-			for (p = RF90_PATH_A; p < MAX_PATH_NUM_8812A; p++)
-					rtl8812ae_dm_txpwr_track_set_pwr(hw,
-						MIX_MODE, p, 0);
-
-		} else {
-			RT_TRACE(rtlpriv, COMP_POWER_TRACKING, DBG_LOUD,
-				"Temperature(%d) lower than PG value(%d)\n",
-				thermal_value, rtlefuse->eeprom_thermalmeter);
+				 "Temperature(%d) lower than PG value(%d)\n",
+				 thermal_value, rtlefuse->eeprom_thermalmeter);
 
 
-			RT_TRACE(rtlpriv, COMP_POWER_TRACKING, DBG_LOUD,
-				"**********Enter POWER Tracking MIX_MODE**********\n");
-			for (p = RF90_PATH_A; p < MAX_PATH_NUM_8812A; p++)
-				rtl8812ae_dm_txpwr_track_set_pwr(hw,
-								MIX_MODE,
-								p,
-								index_for_channel);
+		RT_TRACE(rtlpriv, COMP_POWER_TRACKING, DBG_LOUD,
+			"**********Enter POWER Tracking MIX_MODE**********\n");
+		for (p = RF90_PATH_A; p < MAX_PATH_NUM_8812A; p++)
+			rtl8812ae_dm_txpwr_track_set_pwr(hw, MIX_MODE, p,
+							 index_for_channel);
 
-		}
 		/*Record last time Power Tracking result as base.*/
 		rtldm->bb_swing_idx_cck_base = rtldm->bb_swing_idx_cck;
 		for (p = RF90_PATH_A; p < MAX_PATH_NUM_8812A; p++)
