@@ -405,6 +405,20 @@ static void _rtl_init_mac80211(struct ieee80211_hw *hw)
 		}
 	}
 	/* <5> set hw caps */
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 2, 0))
+	ieee80211_hw_set(hw, SIGNAL_DBM);
+	ieee80211_hw_set(hw, RX_INCLUDES_FCS);
+	ieee80211_hw_set(hw, AMPDU_AGGREGATION);
+	ieee80211_hw_set(hw, CONNECTION_MONITOR);
+	ieee80211_hw_set(hw, MFP_CAPABLE);
+	ieee80211_hw_set(hw, REPORTS_TX_ACK_STATUS);
+
+	/* swlps or hwlps has been set in diff chip in init_sw_vars */
+	if (rtlpriv->psc.swctrl_lps) {
+		ieee80211_hw_set(hw, SUPPORTS_PS);
+		ieee80211_hw_set(hw, PS_NULLFUNC_STACK);
+	}
+#else
 	hw->flags = IEEE80211_HW_SIGNAL_DBM |
 	    IEEE80211_HW_RX_INCLUDES_FCS |
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(3, 4, 0))
@@ -419,9 +433,8 @@ static void _rtl_init_mac80211(struct ieee80211_hw *hw)
 	/* swlps or hwlps has been set in diff chip in init_sw_vars */
 	if (rtlpriv->psc.swctrl_lps)
 		hw->flags |= IEEE80211_HW_SUPPORTS_PS |
-			IEEE80211_HW_PS_NULLFUNC_STACK |
-			/* IEEE80211_HW_SUPPORTS_DYNAMIC_PS | */
-			0;
+			IEEE80211_HW_PS_NULLFUNC_STACK;
+#endif
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,37))
 	hw->wiphy->interface_modes =
 	    BIT(NL80211_IFTYPE_AP) |
