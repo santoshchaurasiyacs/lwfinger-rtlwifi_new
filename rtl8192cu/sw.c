@@ -43,6 +43,7 @@
 #include "led.h"
 #include "hw.h"
 #include <linux/module.h>
+#include <linux/vmalloc.h>
 
 MODULE_AUTHOR("Georgia		<georgia@realtek.com>");
 MODULE_AUTHOR("Ziv Huang	<ziv_huang@realtek.com>");
