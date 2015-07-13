@@ -85,6 +85,7 @@ void rtl_dbgp_flag_init(struct ieee80211_hw *hw)
 }
 EXPORT_SYMBOL_GPL(rtl_dbgp_flag_init);
 
+#ifdef proc_dir_entry
 static struct proc_dir_entry *proc_topdir;
 static int rtl_proc_get_mac_0(struct seq_file *m, void *v)
 {
@@ -1075,3 +1076,4 @@ void rtl_proc_remove_topdir(void)
 	if (proc_topdir)
 		remove_proc_entry("rtlwifi", init_net.proc_net);
 }
+#endif
