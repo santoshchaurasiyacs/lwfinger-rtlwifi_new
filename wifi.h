@@ -92,9 +92,8 @@
 #define CHANNEL_MAX_NUMBER		(14 + 24 + 21)	/* 14 is the max
 							 * channel number */
 #define CHANNEL_MAX_NUMBER_2G		14
-#define CHANNEL_MAX_NUMBER_5G		54 /* Please refer to
-					    *"phy_GetChnlGroup8812A" and
-					    * "Hal_ReadTxPowerInfo8812A"*/
+#define CHANNEL_MAX_NUMBER_5G		49  	/*28+14+7*/
+
 
 #define MAX_REGULATION_NUM		4
 #define MAX_RF_PATH_NUM			2
