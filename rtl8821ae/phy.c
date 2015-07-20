@@ -73,8 +73,6 @@ static long _rtl8821ae_phy_txpwr_idx_to_dbm(struct ieee80211_hw *hw,
 static void rtl8821ae_phy_set_rf_on(struct ieee80211_hw *hw);
 static void rtl8821ae_phy_set_io(struct ieee80211_hw *hw);
 
-
-
 static void rtl8812ae_fixspur(
 	struct ieee80211_hw *hw,
 	enum ht_channel_width band_width,
@@ -1511,11 +1509,13 @@ static char _rtl8812ae_phy_get_chnl_idx_of_txpwr_lmt(struct ieee80211_hw *hw,
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	char channel_index = -1;
 	u8 channel_5g[CHANNEL_MAX_NUMBER_5G] = {
-		36, 38, 40, 42, 44, 46, 48, 50, 52, 54, 56, 58, 60, 62, 64,
-		100, 102, 104, 106, 108, 110, 112, 114, 116, 118, 120, 122,
-		124, 126, 128, 130, 132, 134, 136, 138, 140, 142, 144, 149,
-		151, 153, 155, 157, 159, 161, 163, 165, 167, 168, 169, 171,
-		173, 175, 177};
+		36, 38, 40, 42, 44, 46, 48,		/* Band 1 */
+		52, 54, 56, 58, 60, 62, 64,		/* Band 2 */
+		100, 102, 104, 106, 108, 110, 112,	/* Band 3 */
+		116, 118, 120, 122, 124, 126, 128,	/* Band 3 */
+		132, 134, 136, 138, 140, 142, 144,	/* Band 3 */
+		149, 151, 153, 155, 157, 159, 161,	/* Band 4 */
+		165, 167, 169, 171, 173, 175, 177};	/* Band 4 */
 	u8  i = 0;
 	if (band == BAND_ON_2_4G)
 		channel_index = channel - 1;
@@ -2285,11 +2285,13 @@ void rtl8821ae_phy_get_txpower_level(struct ieee80211_hw *hw, long *powerlevel)
 static bool _rtl8821ae_phy_get_chnl_index(u8 channel, u8 *chnl_index)
 {
 	u8 channel_5g[CHANNEL_MAX_NUMBER_5G] = {
-			36, 38, 40, 42, 44, 46, 48, 50, 52, 54, 56, 58, 60, 62,
-			64, 100, 102, 104, 106, 108, 110, 112, 114, 116, 118,
-			120, 122, 124, 126, 128, 130, 132, 134, 136, 138, 140,
-			142, 144, 149, 151, 153, 155, 157, 159, 161, 163, 165,
-			167, 168, 169, 171, 173, 175, 177};
+		36, 38, 40, 42, 44, 46, 48,		/* Band 1 */
+		52, 54, 56, 58, 60, 62, 64,		/* Band 2 */
+		100, 102, 104, 106, 108, 110, 112,	/* Band 3 */
+		116, 118, 120, 122, 124, 126, 128,	/* Band 3 */
+		132, 134, 136, 138, 140, 142, 144,	/* Band 3 */
+		149, 151, 153, 155, 157, 159, 161,	/* Band 4 */
+		165, 167, 169, 171, 173, 175, 177};	/* Band 4 */
 	u8 i = 0;
 	bool in_24g = true;
 
