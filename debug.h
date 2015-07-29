@@ -74,6 +74,10 @@
  */
 #define	DBG_TRACE			5
 
+#ifndef BIT_ULL
+#define BIT_ULL(nr)              (1ULL << (nr))
+#endif
+
 /*--------------------------------------------------------------
 		Define the rt_trace components
 --------------------------------------------------------------*/
