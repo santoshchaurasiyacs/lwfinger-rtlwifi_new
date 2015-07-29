@@ -418,8 +418,6 @@ static void _rtl_init_mac80211(struct ieee80211_hw *hw)
 		ieee80211_hw_set(hw, SUPPORTS_PS);
 		ieee80211_hw_set(hw, PS_NULLFUNC_STACK);
 	}
-	if (rtlpriv->psc.fwctrl_lps)
-		ieee80211_hw_set(hw, SUPPORTS_PS);
 #else
 	hw->flags = IEEE80211_HW_SIGNAL_DBM |
 	    IEEE80211_HW_RX_INCLUDES_FCS |
@@ -435,9 +433,9 @@ static void _rtl_init_mac80211(struct ieee80211_hw *hw)
 	/* swlps or hwlps has been set in diff chip in init_sw_vars */
 	if (rtlpriv->psc.swctrl_lps)
 		hw->flags |= IEEE80211_HW_SUPPORTS_PS |
-			IEEE80211_HW_PS_NULLFUNC_STACK;
-	if (rtlpriv->psc.fwctrl_lps)
-		hw->flags |= IEEE80211_HW_SUPPORTS_PS;
+			IEEE80211_HW_PS_NULLFUNC_STACK |
+			/* IEEE80211_HW_SUPPORTS_DYNAMIC_PS | */
+			0;
 #endif
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,37))
 	hw->wiphy->interface_modes =
