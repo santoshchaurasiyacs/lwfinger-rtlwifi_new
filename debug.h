@@ -216,8 +216,4 @@ do {									\
 	} while (0)
 
 void rtl_dbgp_flag_init(struct ieee80211_hw *hw);
-void rtl_proc_add_one(struct ieee80211_hw *hw);
-void rtl_proc_remove_one(struct ieee80211_hw *hw);
-void rtl_proc_add_topdir(void);
-void rtl_proc_remove_topdir(void);
 #endif
