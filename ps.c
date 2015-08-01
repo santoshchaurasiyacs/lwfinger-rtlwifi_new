@@ -57,16 +57,6 @@ bool rtl_ps_enable_nic(struct ieee80211_hw *hw)
 	RT_CLEAR_PS_LEVEL(ppsc, RT_RF_OFF_LEVL_HALT_NIC);
 	/*init_status = false; */
 
-	/*<2.1> Switch Channel & Bandwidth to last rtl_op_config setting*/
-	rtlpriv->cfg->ops->switch_channel(hw);
-	rtlpriv->cfg->ops->set_channel_access(hw);
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 10, 0))
-	rtlpriv->cfg->ops->set_bw_mode(hw,
-			cfg80211_get_chandef_type(&(hw->conf.chandef)));
-#else
-	rtlpriv->cfg->ops->set_bw_mode(hw, hw->conf.channel_type);
-#endif
-
 	/*<3> Enable Interrupt */
 	rtlpriv->cfg->ops->enable_interrupt(hw);
 
