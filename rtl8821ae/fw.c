@@ -2032,7 +2032,7 @@ static void rtl8821ae_c2h_ra_report_handler(struct ieee80211_hw *hw,
 }
 
 
-static void _rtl8821ae_c2h_content_parsing(struct ieee80211_hw *hw,
+void rtl8821ae_c2h_content_parsing(struct ieee80211_hw *hw,
 					   u8 c2h_cmd_id, u8 c2h_cmd_len,
 					   u8 *tmp_buf)
 {
@@ -2088,5 +2088,14 @@ void rtl8821ae_c2h_packet_handler(
 
 	RT_PRINT_DATA(rtlpriv, COMP_FW, DBG_LOUD,
 		"[C2H packet], Content Hex:\n", tmp_buf, c2h_cmd_len);
-	_rtl8821ae_c2h_content_parsing(hw, c2h_cmd_id, c2h_cmd_len, tmp_buf);
+
+	switch (c2h_cmd_id) {
+	case C2H_8812_BT_INFO:
+		rtl_c2hcmd_enqueue(hw, c2h_cmd_id, c2h_cmd_len, tmp_buf);
+		break;
+
+	default:
+		rtl8821ae_c2h_content_parsing(hw, c2h_cmd_id, c2h_cmd_len, tmp_buf);
+		break;
+	}
 }
