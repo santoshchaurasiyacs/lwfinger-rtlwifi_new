@@ -1011,6 +1011,8 @@ void rtl8723be_c2h_content_parsing(struct ieee80211_hw *hw, u8 c2h_cmd_id,
 		break;
 	case C2H_8723B_BT_MP:
 		RT_TRACE(rtlpriv, COMP_FW, DBG_TRACE, "[C2H], C2H_8723BE_BT_MP!!\n");
+		rtlpriv->btcoexist.btc_ops->btc_btmpinfo_notify(rtlpriv, tmp_buf,
+							      c2h_cmd_len);
 		break;
 	default:
 		RT_TRACE(rtlpriv, COMP_FW, DBG_TRACE,

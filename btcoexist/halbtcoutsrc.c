@@ -466,12 +466,26 @@ u32 halbtc_get_wifi_link_status(struct btc_coexist *btcoexist)
 
 u32 halbtc_get_bt_patch_ver(struct btc_coexist *btcoexist)
 {
-	u8 cnt = 0;
+	static u8 cnt = 0;
+	struct rtl_priv *rtlpriv = btcoexist->adapter;
 
-	if (!btcoexist->bt_info.bt_real_fw_ver && cnt <= 5) {
+	if (btcoexist->bt_info.bt_real_fw_ver)
+		goto label_done;
 
+	if (halbtc_is_hw_mailbox_exist(btcoexist)) {
+		u8 cmd_buffer[4] = {0};
+		u8 oper_ver = 0;
+		u8 req_num = 0x0E;
+
+		cmd_buffer[0] |= (oper_ver & 0x0f);			/* Set OperVer */
+		cmd_buffer[0] |= ((req_num << 4) & 0xf0);	/* Set ReqNum */
+		cmd_buffer[1] = 0; /* BT_OP_GET_BT_VERSION = 0 */
+		rtlpriv->cfg->ops->fill_h2c_cmd(rtlpriv->mac80211.hw, 0x67, 4,
+						&(cmd_buffer[0]));
+	} else if (cnt <= 5) {
 		u8	data_len = 2;
 		u8	buf[4] = {0};
+
 		buf[0] = 0x0;	/* OP_Code*/
 		buf[1] = 0x0;	/* OP_Code_Length*/
 		rtl_btcoex_SendEventExtBtCoexControl(btcoexist->adapter, false,
@@ -479,6 +493,8 @@ u32 halbtc_get_bt_patch_ver(struct btc_coexist *btcoexist)
 						     &buf[0]);
 		cnt++;
 	}
+
+label_done:
 	return btcoexist->bt_info.bt_real_fw_ver;
 }
 
