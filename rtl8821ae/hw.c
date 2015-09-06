@@ -47,6 +47,17 @@
 
 #define LLT_CONFIG	5
 
+u8 rtl_channel5g[CHANNEL_MAX_NUMBER_5G] = {
+	36, 38, 40, 42, 44, 46, 48,		/* Band 1 */
+	52, 54, 56, 58, 60, 62, 64,		/* Band 2 */
+	100, 102, 104, 106, 108, 110, 112,	/* Band 3 */
+	116, 118, 120, 122, 124, 126, 128,	/* Band 3 */
+	132, 134, 136, 138, 140, 142, 144,	/* Band 3 */
+	149, 151, 153, 155, 157, 159, 161,	/* Band 4 */
+	165, 167, 169, 171, 173, 175, 177};	/* Band 4 */
+u8 rtl_channel5g_80m[CHANNEL_MAX_NUMBER_5G_80M] = {
+	42, 58, 106, 122, 138, 155, 171};
+
 static void _rtl8821ae_return_beacon_queue_skb(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
@@ -2845,14 +2856,6 @@ static void _rtl8812ae_read_txpower_info_from_hwpg(struct ieee80211_hw *hw,
 	struct rtl_efuse *rtlefuse = rtl_efuse(rtl_priv(hw));
 	struct txpower_info_2g pwrinfo24g;
 	struct txpower_info_5g pwrinfo5g;
-	u8 channel5g[CHANNEL_MAX_NUMBER_5G] = {
-		36, 38, 40, 42, 44, 46, 48, 50, 52, 54,
-		56, 58, 60, 62, 64, 100, 102, 104, 106,
-		108, 110, 112, 114, 116, 118, 120, 122,
-		124, 126, 128, 130, 132, 134, 136, 138,
-		140, 142, 144, 149, 151, 153, 155, 157,
-		159, 161, 163, 165, 167, 168, 169, 171, 173, 175, 177};
-	u8 channel5g_80m[CHANNEL_MAX_NUMBER_5G_80M] = {42, 58, 106, 122, 138, 155, 171};
 	u8 rf_path, index;
 	u8 i;
 
@@ -2931,16 +2934,6 @@ static void _rtl8821ae_read_txpower_info_from_hwpg(struct ieee80211_hw *hw,
 	struct rtl_efuse *rtlefuse = rtl_efuse(rtl_priv(hw));
 	struct txpower_info_2g pwrinfo24g;
 	struct txpower_info_5g pwrinfo5g;
-	u8 channel5g[CHANNEL_MAX_NUMBER_5G] = {
-		36, 38, 40, 42, 44, 46, 48,		/* Band 1 */
-		52, 54, 56, 58, 60, 62, 64,		/* Band 2 */
-		100, 102, 104, 106, 108, 110, 112,	/* Band 3 */
-		116, 118, 120, 122, 124, 126, 128,	/* Band 3 */
-		132, 134, 136, 138, 140, 142, 144,	/* Band 3 */
-		149, 151, 153, 155, 157, 159, 161,	/* Band 4 */
-		165, 167, 169, 171, 173, 175, 177};	/* Band 4 */
-	u8 channel5g_80m[CHANNEL_MAX_NUMBER_5G_80M] = {
-		42, 58, 106, 122, 138, 155, 171};
 	u8 rf_path, index;
 	u8 i;
 
@@ -2965,13 +2958,13 @@ static void _rtl8821ae_read_txpower_info_from_hwpg(struct ieee80211_hw *hw,
 		}
 
 		for (i = 0; i < CHANNEL_MAX_NUMBER_5G; i++) {
-			index = _rtl8821ae_get_chnl_group(channel5g[i]);
+			index = _rtl8821ae_get_chnl_group(rtl_channel5g[i]);
 			rtlefuse->txpwr_5g_bw40base[rf_path][i] =
 				pwrinfo5g.index_bw40_base[rf_path][index];
 		}
 		for (i = 0; i < CHANNEL_MAX_NUMBER_5G_80M; i++) {
 			u8 upper, lower;
-			index = _rtl8821ae_get_chnl_group(channel5g_80m[i]);
+			index = _rtl8821ae_get_chnl_group(rtl_channel5g_80m[i]);
 			upper = pwrinfo5g.index_bw40_base[rf_path][index];
 			lower = pwrinfo5g.index_bw40_base[rf_path][index + 1];
 

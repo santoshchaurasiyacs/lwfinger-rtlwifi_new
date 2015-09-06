@@ -209,9 +209,12 @@ enum _ANT_DIV_TYPE {
 
 };
 
-extern u32 rtl8821ae_phy_query_bb_reg(struct ieee80211_hw *hw,
-				   u32 regaddr, u32 bitmask);
-extern void rtl8821ae_phy_set_bb_reg(struct ieee80211_hw *hw,
+extern u8 rtl_channel5g[CHANNEL_MAX_NUMBER_5G];
+extern u8 rtl_channel5g_80m[CHANNEL_MAX_NUMBER_5G_80M];
+
+u32 rtl8821ae_phy_query_bb_reg(struct ieee80211_hw *hw,
+			       u32 regaddr, u32 bitmask);
+void rtl8821ae_phy_set_bb_reg(struct ieee80211_hw *hw,
 				  u32 regaddr, u32 bitmask, u32 data);
 extern u32 rtl8821ae_phy_query_rf_reg(struct ieee80211_hw *hw,
 				   enum radio_path rfpath, u32 regaddr,
