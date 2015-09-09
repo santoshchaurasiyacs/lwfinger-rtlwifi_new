@@ -351,10 +351,11 @@ struct BT_MGNT {
 };
 
 
+#define SOCK_MSG_SIZE	32
 struct socket_msg_to_send {
 
 	struct list_head list;
-	u8 *msg;
+	u8 msg[SOCK_MSG_SIZE];
 	u8 msg_size;
 
 };

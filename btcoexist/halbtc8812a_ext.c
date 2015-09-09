@@ -762,7 +762,14 @@ u8 rtl_btcoex_sendmsgbysocket(struct rtl_priv *rtlpriv, u8 *msg, u8 msg_size,
 		     "<<<<<<<<<<<<<<<<<<<<<<<<WIFI_TO_BT,msg:%s\n", msg);
 
 
-	msg_to_send->msg = msg;
+	if (msg_size > SOCK_MSG_SIZE) {
+		RT_TRACE_BTC(COMP_COEX_COMM, DBG_EMERG,
+				     "msg_size is truncated to %d from %d\n",
+				     SOCK_MSG_SIZE, msg_size);
+		msg_size = SOCK_MSG_SIZE;
+	}
+
+	memcpy(msg_to_send->msg, msg, msg_size);
 	msg_to_send->msg_size = msg_size;
 
 	spin_lock_bh(&rtlpriv->locks.socket_lock);
@@ -930,18 +937,18 @@ static int rtl_btcoex_thread(void *context)
 			}
 		}
 		if (NULL != msg_to_send) {
-
 			list_del(&msg_to_send->list);
 			msg = msg_to_send->msg;
 			msg_size = msg_to_send->msg_size;
-			kfree(msg_to_send);
-			msg_to_send = NULL;
-
 		}
 		spin_unlock_bh(&rtlpriv->locks.socket_lock);
 
-		if (NULL != msg)
+		if (NULL != msg) {
 			rtl_thread_sendmsgbysocket(rtlpriv, msg, msg_size);
+
+			kfree(msg_to_send);
+			msg_to_send = NULL;
+		}
 
 
 	}
