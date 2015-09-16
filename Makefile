@@ -2,12 +2,16 @@ SHELL := /bin/sh
 CC = gcc
 KVER  := $(shell uname -r)
 KSRC := /lib/modules/$(KVER)/build
-MODDESTDIR := /lib/modules/$(KVER)/kernel/drivers/net/wireless/rtlwifi
 FIRMWAREDIR := /lib/firmware/
 PWD := $(shell pwd)
 CLR_MODULE_FILES := *.mod.c *.mod *.o .*.cmd *.ko *~ .tmp_versions* modules.order Module.symvers
 SYMBOL_FILE := Module.symvers
-
+# Handle the move of the entire rtlwifi tree
+ifneq ("","$(wildcard /lib/modules/$(KVER)/kernel/drivers/net/wireless/realtek)")
+MODDESTDIR := /lib/modules/$(KVER)/kernel/drivers/net/wireless/realtek/rtlwifi
+else
+MODDESTDIR := /lib/modules/$(KVER)/kernel/drivers/net/wireless/rtlwifi
+endif
 #Handle the compression option for modules in 3.18+
 ifneq ("","$(wildcard $(MODDESTDIR)/*.ko.gz)")
 COMPRESS_GZIP := y
