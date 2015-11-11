@@ -328,6 +328,7 @@ static void _rtl_init_hw_vht_capab(struct ieee80211_hw *hw,
 
 enum {
 	RTL_VENDOR_SCMD_COEX_AP_NUM	= 2000,
+	RTL_VENDOR_SCMD_COEX_4WAY	= 2001,
 };
 
 
@@ -368,6 +369,23 @@ static int rtl_cfgvendor_coex_ap_num(struct wiphy *wiphy,
 	return 0;
 }
 
+static int rtl_cfgvendor_coex_4way(struct wiphy *wiphy,
+		struct wireless_dev *wdev, const void  *data, int len)
+{
+	struct ieee80211_hw *hw = wiphy_to_ieee80211_hw(wiphy);
+	struct rtl_priv *rtlpriv = rtl_priv(hw);
+	bool tmp;
+
+	tmp = (rtl_data_to_int(rtlpriv, data, len) ? true : false);
+
+	rtlpriv->btcoexist.btc_info.in_4way = tmp;
+
+	RT_TRACE(rtlpriv, COMP_VENDOR_CMD, DBG_DMESG,
+				 "cfgvendor 4way is %d\n", rtlpriv->btcoexist.btc_info.in_4way);
+
+	return 0;
+}
+
 static const struct wiphy_vendor_command rtl_vendor_cmds[] = {
 	{
 		{
@@ -376,6 +394,14 @@ static const struct wiphy_vendor_command rtl_vendor_cmds[] = {
 		},
 		.flags = WIPHY_VENDOR_CMD_NEED_WDEV | WIPHY_VENDOR_CMD_NEED_NETDEV,
 		.doit = rtl_cfgvendor_coex_ap_num,
+	},
+	{
+		{
+			.vendor_id = OUI_REALTEK,
+			.subcmd = RTL_VENDOR_SCMD_COEX_4WAY
+		},
+		.flags = WIPHY_VENDOR_CMD_NEED_WDEV | WIPHY_VENDOR_CMD_NEED_NETDEV,
+		.doit = rtl_cfgvendor_coex_4way,
 	},
 };
 #endif
