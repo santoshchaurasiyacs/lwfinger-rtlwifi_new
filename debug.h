@@ -117,6 +117,7 @@
 #define COMP_TX_REPORT			BIT_ULL(32)
 #define COMP_COEX			BIT_ULL(33)
 #define COMP_COEX_COMM		BIT_ULL(34)
+#define COMP_VENDOR_CMD		BIT_ULL(33)
 
 /*--------------------------------------------------------------
 		Define the rt_print components
