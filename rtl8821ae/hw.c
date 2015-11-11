@@ -3637,9 +3637,9 @@ static u32 _rtl8821ae_set_ra_vht_ratr_bitmap(struct ieee80211_hw *hw,
 	else if (wirelessmode == WIRELESS_MODE_AC_5G
 		|| wirelessmode == WIRELESS_MODE_AC_24G) {
 		if (rtlphy->rf_type == RF_1T1R)
-			ret_bitmap = ratr_bitmap & (~BIT21);
+			ret_bitmap = ratr_bitmap & (~BIT(21));
 		else
-			ret_bitmap = ratr_bitmap & (~(BIT31|BIT21));
+			ret_bitmap = ratr_bitmap & (~(BIT(31)|BIT(21)));
 	}
 
 	return ret_bitmap;
