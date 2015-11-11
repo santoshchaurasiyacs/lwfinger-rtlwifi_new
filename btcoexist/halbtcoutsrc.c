@@ -631,9 +631,7 @@ bool halbtc_get(void *btc_context, u8 get_type, void *out_buf)
 		ret = false;
 		break;
 	case BTC_GET_U1_AP_NUM:
-		/* driver don't know AP num in Linux,
-		 * So, the return value here is not right */
-		*u8_tmp = 1;/* pDefMgntInfo->NumBssDesc4Query; */
+		*u8_tmp = rtlpriv->btcoexist.btc_info.ap_num;
 		break;
 	case BTC_GET_U1_ANT_TYPE:
 		*u8_tmp = (u8)BTC_ANT_TYPE_0;

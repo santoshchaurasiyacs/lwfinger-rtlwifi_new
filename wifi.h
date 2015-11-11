@@ -2404,6 +2404,8 @@ struct rtl_btc_info {
 	u8 btcoexist;
 	u8 ant_num;
 	u8 single_ant_path;
+
+	u8 ap_num;
 };
 
 struct rtl_btc_ops {
