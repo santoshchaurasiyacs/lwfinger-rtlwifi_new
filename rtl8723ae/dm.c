@@ -923,21 +923,21 @@ void rtl8723e_dm_bt_coexist(struct ieee80211_hw *hw)
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	u8 tmp_byte = 0;
 	if (!rtlpriv->btcoexist.bt_coexistence) {
-		RT_TRACE(rtlpriv, COMP_BT_COEXIST, DBG_LOUD,
+		RT_TRACE(rtlpriv, COMP_COEX, DBG_LOUD,
 			 "[DM]{BT], BT not exist!!\n");
 		return;
 	}
 
 	if (!rtlpriv->btcoexist.init_set) {
-		RT_TRACE(rtlpriv, COMP_BT_COEXIST, DBG_LOUD,
+		RT_TRACE(rtlpriv, COMP_COEX, DBG_LOUD,
 			 "[DM][BT], rtl8723e_dm_bt_coexist()\n");
 		rtl8723e_dm_init_bt_coexist(hw);
 	}
 
 	tmp_byte = rtl_read_byte(rtlpriv, 0x40);
-	RT_TRACE(rtlpriv, COMP_BT_COEXIST, DBG_LOUD,
+	RT_TRACE(rtlpriv, COMP_COEX, DBG_LOUD,
 		 "[DM][BT], 0x40 is 0x%x", tmp_byte);
-	RT_TRACE(rtlpriv, COMP_BT_COEXIST, DBG_DMESG,
+	RT_TRACE(rtlpriv, COMP_COEX, DBG_DMESG,
 		 "[DM][BT], bt_dm_coexist start");
 	rtl8723e_dm_bt_coexist_8723(hw);
 }

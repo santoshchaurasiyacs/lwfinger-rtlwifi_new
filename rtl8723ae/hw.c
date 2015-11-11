@@ -2325,7 +2325,7 @@ static void rtl8723e_bt_var_init(struct ieee80211_hw *hw)
 	rtlpriv->btcoexist.bt_radio_shared_type =
 					rtlpriv->btcoexist.eeprom_bt_radio_shared;
 
-	RT_TRACE(rtlpriv, COMP_BT_COEXIST, DBG_TRACE,
+	RT_TRACE(rtlpriv, COMP_COEX, DBG_TRACE,
 		"BT Coexistance = 0x%x\n", rtlpriv->btcoexist.bt_coexistence);
 
 	if (rtlpriv->btcoexist.bt_coexistence) {
@@ -2337,47 +2337,47 @@ static void rtl8723e_bt_var_init(struct ieee80211_hw *hw)
 		rtlpriv->btcoexist.previous_state = 0;
 
 			if (rtlpriv->btcoexist.bt_ant_num == ANT_X2) {
-				RT_TRACE(rtlpriv, COMP_BT_COEXIST, DBG_TRACE,
+				RT_TRACE(rtlpriv, COMP_COEX, DBG_TRACE,
 					"BlueTooth BT_Ant_Num = Antx2\n");
 			} else if (rtlpriv->btcoexist.bt_ant_num == ANT_X1) {
-				RT_TRACE(rtlpriv, COMP_BT_COEXIST, DBG_TRACE,
+				RT_TRACE(rtlpriv, COMP_COEX, DBG_TRACE,
 					"BlueTooth BT_Ant_Num = Antx1\n");
 			}
 
 			switch (rtlpriv->btcoexist.bt_coexist_type) {
 			case BT_2WIRE:
-				RT_TRACE(rtlpriv, COMP_BT_COEXIST, DBG_TRACE,
+				RT_TRACE(rtlpriv, COMP_COEX, DBG_TRACE,
 					"BlueTooth BT_CoexistType = BT_2Wire\n");
 				break;
 			case BT_ISSC_3WIRE:
-				RT_TRACE(rtlpriv, COMP_BT_COEXIST, DBG_TRACE,
+				RT_TRACE(rtlpriv, COMP_COEX, DBG_TRACE,
 					"BlueTooth BT_CoexistType = BT_ISSC_3Wire\n");
 				break;
 			case BT_ACCEL:
-				RT_TRACE(rtlpriv, COMP_BT_COEXIST, DBG_TRACE,
+				RT_TRACE(rtlpriv, COMP_COEX, DBG_TRACE,
 					"BlueTooth BT_CoexistType = BT_ACCEL\n");
 				break;
 			case BT_CSR_BC4:
-				RT_TRACE(rtlpriv, COMP_BT_COEXIST, DBG_TRACE,
+				RT_TRACE(rtlpriv, COMP_COEX, DBG_TRACE,
 					"BlueTooth BT_CoexistType = BT_CSR_BC4\n");
 				break;
 			case BT_CSR_BC8:
-				RT_TRACE(rtlpriv, COMP_BT_COEXIST, DBG_TRACE,
+				RT_TRACE(rtlpriv, COMP_COEX, DBG_TRACE,
 					"BlueTooth BT_CoexistType = BT_CSR_BC8\n");
 				break;
 			case BT_RTL8756:
-				RT_TRACE(rtlpriv, COMP_BT_COEXIST, DBG_TRACE,
+				RT_TRACE(rtlpriv, COMP_COEX, DBG_TRACE,
 					"BlueTooth BT_CoexistType = BT_RTL8756\n");
 				break;
 			default:
-				RT_TRACE(rtlpriv, COMP_BT_COEXIST, DBG_TRACE,
+				RT_TRACE(rtlpriv, COMP_COEX, DBG_TRACE,
 					"BlueTooth BT_CoexistType = Unknown\n");
 				break;
 			}
-			RT_TRACE(rtlpriv, COMP_BT_COEXIST, DBG_TRACE,
+			RT_TRACE(rtlpriv, COMP_COEX, DBG_TRACE,
 				"BlueTooth BT_Ant_isolation = %d\n",
 				rtlpriv->btcoexist.bt_ant_isolation);
-			RT_TRACE(rtlpriv, COMP_BT_COEXIST, DBG_TRACE,
+			RT_TRACE(rtlpriv, COMP_COEX, DBG_TRACE,
 				"BT_RadioSharedType = 0x%x\n",
 				rtlpriv->btcoexist.bt_radio_shared_type);
 			rtlpriv->btcoexist.bt_active_zero_cnt = 0;

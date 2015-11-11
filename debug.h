@@ -115,6 +115,8 @@
 #define COMP_BT_COEXIST			BIT(30)
 #define COMP_IQK			BIT(31)
 #define COMP_TX_REPORT			BIT_ULL(32)
+#define COMP_COEX			BIT_ULL(33)
+#define COMP_COEX_COMM		BIT_ULL(34)
 
 /*--------------------------------------------------------------
 		Define the rt_print components

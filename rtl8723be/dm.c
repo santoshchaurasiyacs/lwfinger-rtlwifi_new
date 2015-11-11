@@ -1250,7 +1250,7 @@ static void rtl8723be_dm_dynamic_atc_switch(struct ieee80211_hw *hw)
 		}
 		if (rtlpriv->cfg->ops->get_btc_status()) {
 			if (!rtlpriv->btcoexist.btc_ops->btc_is_bt_disabled(rtlpriv)) {
-				RT_TRACE(rtlpriv, COMP_BT_COEXIST, DBG_LOUD,
+				RT_TRACE(rtlpriv, COMP_COEX, DBG_LOUD,
 					 "odm_DynamicATCSwitch(): Disable CFO tracking for BT!!\n");
 				return;
 			}
