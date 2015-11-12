@@ -2298,9 +2298,9 @@ struct rtl_debug {
 	u32 global_debuglevel;
 	u64 global_debugcomponents;
 
-	/* add for proc debug */
-	struct proc_dir_entry *proc_dir;
-	char proc_name[20];
+	/* add for debug */
+	struct dentry *debugfs_dir;
+	char debugfs_name[20];
 };
 
 #define MIMO_PS_STATIC			0
@@ -2454,6 +2454,7 @@ struct rtl_btc_ops {
 	bool (*btc_is_bt_disabled)(struct rtl_priv *rtlpriv);
 	void (*btc_special_packet_notify)(struct rtl_priv *rtlpriv,
 					u8 pkt_type);
+	void (*btc_display_bt_coex_info)(u8 *buff, u32 size);
 	void (*btc_record_pwr_mode)(struct rtl_priv *rtlpriv, u8 *buf, u8 len);
 	u8   (*btc_get_lps_val)(struct rtl_priv *rtlpriv);
 	u8   (*btc_get_rpwm_val)(struct rtl_priv *rtlpriv);
