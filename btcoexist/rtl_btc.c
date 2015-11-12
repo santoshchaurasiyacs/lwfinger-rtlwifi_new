@@ -49,12 +49,25 @@ static struct rtl_btc_ops rtl_btc_operation = {
 	.btc_is_disable_edca_turbo = rtl_btc_is_disable_edca_turbo,
 	.btc_is_bt_disabled = rtl_btc_is_bt_disabled,
 	.btc_special_packet_notify = rtl_btc_special_packet_notify,
-    .btc_set_hci_version = rtl_btc_set_hci_version,
+	.btc_set_hci_version = rtl_btc_set_hci_version,
+	.btc_record_pwr_mode = rtl_btc_record_pwr_mode,
 	.btc_set_bt_patch_version = rtl_btc_set_bt_patch_version,
 	.btc_stack_update_profile_info = rtl_btc_stack_update_profile_info,
 	.btc_init_socket = rtl_btc_init_socket,
 	.btc_close_socket = rtl_btc_close_socket,
 };
+
+void rtl_btc_record_pwr_mode(struct rtl_priv *rtlpriv, u8 *buf, u8 len)
+{
+	u8 safe_len;
+
+	safe_len = sizeof(gl_bt_coexist.pwr_mode_val);
+
+	if (safe_len > len)
+		safe_len = len;
+
+	memcpy(gl_bt_coexist.pwr_mode_val, buf, safe_len);
+}
 
 void rtl_btc_init_socket(struct rtl_priv *rtlpriv)
 {

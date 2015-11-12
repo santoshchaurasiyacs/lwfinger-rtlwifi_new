@@ -40,7 +40,7 @@
 	((_pfwhdr->signature&0xFFF0) == 0x5300)
 #define USE_OLD_WOWLAN_DEBUG_FW			0
 
-#define H2C_PWEMODE_LENGTH			5
+#define H2C_PWEMODE_LENGTH			7
 
 /* Fw PS state for RPWM.
 *BIT[2:0] = HW state
@@ -151,6 +151,8 @@ enum rtl8723b_c2h_evt {
 	SET_BITS_TO_LE_1BYTE((__pH2CCmd)+3, 0, 8, __val)
 #define SET_H2CCMD_PWRMODE_PARM_PWR_STATE(__pH2CCmd, __val)		\
 	SET_BITS_TO_LE_1BYTE((__pH2CCmd)+4, 0, 8, __val)
+#define SET_H2CCMD_PWRMODE_PARM_BYTE5(__pH2CCmd, __val)		\
+	SET_BITS_TO_LE_1BYTE((__pH2CCmd)+5, 0, 8, __val)
 #define GET_88E_H2CCMD_PWRMODE_PARM_MODE(__pH2CCmd)			\
 	LE_BITS_TO_1BYTE(__pH2CCmd, 0, 8)
 
