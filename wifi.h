@@ -826,6 +826,14 @@ enum wolpattern_type {
 	UNKNOWN_TYPE = 4,
 };
 
+enum package_type {
+	PACKAGE_DEFAULT,
+	PACKAGE_QFN68,
+	PACKAGE_TFBGA90,
+	PACKAGE_TFBGA80,
+	PACKAGE_TFBGA79
+};
+
 struct octet_string {
 	u8 *octet;
 	u16 length;
@@ -1381,6 +1389,7 @@ struct rtl_hal {
 	u32 version;		/*version of chip */
 	u8 state;		/*stop 0, start 1 */
 	u8 board_type;
+	u8 package_type;
 	u8 external_pa;
 
 	u8 pa_mode;

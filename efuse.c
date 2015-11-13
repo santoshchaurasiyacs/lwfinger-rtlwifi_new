@@ -75,8 +75,6 @@ static void efuse_word_enable_data_read(u8 word_en, u8 *sourdata,
 					u8 *targetdata);
 static u8 efuse_word_enable_data_write(struct ieee80211_hw *hw,
 				       u16 efuse_addr, u8 word_en, u8 *data);
-static void efuse_power_switch(struct ieee80211_hw *hw, u8 bwrite,
-			       u8 pwrstate);
 static u16 efuse_get_current_size(struct ieee80211_hw *hw);
 static u8 efuse_calculate_word_cnts(u8 word_en);
 
@@ -1133,7 +1131,7 @@ static u8 efuse_word_enable_data_write(struct ieee80211_hw *hw,
 	return badworden;
 }
 
-static void efuse_power_switch(struct ieee80211_hw *hw, u8 bwrite, u8 pwrstate)
+void efuse_power_switch(struct ieee80211_hw *hw, u8 bwrite, u8 pwrstate)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_hal *rtlhal = rtl_hal(rtl_priv(hw));
@@ -1219,6 +1217,7 @@ static void efuse_power_switch(struct ieee80211_hw *hw, u8 bwrite, u8 pwrstate)
 		}
 	}
 }
+EXPORT_SYMBOL(efuse_power_switch);
 
 static u16 efuse_get_current_size(struct ieee80211_hw *hw)
 {
