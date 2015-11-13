@@ -259,6 +259,7 @@ enum btc_get_type {
 	BTC_GET_U4_WIFI_FW_VER,
 	BTC_GET_U4_WIFI_LINK_STATUS,
 	BTC_GET_U4_BT_PATCH_VER,
+	BTC_GET_U4_VENDOR,
 
 	/* type u1Byte */
 	BTC_GET_U1_WIFI_DOT11_CHNL,
@@ -280,6 +281,11 @@ enum btc_get_type {
 	BTC_GET_MAX
 };
 
+enum btc_vendor {
+	BTC_VENDOR_LENOVO,
+	BTC_VENDOR_ASUS,
+	BTC_VENDOR_OTHER
+};
 
 enum btc_set_type {
 	/* type bool */
