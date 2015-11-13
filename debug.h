@@ -192,6 +192,16 @@ do {									\
 	}								\
 } while (0)
 
+#define RT_TRACE_STRING(rtlpriv, comp, level, string)			\
+do {									\
+	if (unlikely(((comp) & rtlpriv->dbg.global_debugcomponents) &&	\
+		     ((level) <= rtlpriv->dbg.global_debuglevel))) {	\
+		pr_info(KBUILD_MODNAME ":%s():<%lx-%x> %s",		\
+		       __func__, in_interrupt(), in_atomic(),		\
+		       string);						\
+	}								\
+} while (0)
+
 #define RTPRINT(rtlpriv, dbgtype, dbgflag, fmt, ...)			\
 do {									\
 	if (unlikely(rtlpriv->dbg.dbgp_type[dbgtype] & dbgflag)) {	\

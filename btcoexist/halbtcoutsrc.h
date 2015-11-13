@@ -3,6 +3,16 @@
 
 #include	"../wifi.h"
 
+extern u8	gl_btc_trace_buf[];
+#define		BTC_SPRINTF(ptr, ...)	snprintf(ptr, ##__VA_ARGS__)
+#define		BTC_TRACE(fmt)						\
+	do {								\
+		struct rtl_priv *rtlpriv = gl_bt_coexist.adapter;	\
+		if (rtlpriv == NULL)					\
+			break;						\
+		RT_TRACE_STRING(rtlpriv, COMP_COEX, DBG_LOUD, fmt);		\
+	} while (0)
+
 #define		NORMAL_EXEC				false
 #define		FORCE_EXEC				true
 
