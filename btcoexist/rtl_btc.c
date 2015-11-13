@@ -35,6 +35,7 @@
 static struct rtl_btc_ops rtl_btc_operation = {
 	.btc_init_variables = rtl_btc_init_variables,
 	.btc_init_hal_vars = rtl_btc_init_hal_vars,
+	.btc_power_on_setting = rtl_btc_power_on_setting,
 	.btc_init_hw_config = rtl_btc_init_hw_config,
 	.btc_ips_notify = rtl_btc_ips_notify,
 	.btc_lps_notify = rtl_btc_lps_notify,
@@ -67,31 +68,19 @@ void rtl_btc_close_socket(struct rtl_priv *rtlpriv)
 
 void rtl_btc_init_variables(struct rtl_priv *rtlpriv)
 {
+	exhalbtc_initlize_variables();
+	exhalbtc_bind_bt_coex_withadapter(rtlpriv);
+}
 
-	exhalbtc_initlize_variables(rtlpriv);
+void rtl_btc_power_on_setting(struct rtl_priv *rtlpriv)
+{
+	exhalbtc_power_on_setting(&gl_bt_coexist);
 }
 
 void rtl_btc_init_hal_vars(struct rtl_priv *rtlpriv)
 {
-	u8 ant_num;
-	u8 bt_exist;
-	u8 bt_type;
-	ant_num = rtl_get_hwpg_ant_num(rtlpriv);
-	RT_TRACE(rtlpriv, COMP_INIT, DBG_DMESG,
-		"%s, antNum is %d\n", __func__, ant_num);
-
-	bt_exist = rtl_get_hwpg_bt_exist(rtlpriv);
-	RT_TRACE(rtlpriv, COMP_INIT, DBG_DMESG,
-		"%s, bt_exist is %d\n", __func__, bt_exist);
-	exhalbtc_set_bt_exist(bt_exist);
-
-	bt_type = rtl_get_hwpg_bt_type(rtlpriv);
-	RT_TRACE(rtlpriv, COMP_INIT, DBG_DMESG,
-		"%s, bt_type is %d\n", __func__, bt_type);
-	exhalbtc_set_chip_type(bt_type);
-
-	exhalbtc_set_ant_num(BT_COEX_ANT_TYPE_PG, ant_num);
-
+	/* move ant_num, bt_type and single_ant_path to
+	   exhalbtc_bind_bt_coex_withadapter() */
 }
 
 void rtl_btc_stack_update_profile_info()
@@ -109,7 +98,14 @@ void rtl_btc_set_hci_version(u16 hci_version)
 
 void rtl_btc_init_hw_config(struct rtl_priv *rtlpriv)
 {
-	exhalbtc_init_hw_config(&gl_bt_coexist);
+	u8 bt_exist;
+
+	bt_exist = rtl_get_hwpg_bt_exist(rtlpriv);
+	RT_TRACE(rtlpriv, COMP_INIT, DBG_DMESG,
+		"%s, bt_exist is %d\n", __func__, bt_exist);
+	/*exhalbtc_set_bt_exist(bt_exist);*/
+
+	exhalbtc_init_hw_config(&gl_bt_coexist, !bt_exist);
 	exhalbtc_init_coex_dm(&gl_bt_coexist);
 }
 
@@ -129,7 +125,7 @@ void rtl_btc_scan_notify(struct rtl_priv *rtlpriv, u8 scantype)
 {
     /*for 8812AE+8761AU*/
 	struct bt_coex_info *pcoex_info = &rtlpriv->coex_info;
-	PBT_MGNT	pBtMgnt=&pcoex_info->BtMgnt;
+	struct BT_MGNT *pBtMgnt = &pcoex_info->bt_mgnt;
 	if(pBtMgnt->ext_config.enable_wifi_scan_notify)
 		rtl_btcoex_SendScanNotify(rtlpriv, scantype);
 
@@ -147,7 +143,7 @@ void rtl_btc_connect_notify(struct rtl_priv *rtlpriv, u8 action)
 void rtl_btc_mediastatus_notify(struct rtl_priv *rtlpriv,
 	enum rt_media_status mstatus)
 {
-	exhalbtc_mediastatus_notify(&gl_bt_coexist, mstatus);
+	exhalbtc_media_status_notify(&gl_bt_coexist, mstatus);
 }
 
 void rtl_btc_periodical(struct rtl_priv *rtlpriv)
@@ -158,7 +154,8 @@ void rtl_btc_periodical(struct rtl_priv *rtlpriv)
 
 void rtl_btc_halt_notify(void)
 {
-	exhalbtc_halt_notify(&gl_bt_coexist);
+	struct btc_coexist *btcoexist = &gl_bt_coexist;
+	exhalbtc_halt_notify(btcoexist);
 }
 
 void rtl_btc_btinfo_notify(struct rtl_priv *rtlpriv, u8 *tmp_buf, u8 length)

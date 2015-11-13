@@ -2240,6 +2240,9 @@ struct rtl_locks {
 	spinlock_t check_sendpkt_lock;
 
 	spinlock_t iqk_lock;
+
+
+	spinlock_t socket_lock;
 };
 
 struct rtl_works {
@@ -2258,7 +2261,8 @@ struct rtl_works {
 	struct workqueue_struct *rtl_wq;
 	struct delayed_work watchdog_wq;
 	struct delayed_work ips_nic_off_wq;
-	struct delayed_work socket_wq;
+	struct delayed_work socket_send_wq;
+	struct delayed_work socket_rcv_wq;
 
 	/* For SW LPS */
 	struct delayed_work ps_work;
@@ -2405,6 +2409,7 @@ struct rtl_btc_info {
 struct rtl_btc_ops {
 	void (*btc_init_variables)(struct rtl_priv *rtlpriv);
 	void (*btc_init_hal_vars)(struct rtl_priv *rtlpriv);
+	void (*btc_power_on_setting)(struct rtl_priv *rtlpriv);
 	void (*btc_init_hw_config)(struct rtl_priv *rtlpriv);
 	void (*btc_ips_notify)(struct rtl_priv *rtlpriv, u8 type);
 	void (*btc_lps_notify)(struct rtl_priv *rtlpriv, u8 type);

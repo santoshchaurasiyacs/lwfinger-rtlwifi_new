@@ -193,7 +193,8 @@ static int rtl_op_start(struct ieee80211_hw *hw)
 		{
 			printk("now that bt exists ,init socket for 8812AE");
 			rtlpriv->btcoexist.btc_ops->btc_init_socket(rtlpriv);
-			rtlpriv->coex_info.BtMgnt.ext_config.hci_extension_ver = 0x04;
+			rtlpriv->coex_info.bt_mgnt.ext_config.hci_extension_ver
+					= 0x04;
 			rtlpriv->btcoexist.btc_ops->btc_set_hci_version(0x04);
 		}
 		rtl_watch_dog_timer_callback((unsigned long)hw);
