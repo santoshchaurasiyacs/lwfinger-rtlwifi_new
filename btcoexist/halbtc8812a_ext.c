@@ -890,15 +890,23 @@ u8 rtl_thread_sendmsgbysocket(struct rtl_priv *rtlpriv, u8 *msg, u8 msg_size)
 	iov.iov_len	 = msg_size;
 	udpmsg.msg_name	 = &pcoex_info->bt_addr;
 	udpmsg.msg_namelen	= sizeof(struct sockaddr_in);
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 19, 0))
+	iov_iter_init(&udpmsg.msg_iter, WRITE, &iov, 1, msg_size);
+#else
 	udpmsg.msg_iov	 = &iov;
 	udpmsg.msg_iovlen	= 1;
+#endif
 	udpmsg.msg_control	= NULL;
 	udpmsg.msg_controllen = 0;
 	udpmsg.msg_flags	= MSG_DONTWAIT | MSG_NOSIGNAL;
 	udpmsg.msg_flags = 0;
 	oldfs = get_fs();
 	set_fs(KERNEL_DS);
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 1, 0))
+	error = sock_sendmsg(pcoex_info->udpsock, &udpmsg);
+#else
 	error = sock_sendmsg(pcoex_info->udpsock, &udpmsg, msg_size);
+#endif
 	set_fs(oldfs);
 	if (error < 0) {
 		RT_TRACE_BTC(COMP_COEX_COMM, DBG_WARNING,
