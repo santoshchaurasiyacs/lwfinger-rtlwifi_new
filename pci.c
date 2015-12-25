@@ -1558,7 +1558,7 @@ int rtl_pci_reset_trx_ring(struct ieee80211_hw *hw)
 
 	/* after reset, release previous pending packet,
 	 * and force the  tx idx to the first one */
-	spin_lock_irqsave(&rtlpriv->locks.irq_th_lock, flags);
+//	spin_lock_irqsave(&rtlpriv->locks.irq_th_lock, flags);
 	for (i = 0; i < RTL_PCI_MAX_TX_QUEUE_COUNT; i++) {
 		if (rtlpci->tx_ring[i].desc ||
 			rtlpci->tx_ring[i].buffer_desc) {
@@ -1586,7 +1586,7 @@ int rtl_pci_reset_trx_ring(struct ieee80211_hw *hw)
 		}
 	}
 
-	spin_unlock_irqrestore(&rtlpriv->locks.irq_th_lock, flags);
+//	spin_unlock_irqrestore(&rtlpriv->locks.irq_th_lock, flags);
 
 	return 0;
 }
