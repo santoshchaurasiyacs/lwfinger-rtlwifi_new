@@ -242,6 +242,7 @@ struct rtl_pci {
 	bool msi_support;
 	bool using_msi;
 	bool int_clear;
+	int ant_sel;
 };
 
 struct mp_adapter {

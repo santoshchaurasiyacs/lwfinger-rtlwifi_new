@@ -2803,9 +2803,10 @@ static void _rtl8723be_phy_set_rfpath_switch(struct ieee80211_hw *hw,
 					     bool bmain, bool is2t)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
+	struct rtl_pci *rtlpci = rtl_pcidev(rtl_pcipriv(hw));
 	RT_TRACE(rtlpriv, COMP_INIT, DBG_LOUD, "\n");
 
-	if (bmain) /* left antenna */
+	if (bmain || rtlpci->ant_sel == 1) /* left antenna */
 		rtl_set_bbreg(hw, 0x92C, MASKDWORD, 0x1);
 	else
 		rtl_set_bbreg(hw, 0x92C, MASKDWORD, 0x2);
