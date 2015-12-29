@@ -1514,7 +1514,6 @@ int rtl_pci_reset_trx_ring(struct ieee80211_hw *hw)
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_pci *rtlpci = rtl_pcidev(rtl_pcipriv(hw));
 	int i, rxring_idx;
-	unsigned long flags;
 	u8 tmp_one = 1;
 	u32 bufferaddress;
 	/* rxring_idx 0:RX_MPDU_QUEUE */
