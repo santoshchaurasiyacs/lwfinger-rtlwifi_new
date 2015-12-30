@@ -2635,6 +2635,7 @@ void rtl8723be_read_bt_coexist_info_from_hwpg(struct ieee80211_hw *hw,
 					      bool auto_load_fail, u8 *hwinfo)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
+	struct rtl_pci *rtlpci = rtl_pcidev(rtl_pcipriv(hw));
 	u8 value;
 	u32 tmpu_32;
 
@@ -2644,15 +2645,25 @@ void rtl8723be_read_bt_coexist_info_from_hwpg(struct ieee80211_hw *hw,
 			rtlpriv->btcoexist.btc_info.btcoexist = 1;
 		else
 			rtlpriv->btcoexist.btc_info.btcoexist = 0;
-		value = hwinfo[EEPROM_RF_BT_SETTING_8723B];
+		if (rtlpci->ant_sel == 2)
+			value = 1;
+		else if (rtlpci->ant_sel == 1)
+			value = 0;
+		else
+			value = hwinfo[EEPROM_RF_BT_SETTING_8723B];
 		rtlpriv->btcoexist.btc_info.bt_type = BT_RTL8723B;
 		rtlpriv->btcoexist.btc_info.ant_num = (value & 0x1);
 	} else {
+		if (rtlpci->ant_sel == 2)
+			value = 1;
+		else if (rtlpci->ant_sel == 1)
+			value = 0;
+		else
+			value = ANT_X2;
 		rtlpriv->btcoexist.btc_info.btcoexist = 0;
 		rtlpriv->btcoexist.btc_info.bt_type = BT_RTL8723B;
-		rtlpriv->btcoexist.btc_info.ant_num = ANT_X2;
+		rtlpriv->btcoexist.btc_info.ant_num = value;
 	}
-
 }
 
 void rtl8723be_bt_reg_init(struct ieee80211_hw *hw)
