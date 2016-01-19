@@ -371,6 +371,7 @@ static int _rtl_reg_notifier_apply(struct wiphy *wiphy,
 static const struct ieee80211_regdomain *_rtl_regdomain_select(
 						struct rtl_regulatory *reg)
 {
+	pr_info("In %s, country code %d\n", __func__, reg->country_code);
 	switch (reg->country_code) {
 	case COUNTRY_CODE_FCC:
 		return &rtl_regdom_no_midband;
