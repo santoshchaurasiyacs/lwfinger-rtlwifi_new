@@ -152,6 +152,16 @@ static const struct ieee80211_regdomain rtl_regdom_12_13_5g_all = {
 		}
 };
 
+static const struct ieee80211_regdomain rtl_regdom_fcc = {
+	.n_reg_rules = 3,
+	.alpha2 = "99",
+	.reg_rules = {
+			RTL819x_2GHZ_CH01_11,
+			RTL819x_5GHZ_5150_5350,
+			RTL819x_5GHZ_5470_5850,
+		}
+};
+
 static bool _rtl_is_radar_freq(u16 center_freq)
 {
 	return center_freq >= 5260 && center_freq <= 5700;
@@ -371,10 +381,10 @@ static int _rtl_reg_notifier_apply(struct wiphy *wiphy,
 static const struct ieee80211_regdomain *_rtl_regdomain_select(
 						struct rtl_regulatory *reg)
 {
-	pr_info("In %s, country code %d\n", __func__, reg->country_code);
+	pr_info("rtlwifi: country code %d\n", reg->country_code);
 	switch (reg->country_code) {
 	case COUNTRY_CODE_FCC:
-		return &rtl_regdom_no_midband;
+		return &rtl_regdom_fcc;
 	case COUNTRY_CODE_IC:
 		return &rtl_regdom_11;
 	case COUNTRY_CODE_ETSI:
@@ -384,7 +394,7 @@ static const struct ieee80211_regdomain *_rtl_regdomain_select(
 	case COUNTRY_CODE_FRANCE:
 	case COUNTRY_CODE_ISRAEL:
 	case COUNTRY_CODE_WORLD_WIDE_13:
-		return &rtl_regdom_12_13_5g_all;
+		return &rtl_regdom_12_13;
 	case COUNTRY_CODE_MKK:
 	case COUNTRY_CODE_MKK1:
 	case COUNTRY_CODE_TELEC:
@@ -447,6 +457,7 @@ static struct country_code_to_enum_rd *_rtl_regd_find_country(u16 countrycode)
 
 static u8 channel_plan_to_country_code(u8 channelplan)
 {
+	pr_info("rtlwifi: channel plan 0x%x\n", channelplan);
 	switch (channelplan)
 	{
 		case 0x20:
@@ -456,11 +467,15 @@ static u8 channel_plan_to_country_code(u8 channelplan)
 			return COUNTRY_CODE_IC;
 		case 0x32:
 			return COUNTRY_CODE_TELEC_NETGEAR;
+		case 0x34:
+			return COUNTRY_CODE_FCC;
 		case 0x41:
 			return COUNTRY_CODE_GLOBAL_DOMAIN;
 		case 0x7f:
 			return COUNTRY_CODE_WORLD_WIDE_13_5G_ALL;
 		default:
+			pr_info("rtlwifi: bad channel plan 0x%x\n",
+				channelplan);
 			return COUNTRY_CODE_MAX;//Error
 	}
 }
