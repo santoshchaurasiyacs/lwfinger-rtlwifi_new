@@ -472,7 +472,7 @@ void rtl_cam_del_entry(struct ieee80211_hw *hw, struct ieee80211_sta *sta, u8 ke
 	rtl_cam_clear_one_entry(hw, entry_id);
 
 
-	RT_TRACE(rtlpriv, COMP_SEC, DBG_EMERG, "cam_bitmap: 0x%x\n", rtlpriv->sec.cam_bitmap);
+	RT_TRACE(rtlpriv, COMP_SEC, DBG_DMESG, "cam_bitmap: 0x%x\n", rtlpriv->sec.cam_bitmap);
 
 	return;
 }
