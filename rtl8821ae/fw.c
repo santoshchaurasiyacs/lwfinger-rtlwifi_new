@@ -193,7 +193,7 @@ static int _rtl8821ae_fw_free_to_go(struct ieee80211_hw *hw)
 
 	} while (counter++ < FW_8821AE_POLLING_TIMEOUT_COUNT);
 
-	RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG,
+	RT_TRACE(rtlpriv, COMP_ERR, DBG_LOUD,
 		 "Polling FW ready fail!! REG_MCUFWDL:0x%08x .\n",
 		 value32);
 
