@@ -2616,161 +2616,61 @@ static char _rtl8821ae_phy_get_txpower_by_rate(struct ieee80211_hw *hw,
 
 	switch (rate) {
 	case DESC_RATE1M:
-		shift = 0;
-	break;
-	case DESC_RATE2M:
-		shift = 8;
-	break;
-	case DESC_RATE5_5M:
-		shift = 16;
-	break;
-	case DESC_RATE11M:
-		shift = 24;
-	break;
-
 	case DESC_RATE6M:
-		shift = 0;
-	break;
-	case DESC_RATE9M:
-		shift = 8;
-	break;
-	case DESC_RATE12M:
-		shift = 16;
-	break;
-	case DESC_RATE18M:
-		shift = 24;
-	break;
-
 	case DESC_RATE24M:
-		shift = 0;
-	break;
-	case DESC_RATE36M:
-		shift = 8;
-	break;
-	case DESC_RATE48M:
-		shift = 16;
-	break;
-	case DESC_RATE54M:
-		shift = 24;
-	break;
-
 	case DESC_RATEMCS0:
-		shift = 0;
-	break;
-	case DESC_RATEMCS1:
-		shift = 8;
-	break;
-	case DESC_RATEMCS2:
-		shift = 16;
-	break;
-	case DESC_RATEMCS3:
-		shift = 24;
-	break;
-
 	case DESC_RATEMCS4:
-		shift = 0;
-	break;
-	case DESC_RATEMCS5:
-		shift = 8;
-	break;
-	case DESC_RATEMCS6:
-		shift = 16;
-	break;
-	case DESC_RATEMCS7:
-		shift = 24;
-	break;
-
 	case DESC_RATEMCS8:
-		shift = 0;
-	break;
-	case DESC_RATEMCS9:
-		shift = 8;
-	break;
-	case DESC_RATEMCS10:
-		shift = 16;
-	break;
-	case DESC_RATEMCS11:
-		shift = 24;
-	break;
-
 	case DESC_RATEMCS12:
-		shift = 0;
-	break;
-	case DESC_RATEMCS13:
-		shift = 8;
-	break;
-	case DESC_RATEMCS14:
-		shift = 16;
-	break;
-	case DESC_RATEMCS15:
-		shift = 24;
-	break;
-
 	case DESC_RATEVHT1SS_MCS0:
-		shift = 0;
-	break;
-	case DESC_RATEVHT1SS_MCS1:
-		shift = 8;
-	break;
-	case DESC_RATEVHT1SS_MCS2:
-		shift = 16;
-	break;
-	case DESC_RATEVHT1SS_MCS3:
-		shift = 24;
-	break;
-
 	case DESC_RATEVHT1SS_MCS4:
-		shift = 0;
-	break;
-	case DESC_RATEVHT1SS_MCS5:
-		shift = 8;
-	break;
-	case DESC_RATEVHT1SS_MCS6:
-		shift = 16;
-	break;
-	case DESC_RATEVHT1SS_MCS7:
-		shift = 24;
-	break;
-
 	case DESC_RATEVHT1SS_MCS8:
-		shift = 0;
-	break;
-	case DESC_RATEVHT1SS_MCS9:
-		shift = 8;
-	break;
-	case DESC_RATEVHT2SS_MCS0:
-		shift = 16;
-	break;
-	case DESC_RATEVHT2SS_MCS1:
-		shift = 24;
-	break;
-
 	case DESC_RATEVHT2SS_MCS2:
-		shift = 0;
-	break;
-	case DESC_RATEVHT2SS_MCS3:
-		shift = 8;
-	break;
-	case DESC_RATEVHT2SS_MCS4:
-		shift = 16;
-	break;
-	case DESC_RATEVHT2SS_MCS5:
-		shift = 24;
-	break;
-
 	case DESC_RATEVHT2SS_MCS6:
 		shift = 0;
-	break;
+		break;
+	case DESC_RATE2M:
+	case DESC_RATE9M:
+	case DESC_RATE36M:
+	case DESC_RATEMCS1:
+	case DESC_RATEMCS5:
+	case DESC_RATEMCS9:
+	case DESC_RATEMCS13:
+	case DESC_RATEVHT1SS_MCS1:
+	case DESC_RATEVHT1SS_MCS5:
+	case DESC_RATEVHT1SS_MCS9:
+	case DESC_RATEVHT2SS_MCS3:
 	case DESC_RATEVHT2SS_MCS7:
 		shift = 8;
-	break;
+		break;
+	case DESC_RATE5_5M:
+	case DESC_RATE12M:
+	case DESC_RATE48M:
+	case DESC_RATEMCS2:
+	case DESC_RATEMCS6:
+	case DESC_RATEMCS10:
+	case DESC_RATEMCS14:
+	case DESC_RATEVHT1SS_MCS2:
+	case DESC_RATEVHT1SS_MCS6:
+	case DESC_RATEVHT2SS_MCS0:
+	case DESC_RATEVHT2SS_MCS4:
 	case DESC_RATEVHT2SS_MCS8:
 		shift = 16;
-	break;
+		break;
+	case DESC_RATE11M:
+	case DESC_RATE18M:
+	case DESC_RATE54M:
+	case DESC_RATEMCS3:
+	case DESC_RATEMCS7:
+	case DESC_RATEMCS11:
+	case DESC_RATEMCS15:
+	case DESC_RATEVHT1SS_MCS3:
+	case DESC_RATEVHT1SS_MCS7:
+	case DESC_RATEVHT2SS_MCS1:
+	case DESC_RATEVHT2SS_MCS5:
 	case DESC_RATEVHT2SS_MCS9:
 		shift = 24;
-	break;
-
+		break;
 	default:
 		RT_ASSERT(true, "Rate_Section is Illegal\n");
 		break;
