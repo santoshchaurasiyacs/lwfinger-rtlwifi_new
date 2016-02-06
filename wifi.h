@@ -1643,7 +1643,7 @@ struct rtl_dm {
 	char delta_power_index[MAX_RF_PATH];
 	char delta_power_index_last[MAX_RF_PATH];
 	char power_index_offset[MAX_RF_PATH];
-	char aboslute_ofdm_swing_idx[MAX_RF_PATH];
+	char absolute_ofdm_swing_idx[MAX_RF_PATH];
 	char remnant_ofdm_swing_idx[MAX_RF_PATH];
 	char remnant_cck_idx;
 	bool modify_txagc_flag_path_a;

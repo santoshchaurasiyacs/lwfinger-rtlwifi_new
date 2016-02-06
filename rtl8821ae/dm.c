@@ -471,7 +471,7 @@ void rtl8821ae_dm_clear_txpower_tracking_state(struct ieee80211_hw *hw)
 		rtldm->delta_power_index[p] = 0;
 		rtldm->delta_power_index_last[p] = 0;
 		/*Initial Mix mode power tracking*/
-		rtldm->aboslute_ofdm_swing_idx[p] = 0;
+		rtldm->absolute_ofdm_swing_idx[p] = 0;
 		rtldm->remnant_ofdm_swing_idx[p] = 0;
 	}
 	/*Initial at Modify Tx Scaling Mode*/
@@ -1702,12 +1702,12 @@ void rtl8812ae_dm_txpwr_track_set_pwr(struct ieee80211_hw *hw,
 		RT_TRACE(rtlpriv, COMP_POWER_TRACKING, DBG_LOUD,
 			"pDM_Odm->DefaultOfdmIndex=%d, pDM_Odm->Aboslute_OFDMSwingIdx[RFPath]=%d, RF_Path = %d\n",
 			rtldm->default_ofdm_index,
-			rtldm->aboslute_ofdm_swing_idx[rf_path],
+			rtldm->absolute_ofdm_swing_idx[rf_path],
 			rf_path);
 
 
 		final_ofdm_swing_index = rtldm->default_ofdm_index +
-				rtldm->aboslute_ofdm_swing_idx[rf_path];
+				rtldm->absolute_ofdm_swing_idx[rf_path];
 
 		if (rf_path == RF90_PATH_A) {
 			/*BBSwing higher then Limit*/
@@ -1978,13 +1978,13 @@ void rtl8812ae_dm_txpower_tracking_callback_thermalmeter(
 			rtldm->delta_power_index[RF90_PATH_A] =
 				delta_swing_table_idx_tup_a[delta];
 
-			rtldm->aboslute_ofdm_swing_idx[RF90_PATH_A] =
+			rtldm->absolute_ofdm_swing_idx[RF90_PATH_A] =
 				delta_swing_table_idx_tup_a[delta];
 			/*Record delta swing for mix mode power tracking*/
 
 			RT_TRACE(rtlpriv, COMP_POWER_TRACKING, DBG_LOUD,
 			"******Temp is higher and pDM_Odm->Aboslute_OFDMSwingIdx[ODM_RF_PATH_A] = %d\n",
-			rtldm->aboslute_ofdm_swing_idx[RF90_PATH_A]);
+			rtldm->absolute_ofdm_swing_idx[RF90_PATH_A]);
 
 
 			RT_TRACE(rtlpriv, COMP_POWER_TRACKING, DBG_LOUD,
@@ -1995,13 +1995,13 @@ void rtl8812ae_dm_txpower_tracking_callback_thermalmeter(
 			rtldm->delta_power_index[RF90_PATH_B] =
 				delta_swing_table_idx_tup_b[delta];
 
-			rtldm->aboslute_ofdm_swing_idx[RF90_PATH_B] =
+			rtldm->absolute_ofdm_swing_idx[RF90_PATH_B] =
 				delta_swing_table_idx_tup_b[delta];
 			/*Record delta swing for mix mode power tracking*/
 
 			RT_TRACE(rtlpriv, COMP_POWER_TRACKING, DBG_LOUD,
 			"******Temp is higher and pDM_Odm->Aboslute_OFDMSwingIdx[ODM_RF_PATH_B] = %d\n",
-			rtldm->aboslute_ofdm_swing_idx[RF90_PATH_B]);
+			rtldm->absolute_ofdm_swing_idx[RF90_PATH_B]);
 
 		} else {
 			RT_TRACE(rtlpriv, COMP_POWER_TRACKING, DBG_LOUD,
@@ -2013,12 +2013,12 @@ void rtl8812ae_dm_txpower_tracking_callback_thermalmeter(
 			rtldm->delta_power_index[RF90_PATH_A] =
 				-1 * delta_swing_table_idx_tdown_a[delta];
 
-			rtldm->aboslute_ofdm_swing_idx[RF90_PATH_A] =
+			rtldm->absolute_ofdm_swing_idx[RF90_PATH_A] =
 				-1 * delta_swing_table_idx_tdown_a[delta];
 			/* Record delta swing for mix mode power tracking*/
 			RT_TRACE(rtlpriv, COMP_POWER_TRACKING, DBG_LOUD,
 			"******Temp is lower and pDM_Odm->Aboslute_OFDMSwingIdx[ODM_RF_PATH_A] = %d\n",
-			rtldm->aboslute_ofdm_swing_idx[RF90_PATH_A]);
+			rtldm->absolute_ofdm_swing_idx[RF90_PATH_A]);
 
 
 			RT_TRACE(rtlpriv, COMP_POWER_TRACKING, DBG_LOUD,
@@ -2030,13 +2030,13 @@ void rtl8812ae_dm_txpower_tracking_callback_thermalmeter(
 			rtldm->delta_power_index[RF90_PATH_B] =
 				-1 * delta_swing_table_idx_tdown_b[delta];
 
-			rtldm->aboslute_ofdm_swing_idx[RF90_PATH_B] =
+			rtldm->absolute_ofdm_swing_idx[RF90_PATH_B] =
 				-1 * delta_swing_table_idx_tdown_b[delta];
 			/*Record delta swing for mix mode power tracking*/
 
 			RT_TRACE(rtlpriv, COMP_POWER_TRACKING, DBG_LOUD,
 				 "******Temp is lower and pDM_Odm->Aboslute_OFDMSwingIdx[ODM_RF_PATH_B] = %d\n",
-				 rtldm->aboslute_ofdm_swing_idx[RF90_PATH_B]);
+				 rtldm->absolute_ofdm_swing_idx[RF90_PATH_B]);
 		}
 
 		for (p = RF90_PATH_A; p < MAX_PATH_NUM_8812A; p++) {
@@ -2383,13 +2383,13 @@ void rtl8821ae_dm_txpwr_track_set_pwr(struct ieee80211_hw *hw,
 		RT_TRACE(rtlpriv, COMP_POWER_TRACKING, DBG_LOUD,
 			"pDM_Odm->DefaultOfdmIndex=%d,pDM_Odm->Aboslute_OFDMSwingIdx[RFPath]=%d, RF_Path = %d\n",
 			rtldm->default_ofdm_index,
-			rtldm->aboslute_ofdm_swing_idx[rf_path],
+			rtldm->absolute_ofdm_swing_idx[rf_path],
 			rf_path);
 
 
 		final_ofdm_swing_index =
 			rtldm->default_ofdm_index +
-			rtldm->aboslute_ofdm_swing_idx[rf_path];
+			rtldm->absolute_ofdm_swing_idx[rf_path];
 		/*BBSwing higher then Limit*/
 		if (rf_path == RF90_PATH_A) {
 			if (final_ofdm_swing_index > pwr_tracking_limit) {
@@ -2596,13 +2596,13 @@ void rtl8821ae_dm_txpower_tracking_callback_thermalmeter(
 			rtldm->delta_power_index[RF90_PATH_A] =
 				delta_swing_table_idx_tup_a[delta];
 
-			rtldm->aboslute_ofdm_swing_idx[RF90_PATH_A] =
+			rtldm->absolute_ofdm_swing_idx[RF90_PATH_A] =
 				delta_swing_table_idx_tup_a[delta];
 			/*Record delta swing for mix mode power tracking*/
 
 			RT_TRACE(rtlpriv, COMP_POWER_TRACKING, DBG_LOUD,
 			"******Temp is higher and pDM_Odm->Aboslute_OFDMSwingIdx[ODM_RF_PATH_A] = %d\n",
-			rtldm->aboslute_ofdm_swing_idx[RF90_PATH_A]);
+			rtldm->absolute_ofdm_swing_idx[RF90_PATH_A]);
 
 		} else {
 			RT_TRACE(rtlpriv, COMP_POWER_TRACKING, DBG_LOUD,
@@ -2614,12 +2614,12 @@ void rtl8821ae_dm_txpower_tracking_callback_thermalmeter(
 			rtldm->delta_power_index[RF90_PATH_A] =
 				-1 * delta_swing_table_idx_tdown_a[delta];
 
-			rtldm->aboslute_ofdm_swing_idx[RF90_PATH_A] =
+			rtldm->absolute_ofdm_swing_idx[RF90_PATH_A] =
 				-1 * delta_swing_table_idx_tdown_a[delta];
 			/* Record delta swing for mix mode power tracking*/
 			RT_TRACE(rtlpriv, COMP_POWER_TRACKING, DBG_LOUD,
 			"******Temp is lower and pDM_Odm->Aboslute_OFDMSwingIdx[ODM_RF_PATH_A] = %d\n",
-			rtldm->aboslute_ofdm_swing_idx[RF90_PATH_A]);
+			rtldm->absolute_ofdm_swing_idx[RF90_PATH_A]);
 		}
 
 		for (p = RF90_PATH_A; p < MAX_PATH_NUM_8821A; p++) {
