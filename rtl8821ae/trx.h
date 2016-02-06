@@ -367,10 +367,8 @@ do {								\
 		memset(__pdesc, 0, _size);			\
 } while (0);
 
-#define IS_LITTLE_ENDIAN	1
-
 struct phy_rx_agc_info_t {
-	#if IS_LITTLE_ENDIAN
+	#if __LITTLE_ENDIAN
 		u8	gain:7, trsw:1;
 	#else
 		u8	trsw:1, gain:7;
@@ -396,7 +394,7 @@ struct phy_status_rpt {
 	u8	stream_target_csi[2];
 	u8	sig_evm;
 	u8	rsvd_3;
-#if IS_LITTLE_ENDIAN
+#if __LITTLE_ENDIAN
 	u8	antsel_rx_keep_2:1;	/*ex_intf_flg:1;*/
 	u8	sgi_en:1;
 	u8	rxsc:2;
@@ -418,7 +416,7 @@ struct phy_status_rpt {
 struct phy_status_rpt {
 	/* DWORD 0 */
 	u8 gain_trsw[2];
-#if IS_LITTLE_ENDIAN
+#if __LITTLE_ENDIAN
 	u16 chl_num:10;
 	u16 sub_chnl:4;
 	u16 r_rfmod:2;
