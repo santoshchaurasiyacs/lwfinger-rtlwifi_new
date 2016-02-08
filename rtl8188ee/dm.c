@@ -241,15 +241,15 @@ void rtl88e_dm_txpower_track_adjust(struct ieee80211_hw *hw,
 	u8 pwr_val = 0;
 
 	if (type == 0) {
-		if (rtlpriv->dm.bb_swing_idx_ofdm[RF90_PATH_A] <=
-			rtlpriv->dm.bb_swing_idx_ofdm_base[RF90_PATH_A]) {
+		if (rtlpriv->dm.swing_idx_ofdm[RF90_PATH_A] <=
+			rtlpriv->dm.swing_idx_ofdm_base[RF90_PATH_A]) {
 			*pdirection = 1;
-			pwr_val = rtldm->bb_swing_idx_ofdm_base[RF90_PATH_A] -
-				rtldm->bb_swing_idx_ofdm[RF90_PATH_A];
+			pwr_val = rtldm->swing_idx_ofdm_base[RF90_PATH_A] -
+				rtldm->swing_idx_ofdm[RF90_PATH_A];
 		} else {
 			*pdirection = 2;
-			pwr_val = rtldm->bb_swing_idx_ofdm[RF90_PATH_A] -
-				rtldm->bb_swing_idx_ofdm_base[RF90_PATH_A];
+			pwr_val = rtldm->swing_idx_ofdm[RF90_PATH_A] -
+				rtldm->swing_idx_ofdm_base[RF90_PATH_A];
 		}
 	} else if (type == 1) {
 		if (rtldm->bb_swing_idx_cck <= rtldm->bb_swing_idx_cck_base) {
@@ -322,11 +322,11 @@ static void rtl88e_dm_tx_power_track_set_power(struct ieee80211_hw *hw,
 		}
 
 		if (rfpath == RF90_PATH_A) {
-			rtl88e_set_iqk_matrix(hw, rtldm->bb_swing_idx_ofdm[rfpath], rfpath,
+			rtl88e_set_iqk_matrix(hw, rtldm->swing_idx_ofdm[rfpath], rfpath,
 				rtlphy->iqk_matrix_regsetting[channel_mapped_index].value[0][0],
 				rtlphy->iqk_matrix_regsetting[channel_mapped_index].value[0][1]);
 		} else if (rfpath == RF90_PATH_B) {
-			rtl88e_set_iqk_matrix(hw, rtldm->bb_swing_idx_ofdm[rfpath], rfpath,
+			rtl88e_set_iqk_matrix(hw, rtldm->swing_idx_ofdm[rfpath], rfpath,
 				rtlphy->iqk_matrix_regsetting[channel_mapped_index].value[0][4],
 				rtlphy->iqk_matrix_regsetting[channel_mapped_index].value[0][5]);
 		}
@@ -960,7 +960,7 @@ static void rtl88e_dm_txpower_tracking_callback_thermalmeter(
 	for (i = 0; i < OFDM_TABLE_LENGTH; i++) {
 		if (ele_d == (ofdmswing_table[i] & MASKOFDM_D)) {
 			ofdm_index_old[0] = (u8) i;
-			rtldm->bb_swing_idx_ofdm_base[RF90_PATH_A] = (u8)i;
+			rtldm->swing_idx_ofdm_base[RF90_PATH_A] = (u8)i;
 			RT_TRACE(rtlpriv, COMP_POWER_TRACKING, DBG_LOUD,
 				 "Initial pathA ele_d reg0x%x = 0x%lx, "
 				  "ofdm_index = 0x%x\n",
@@ -1113,16 +1113,16 @@ static void rtl88e_dm_txpower_tracking_callback_thermalmeter(
 		/*7.3Configure the Swing Table to adjust Tx Power.*/
 		if (rtlpriv->dm.txpower_track_control) {
 			rtldm->done_txpower = true;
-			rtldm->bb_swing_idx_ofdm[RF90_PATH_A] =
+			rtldm->swing_idx_ofdm[RF90_PATH_A] =
 				(u8)ofdm_index[RF90_PATH_A];
 			/*if (is2t)
-			rtldm->bb_swing_idx_ofdm[RF90_PATH_B] =
+			rtldm->swing_idx_ofdm[RF90_PATH_B] =
 				(u8)ofdm_index[RF90_PATH_B];*/
 			rtldm->bb_swing_idx_cck = cck_index;
-			if (rtldm->bb_swing_idx_ofdm_current !=
-				rtldm->bb_swing_idx_ofdm[0]) {
-				rtldm->bb_swing_idx_ofdm_current =
-					rtldm->bb_swing_idx_ofdm[0];
+			if (rtldm->swing_idx_ofdm_current !=
+				rtldm->swing_idx_ofdm[0]) {
+				rtldm->swing_idx_ofdm_current =
+					rtldm->swing_idx_ofdm[0];
 				rtldm->bb_swing_flag_Ofdm = true;
 			}
 
@@ -1161,8 +1161,8 @@ static void rtl88e_dm_init_txpower_tracking(struct ieee80211_hw *hw)
 	rtlpriv->dm.txpowercount = 0;
 	rtlpriv->dm.txpower_track_control = true;
 
-	rtlpriv->dm.bb_swing_idx_ofdm[RF90_PATH_A] = 12;
-	rtlpriv->dm.bb_swing_idx_ofdm_current = 12;
+	rtlpriv->dm.swing_idx_ofdm[RF90_PATH_A] = 12;
+	rtlpriv->dm.swing_idx_ofdm_current = 12;
 	rtlpriv->dm.bb_swing_flag_Ofdm = false;
 	RT_TRACE(rtlpriv, COMP_POWER_TRACKING, DBG_LOUD,
 		 "  rtlpriv->dm.txpower_tracking = %d\n",

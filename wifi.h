@@ -1666,9 +1666,9 @@ struct rtl_dm {
 
 
 	/*88e tx power tracking*/
-	u8 bb_swing_idx_ofdm[2];
-	u8 bb_swing_idx_ofdm_current;
-	u8 bb_swing_idx_ofdm_base[MAX_RF_PATH];
+	u8 swing_idx_ofdm[2];
+	u8 swing_idx_ofdm_current;
+	u8 swing_idx_ofdm_base[MAX_RF_PATH];
 	bool bb_swing_flag_Ofdm;
 	u8 bb_swing_idx_cck;
 	u8 bb_swing_idx_cck_current;
