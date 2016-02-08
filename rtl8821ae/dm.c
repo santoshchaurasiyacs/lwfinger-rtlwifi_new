@@ -34,7 +34,7 @@
 #include "trx.h"
 #include "../btcoexist/rtl_btc.h"
 
-static const u32 rtl8812ae_txscaling_table[TXSCALE_TABLE_SIZE] = {
+static const u32 txscaling_tbl[TXSCALE_TABLE_SIZE] = {
 	0x081, /* 0, -12.0dB */
 	0x088, /* 1, -11.5dB */
 	0x090, /* 2, -11.0dB */
@@ -294,7 +294,7 @@ static u8 rtl8812ae_delta_swing_table_idx_24gccka_p[] = {
 	0, 0, 1, 1, 2, 2, 2, 2, 3, 3, 3, 4, 4, 5, 5, 6,
 	6, 6, 7, 7, 7, 8, 8, 8, 9, 9, 9, 9, 9, 9};
 
-static u8 rtl8812ae_delta_swing_table_idx_5gb_n[][DELTA_SWINGIDX_SIZE] = {
+static u8 rtl8812ae_delta_swing_table_idx_5gb_n[][DEL_SW_IDX_SZ] = {
 	{0, 1, 1, 2, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 6, 7, 7,
 	7, 8, 8, 9, 9, 9, 10, 10, 11, 11, 12, 12, 13},
 	{0, 1, 1, 2, 2, 2, 3, 3, 4, 4, 4, 5, 5, 6, 6, 7,
@@ -303,7 +303,7 @@ static u8 rtl8812ae_delta_swing_table_idx_5gb_n[][DELTA_SWINGIDX_SIZE] = {
 	12, 12, 13, 14, 14, 14, 15, 16, 17, 17, 17, 18, 18, 18},
 };
 
-static u8 rtl8812ae_delta_swing_table_idx_5gb_p[][DELTA_SWINGIDX_SIZE] = {
+static u8 rtl8812ae_delta_swing_table_idx_5gb_p[][DEL_SW_IDX_SZ] = {
 	{0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 6, 7, 7, 8,
 	8, 9, 9, 10, 10, 11, 11, 11, 11, 11, 11, 11, 11},
 	{0, 1, 1, 2, 2, 3, 3, 4, 4, 4, 5, 5, 6, 6, 7, 7, 8,
@@ -312,7 +312,7 @@ static u8 rtl8812ae_delta_swing_table_idx_5gb_p[][DELTA_SWINGIDX_SIZE] = {
 	9, 10, 10, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11},
 };
 
-static u8 rtl8812ae_delta_swing_table_idx_5ga_n[][DELTA_SWINGIDX_SIZE] = {
+static u8 rtl8812ae_delta_swing_table_idx_5ga_n[][DEL_SW_IDX_SZ] = {
 	{0, 1, 1, 2, 2, 3, 3, 4, 4, 4, 5, 5, 6, 6, 7, 7, 8,
 	8, 9, 9, 10, 10, 11, 11, 12, 12, 12, 13, 13, 13},
 	{0, 1, 1, 2, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 8, 9,
@@ -321,7 +321,7 @@ static u8 rtl8812ae_delta_swing_table_idx_5ga_n[][DELTA_SWINGIDX_SIZE] = {
 	12, 13, 14, 14, 15, 15, 15, 16, 16, 16, 17, 17, 18, 18},
 };
 
-static u8 rtl8812ae_delta_swing_table_idx_5ga_p[][DELTA_SWINGIDX_SIZE] = {
+static u8 rtl8812ae_delta_swing_table_idx_5ga_p[][DEL_SW_IDX_SZ] = {
 	{0, 1, 1, 2, 2, 3, 3, 4, 4, 4, 4, 5, 5, 6, 7, 7, 8,
 	8, 9, 9, 10, 10, 11, 11, 11, 11, 11, 11, 11, 11},
 	{0, 1, 1, 2, 2, 3, 3, 4, 4, 4, 5, 5, 6, 6, 7, 7, 8,
@@ -362,7 +362,7 @@ static u8 rtl8821ae_delta_swing_table_idx_24gccka_p[] = {
 	0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8,
 	8, 9, 9, 10, 10, 11, 11, 12, 12, 12, 12, 12, 12};
 
-static u8 rtl8821ae_delta_swing_table_idx_5gb_n[][DELTA_SWINGIDX_SIZE] = {
+static u8 rtl8821ae_delta_swing_table_idx_5gb_n[][DEL_SW_IDX_SZ] = {
 	{0, 0, 1, 2, 3, 3, 4, 5, 6, 6, 7, 8, 9, 9, 10, 11,
 	12, 12, 13, 14, 15, 15, 16, 16, 16, 16, 16, 16, 16, 16},
 	{0, 0, 1, 2, 3, 3, 4, 5, 6, 6, 7, 8, 9, 9, 10, 11,
@@ -371,7 +371,7 @@ static u8 rtl8821ae_delta_swing_table_idx_5gb_n[][DELTA_SWINGIDX_SIZE] = {
 	12, 12, 13, 14, 15, 15, 16, 16, 16, 16, 16, 16, 16, 16},
 };
 
-static u8 rtl8821ae_delta_swing_table_idx_5gb_p[][DELTA_SWINGIDX_SIZE] = {
+static u8 rtl8821ae_delta_swing_table_idx_5gb_p[][DEL_SW_IDX_SZ] = {
 	{0, 0, 1, 2, 3, 3, 4, 5, 6, 6, 7, 8, 9, 9, 10, 11,
 	12, 12, 13, 14, 15, 15, 16, 16, 16, 16, 16, 16, 16, 16},
 	{0, 0, 1, 2, 3, 3, 4, 5, 6, 6, 7, 8, 9, 9, 10, 11,
@@ -380,7 +380,7 @@ static u8 rtl8821ae_delta_swing_table_idx_5gb_p[][DELTA_SWINGIDX_SIZE] = {
 	12, 12, 13, 14, 15, 15, 16, 16, 16, 16, 16, 16, 16, 16},
 };
 
-static u8 rtl8821ae_delta_swing_table_idx_5ga_n[][DELTA_SWINGIDX_SIZE] = {
+static u8 rtl8821ae_delta_swing_table_idx_5ga_n[][DEL_SW_IDX_SZ] = {
 	{0, 0, 1, 2, 3, 3, 4, 5, 6, 6, 7, 8, 9, 9, 10, 11,
 	12, 12, 13, 14, 15, 15, 16, 16, 16, 16, 16, 16, 16, 16},
 	{0, 0, 1, 2, 3, 3, 4, 5, 6, 6, 7, 8, 9, 9, 10, 11,
@@ -389,7 +389,7 @@ static u8 rtl8821ae_delta_swing_table_idx_5ga_n[][DELTA_SWINGIDX_SIZE] = {
 	12, 12, 13, 14, 15, 15, 16, 16, 16, 16, 16, 16, 16, 16},
 };
 
-static u8 rtl8821ae_delta_swing_table_idx_5ga_p[][DELTA_SWINGIDX_SIZE] = {
+static u8 rtl8821ae_delta_swing_table_idx_5ga_p[][DEL_SW_IDX_SZ] = {
 	{0, 0, 1, 2, 3, 3, 4, 5, 6, 6, 7, 8, 9, 9, 10, 11,
 	12, 12, 13, 14, 15, 15, 16, 16, 16, 16, 16, 16, 16, 16},
 	{0, 0, 1, 2, 3, 3, 4, 5, 6, 6, 7, 8, 9, 9, 10, 11,
@@ -1683,7 +1683,7 @@ void rtl8812ae_dm_txpwr_track_set_pwr(struct ieee80211_hw *hw,
 				final_bb_swing_idx[RF90_PATH_A]);
 
 			rtl_set_bbreg(hw, RA_TXSCALE, 0xFFE00000,
-				rtl8812ae_txscaling_table[final_bb_swing_idx[RF90_PATH_A]]);
+				txscaling_tbl[final_bb_swing_idx[RF90_PATH_A]]);
 		} else {
 			final_bb_swing_idx[RF90_PATH_B] =
 				rtldm->ofdm_index[RF90_PATH_B] >
@@ -1696,7 +1696,7 @@ void rtl8812ae_dm_txpwr_track_set_pwr(struct ieee80211_hw *hw,
 				final_bb_swing_idx[RF90_PATH_B]);
 
 			rtl_set_bbreg(hw, RB_TXSCALE, 0xFFE00000,
-				rtl8812ae_txscaling_table[final_bb_swing_idx[RF90_PATH_B]]);
+				txscaling_tbl[final_bb_swing_idx[RF90_PATH_B]]);
 		}
 	} else if (method == MIX_MODE) {
 		RT_TRACE(rtlpriv, COMP_POWER_TRACKING, DBG_LOUD,
@@ -1723,7 +1723,7 @@ void rtl8812ae_dm_txpwr_track_set_pwr(struct ieee80211_hw *hw,
 
 				rtl_set_bbreg(hw, RA_TXSCALE,
 					0xFFE00000,
-					rtl8812ae_txscaling_table[pwr_tracking_limit]);
+					txscaling_tbl[pwr_tracking_limit]);
 
 				rtldm->modify_txagc_flag_path_a = true;
 
@@ -1744,7 +1744,7 @@ void rtl8812ae_dm_txpwr_track_set_pwr(struct ieee80211_hw *hw,
 
 				rtl_set_bbreg(hw, RA_TXSCALE,
 					0xFFE00000,
-					rtl8812ae_txscaling_table[0]);
+					txscaling_tbl[0]);
 
 				rtldm->modify_txagc_flag_path_a = true;
 
@@ -1757,7 +1757,7 @@ void rtl8812ae_dm_txpwr_track_set_pwr(struct ieee80211_hw *hw,
 					 rtldm->remnant_ofdm_swing_idx[rf_path]);
 			} else {
 				rtl_set_bbreg(hw, RA_TXSCALE, 0xFFE00000,
-					rtl8812ae_txscaling_table[(u8)final_ofdm_swing_index]);
+					txscaling_tbl[(u8)final_ofdm_swing_index]);
 
 				RT_TRACE(rtlpriv, COMP_POWER_TRACKING, DBG_LOUD,
 					"******Path_A Compensate with BBSwing, Final_OFDM_Swing_Index = %d\n",
@@ -1789,7 +1789,7 @@ void rtl8812ae_dm_txpwr_track_set_pwr(struct ieee80211_hw *hw,
 
 				rtl_set_bbreg(hw, RB_TXSCALE,
 					0xFFE00000,
-					rtl8812ae_txscaling_table[pwr_tracking_limit]);
+					txscaling_tbl[pwr_tracking_limit]);
 
 				rtldm->modify_txagc_flag_path_b = true;
 
@@ -1807,7 +1807,7 @@ void rtl8812ae_dm_txpwr_track_set_pwr(struct ieee80211_hw *hw,
 
 				rtl_set_bbreg(hw, RB_TXSCALE,
 					0xFFE00000,
-					rtl8812ae_txscaling_table[0]);
+					txscaling_tbl[0]);
 
 				rtldm->modify_txagc_flag_path_b = true;
 
@@ -1820,7 +1820,7 @@ void rtl8812ae_dm_txpwr_track_set_pwr(struct ieee80211_hw *hw,
 					rtldm->remnant_ofdm_swing_idx[rf_path]);
 			} else {
 				rtl_set_bbreg(hw, RB_TXSCALE, 0xFFE00000,
-					rtl8812ae_txscaling_table[(u8)final_ofdm_swing_index]);
+					txscaling_tbl[(u8)final_ofdm_swing_index]);
 
 				RT_TRACE(rtlpriv, COMP_POWER_TRACKING, DBG_LOUD,
 					"******Path_B Compensate with BBSwing ,Final_OFDM_Swing_Index = %d\n",
@@ -2377,7 +2377,7 @@ void rtl8821ae_dm_txpwr_track_set_pwr(struct ieee80211_hw *hw,
 				final_bb_swing_idx[RF90_PATH_A]);
 
 			rtl_set_bbreg(hw, RA_TXSCALE, 0xFFE00000,
-				rtl8812ae_txscaling_table[final_bb_swing_idx[RF90_PATH_A]]);
+				txscaling_tbl[final_bb_swing_idx[RF90_PATH_A]]);
 		}
 	} else if (method == MIX_MODE) {
 		RT_TRACE(rtlpriv, COMP_POWER_TRACKING, DBG_LOUD,
@@ -2404,7 +2404,7 @@ void rtl8821ae_dm_txpwr_track_set_pwr(struct ieee80211_hw *hw,
 
 				rtl_set_bbreg(hw, RA_TXSCALE,
 					0xFFE00000,
-					rtl8812ae_txscaling_table[pwr_tracking_limit]);
+					txscaling_tbl[pwr_tracking_limit]);
 
 				rtldm->modify_txagc_flag_path_a = true;
 
@@ -2425,7 +2425,7 @@ void rtl8821ae_dm_txpwr_track_set_pwr(struct ieee80211_hw *hw,
 
 				rtl_set_bbreg(hw, RA_TXSCALE,
 					0xFFE00000,
-					rtl8812ae_txscaling_table[0]);
+					txscaling_tbl[0]);
 
 				rtldm->modify_txagc_flag_path_a = true;
 
@@ -2438,7 +2438,7 @@ void rtl8821ae_dm_txpwr_track_set_pwr(struct ieee80211_hw *hw,
 					rtldm->remnant_ofdm_swing_idx[rf_path]);
 			} else {
 				rtl_set_bbreg(hw, RA_TXSCALE, 0xFFE00000,
-					rtl8812ae_txscaling_table[(u8)final_ofdm_swing_index]);
+					txscaling_tbl[(u8)final_ofdm_swing_index]);
 
 				RT_TRACE(rtlpriv, COMP_POWER_TRACKING, DBG_LOUD,
 					"******Path_A Compensate with BBSwing ,Final_OFDM_Swing_Index = %d\n",

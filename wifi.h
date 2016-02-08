@@ -137,7 +137,7 @@
 #define MAX_BASE_NUM_IN_PHY_REG_PG_24G  6
 #define MAX_BASE_NUM_IN_PHY_REG_PG_5G	5
 
-#define DELTA_SWINGIDX_SIZE	30
+#define DEL_SW_IDX_SZ	30
 #define BAND_NUM				3
 /*Now, it's just for 8192ee
  *not OK yet, keep it 0*/
