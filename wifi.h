@@ -2104,7 +2104,7 @@ struct rtl_hal_ops {
 	bool (*get_btc_status)(void);
 //	bool (*is_fw_header) (struct rtl92c_firmware_header *hdr);
 	u32 (*rx_command_packet)(struct ieee80211_hw *hw,
-				  struct rtl_stats status, struct sk_buff *skb);
+				  const struct rtl_stats *status, struct sk_buff *skb);
 	void (*add_wowlan_pattern)(struct ieee80211_hw *hw, struct rtl_wow_pattern *rtl_pattern, u8 index);
 	u16 (*get_available_desc)(struct ieee80211_hw *hw , u8 q_idx);
 };
