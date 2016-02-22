@@ -867,7 +867,7 @@ void rtl92se_tx_polling(struct ieee80211_hw *hw, u8 hw_queue)
 }
 
 u32 rtl92se_rx_command_packet(struct ieee80211_hw *hw,
-			      struct rtl_stats status,
+			      const struct rtl_stats *status,
 			      struct sk_buff *skb)
 {
 	return 0;

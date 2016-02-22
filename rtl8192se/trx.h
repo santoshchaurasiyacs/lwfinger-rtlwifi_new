@@ -44,6 +44,6 @@ u32 rtl92se_get_desc(u8 *pdesc, bool istx, u8 desc_name);
 bool rtl92se_is_tx_desc_closed(struct ieee80211_hw *hw, u8 hw_queue, u16 index);
 void rtl92se_tx_polling(struct ieee80211_hw *hw, u8 hw_queue);
 u32 rtl92se_rx_command_packet(struct ieee80211_hw *hw,
-			      struct rtl_stats status,
+			      const struct rtl_stats *status,
 			      struct sk_buff *skb);
 #endif
