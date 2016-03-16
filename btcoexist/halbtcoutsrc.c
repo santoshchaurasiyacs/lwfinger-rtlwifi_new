@@ -1315,7 +1315,7 @@ void exhalbtc_coex_dm_switch(struct btc_coexist *btcoexist)
 		if (btcoexist->board_info.btdm_ant_num == 1) {
 			btcoexist->stop_coex_dm = true;
 			ex_halbtc8723b1ant_coex_dm_reset(btcoexist);
-			exhalbtc_set_ant_num(BT_COEX_ANT_TYPE_DETECTED, 2);
+			exhalbtc_set_ant_num(rtlpriv, BT_COEX_ANT_TYPE_DETECTED, 2);
 			ex_halbtc8723b2ant_init_hwconfig(btcoexist);
 			ex_halbtc8723b2ant_init_coex_dm(btcoexist);
 			btcoexist->stop_coex_dm = false;
@@ -1505,7 +1505,7 @@ void exhalbtc_set_chip_type(u8 chip_type)
 	}
 }
 
-void exhalbtc_set_ant_num(u8 type, u8 ant_num)
+void exhalbtc_set_ant_num(struct rtl_priv *rtlpriv, u8 type, u8 ant_num)
 {
 	if (BT_COEX_ANT_TYPE_PG == type) {
 		gl_bt_coexist.board_info.pg_ant_num = ant_num;
@@ -1531,8 +1531,12 @@ void exhalbtc_set_ant_num(u8 type, u8 ant_num)
 						       BTC_ANTENNA_AT_MAIN_PORT;
 	} else if (BT_COEX_ANT_TYPE_DETECTED == type) {
 		gl_bt_coexist.board_info.btdm_ant_num = ant_num;
-		gl_bt_coexist.board_info.btdm_ant_pos =
-						       BTC_ANTENNA_AT_MAIN_PORT;
+		if (rtlpriv->cfg->mod_params->ant_sel)
+			gl_bt_coexist.board_info.btdm_ant_pos =
+				BTC_ANTENNA_AT_AUX_PORT;
+		else
+			gl_bt_coexist.board_info.btdm_ant_pos =
+				BTC_ANTENNA_AT_MAIN_PORT;
 	}
 }
 
