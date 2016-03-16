@@ -90,8 +90,10 @@ void rtl_btc_init_hal_vars(struct rtl_priv *rtlpriv)
 		"%s, bt_type is %d\n", __func__, bt_type);
 	exhalbtc_set_chip_type(bt_type);
 
-	exhalbtc_set_ant_num(BT_COEX_ANT_TYPE_PG, ant_num);
-
+	if (rtlpriv->cfg->mod_params->ant_sel)
+		exhalbtc_set_ant_num(rtlpriv, BT_COEX_ANT_TYPE_DETECTED, 1);
+	else
+		exhalbtc_set_ant_num(rtlpriv, BT_COEX_ANT_TYPE_PG, ant_num);
 }
 
 void rtl_btc_stack_update_profile_info()
