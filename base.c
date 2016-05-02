@@ -1593,7 +1593,6 @@ void rtl_watchdog_wq_callback(void *data)
 	u32 aver_tx_cnt_inperiod = 0;
 	u32 aver_tidtx_inperiod[MAX_TID_COUNT] = {0};
 	u32 tidtx_inp4eriod[MAX_TID_COUNT] = {0};
-	bool benter_ps = false;
 
 	if (is_hal_stop(rtlhal))
 		return;
@@ -1673,15 +1672,9 @@ void rtl_watchdog_wq_callback(void *data)
 		if (((rtlpriv->link_info.num_rx_inperiod +
 		      rtlpriv->link_info.num_tx_inperiod) > 8) ||
 		    (rtlpriv->link_info.num_rx_inperiod > 2))
-			benter_ps = false;
-		else
-			benter_ps = true;
-
-		/* LeisurePS only work in infra mode. */
-		if (benter_ps)
-			rtl_lps_enter(hw);
-		else
 			rtl_lps_leave(hw);
+		else
+			rtl_lps_enter(hw);
 	}
 
 	rtlpriv->link_info.num_rx_packets_unicast = rtlpriv->link_info.num_rx_inperiod;
