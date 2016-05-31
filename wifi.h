@@ -41,6 +41,13 @@
 #include "btcoexist/halbtc8812a_ext.h"
 /*#define ERROR_RESUME*/
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 7, 0))
+#define ieee80211_band nl80211_band
+#define IEEE80211_BAND_2GHZ NL80211_BAND_2GHZ
+#define IEEE80211_BAND_5GHZ NL80211_BAND_5GHZ
+#define IEEE80211_NUM_BANDS NUM_NL80211_BANDS
+#endif
+
 #define RF_CHANGE_BY_INIT		0
 #define RF_CHANGE_BY_IPS		BIT(28)
 #define RF_CHANGE_BY_PS			BIT(29)
