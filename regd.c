@@ -394,7 +394,7 @@ static const struct ieee80211_regdomain *_rtl_regdomain_select(
 	case COUNTRY_CODE_FRANCE:
 	case COUNTRY_CODE_ISRAEL:
 	case COUNTRY_CODE_WORLD_WIDE_13:
-		return &rtl_regdom_12_13;
+		return &rtl_regdom_12_13_5g_all;
 	case COUNTRY_CODE_MKK:
 	case COUNTRY_CODE_MKK1:
 	case COUNTRY_CODE_TELEC:
