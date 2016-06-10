@@ -465,6 +465,8 @@ static u8 channel_plan_to_country_code(u8 channelplan)
 			return COUNTRY_CODE_WORLD_WIDE_13;
 		case 0x22:
 			return COUNTRY_CODE_IC;
+		case 0x26:
+			return COUNTRY_CODE_FRANCE;
 		case 0x32:
 			return COUNTRY_CODE_TELEC_NETGEAR;
 		case 0x34:
