@@ -125,6 +125,10 @@ extern void efuse_shadow_write(struct ieee80211_hw *hw, u8 type,
 extern bool efuse_shadow_update(struct ieee80211_hw *hw);
 extern bool efuse_shadow_update_chk(struct ieee80211_hw *hw);
 extern void rtl_efuse_shadow_map_update(struct ieee80211_hw *hw);
-extern void efuse_force_write_vendor_Id(struct ieee80211_hw *hw);
-extern void efuse_re_pg_section(struct ieee80211_hw *hw, u8 section_idx);
+
+void efuse_force_write_vendor_Id(struct ieee80211_hw *hw);
+void efuse_re_pg_section(struct ieee80211_hw *hw, u8 section_idx);
+int rtl_get_hwinfo(struct ieee80211_hw *hw, struct rtl_priv *rtlpriv,
+		   int max_size, u8 *hwinfo, int *params);
+
 #endif
