@@ -1644,212 +1644,127 @@ static void _rtl8723e_read_adapter_info(struct ieee80211_hw *hw, bool b_pseudo_t
 	rtl8723e_read_bt_coexist_info_from_hwpg(hw,
 			rtlefuse->autoload_failflag, hwinfo);
 
-	if (rtlhal->oem_id == RT_CID_DEFAULT) {
-		switch (rtlefuse->eeprom_oemid) {
-		case EEPROM_CID_DEFAULT:
-			if (rtlefuse->eeprom_did == 0x8176) {
-				if ((rtlefuse->eeprom_svid == 0x10EC &&
-					rtlefuse->eeprom_smid == 0x6151) ||
-					(rtlefuse->eeprom_svid == 0x10EC &&
-					rtlefuse->eeprom_smid == 0x6152) ||
-					(rtlefuse->eeprom_svid == 0x10EC &&
-					rtlefuse->eeprom_smid == 0x6154) ||
-					(rtlefuse->eeprom_svid == 0x10EC &&
-					rtlefuse->eeprom_smid == 0x6155) ||
-					(rtlefuse->eeprom_svid == 0x10EC &&
-					rtlefuse->eeprom_smid == 0x6177) ||
-					(rtlefuse->eeprom_svid == 0x10EC &&
-					rtlefuse->eeprom_smid == 0x6178) ||
-					(rtlefuse->eeprom_svid == 0x10EC &&
-					rtlefuse->eeprom_smid == 0x6179) ||
-					(rtlefuse->eeprom_svid == 0x10EC &&
-					rtlefuse->eeprom_smid == 0x6180) ||
-					(rtlefuse->eeprom_svid == 0x10EC &&
-					rtlefuse->eeprom_smid == 0x7151) ||
-					(rtlefuse->eeprom_svid == 0x10EC &&
-					rtlefuse->eeprom_smid == 0x7152) ||
-					(rtlefuse->eeprom_svid == 0x10EC &&
-					rtlefuse->eeprom_smid == 0x7154) ||
-					(rtlefuse->eeprom_svid == 0x10EC &&
-					rtlefuse->eeprom_smid == 0x7155) ||
-					(rtlefuse->eeprom_svid == 0x10EC &&
-					rtlefuse->eeprom_smid == 0x7177) ||
-					(rtlefuse->eeprom_svid == 0x10EC &&
-					rtlefuse->eeprom_smid == 0x7178) ||
-					(rtlefuse->eeprom_svid == 0x10EC &&
-					rtlefuse->eeprom_smid == 0x7179) ||
-					(rtlefuse->eeprom_svid == 0x10EC &&
-					rtlefuse->eeprom_smid == 0x7180) ||
-					(rtlefuse->eeprom_svid == 0x10EC &&
-					rtlefuse->eeprom_smid == 0x8151) ||
-					(rtlefuse->eeprom_svid == 0x10EC &&
-					rtlefuse->eeprom_smid == 0x8152) ||
-					(rtlefuse->eeprom_svid == 0x10EC &&
-					rtlefuse->eeprom_smid == 0x8154) ||
-					(rtlefuse->eeprom_svid == 0x10EC &&
-					rtlefuse->eeprom_smid == 0x8155) ||
-					(rtlefuse->eeprom_svid == 0x10EC &&
-					rtlefuse->eeprom_smid == 0x8181) ||
-					(rtlefuse->eeprom_svid == 0x10EC &&
-					rtlefuse->eeprom_smid == 0x8182) ||
-					(rtlefuse->eeprom_svid == 0x10EC &&
-					rtlefuse->eeprom_smid == 0x8184) ||
-					(rtlefuse->eeprom_svid == 0x10EC &&
-					rtlefuse->eeprom_smid == 0x8185) ||
-					(rtlefuse->eeprom_svid == 0x10EC &&
-					rtlefuse->eeprom_smid == 0x9151) ||
-					(rtlefuse->eeprom_svid == 0x10EC &&
-					rtlefuse->eeprom_smid == 0x9152) ||
-					(rtlefuse->eeprom_svid == 0x10EC &&
-					rtlefuse->eeprom_smid == 0x9154) ||
-					(rtlefuse->eeprom_svid == 0x10EC &&
-					rtlefuse->eeprom_smid == 0x9155) ||
-					(rtlefuse->eeprom_svid == 0x10EC &&
-					rtlefuse->eeprom_smid == 0x9181) ||
-					(rtlefuse->eeprom_svid == 0x10EC &&
-					rtlefuse->eeprom_smid == 0x9182) ||
-					(rtlefuse->eeprom_svid == 0x10EC &&
-					rtlefuse->eeprom_smid == 0x9184) ||
-					(rtlefuse->eeprom_svid == 0x10EC &&
-					rtlefuse->eeprom_smid == 0x9185)) {
+	if (rtlhal->oem_id != RT_CID_DEFAULT)
+		return;
+
+	switch (rtlefuse->eeprom_oemid) {
+	case EEPROM_CID_DEFAULT:
+		switch (rtlefuse->eeprom_did) {
+		case 0x8176:
+			switch (rtlefuse->eeprom_svid) {
+			case 0x10EC:
+				switch (rtlefuse->eeprom_smid) {
+				case 0x6151 ... 0x6152:
+				case 0x6154 ... 0x6155:
+				case 0x6177 ... 0x6180:
+				case 0x7151 ... 0x7152:
+				case 0x7154 ... 0x7155:
+				case 0x7177 ... 0x7180:
+				case 0x8151 ... 0x8152:
+				case 0x8154 ... 0x8155:
+				case 0x8181 ... 0x8182:
+				case 0x8184 ... 0x8185:
+				case 0x9151 ... 0x9152:
+				case 0x9154 ... 0x9155:
+				case 0x9181 ... 0x9182:
+				case 0x9184 ... 0x9185:
 					rtlhal->oem_id = RT_CID_TOSHIBA;
-				} else if (rtlefuse->eeprom_svid == 0x1025) {
-					rtlhal->oem_id = RT_CID_819X_ACER;
-				} else if ((rtlefuse->eeprom_svid == 0x10EC &&
-					rtlefuse->eeprom_smid == 0x6191) ||
-					(rtlefuse->eeprom_svid == 0x10EC &&
-					rtlefuse->eeprom_smid == 0x6192) ||
-					(rtlefuse->eeprom_svid == 0x10EC &&
-					rtlefuse->eeprom_smid == 0x6193) ||
-					(rtlefuse->eeprom_svid == 0x10EC &&
-					rtlefuse->eeprom_smid == 0x7191) ||
-					(rtlefuse->eeprom_svid == 0x10EC &&
-					rtlefuse->eeprom_smid == 0x7192) ||
-					(rtlefuse->eeprom_svid == 0x10EC &&
-					rtlefuse->eeprom_smid == 0x7193) ||
-					(rtlefuse->eeprom_svid == 0x10EC &&
-					rtlefuse->eeprom_smid == 0x8191) ||
-					(rtlefuse->eeprom_svid == 0x10EC &&
-					rtlefuse->eeprom_smid == 0x8192) ||
-					(rtlefuse->eeprom_svid == 0x10EC &&
-					rtlefuse->eeprom_smid == 0x8193) ||
-					(rtlefuse->eeprom_svid == 0x10EC &&
-					rtlefuse->eeprom_smid == 0x9191) ||
-					(rtlefuse->eeprom_svid == 0x10EC &&
-					rtlefuse->eeprom_smid == 0x9192) ||
-					(rtlefuse->eeprom_svid == 0x10EC &&
-					rtlefuse->eeprom_smid == 0x9193)) {
+					break;
+				case 0x6191 ... 0x6193:
+				case 0x7191 ... 0x7193:
+				case 0x8191 ... 0x8193:
+				case 0x9191 ... 0x9193:
 					rtlhal->oem_id = RT_CID_819x_SAMSUNG;
-				} else if ((rtlefuse->eeprom_svid == 0x10EC &&
-					rtlefuse->eeprom_smid == 0x8195) ||
-					(rtlefuse->eeprom_svid == 0x10EC &&
-					rtlefuse->eeprom_smid == 0x9195) ||
-					(rtlefuse->eeprom_svid == 0x10EC &&
-					rtlefuse->eeprom_smid == 0x7194) ||
-					(rtlefuse->eeprom_svid == 0x10EC &&
-					rtlefuse->eeprom_smid == 0x8200) ||
-					(rtlefuse->eeprom_svid == 0x10EC &&
-					rtlefuse->eeprom_smid == 0x8201) ||
-					(rtlefuse->eeprom_svid == 0x10EC &&
-					rtlefuse->eeprom_smid == 0x8202) ||
-					(rtlefuse->eeprom_svid == 0x10EC &&
-					rtlefuse->eeprom_smid == 0x9199) ||
-					(rtlefuse->eeprom_svid == 0x10EC &&
-					rtlefuse->eeprom_smid == 0x9200)) {
-					rtlhal->oem_id = RT_CID_819X_LENOVO;
-				} else if ((rtlefuse->eeprom_svid == 0x10EC &&
-					rtlefuse->eeprom_smid == 0x8197) ||
-					(rtlefuse->eeprom_svid == 0x10EC &&
-					rtlefuse->eeprom_smid == 0x9196)) {
+					break;
+				case 0x8197:
+				case 0x9196:
 					rtlhal->oem_id = RT_CID_819x_CLEVO;
-				} else if ((rtlefuse->eeprom_svid == 0x1028 &&
-					rtlefuse->eeprom_smid == 0x8194) ||
-					(rtlefuse->eeprom_svid == 0x1028 &&
-					rtlefuse->eeprom_smid == 0x8198) ||
-					(rtlefuse->eeprom_svid == 0x1028 &&
-					rtlefuse->eeprom_smid == 0x9197) ||
-					(rtlefuse->eeprom_svid == 0x1028 &&
-					rtlefuse->eeprom_smid == 0x9198)) {
-					rtlhal->oem_id = RT_CID_819x_DELL;
-				} else if ((rtlefuse->eeprom_svid == 0x103C &&
-					rtlefuse->eeprom_smid == 0x1629)) {
-					rtlhal->oem_id = RT_CID_819X_HP;
-				} else if ((rtlefuse->eeprom_svid == 0x1A32 &&
-					rtlefuse->eeprom_smid == 0x2315)) {
-					rtlhal->oem_id = RT_CID_819X_QMI;
-				} else if ((rtlefuse->eeprom_svid == 0x10EC &&
-					rtlefuse->eeprom_smid == 0x8203)) {
+					break;
+				case 0x8203:
 					rtlhal->oem_id = RT_CID_819x_PRONETS;
-				} else if ((rtlefuse->eeprom_svid == 0x1043 &&
-					rtlefuse->eeprom_smid == 0x84B5))
-					rtlhal->oem_id = RT_CID_819x_Edimax_ASUS;
-				else {
-					rtlhal->oem_id = RT_CID_DEFAULT;
+					break;
+				case 0x8195:
+				case 0x9195:
+				case 0x7194:
+				case 0x8200 ... 0x8202:
+				case 0x9200:
+					rtlhal->oem_id = RT_CID_819X_LENOVO;
+					break;
 				}
-			} else if (rtlefuse->eeprom_did == 0x8178) {
-				if ((rtlefuse->eeprom_svid == 0x10EC &&
-					rtlefuse->eeprom_smid == 0x6181) ||
-					(rtlefuse->eeprom_svid == 0x10EC &&
-					rtlefuse->eeprom_smid == 0x6182) ||
-					(rtlefuse->eeprom_svid == 0x10EC &&
-					rtlefuse->eeprom_smid == 0x6184) ||
-					(rtlefuse->eeprom_svid == 0x10EC &&
-					rtlefuse->eeprom_smid == 0x6185) ||
-					(rtlefuse->eeprom_svid == 0x10EC &&
-					rtlefuse->eeprom_smid == 0x7181) ||
-					(rtlefuse->eeprom_svid == 0x10EC &&
-					rtlefuse->eeprom_smid == 0x7182) ||
-					(rtlefuse->eeprom_svid == 0x10EC &&
-					rtlefuse->eeprom_smid == 0x7184) ||
-					(rtlefuse->eeprom_svid == 0x10EC &&
-					rtlefuse->eeprom_smid == 0x7185) ||
-					(rtlefuse->eeprom_svid == 0x10EC &&
-					rtlefuse->eeprom_smid == 0x8181) ||
-					(rtlefuse->eeprom_svid == 0x10EC &&
-					rtlefuse->eeprom_smid == 0x8182) ||
-					(rtlefuse->eeprom_svid == 0x10EC &&
-					rtlefuse->eeprom_smid == 0x8184) ||
-					(rtlefuse->eeprom_svid == 0x10EC &&
-					rtlefuse->eeprom_smid == 0x8185) ||
-					(rtlefuse->eeprom_svid == 0x10EC &&
-					rtlefuse->eeprom_smid == 0x9181) ||
-					(rtlefuse->eeprom_svid == 0x10EC &&
-					rtlefuse->eeprom_smid == 0x9182) ||
-					(rtlefuse->eeprom_svid == 0x10EC &&
-					rtlefuse->eeprom_smid == 0x9184) ||
-					(rtlefuse->eeprom_svid == 0x10EC &&
-					rtlefuse->eeprom_smid == 0x9185))
+			case 0x1025:
+				rtlhal->oem_id = RT_CID_819X_ACER;
+				break;
+			case 0x1028:
+				switch (rtlefuse->eeprom_smid) {
+				case 0x8194:
+				case 0x8198:
+				case 0x9197 ... 0x9198:
+					rtlhal->oem_id = RT_CID_819x_DELL;
+					break;
+				}
+				break;
+			case 0x103C:
+				switch (rtlefuse->eeprom_smid) {
+				case 0x1629:
+					rtlhal->oem_id = RT_CID_819X_HP;
+				}
+				break;
+			case 0x1A32:
+				switch (rtlefuse->eeprom_smid) {
+				case 0x2315:
+					rtlhal->oem_id = RT_CID_819X_QMI;
+					break;
+				}
+				break;
+			case 0x1043:
+				switch (rtlefuse->eeprom_smid) {
+				case 0x84B5:
+					rtlhal->oem_id =
+						RT_CID_819x_Edimax_ASUS;
+				}
+				break;
+			}
+		case 0x8178:
+			switch (rtlefuse->eeprom_svid) {
+			case 0x10ec:
+				switch (rtlefuse->eeprom_smid) {
+				case 0x6181 ... 0x6182:
+				case 0x6184 ... 0x6185:
+				case 0x7181 ... 0x7182:
+				case 0x7184 ... 0x7185:
+				case 0x8181 ... 0x8182:
+				case 0x8184 ... 0x8185:
+				case 0x9181 ... 0x9182:
+				case 0x9184 ... 0x9185:
 					rtlhal->oem_id = RT_CID_TOSHIBA;
-				else if (rtlefuse->eeprom_svid == 0x1025)
-					rtlhal->oem_id = RT_CID_819X_ACER;
-				else if ((rtlefuse->eeprom_svid == 0x10EC &&
-					rtlefuse->eeprom_smid == 0x8186))
+					break;
+				case 0x8186:
 					rtlhal->oem_id = RT_CID_819x_PRONETS;
-				else if ((rtlefuse->eeprom_svid == 0x1043 &&
-					rtlefuse->eeprom_smid == 0x84B6))
-					rtlhal->oem_id = RT_CID_819x_Edimax_ASUS;
-				else
-					rtlhal->oem_id = RT_CID_DEFAULT;
-			} else {
-					rtlhal->oem_id = RT_CID_DEFAULT;
+					break;
+				}
+				break;
+			case 0x1025:
+				rtlhal->oem_id = RT_CID_819X_ACER;
+				break;
+			case 0x1043:
+				switch (rtlefuse->eeprom_smid) {
+				case 0x8486:
+					rtlhal->oem_id =
+					     RT_CID_819x_Edimax_ASUS;
+				}
+					break;
 			}
 			break;
-		case EEPROM_CID_TOSHIBA:
-			rtlhal->oem_id = RT_CID_TOSHIBA;
-			break;
-		case EEPROM_CID_CCX:
-			rtlhal->oem_id = RT_CID_CCX;
-			break;
-		case EEPROM_CID_QMI:
-			rtlhal->oem_id = RT_CID_819X_QMI;
-			break;
-		case EEPROM_CID_WHQL:
-				break;
-		default:
-			rtlhal->oem_id = RT_CID_DEFAULT;
-			break;
-
 		}
+	case EEPROM_CID_TOSHIBA:
+		rtlhal->oem_id = RT_CID_TOSHIBA;
+		break;
+	case EEPROM_CID_CCX:
+		rtlhal->oem_id = RT_CID_CCX;
+		break;
+	case EEPROM_CID_QMI:
+		rtlhal->oem_id = RT_CID_819X_QMI;
+		break;
 	}
 exit:
 	kfree(hwinfo);
