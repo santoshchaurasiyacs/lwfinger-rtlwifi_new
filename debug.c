@@ -84,10 +84,10 @@ void rtl_dbgp_flag_init(struct ieee80211_hw *hw)
 }
 EXPORT_SYMBOL_GPL(rtl_dbgp_flag_init);
 
+#ifdef CONFIG_RTLWIFI_DEBUG
 void _rtl_dbg_trace(struct rtl_priv *rtlpriv, int comp, int level,
 		    const char *modname, const char *fmt, ...)
 {
-#ifdef CONFIG_RTLWIFI_DEBUG
 	if (unlikely((comp & rtlpriv->dbg.global_debugcomponents) &&
 		     (level <= rtlpriv->dbg.global_debuglevel))) {
 		struct va_format vaf;
@@ -105,6 +105,6 @@ void _rtl_dbg_trace(struct rtl_priv *rtlpriv, int comp, int level,
 
 		va_end(args);
 	}
-#endif
 }
 EXPORT_SYMBOL_GPL(_rtl_dbg_trace);
+#endif

@@ -167,6 +167,8 @@ enum dbgp_flag_e {
 	DBGP_TYPE_MAX
 };
 
+#ifdef CONFIG_RTLWIFI_DEBUG
+
 #define RT_ASSERT(_exp, fmt, ...)					\
 do {									\
 	if (!(_exp)) {							\
@@ -215,6 +217,38 @@ do {									\
 			pr_debug("\n");			\
 		} \
 	} while (0)
+
+#else
+
+struct rtl_priv;
+
+__printf(2, 3)
+static inline void RT_ASSERT(int exp, const char *fmt, ...)
+{
+}
+
+__printf(4, 5)
+static inline void RT_TRACE(struct rtl_priv *rtlpriv,
+			    int comp, int level,
+			    const char *fmt, ...)
+{
+}
+
+__printf(4, 5)
+static inline void RTPRINT(struct rtl_priv *rtlpriv,
+			   int dbgtype, int dbgflag,
+			   const char *fmt, ...)
+{
+}
+
+static inline void RT_PRINT_DATA(struct rtl_priv *rtlpriv,
+				 int comp, int level,
+				 const char *titlestring,
+				 const void *hexdata, size_t hexdatalen)
+{
+}
+
+#endif
 
 void rtl_dbgp_flag_init(struct ieee80211_hw *hw);
 #endif
