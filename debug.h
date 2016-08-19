@@ -184,7 +184,7 @@ do {									\
 struct rtl_priv;
 
 __printf(5, 6)
-void _rtl_dbg_trace(struct rtl_priv *rtlpriv, int comp, int level,
+void _rtl_dbg_trace(struct rtl_priv *rtlpriv, long comp, int level,
 		    const char *modname, const char *fmt, ...);
 
 #define RT_TRACE(rtlpriv, comp, level, fmt, ...)			\
