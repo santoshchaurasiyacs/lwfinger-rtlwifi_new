@@ -40,6 +40,10 @@
 #include "debug.h"
 #include "btcoexist/halbtc8812a_ext.h"
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 8, 0))
+#define CONFIG_HAVE_ARCH_WITHIN_STACK_FRAMES 1
+#endif
+
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 7, 0))
 #define ieee80211_band nl80211_band
 #define IEEE80211_BAND_2GHZ NL80211_BAND_2GHZ
