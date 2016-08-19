@@ -86,7 +86,7 @@ void rtl_dbgp_flag_init(struct ieee80211_hw *hw)
 EXPORT_SYMBOL_GPL(rtl_dbgp_flag_init);
 
 #ifdef CONFIG_RTLWIFI_DEBUG
-void _rtl_dbg_trace(struct rtl_priv *rtlpriv, int comp, int level,
+void _rtl_dbg_trace(struct rtl_priv *rtlpriv, long comp, int level,
 		    const char *modname, const char *fmt, ...)
 {
 	if (unlikely((comp & rtlpriv->dbg.global_debugcomponents) &&
