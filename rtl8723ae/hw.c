@@ -1632,7 +1632,7 @@ static void _rtl8723e_read_adapter_info(struct ieee80211_hw *hw, bool b_pseudo_t
 		return;
 	}
 	hwinfo = kzalloc(HWSET_MAX_SIZE, GFP_KERNEL);
-	if (!hwinfo == true)
+	if (!hwinfo)
 		return;
 
 	if (rtl_get_hwinfo(hw, rtlpriv, HWSET_MAX_SIZE, hwinfo, params))
