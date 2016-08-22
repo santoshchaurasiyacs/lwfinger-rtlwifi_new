@@ -543,8 +543,7 @@ void rtl92ee_set_hw_reg(struct ieee80211_hw *hw, u8 variable, u8 *val)
 						(fac << 4);
 				if ((reg[i] & 0x0f) > fac)
 					reg[i] = (reg[i] & 0xf0) | fac;
-					rtl_write_byte(rtlpriv,
-					       (REG_AGGLEN_LMT + i),
+				rtl_write_byte(rtlpriv, (REG_AGGLEN_LMT + i),
 					       reg[i]);
 			}
 			RT_TRACE(rtlpriv, COMP_MLME, DBG_LOUD,
