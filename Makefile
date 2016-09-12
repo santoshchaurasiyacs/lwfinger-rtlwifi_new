@@ -52,6 +52,10 @@ obj-m	+= rtl8723be/
 obj-m	+= rtl8821ae/
 
 ccflags-y += -D__CHECK_ENDIAN__
+<<<<<<< HEAD
+=======
+#subdir-ccflags-y += -Werror
+>>>>>>> 4793d968ed9f4f0d9b17422369c7452b200b45e3
 
 all: 
 	$(MAKE) -C $(KSRC) M=$(PWD) modules
