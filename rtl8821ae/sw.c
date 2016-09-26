@@ -236,6 +236,10 @@ int rtl8821ae_init_sw_vars(struct ieee80211_hw *hw)
 void rtl8821ae_deinit_sw_vars(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
+	struct rtl_hal *rtlhal = rtl_hal(rtl_priv(hw));
+
+	if (rtlhal->hw_type == HARDWARE_TYPE_RTL8812AE)
+		return;
 
 	if (rtlpriv->rtlhal.pfirmware) {
 		vfree(rtlpriv->rtlhal.pfirmware);

@@ -38,7 +38,6 @@
 #include <linux/usb.h>
 #include <net/mac80211.h>
 #include "debug.h"
-#include "btcoexist/halbtc8812a_ext.h"
 /*#define ERROR_RESUME*/
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 8, 0))
@@ -2480,10 +2479,6 @@ struct rtl_btc_ops {
 	void (*btc_get_ampdu_cfg)(struct rtl_priv *rtlpriv, u8 *reject_agg,
 					u8 *ctrl_agg_size, u8 *agg_size);
 	void (*btc_set_hci_version) (u16 hci_version);
-	void (*btc_set_bt_patch_version) (u16 bt_hci_version, u16 bt_patch_version);
-	void (*btc_stack_update_profile_info) (void);
-	void (*btc_init_socket) (struct rtl_priv *rtlpriv);
-	void (*btc_close_socket) (struct rtl_priv *rtlpriv);
 };
 
 struct rtl_bt_coexist {
@@ -2589,9 +2584,6 @@ struct rtl_priv {
 	struct rtl_efuse efuse;
 	struct rtl_tx_report tx_report;
 	struct rtl_scan_list scan_list;
-
-    /*troy add for 8812AE+8761AU coex*/
-    struct bt_coex_info coex_info;
 
 	struct rtl_ps_ctl psc;
 	struct rate_adaptive ra;

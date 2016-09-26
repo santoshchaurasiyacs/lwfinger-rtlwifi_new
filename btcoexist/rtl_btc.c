@@ -56,12 +56,7 @@ static struct rtl_btc_ops rtl_btc_operation = {
 	.btc_is_bt_lps_on = rtl_btc_is_bt_lps_on,
 	.btc_get_ampdu_cfg = rtl_btc_get_ampdu_cfg,
 	.btc_display_bt_coex_info = rtl_btc_display_bt_coex_info,
-	.btc_set_hci_version = rtl_btc_set_hci_version,
 	.btc_record_pwr_mode = rtl_btc_record_pwr_mode,
-	.btc_set_bt_patch_version = rtl_btc_set_bt_patch_version,
-	.btc_stack_update_profile_info = rtl_btc_stack_update_profile_info,
-	.btc_init_socket = rtl_btc_init_socket,
-	.btc_close_socket = rtl_btc_close_socket,
 };
 
 void rtl_btc_display_bt_coex_info(u8 *buff, u32 size)
@@ -116,16 +111,6 @@ void rtl_btc_get_ampdu_cfg(struct rtl_priv *rtlpriv, u8 *reject_agg,
 		*agg_size = gl_bt_coexist.bt_info.agg_buf_size;
 }
 
-void rtl_btc_init_socket(struct rtl_priv *rtlpriv)
-{
-	rtl_btcoex_init_socket(rtlpriv);
-}
-
-void rtl_btc_close_socket(struct rtl_priv *rtlpriv)
-{
-	rtl_btcoex_close_socket(rtlpriv);
-}
-
 void rtl_btc_init_variables(struct rtl_priv *rtlpriv)
 {
 	exhalbtc_initlize_variables();
@@ -141,19 +126,6 @@ void rtl_btc_init_hal_vars(struct rtl_priv *rtlpriv)
 {
 	/* move ant_num, bt_type and single_ant_path to
 	   exhalbtc_bind_bt_coex_withadapter() */
-}
-
-void rtl_btc_stack_update_profile_info()
-{
-	exhalbtc_stack_update_profile_info();
-}
-void rtl_btc_set_bt_patch_version(u16 bt_hci_version, u16 bt_patch_version)
-{
-	exhalbtc_set_bt_patch_version(bt_hci_version, bt_patch_version);
-}
-void rtl_btc_set_hci_version(u16 hci_version)
-{
-    exhalbtc_set_hci_version(hci_version);
 }
 
 void rtl_btc_init_hw_config(struct rtl_priv *rtlpriv)
@@ -183,13 +155,6 @@ void rtl_btc_lps_notify(struct rtl_priv *rtlpriv, u8 type)
 
 void rtl_btc_scan_notify(struct rtl_priv *rtlpriv, u8 scantype)
 {
-    /*for 8812AE+8761AU*/
-	struct bt_coex_info *pcoex_info = &rtlpriv->coex_info;
-	struct BT_MGNT *pBtMgnt = &pcoex_info->bt_mgnt;
-	if(pBtMgnt->ext_config.enable_wifi_scan_notify)
-		rtl_btcoex_SendScanNotify(rtlpriv, scantype);
-
-
 	exhalbtc_scan_notify(&gl_bt_coexist, scantype);
 }
 

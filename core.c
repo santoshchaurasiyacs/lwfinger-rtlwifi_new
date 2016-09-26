@@ -187,16 +187,6 @@ static int rtl_op_start(struct ieee80211_hw *hw)
 	err = rtlpriv->intf_ops->adapter_start(hw);
 	if (!err)
 	{
-		/*add troy for 8812AE bt coex*/
-		if (1 == rtlpriv->btcoexist.btc_info.btcoexist &&
-			rtlhal->hw_type == HARDWARE_TYPE_RTL8812AE)
-		{
-			printk("now that bt exists ,init socket for 8812AE");
-			rtlpriv->btcoexist.btc_ops->btc_init_socket(rtlpriv);
-			rtlpriv->coex_info.bt_mgnt.ext_config.hci_extension_ver
-					= 0x04;
-			rtlpriv->btcoexist.btc_ops->btc_set_hci_version(0x04);
-		}
 		rtl_watch_dog_timer_callback((unsigned long)hw);
 	}
 	mutex_unlock(&rtlpriv->locks.conf_mutex);
@@ -237,12 +227,6 @@ static void rtl_op_stop(struct ieee80211_hw *hw)
 	}
 	rtlpriv->intf_ops->adapter_stop(hw);
 
-	if (1 == rtlpriv->btcoexist.btc_info.btcoexist &&
-		rtlhal->hw_type == HARDWARE_TYPE_RTL8812AE)
-	{
-		printk("close socket for 8812AE + 8761AU\n");
-		rtlpriv->btcoexist.btc_ops->btc_close_socket(rtlpriv);/*troy add for 8812 btcoex*/
-	}
 	mutex_unlock(&rtlpriv->locks.conf_mutex);
 }
 
