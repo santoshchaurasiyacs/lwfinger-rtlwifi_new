@@ -514,10 +514,10 @@ do {								\
 } while (0);
 
 #define RX_HAL_IS_CCK_RATE(rxmcs)\
-	(rxmcs == DESC92C_RATE1M ||\
-	 rxmcs == DESC92C_RATE2M ||\
-	 rxmcs == DESC92C_RATE5_5M ||\
-	 rxmcs == DESC92C_RATE11M)
+	(rxmcs == DESC_RATE1M ||\
+	 rxmcs == DESC_RATE2M ||\
+	 rxmcs == DESC_RATE5_5M ||\
+	 rxmcs == DESC_RATE11M)
 
 struct rx_fwinfo_92c {
 	u8 gain_trsw[4];

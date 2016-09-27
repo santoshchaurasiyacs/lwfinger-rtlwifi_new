@@ -11,10 +11,6 @@
  * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
  * more details.
  *
- * You should have received a copy of the GNU General Public License along with
- * this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110, USA
- *
  * The full GNU General Public License is included in this distribution in the
  * file called LICENSE.
  *
@@ -135,7 +131,7 @@ static struct ieee80211_rate rtl_ratetable_5g[] = {
 };
 
 static const struct ieee80211_supported_band rtl_band_2ghz = {
-	.band = IEEE80211_BAND_2GHZ,
+	.band = NL80211_BAND_2GHZ,
 
 	.channels = rtl_channeltable_2g,
 	.n_channels = ARRAY_SIZE(rtl_channeltable_2g),
@@ -147,7 +143,7 @@ static const struct ieee80211_supported_band rtl_band_2ghz = {
 };
 
 static struct ieee80211_supported_band rtl_band_5ghz = {
-	.band = IEEE80211_BAND_5GHZ,
+	.band = NL80211_BAND_5GHZ,
 
 	.channels = rtl_channeltable_5g,
 	.n_channels = ARRAY_SIZE(rtl_channeltable_5g),
@@ -201,7 +197,7 @@ static void _rtl_init_hw_ht_capab(struct ieee80211_hw *hw,
 
 	ht_cap->mcs.tx_params = IEEE80211_HT_MCS_TX_DEFINED;
 
-	/*hw->wiphy->bands[IEEE80211_BAND_2GHZ]
+	/*hw->wiphy->bands[NL80211_BAND_2GHZ]
 	 *base on ant_num
 	 *rx_mask: RX mask
 	 *if rx_ant = 1 rx_mask[0]= 0xff;==>MCS0-MCS7
@@ -231,7 +227,6 @@ static void _rtl_init_hw_ht_capab(struct ieee80211_hw *hw,
 			ht_cap->mcs.rx_highest =
 				 cpu_to_le16(MAX_BIT_RATE_40MHZ_MCS15);
 		} else if (get_rf_type(rtlphy) == RF_1T1R) {
-
 			RT_TRACE(rtlpriv, COMP_INIT, DBG_DMESG, "1T1R\n");
 
 			ht_cap->mcs.rx_mask[0] = 0xFF;
@@ -246,13 +241,14 @@ static void _rtl_init_hw_ht_capab(struct ieee80211_hw *hw,
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 10, 0))
 static void _rtl_init_hw_vht_capab(struct ieee80211_hw *hw,
-					struct ieee80211_sta_vht_cap *vht_cap)
+				   struct ieee80211_sta_vht_cap *vht_cap)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_hal *rtlhal = rtl_hal(rtlpriv);
 
 	if (rtlhal->hw_type == HARDWARE_TYPE_RTL8812AE) {
 		u16 mcs_map;
+
 		vht_cap->vht_supported = true;
 		vht_cap->cap =
 			IEEE80211_VHT_CAP_MAX_MPDU_LENGTH_3895 |
@@ -425,26 +421,26 @@ static void _rtl_init_mac80211(struct ieee80211_hw *hw)
 	    rtlhal->bandset == BAND_ON_BOTH) {
 		/* 1: 2.4 G bands */
 		/* <1> use  mac->bands as mem for hw->wiphy->bands */
-		sband = &(rtlmac->bands[IEEE80211_BAND_2GHZ]);
+		sband = &(rtlmac->bands[NL80211_BAND_2GHZ]);
 
-		/* <2> set hw->wiphy->bands[IEEE80211_BAND_2GHZ]
+		/* <2> set hw->wiphy->bands[NL80211_BAND_2GHZ]
 		 * to default value(1T1R) */
-		memcpy(&(rtlmac->bands[IEEE80211_BAND_2GHZ]), &rtl_band_2ghz,
+		memcpy(&(rtlmac->bands[NL80211_BAND_2GHZ]), &rtl_band_2ghz,
 				sizeof(struct ieee80211_supported_band));
 
 		/* <3> init ht cap base on ant_num */
 		_rtl_init_hw_ht_capab(hw, &sband->ht_cap);
 
 		/* <4> set mac->sband to wiphy->sband */
-		hw->wiphy->bands[IEEE80211_BAND_2GHZ] = sband;
+		hw->wiphy->bands[NL80211_BAND_2GHZ] = sband;
 
 		/* 2: 5 G bands */
 		/* <1> use  mac->bands as mem for hw->wiphy->bands */
-		sband = &(rtlmac->bands[IEEE80211_BAND_5GHZ]);
+		sband = &(rtlmac->bands[NL80211_BAND_5GHZ]);
 
-		/* <2> set hw->wiphy->bands[IEEE80211_BAND_5GHZ]
+		/* <2> set hw->wiphy->bands[NL80211_BAND_5GHZ]
 		 * to default value(1T1R) */
-		memcpy(&(rtlmac->bands[IEEE80211_BAND_5GHZ]), &rtl_band_5ghz,
+		memcpy(&(rtlmac->bands[NL80211_BAND_5GHZ]), &rtl_band_5ghz,
 				sizeof(struct ieee80211_supported_band));
 
 		/* <3> init ht cap base on ant_num */
@@ -454,15 +450,15 @@ static void _rtl_init_mac80211(struct ieee80211_hw *hw)
 		_rtl_init_hw_vht_capab(hw, &sband->vht_cap);
 #endif
 		/* <4> set mac->sband to wiphy->sband */
-		hw->wiphy->bands[IEEE80211_BAND_5GHZ] = sband;
+		hw->wiphy->bands[NL80211_BAND_5GHZ] = sband;
 	} else {
 		if (rtlhal->current_bandtype == BAND_ON_2_4G) {
 			/* <1> use  mac->bands as mem for hw->wiphy->bands */
-			sband = &(rtlmac->bands[IEEE80211_BAND_2GHZ]);
+			sband = &(rtlmac->bands[NL80211_BAND_2GHZ]);
 
-			/* <2> set hw->wiphy->bands[IEEE80211_BAND_2GHZ]
+			/* <2> set hw->wiphy->bands[NL80211_BAND_2GHZ]
 			 * to default value(1T1R) */
-			memcpy(&(rtlmac->bands[IEEE80211_BAND_2GHZ]),
+			memcpy(&(rtlmac->bands[NL80211_BAND_2GHZ]),
 			       &rtl_band_2ghz,
 			       sizeof(struct ieee80211_supported_band));
 
@@ -470,14 +466,14 @@ static void _rtl_init_mac80211(struct ieee80211_hw *hw)
 			_rtl_init_hw_ht_capab(hw, &sband->ht_cap);
 
 			/* <4> set mac->sband to wiphy->sband */
-			hw->wiphy->bands[IEEE80211_BAND_2GHZ] = sband;
+			hw->wiphy->bands[NL80211_BAND_2GHZ] = sband;
 		} else if (rtlhal->current_bandtype == BAND_ON_5G) {
 			/* <1> use  mac->bands as mem for hw->wiphy->bands */
-			sband = &(rtlmac->bands[IEEE80211_BAND_5GHZ]);
+			sband = &(rtlmac->bands[NL80211_BAND_5GHZ]);
 
-			/* <2> set hw->wiphy->bands[IEEE80211_BAND_5GHZ]
+			/* <2> set hw->wiphy->bands[NL80211_BAND_5GHZ]
 			 * to default value(1T1R) */
-			memcpy(&(rtlmac->bands[IEEE80211_BAND_5GHZ]),
+			memcpy(&(rtlmac->bands[NL80211_BAND_5GHZ]),
 			       &rtl_band_5ghz,
 			       sizeof(struct ieee80211_supported_band));
 
@@ -488,7 +484,7 @@ static void _rtl_init_mac80211(struct ieee80211_hw *hw)
 			_rtl_init_hw_vht_capab(hw, &sband->vht_cap);
 #endif
 			/* <4> set mac->sband to wiphy->sband */
-			hw->wiphy->bands[IEEE80211_BAND_5GHZ] = sband;
+			hw->wiphy->bands[NL80211_BAND_5GHZ] = sband;
 		} else {
 			RT_TRACE(rtlpriv, COMP_INIT, DBG_EMERG, "Err BAND %d\n",
 				 rtlhal->current_bandtype);
@@ -510,22 +506,20 @@ static void _rtl_init_mac80211(struct ieee80211_hw *hw)
 	}
 #else
 	hw->flags = IEEE80211_HW_SIGNAL_DBM |
-	    IEEE80211_HW_RX_INCLUDES_FCS |
+		    IEEE80211_HW_RX_INCLUDES_FCS |
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(3, 4, 0))
-	    IEEE80211_HW_BEACON_FILTER |
+		    IEEE80211_HW_BEACON_FILTER |
 #endif
-	    IEEE80211_HW_AMPDU_AGGREGATION |
-	    IEEE80211_HW_CONNECTION_MONITOR |
-	    /* IEEE80211_HW_SUPPORTS_CQM_RSSI | */
-	    IEEE80211_HW_MFP_CAPABLE |
-	    IEEE80211_HW_REPORTS_TX_ACK_STATUS | 0;
+		    IEEE80211_HW_AMPDU_AGGREGATION |
+		    IEEE80211_HW_CONNECTION_MONITOR |
+		    /* IEEE80211_HW_SUPPORTS_CQM_RSSI | */
+		    IEEE80211_HW_MFP_CAPABLE |
+		    IEEE80211_HW_REPORTS_TX_ACK_STATUS;
 
 	/* swlps or hwlps has been set in diff chip in init_sw_vars */
 	if (rtlpriv->psc.swctrl_lps)
 		hw->flags |= IEEE80211_HW_SUPPORTS_PS |
-			IEEE80211_HW_PS_NULLFUNC_STACK |
-			/* IEEE80211_HW_SUPPORTS_DYNAMIC_PS | */
-			0;
+			     IEEE80211_HW_PS_NULLFUNC_STACK;
 #endif
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,37))
 	hw->wiphy->interface_modes =
@@ -557,7 +551,6 @@ static void _rtl_init_mac80211(struct ieee80211_hw *hw)
 
 	/* TODO: Correct this value for our hw */
 	/* TODO: define these hard code value */
-	/* hw->channel_change_time = 100; kernel does not use it*/
 	hw->max_listen_interval = 10;
 	hw->max_rate_tries = 4;
 	/* hw->max_rates = 1; */
@@ -606,16 +599,14 @@ static void _rtl_init_deferred_work(struct ieee80211_hw *hw)
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 
 	/* <1> timer */
-	init_timer(&rtlpriv->works.watchdog_timer);
 	setup_timer(&rtlpriv->works.watchdog_timer,
 		    rtl_watch_dog_timer_callback, (unsigned long)hw);
-	init_timer(&rtlpriv->works.dualmac_easyconcurrent_retrytimer);
 	setup_timer(&rtlpriv->works.dualmac_easyconcurrent_retrytimer,
 		    rtl_easy_concurrent_retrytimer_callback, (unsigned long)hw);
 	/* <2> work queue */
 	rtlpriv->works.hw = hw;
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 37))
-	rtlpriv->works.rtl_wq = alloc_workqueue(rtlpriv->cfg->name, 0, 0);
+	rtlpriv->works.rtl_wq = alloc_workqueue("%s", 0, 0, rtlpriv->cfg->name);
 #else
 	rtlpriv->works.rtl_wq = create_workqueue(rtlpriv->cfg->name);
 #endif
@@ -664,7 +655,7 @@ void rtl_init_rfkill(struct ieee80211_hw *hw)
 
 	if (valid) {
 		pr_info("rtlwifi: wireless switch is %s\n",
-		       rtlpriv->rfkill.rfkill_state ? "on" : "off");
+			rtlpriv->rfkill.rfkill_state ? "on" : "off");
 
 		rtlpriv->rfkill.rfkill_state = radio_state;
 
@@ -729,8 +720,6 @@ int rtl_init_core(struct ieee80211_hw *hw)
 
 	/* <6> init deferred work */
 	_rtl_init_deferred_work(hw);
-
-	/* <7> */
 
 	return 0;
 }
@@ -983,7 +972,7 @@ static void _rtl_query_bandwidth_mode(struct ieee80211_hw *hw,
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 8, 0))
 static u8 _rtl_get_vht_highest_n_rate(struct ieee80211_hw *hw,
-				  struct ieee80211_sta *sta)
+				      struct ieee80211_sta *sta)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_phy *rtlphy = &(rtlpriv->phy);
@@ -1025,11 +1014,11 @@ static u8 _rtl_get_highest_n_rate(struct ieee80211_hw *hw,
 				  struct ieee80211_sta *sta)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
-	struct rtl_phy *rtlphy = &(rtlpriv->phy);
+	struct rtl_phy *rtlphy = &rtlpriv->phy;
 	u8 hw_rate;
 
 	if ((get_rf_type(rtlphy) == RF_2T2R) &&
-		(sta->ht_cap.mcs.rx_mask[1] != 0))
+	    (sta->ht_cap.mcs.rx_mask[1] != 0))
 		hw_rate = rtlpriv->cfg->maps[RTL_RC_HT_RATEMCS15];
 	else
 		hw_rate = rtlpriv->cfg->maps[RTL_RC_HT_RATEMCS7];
@@ -1039,24 +1028,28 @@ static u8 _rtl_get_highest_n_rate(struct ieee80211_hw *hw,
 
 /* mac80211's rate_idx is like this:
  *
- * 2.4G band:rx_status->band == IEEE80211_BAND_2GHZ
+ * 2.4G band:rx_status->band == NL80211_BAND_2GHZ
  *
  * B/G rate:
  * (rx_status->flag & RX_FLAG_HT) = 0,
- * DESC92_RATE1M-->DESC92_RATE54M ==> idx is 0-->11,
+ * DESC_RATE1M-->DESC_RATE54M ==> idx is 0-->11,
  *
  * N rate:
  * (rx_status->flag & RX_FLAG_HT) = 1,
- * DESC92_RATEMCS0-->DESC92_RATEMCS15 ==> idx is 0-->15
+ * DESC_RATEMCS0-->DESC_RATEMCS15 ==> idx is 0-->15
  *
- * 5G band:rx_status->band == IEEE80211_BAND_5GHZ
+ * 5G band:rx_status->band == NL80211_BAND_5GHZ
  * A rate:
  * (rx_status->flag & RX_FLAG_HT) = 0,
- * DESC92_RATE6M-->DESC92_RATE54M ==> idx is 0-->7,
+ * DESC_RATE6M-->DESC_RATE54M ==> idx is 0-->7,
  *
  * N rate:
  * (rx_status->flag & RX_FLAG_HT) = 1,
- * DESC92_RATEMCS0-->DESC92_RATEMCS15 ==> idx is 0-->15
+ * DESC_RATEMCS0-->DESC_RATEMCS15 ==> idx is 0-->15
+ *
+ * VHT rates:
+ * DESC_RATEVHT1SS_MCS0-->DESC_RATEVHT1SS_MCS9 ==> idx is 0-->9
+ * DESC_RATEVHT2SS_MCS0-->DESC_RATEVHT2SS_MCS9 ==> idx is 0-->9
  */
 int rtlwifi_rate_mapping(struct ieee80211_hw *hw,
 			 bool isht, u8 desc_rate, bool first_ampdu)
@@ -1065,45 +1058,45 @@ int rtlwifi_rate_mapping(struct ieee80211_hw *hw,
 
 	if (false == isht) {
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,10,0))
-		if (IEEE80211_BAND_2GHZ == hw->conf.chandef.chan->band) {
+		if (NL80211_BAND_2GHZ == hw->conf.chandef.chan->band) {
 #else
-		if (IEEE80211_BAND_2GHZ == hw->conf.channel->band) {
+		if (NL80211_BAND_2GHZ == hw->conf.channel->band) {
 #endif
 			switch (desc_rate) {
-			case DESC92_RATE1M:
+			case DESC_RATE1M:
 				rate_idx = 0;
 				break;
-			case DESC92_RATE2M:
+			case DESC_RATE2M:
 				rate_idx = 1;
 				break;
-			case DESC92_RATE5_5M:
+			case DESC_RATE5_5M:
 				rate_idx = 2;
 				break;
-			case DESC92_RATE11M:
+			case DESC_RATE11M:
 				rate_idx = 3;
 				break;
-			case DESC92_RATE6M:
+			case DESC_RATE6M:
 				rate_idx = 4;
 				break;
-			case DESC92_RATE9M:
+			case DESC_RATE9M:
 				rate_idx = 5;
 				break;
-			case DESC92_RATE12M:
+			case DESC_RATE12M:
 				rate_idx = 6;
 				break;
-			case DESC92_RATE18M:
+			case DESC_RATE18M:
 				rate_idx = 7;
 				break;
-			case DESC92_RATE24M:
+			case DESC_RATE24M:
 				rate_idx = 8;
 				break;
-			case DESC92_RATE36M:
+			case DESC_RATE36M:
 				rate_idx = 9;
 				break;
-			case DESC92_RATE48M:
+			case DESC_RATE48M:
 				rate_idx = 10;
 				break;
-			case DESC92_RATE54M:
+			case DESC_RATE54M:
 				rate_idx = 11;
 				break;
 			default:
@@ -1112,28 +1105,28 @@ int rtlwifi_rate_mapping(struct ieee80211_hw *hw,
 			}
 		} else {
 			switch (desc_rate) {
-			case DESC92_RATE6M:
+			case DESC_RATE6M:
 				rate_idx = 0;
 				break;
-			case DESC92_RATE9M:
+			case DESC_RATE9M:
 				rate_idx = 1;
 				break;
-			case DESC92_RATE12M:
+			case DESC_RATE12M:
 				rate_idx = 2;
 				break;
-			case DESC92_RATE18M:
+			case DESC_RATE18M:
 				rate_idx = 3;
 				break;
-			case DESC92_RATE24M:
+			case DESC_RATE24M:
 				rate_idx = 4;
 				break;
-			case DESC92_RATE36M:
+			case DESC_RATE36M:
 				rate_idx = 5;
 				break;
-			case DESC92_RATE48M:
+			case DESC_RATE48M:
 				rate_idx = 6;
 				break;
-			case DESC92_RATE54M:
+			case DESC_RATE54M:
 				rate_idx = 7;
 				break;
 			default:
@@ -1143,52 +1136,52 @@ int rtlwifi_rate_mapping(struct ieee80211_hw *hw,
 		}
 	} else {
 		switch (desc_rate) {
-		case DESC92_RATEMCS0:
+		case DESC_RATEMCS0:
 			rate_idx = 0;
 			break;
-		case DESC92_RATEMCS1:
+		case DESC_RATEMCS1:
 			rate_idx = 1;
 			break;
-		case DESC92_RATEMCS2:
+		case DESC_RATEMCS2:
 			rate_idx = 2;
 			break;
-		case DESC92_RATEMCS3:
+		case DESC_RATEMCS3:
 			rate_idx = 3;
 			break;
-		case DESC92_RATEMCS4:
+		case DESC_RATEMCS4:
 			rate_idx = 4;
 			break;
-		case DESC92_RATEMCS5:
+		case DESC_RATEMCS5:
 			rate_idx = 5;
 			break;
-		case DESC92_RATEMCS6:
+		case DESC_RATEMCS6:
 			rate_idx = 6;
 			break;
-		case DESC92_RATEMCS7:
+		case DESC_RATEMCS7:
 			rate_idx = 7;
 			break;
-		case DESC92_RATEMCS8:
+		case DESC_RATEMCS8:
 			rate_idx = 8;
 			break;
-		case DESC92_RATEMCS9:
+		case DESC_RATEMCS9:
 			rate_idx = 9;
 			break;
-		case DESC92_RATEMCS10:
+		case DESC_RATEMCS10:
 			rate_idx = 10;
 			break;
-		case DESC92_RATEMCS11:
+		case DESC_RATEMCS11:
 			rate_idx = 11;
 			break;
-		case DESC92_RATEMCS12:
+		case DESC_RATEMCS12:
 			rate_idx = 12;
 			break;
-		case DESC92_RATEMCS13:
+		case DESC_RATEMCS13:
 			rate_idx = 13;
 			break;
-		case DESC92_RATEMCS14:
+		case DESC_RATEMCS14:
 			rate_idx = 14;
 			break;
-		case DESC92_RATEMCS15:
+		case DESC_RATEMCS15:
 			rate_idx = 15;
 			break;
 		default:
@@ -1348,7 +1341,7 @@ bool rtl_action_proc(struct ieee80211_hw *hw, struct sk_buff *skb, u8 is_tx)
 	struct ieee80211_hdr *hdr = rtl_get_hdr(skb);
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	__le16 fc = rtl_get_fc(skb);
-	u8 *act = (u8 *) (((u8 *) skb->data + MAC80211_3ADDR_LEN));
+	u8 *act = (u8 *)(((u8 *) skb->data + MAC80211_3ADDR_LEN));
 	u8 category;
 
 	if (!ieee80211_is_action(fc))
@@ -1379,7 +1372,7 @@ bool rtl_action_proc(struct ieee80211_hw *hw, struct sk_buff *skb, u8 is_tx)
 				sta = rtl_find_sta(hw, hdr->addr3);
 				if (sta == NULL) {
 					RT_TRACE(rtlpriv, COMP_SEND | COMP_RECV,
-						 DBG_EMERG, "sta is NULL\n");
+						 DBG_DMESG, "sta is NULL\n");
 					rcu_read_unlock();
 					return true;
 				}
@@ -1390,9 +1383,10 @@ bool rtl_action_proc(struct ieee80211_hw *hw, struct sk_buff *skb, u8 is_tx)
 					rcu_read_unlock();
 					return true;
 				}
-				capab = le16_to_cpu(mgmt->u.action.u.addba_req.capab);
+				capab =
+				  le16_to_cpu(mgmt->u.action.u.addba_req.capab);
 				tid = (capab &
-					IEEE80211_ADDBA_PARAM_TID_MASK) >> 2;
+				       IEEE80211_ADDBA_PARAM_TID_MASK) >> 2;
 				tid_data = &sta_entry->tids[tid];
 				if (tid_data->agg.rx_agg_state ==
 				    RTL_RX_AGG_START)
@@ -2054,16 +2048,17 @@ label_lps_done:
 
 	/* <4> roaming */
 	if (mac->link_state == MAC80211_LINKED &&
-			mac->opmode == NL80211_IFTYPE_STATION) {
+	    mac->opmode == NL80211_IFTYPE_STATION) {
 		if ((rtlpriv->link_info.bcn_rx_inperiod +
-			rtlpriv->link_info.num_rx_inperiod) == 0) {
+		     rtlpriv->link_info.num_rx_inperiod) == 0) {
 			rtlpriv->link_info.roam_times++;
 			RT_TRACE(rtlpriv, COMP_ERR, DBG_DMESG,
 				 "AP off for %d s\n",
 				(rtlpriv->link_info.roam_times * 2));
 
 			/* if we can't recv beacon for 10s,
-			* we should reconnect this AP */
+			 * we should reconnect this AP
+			 */
 			if (rtlpriv->link_info.roam_times >= 5) {
 				RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG,
 					 "AP off, try to reconnect now\n");

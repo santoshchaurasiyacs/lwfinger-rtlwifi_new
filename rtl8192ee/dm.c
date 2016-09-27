@@ -1137,21 +1137,21 @@ void rtl92ee_dm_dynamic_arfb_select(struct ieee80211_hw *hw,
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 
-	if (rate >= DESC92C_RATEMCS8  && rate <= DESC92C_RATEMCS12) {
+	if (rate >= DESC_RATEMCS8  && rate <= DESC_RATEMCS12) {
 		if (collision_state == 1) {
-			if (rate == DESC92C_RATEMCS12) {
+			if (rate == DESC_RATEMCS12) {
 				rtl_write_dword(rtlpriv, REG_DARFRC, 0x0);
 				rtl_write_dword(rtlpriv, REG_DARFRC + 4,
 						0x07060501);
-			} else if (rate == DESC92C_RATEMCS11) {
+			} else if (rate == DESC_RATEMCS11) {
 				rtl_write_dword(rtlpriv, REG_DARFRC, 0x0);
 				rtl_write_dword(rtlpriv, REG_DARFRC + 4,
 						0x07070605);
-			} else if (rate == DESC92C_RATEMCS10) {
+			} else if (rate == DESC_RATEMCS10) {
 				rtl_write_dword(rtlpriv, REG_DARFRC, 0x0);
 				rtl_write_dword(rtlpriv, REG_DARFRC + 4,
 						0x08080706);
-			} else if (rate == DESC92C_RATEMCS9) {
+			} else if (rate == DESC_RATEMCS9) {
 				rtl_write_dword(rtlpriv, REG_DARFRC, 0x0);
 				rtl_write_dword(rtlpriv, REG_DARFRC + 4,
 						0x08080707);
@@ -1161,22 +1161,22 @@ void rtl92ee_dm_dynamic_arfb_select(struct ieee80211_hw *hw,
 						0x09090808);
 			}
 		} else {   /* collision_state == 0 */
-			if (rate == DESC92C_RATEMCS12) {
+			if (rate == DESC_RATEMCS12) {
 				rtl_write_dword(rtlpriv, REG_DARFRC,
 						0x05010000);
 				rtl_write_dword(rtlpriv, REG_DARFRC + 4,
 						0x09080706);
-			} else if (rate == DESC92C_RATEMCS11) {
+			} else if (rate == DESC_RATEMCS11) {
 				rtl_write_dword(rtlpriv, REG_DARFRC,
 						0x06050000);
 				rtl_write_dword(rtlpriv, REG_DARFRC + 4,
 						0x09080807);
-			} else if (rate == DESC92C_RATEMCS10) {
+			} else if (rate == DESC_RATEMCS10) {
 				rtl_write_dword(rtlpriv, REG_DARFRC,
 						0x07060000);
 				rtl_write_dword(rtlpriv, REG_DARFRC + 4,
 						0x0a090908);
-			} else if (rate == DESC92C_RATEMCS9) {
+			} else if (rate == DESC_RATEMCS9) {
 				rtl_write_dword(rtlpriv, REG_DARFRC,
 						0x07070000);
 				rtl_write_dword(rtlpriv, REG_DARFRC + 4,
@@ -1190,17 +1190,17 @@ void rtl92ee_dm_dynamic_arfb_select(struct ieee80211_hw *hw,
 		}
 	} else {  /* MCS13~MCS15,  1SS, G-mode */
 		if (collision_state == 1) {
-			if (rate == DESC92C_RATEMCS15) {
+			if (rate == DESC_RATEMCS15) {
 				rtl_write_dword(rtlpriv, REG_DARFRC,
 						0x00000000);
 				rtl_write_dword(rtlpriv, REG_DARFRC + 4,
 						0x05040302);
-			} else if (rate == DESC92C_RATEMCS14) {
+			} else if (rate == DESC_RATEMCS14) {
 				rtl_write_dword(rtlpriv, REG_DARFRC,
 						0x00000000);
 				rtl_write_dword(rtlpriv, REG_DARFRC + 4,
 						0x06050302);
-			} else if (rate == DESC92C_RATEMCS13) {
+			} else if (rate == DESC_RATEMCS13) {
 				rtl_write_dword(rtlpriv, REG_DARFRC,
 						0x00000000);
 				rtl_write_dword(rtlpriv, REG_DARFRC + 4,
@@ -1212,17 +1212,17 @@ void rtl92ee_dm_dynamic_arfb_select(struct ieee80211_hw *hw,
 						0x06050402);
 			}
 		} else{   /* collision_state == 0 */
-			if (rate == DESC92C_RATEMCS15) {
+			if (rate == DESC_RATEMCS15) {
 				rtl_write_dword(rtlpriv, REG_DARFRC,
 						0x03020000);
 				rtl_write_dword(rtlpriv, REG_DARFRC + 4,
 						0x07060504);
-			} else if (rate == DESC92C_RATEMCS14) {
+			} else if (rate == DESC_RATEMCS14) {
 				rtl_write_dword(rtlpriv, REG_DARFRC,
 						0x03020000);
 				rtl_write_dword(rtlpriv, REG_DARFRC + 4,
 						0x08070605);
-			} else if (rate == DESC92C_RATEMCS13) {
+			} else if (rate == DESC_RATEMCS13) {
 				rtl_write_dword(rtlpriv, REG_DARFRC,
 						0x05020000);
 				rtl_write_dword(rtlpriv, REG_DARFRC + 4,
