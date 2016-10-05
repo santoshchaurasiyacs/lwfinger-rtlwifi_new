@@ -11,5 +11,5 @@ rtl8192ce, rtl8192se, rtl8192de, rtl8188ee, rtl8192ee, rtl8723ae, rtl8723be, and
 Added March 16, 2016: All branches of this repo now support the ant_sel module option
 for rtl8723be. In addition, patches to implement this feature have been submitted
 to the linux-wireless repo. If accepted, they should appear in kernel 4.7; however,
-they will be packported to kernels 4.0 and newer when they reach mainline.
+they will be backported to kernels 4.0 and newer when they reach mainline.
 
