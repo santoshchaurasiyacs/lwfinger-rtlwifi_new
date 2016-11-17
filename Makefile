@@ -97,7 +97,7 @@ ifeq ($(COMPRESS_XZ), y)
 	@xz -f $(MODDESTDIR)/rtl8*/*.ko
 endif
 
-	@depmod -a
+	@depmod -a $(KVER)
 
 	@#copy firmware images to target folder
 	@cp -fr firmware/rtlwifi/ $(FIRMWAREDIR)/
