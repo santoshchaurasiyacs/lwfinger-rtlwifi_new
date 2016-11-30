@@ -114,11 +114,11 @@ endif
 	@echo "Uninstall rtlwifi SUCCESS"
 
 clean:
-	@rm -fr *.mod.c *.mod *.o .*.cmd *.ko *~
-	@rm -fr rtl8*/*.mod.c rtl8*/*.mod rtl8*/*.o rtl8*/.*.cmd rtl8*/*.ko rtl8*/*~
-	@rm -fr bt*/*.mod.c bt*/*.mod bt*/*.o bt*/.*.cmd bt*/*.ko bt*/*~
+	@rm -fr *.mod.c *.mod *.o .*.cmd *.ko *~ .*.o.d
+	@rm -fr rtl8*/*.mod.c rtl8*/*.mod rtl8*/*.o rtl8*/.*.cmd rtl8*/*.ko rtl8*/*~ rtl8*/*.cmd rtl8*/.*.o.d
+	@rm -fr bt*/*.mod.c bt*/*.mod bt*/*.o bt*/.*.cmd bt*/*.ko bt*/*~ bt*/*.cmd bt*/.*.o.d
 	@rm -fr .tmp_versions
 	@rm -fr Modules.symvers
 	@rm -fr Module.symvers
 	@rm -fr Module.markers
-	@rm -fr modules.order
+	@rm -fr modules.order rtl8*/modules.order bt*/modules.order
