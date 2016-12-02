@@ -38,7 +38,7 @@
 #include <linux/version.h>
 #include "debug.h"
 
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(4, 8, 0))
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(4, 7, 0))
 #define nl80211_band ieee80211_band
 #define NL80211_BAND_2GHZ IEEE80211_BAND_2GHZ
 #define NL80211_BAND_5GHZ IEEE80211_BAND_5GHZ
