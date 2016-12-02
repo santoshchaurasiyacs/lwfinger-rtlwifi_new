@@ -49,43 +49,42 @@ static void _rtl8821ae_enable_fw_download(struct ieee80211_hw *hw, bool enable)
 		rtl_write_byte(rtlpriv, REG_MCUFWDL, tmp & 0xfe);
 		tmp = rtl_read_byte(rtlpriv, REG_MCUFWDL);
 	}
-
 }
 
 static void _rtl8821ae_fw_block_write(struct ieee80211_hw *hw,
-				   const u8 *buffer, u32 size)
+				      const u8 *buffer, u32 size)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
-	u32 blockSize = sizeof(u32);
-	u8 *bufferPtr = (u8 *) buffer;
-	u32 *pu4BytePtr = (u32 *) buffer;
-	u32 i, offset, blockCount, remainSize;
+	u32 blocksize = sizeof(u32);
+	u8 *bufferptr = (u8 *)buffer;
+	u32 *pu4byteptr = (u32 *)buffer;
+	u32 i, offset, blockcount, remainsize;
 
-	blockCount = size / blockSize;
-	remainSize = size % blockSize;
+	blockcount = size / blocksize;
+	remainsize = size % blocksize;
 
-	for (i = 0; i < blockCount; i++) {
-		offset = i * blockSize;
+	for (i = 0; i < blockcount; i++) {
+		offset = i * blocksize;
 		rtl_write_dword(rtlpriv, (FW_8821AE_START_ADDRESS + offset),
-				*(pu4BytePtr + i));
+				*(pu4byteptr + i));
 	}
 
-	if (remainSize) {
-		offset = blockCount * blockSize;
-		bufferPtr += offset;
-		for (i = 0; i < remainSize; i++) {
+	if (remainsize) {
+		offset = blockcount * blocksize;
+		bufferptr += offset;
+		for (i = 0; i < remainsize; i++) {
 			rtl_write_byte(rtlpriv, (FW_8821AE_START_ADDRESS +
-					offset + i), *(bufferPtr + i));
+					offset + i), *(bufferptr + i));
 		}
 	}
 }
 
 static void _rtl8821ae_fw_page_write(struct ieee80211_hw *hw,
-				  u32 page, const u8 *buffer, u32 size)
+				     u32 page, const u8 *buffer, u32 size)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	u8 value8;
-	u8 u8page = (u8) (page & 0x07);
+	u8 u8page = (u8)(page & 0x07);
 
 	value8 = (rtl_read_byte(rtlpriv, REG_MCUFWDL + 2) & 0xF8) | u8page;
 
@@ -96,7 +95,7 @@ static void _rtl8821ae_fw_page_write(struct ieee80211_hw *hw,
 static void _rtl8821ae_fill_dummy(u8 *pfwbuf, u32 *pfwlen)
 {
 	u32 fwlen = *pfwlen;
-	u8 remain = (u8) (fwlen % 4);
+	u8 remain = (u8)(fwlen % 4);
 
 	remain = (remain == 0) ? 0 : (4 - remain);
 
@@ -114,35 +113,34 @@ static void _rtl8821ae_write_fw(struct ieee80211_hw *hw,
 				u8 *buffer, u32 size)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
-	u8 *bufferPtr = (u8 *) buffer;
-	u32 pageNums, remainSize;
+	u8 *bufferptr = (u8 *)buffer;
+	u32 pagenums, remainsize;
 	u32 page, offset;
 
 	RT_TRACE(rtlpriv, COMP_FW, DBG_LOUD, "FW size is %d bytes,\n", size);
 
-	_rtl8821ae_fill_dummy(bufferPtr, &size);
+	_rtl8821ae_fill_dummy(bufferptr, &size);
 
-	pageNums = size / FW_8821AE_PAGE_SIZE;
-	remainSize = size % FW_8821AE_PAGE_SIZE;
+	pagenums = size / FW_8821AE_PAGE_SIZE;
+	remainsize = size % FW_8821AE_PAGE_SIZE;
 
-	if (pageNums > 8) {
+	if (pagenums > 8) {
 		RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG,
 			 "Page numbers should not greater then 8\n");
 	}
 
-	for (page = 0; page < pageNums; page++) {
+	for (page = 0; page < pagenums; page++) {
 		offset = page * FW_8821AE_PAGE_SIZE;
-		_rtl8821ae_fw_page_write(hw, page, (bufferPtr + offset),
-				      FW_8821AE_PAGE_SIZE);
+		_rtl8821ae_fw_page_write(hw, page, (bufferptr + offset),
+					 FW_8821AE_PAGE_SIZE);
 	}
 
-	if (remainSize) {
-		offset = pageNums * FW_8821AE_PAGE_SIZE;
-		page = pageNums;
-		_rtl8821ae_fw_page_write(hw, page, (bufferPtr + offset),
-				      remainSize);
+	if (remainsize) {
+		offset = pagenums * FW_8821AE_PAGE_SIZE;
+		page = pagenums;
+		_rtl8821ae_fw_page_write(hw, page, (bufferptr + offset),
+					 remainsize);
 	}
-
 }
 
 static int _rtl8821ae_fw_free_to_go(struct ieee80211_hw *hw)
@@ -186,10 +184,9 @@ static int _rtl8821ae_fw_free_to_go(struct ieee80211_hw *hw)
 		}
 
 		udelay(FW_8821AE_POLLING_DELAY);
-
 	} while (counter++ < FW_8821AE_POLLING_TIMEOUT_COUNT);
 
-	RT_TRACE(rtlpriv, COMP_ERR, DBG_LOUD,
+	RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG,
 		 "Polling FW ready fail!! REG_MCUFWDL:0x%08x .\n",
 		 value32);
 
@@ -213,7 +210,7 @@ int rtl8821ae_download_fw(struct ieee80211_hw *hw, bool buse_wake_on_wlan_fw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_hal *rtlhal = rtl_hal(rtl_priv(hw));
-	struct rtl8821a_firmware_header *pfwheader;
+	struct rtlwifi_firmware_header *pfwheader;
 	u8 *pfwdata;
 	u32 fwsize;
 	int err;
@@ -221,7 +218,7 @@ int rtl8821ae_download_fw(struct ieee80211_hw *hw, bool buse_wake_on_wlan_fw)
 	enum version_8821ae version = rtlhal->version;
 
 	rtlpriv->cfg->ops->get_hw_reg(hw, HAL_DEF_WOWLAN,
-				      (u8 *) (&support_remote_wakeup));
+				      (u8 *)(&support_remote_wakeup));
 
 	if (support_remote_wakeup)
 		_rtl8821ae_wait_for_h2c_cmd_finish(rtlpriv);
@@ -231,35 +228,35 @@ int rtl8821ae_download_fw(struct ieee80211_hw *hw, bool buse_wake_on_wlan_fw)
 			return 1;
 
 		pfwheader =
-			(struct rtl8821a_firmware_header *)rtlhal->wowlan_firmware;
-		rtlhal->fw_version = pfwheader->version;
+		  (struct rtlwifi_firmware_header *)rtlhal->wowlan_firmware;
+		rtlhal->fw_version = le16_to_cpu(pfwheader->version);
 		rtlhal->fw_subversion = pfwheader->subversion;
-		pfwdata = (u8 *) rtlhal->wowlan_firmware;
+		pfwdata = (u8 *)rtlhal->wowlan_firmware;
 		fwsize = rtlhal->wowlan_fwsize;
 	} else {
 		if (!rtlhal->pfirmware)
 			return 1;
 
 		pfwheader =
-			(struct rtl8821a_firmware_header *)rtlhal->pfirmware;
-		rtlhal->fw_version = pfwheader->version;
+		  (struct rtlwifi_firmware_header *)rtlhal->pfirmware;
+		rtlhal->fw_version = le16_to_cpu(pfwheader->version);
 		rtlhal->fw_subversion = pfwheader->subversion;
-		pfwdata = (u8 *) rtlhal->pfirmware;
+		pfwdata = (u8 *)rtlhal->pfirmware;
 		fwsize = rtlhal->fwsize;
 	}
 
 	RT_TRACE(rtlpriv, COMP_FW, DBG_DMESG,
 		 "%s Firmware SIZE %d\n",
-		  buse_wake_on_wlan_fw ? "Wowlan" : "Normal", fwsize);
+		 buse_wake_on_wlan_fw ? "Wowlan" : "Normal", fwsize);
 
 	if (IS_FW_HEADER_EXIST_8812(pfwheader) ||
 	    IS_FW_HEADER_EXIST_8821(pfwheader)) {
 		RT_TRACE(rtlpriv, COMP_FW, DBG_DMESG,
 			 "Firmware Version(%d), Signature(%#x)\n",
-			  pfwheader->version, pfwheader->signature);
+			 pfwheader->version, pfwheader->signature);
 
-		pfwdata = pfwdata + sizeof(struct rtl8821a_firmware_header);
-		fwsize = fwsize - sizeof(struct rtl8821a_firmware_header);
+		pfwdata = pfwdata + sizeof(struct rtlwifi_firmware_header);
+		fwsize = fwsize - sizeof(struct rtlwifi_firmware_header);
 	}
 
 	if (rtlhal->mac_func_enable) {
@@ -274,7 +271,7 @@ int rtl8821ae_download_fw(struct ieee80211_hw *hw, bool buse_wake_on_wlan_fw)
 
 	err = _rtl8821ae_fw_free_to_go(hw);
 	if (err) {
-		RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG,
+		RT_TRACE(rtlpriv, COMP_ERR, DBG_DMESG,
 			 "Firmware is not ready to run!\n");
 	} else {
 		RT_TRACE(rtlpriv, COMP_FW, DBG_LOUD,
@@ -297,11 +294,10 @@ void rtl8821ae_set_fw_related_for_wowlan(struct ieee80211_hw *hw,
 			 "Re-Download Firmware failed!!\n");
 		rtlhal->fw_ready = false;
 		return;
-	} else {
-		RT_TRACE(rtlpriv, COMP_INIT, DBG_DMESG,
-			 "Re-Download Firmware Success !!\n");
-		rtlhal->fw_ready = true;
 	}
+	RT_TRACE(rtlpriv, COMP_INIT, DBG_DMESG,
+		 "Re-Download Firmware Success !!\n");
+	rtlhal->fw_ready = true;
 
 	/* 2. Re-Init the variables about Fw related setting. */
 	ppsc->fw_current_inpsmode = false;
@@ -312,7 +308,8 @@ void rtl8821ae_set_fw_related_for_wowlan(struct ieee80211_hw *hw,
 }
 #endif
 
-static bool _rtl8821ae_check_fw_read_last_h2c(struct ieee80211_hw *hw, u8 boxnum)
+static bool _rtl8821ae_check_fw_read_last_h2c(struct ieee80211_hw *hw,
+					      u8 boxnum)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	u8 val_hmetfr;
@@ -325,7 +322,8 @@ static bool _rtl8821ae_check_fw_read_last_h2c(struct ieee80211_hw *hw, u8 boxnum
 }
 
 static void _rtl8821ae_fill_h2c_command(struct ieee80211_hw *hw,
-			      u8 element_id, u32 cmd_len, u8 *cmdbuffer)
+					u8 element_id, u32 cmd_len,
+					u8 *cmdbuffer)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_hal *rtlhal = rtl_hal(rtl_priv(hw));
@@ -374,16 +372,6 @@ static void _rtl8821ae_fill_h2c_command(struct ieee80211_hw *hw,
 	}
 
 	while (!bwrite_sucess) {
-		/*cosa remove this because never reach this.*/
-#if 0
-		wait_writeh2c_limmit--;
-		if (wait_writeh2c_limmit == 0) {
-			RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG,
-				 "Write H2C fail because no trigger for FW INT!\n");
-			break;
-		}
-#endif
-
 		boxnum = rtlhal->last_hmeboxnum;
 		switch (boxnum) {
 		case 0:
@@ -404,24 +392,25 @@ static void _rtl8821ae_fill_h2c_command(struct ieee80211_hw *hw,
 			break;
 		default:
 			RT_TRACE(rtlpriv, COMP_ERR, DBG_LOUD,
-				 "switch case not process\n");
+				 "switch case %#x not processed\n", boxnum);
 			break;
 		}
 
 		isfw_read = false;
 		u1b_tmp = rtl_read_byte(rtlpriv, REG_CR);
 
-		if (u1b_tmp != 0xEA)
+		if (u1b_tmp != 0xEA) {
 			isfw_read = true;
-		else {
+		} else {
 			if (rtl_read_byte(rtlpriv, REG_TXDMA_STATUS) == 0xEA ||
-				rtl_read_byte(rtlpriv, REG_TXPKT_EMPTY) == 0xEA)
+			    rtl_read_byte(rtlpriv, REG_TXPKT_EMPTY) == 0xEA)
 				rtl_write_byte(rtlpriv, REG_SYS_CFG1 + 3, 0xFF);
 		}
 
-		if (isfw_read == true) {
+		if (isfw_read) {
 			wait_h2c_limmit = 100;
-			isfw_read = _rtl8821ae_check_fw_read_last_h2c(hw, boxnum);
+			isfw_read =
+			  _rtl8821ae_check_fw_read_last_h2c(hw, boxnum);
 			while (!isfw_read) {
 				/*wait until Fw read*/
 				wait_h2c_limmit--;
@@ -435,8 +424,7 @@ static void _rtl8821ae_fill_h2c_command(struct ieee80211_hw *hw,
 				udelay(10);
 
 				isfw_read =
-					_rtl8821ae_check_fw_read_last_h2c(hw,
-									boxnum);
+				  _rtl8821ae_check_fw_read_last_h2c(hw, boxnum);
 				u1b_tmp = rtl_read_byte(rtlpriv, 0x130);
 				RT_TRACE(rtlpriv, COMP_CMD, DBG_LOUD,
 					 "Waiting for FW read clear HMEBox(%d)!!! 0x130 = %2x\n",
@@ -463,7 +451,7 @@ static void _rtl8821ae_fill_h2c_command(struct ieee80211_hw *hw,
 		case 2:
 		case 3:
 			/*boxcontent[0] &= ~(BIT(7));*/
-			memcpy((u8 *) (boxcontent) + 1,
+			memcpy((u8 *)(boxcontent) + 1,
 			       cmdbuffer + buf_index, cmd_len);
 
 			for (idx = 0; idx < 4; idx++) {
@@ -476,9 +464,9 @@ static void _rtl8821ae_fill_h2c_command(struct ieee80211_hw *hw,
 		case 6:
 		case 7:
 			/*boxcontent[0] |= (BIT(7));*/
-			memcpy((u8 *) (boxextcontent),
+			memcpy((u8 *)(boxextcontent),
 			       cmdbuffer + buf_index+3, cmd_len-3);
-			memcpy((u8 *) (boxcontent) + 1,
+			memcpy((u8 *)(boxcontent) + 1,
 			       cmdbuffer + buf_index, 3);
 
 			for (idx = 0; idx < 4; idx++) {
@@ -493,7 +481,7 @@ static void _rtl8821ae_fill_h2c_command(struct ieee80211_hw *hw,
 			break;
 		default:
 			RT_TRACE(rtlpriv, COMP_ERR, DBG_LOUD,
-				 "switch case not process\n");
+				 "switch case %#x not processed\n", cmd_len);
 			break;
 		}
 
@@ -516,12 +504,12 @@ static void _rtl8821ae_fill_h2c_command(struct ieee80211_hw *hw,
 }
 
 void rtl8821ae_fill_h2c_cmd(struct ieee80211_hw *hw,
-			 u8 element_id, u32 cmd_len, u8 *cmdbuffer)
+			    u8 element_id, u32 cmd_len, u8 *cmdbuffer)
 {
 	struct rtl_hal *rtlhal = rtl_hal(rtl_priv(hw));
 	u32 tmp_cmdbuf[2];
 
-	if (rtlhal->fw_ready == false) {
+	if (!rtlhal->fw_ready) {
 		RT_ASSERT(false,
 			  "return H2C cmd because of Fw download fail!!!\n");
 		return;
@@ -529,16 +517,14 @@ void rtl8821ae_fill_h2c_cmd(struct ieee80211_hw *hw,
 
 	memset(tmp_cmdbuf, 0, 8);
 	memcpy(tmp_cmdbuf, cmdbuffer, cmd_len);
-	_rtl8821ae_fill_h2c_command(hw, element_id, cmd_len, (u8 *) &tmp_cmdbuf);
-
-	return;
+	_rtl8821ae_fill_h2c_command(hw, element_id, cmd_len, (u8 *)&tmp_cmdbuf);
 }
 
 void rtl8821ae_firmware_selfreset(struct ieee80211_hw *hw)
 {
-	u8 u1b_tmp;
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_hal *rtlhal = rtl_hal(rtl_priv(hw));
+	u8 u1b_tmp;
 
 	if (rtlhal->hw_type == HARDWARE_TYPE_RTL8812AE) {
 		u1b_tmp = rtl_read_byte(rtlpriv, REG_RSV_CTRL+1);
@@ -572,32 +558,87 @@ void rtl8821ae_set_fw_pwrmode_cmd(struct ieee80211_hw *hw, u8 mode)
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	u8 u1_h2c_set_pwrmode[H2C_8821AE_PWEMODE_LENGTH] = { 0 };
 	struct rtl_ps_ctl *ppsc = rtl_psc(rtl_priv(hw));
-	u8 rlbm, power_state = 0;
-	RT_TRACE(rtlpriv, COMP_POWER, DBG_LOUD, "FW LPS mode = %d\n", mode);
+	u8 rlbm, power_state = 0, byte5 = 0;
+	u8 awake_intvl;	/* DTIM = (awake_intvl - 1) */
+	struct rtl_btc_ops *btc_ops = rtlpriv->btcoexist.btc_ops;
+	bool bt_ctrl_lps = btc_ops->btc_is_bt_ctrl_lps(rtlpriv);
+	bool bt_lps_on = btc_ops->btc_is_bt_lps_on(rtlpriv);
+
+	if (bt_ctrl_lps)
+		mode = (bt_lps_on ? FW_PS_MIN_MODE : FW_PS_ACTIVE_MODE);
+
+	RT_TRACE(rtlpriv, COMP_POWER, DBG_DMESG, "FW LPS mode = %d (coex:%d)\n",
+		 mode, bt_ctrl_lps);
+
+	switch (mode) {
+	case FW_PS_MIN_MODE:
+		rlbm = 0;
+		awake_intvl = 2;
+		break;
+	case FW_PS_MAX_MODE:
+		rlbm = 1;
+		awake_intvl = 2;
+		break;
+	case FW_PS_DTIM_MODE:
+		rlbm = 2;
+		awake_intvl = ppsc->reg_max_lps_awakeintvl;
+		/* hw->conf.ps_dtim_period or mac->vif->bss_conf.dtim_period
+		 * is only used in swlps.
+		 */
+		break;
+	default:
+		rlbm = 2;
+		awake_intvl = 4;
+		break;
+	}
+
+	if (rtlpriv->mac80211.p2p) {
+		awake_intvl = 2;
+		rlbm = 1;
+	}
+
+	if (mode == FW_PS_ACTIVE_MODE) {
+		byte5 = 0x40;
+		power_state = FW_PWR_STATE_ACTIVE;
+	} else {
+		if (bt_ctrl_lps) {
+			byte5 = btc_ops->btc_get_lps_val(rtlpriv);
+			power_state = btc_ops->btc_get_rpwm_val(rtlpriv);
+
+			if ((rlbm == 2) && (byte5 & BIT(4))) {
+				/* Keep awake interval to 1 to prevent from
+				 * decreasing coex performance
+				 */
+				awake_intvl = 2;
+				rlbm = 2;
+			}
+		} else {
+			byte5 = 0x40;
+			power_state = FW_PWR_STATE_RF_OFF;
+		}
+	}
 
 	SET_H2CCMD_PWRMODE_PARM_MODE(u1_h2c_set_pwrmode, ((mode) ? 1 : 0));
-	rlbm = 0;/*YJ,temp,120316. FW now not support RLBM=2.*/
 	SET_H2CCMD_PWRMODE_PARM_RLBM(u1_h2c_set_pwrmode, rlbm);
 	SET_H2CCMD_PWRMODE_PARM_SMART_PS(u1_h2c_set_pwrmode,
-					(rtlpriv->mac80211.p2p) ?
-					ppsc->smart_ps : 1);
+					 bt_ctrl_lps ? 0 :
+					 ((rtlpriv->mac80211.p2p) ?
+					  ppsc->smart_ps : 1));
 	SET_H2CCMD_PWRMODE_PARM_AWAKE_INTERVAL(u1_h2c_set_pwrmode,
-						ppsc->reg_max_lps_awakeintvl);
+					       awake_intvl);
 	SET_H2CCMD_PWRMODE_PARM_ALL_QUEUE_UAPSD(u1_h2c_set_pwrmode, 0);
-	if (mode == FW_PS_ACTIVE_MODE)
-		power_state |= FW_PWR_STATE_ACTIVE;
-	else
-		power_state |= FW_PWR_STATE_RF_OFF;
-
 	SET_H2CCMD_PWRMODE_PARM_PWR_STATE(u1_h2c_set_pwrmode, power_state);
+	SET_H2CCMD_PWRMODE_PARM_BYTE5(u1_h2c_set_pwrmode, byte5);
 
 	RT_PRINT_DATA(rtlpriv, COMP_CMD, DBG_DMESG,
 		      "rtl92c_set_fw_pwrmode(): u1_h2c_set_pwrmode\n",
 		      u1_h2c_set_pwrmode, H2C_8821AE_PWEMODE_LENGTH);
+	rtlpriv->btcoexist.btc_ops->btc_record_pwr_mode(rtlpriv,
+							u1_h2c_set_pwrmode,
+						H2C_8821AE_PWEMODE_LENGTH);
 	rtl8821ae_fill_h2c_cmd(hw, H2C_8821AE_SETPWRMODE,
-					H2C_8821AE_PWEMODE_LENGTH,
-					u1_h2c_set_pwrmode);
-
+			       H2C_8821AE_PWEMODE_LENGTH,
+			       u1_h2c_set_pwrmode);
 }
 
 void rtl8821ae_set_fw_media_status_rpt_cmd(struct ieee80211_hw *hw,
@@ -608,7 +649,8 @@ void rtl8821ae_set_fw_media_status_rpt_cmd(struct ieee80211_hw *hw,
 	 *          bit1=0-->update Media Status to MACID
 	 *          bit1=1-->update Media Status from MACID to MACID_End
 	 * parm[1]: MACID, if this is INFRA_STA, MacID = 0
-	 * parm[2]: MACID_End*/
+	 * parm[2]: MACID_End
+	 */
 
 	SET_H2CCMD_MSRRPT_PARM_OPMODE(parm, mstatus);
 	SET_H2CCMD_MSRRPT_PARM_MACID_IND(parm, 0);
@@ -617,7 +659,7 @@ void rtl8821ae_set_fw_media_status_rpt_cmd(struct ieee80211_hw *hw,
 }
 
 void rtl8821ae_set_fw_ap_off_load_cmd(struct ieee80211_hw *hw,
-					u8 ap_offload_enable)
+				      u8 ap_offload_enable)
 {
 	struct rtl_mac *mac = rtl_mac(rtl_priv(hw));
 	u8 u1_apoffload_parm[H2C_8821AE_AP_OFFLOAD_LENGTH] = { 0 };
@@ -627,16 +669,15 @@ void rtl8821ae_set_fw_ap_off_load_cmd(struct ieee80211_hw *hw,
 	SET_H2CCMD_AP_OFFLOAD_DENYANY(u1_apoffload_parm, 0);
 
 	rtl8821ae_fill_h2c_cmd(hw, H2C_8821AE_AP_OFFLOAD,
-					H2C_8821AE_AP_OFFLOAD_LENGTH,
-					u1_apoffload_parm);
-
+			       H2C_8821AE_AP_OFFLOAD_LENGTH,
+			       u1_apoffload_parm);
 }
 
 void rtl8821ae_set_fw_wowlan_mode(struct ieee80211_hw *hw, bool func_en)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
-	u8 fw_wowlan_info[H2C_8821AE_WOWLAN_LENGTH] = {0};
 	struct rtl_ps_ctl *ppsc = rtl_psc(rtl_priv(hw));
+	u8 fw_wowlan_info[H2C_8821AE_WOWLAN_LENGTH] = {0};
 
 	RT_TRACE(rtlpriv, COMP_POWER, DBG_LOUD, "enable(%d)\n", func_en);
 
@@ -668,13 +709,13 @@ void rtl8821ae_set_fw_remote_wake_ctrl_cmd(struct ieee80211_hw *hw,
 					   u8 enable)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
-	u8 remote_wake_ctrl_parm[H2C_8821AE_REMOTE_WAKE_CTRL_LEN] = {0};
 	struct rtl_ps_ctl *ppsc = rtl_psc(rtl_priv(hw));
 	struct rtl_hal *rtlhal = rtl_hal(rtl_priv(hw));
+	u8 remote_wake_ctrl_parm[H2C_8821AE_REMOTE_WAKE_CTRL_LEN] = {0};
 
 	RT_TRACE(rtlpriv, COMP_POWER, DBG_LOUD,
 		 "enable=%d, ARP offload=%d, GTK offload=%d\n",
-		  enable, ppsc->arp_offload_enable, ppsc->gtk_offload_enable);
+		 enable, ppsc->arp_offload_enable, ppsc->gtk_offload_enable);
 
 	SET_8812_H2CCMD_REMOTE_WAKECTRL_ENABLE(remote_wake_ctrl_parm, enable);
 	SET_8812_H2CCMD_REMOTE_WAKE_CTRL_ARP_OFFLOAD_EN(remote_wake_ctrl_parm,
@@ -714,9 +755,8 @@ void rtl8821ae_set_fw_keep_alive_cmd(struct ieee80211_hw *hw,
 			       keep_alive_info);
 }
 
-void rtl8821ae_set_fw_disconnect_decision_ctrl_cmd(
-						struct ieee80211_hw *hw,
-						bool enabled)
+void rtl8821ae_set_fw_disconnect_decision_ctrl_cmd(struct ieee80211_hw *hw,
+						   bool enabled)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	u8 parm[H2C_8821AE_DISCONNECT_DECISION_CTRL_LEN] = {0};
@@ -736,12 +776,12 @@ void rtl8821ae_set_fw_disconnect_decision_ctrl_cmd(
 void rtl8821ae_set_fw_global_info_cmd(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
-	struct rtl_security *sec = &(rtlpriv->sec);
+	struct rtl_security *sec = &rtlpriv->sec;
 	u8 remote_wakeup_sec_info[H2C_8821AE_AOAC_GLOBAL_INFO_LEN] = {0};
 
 	RT_TRACE(rtlpriv, COMP_POWER, DBG_LOUD,
 		 "PairwiseEncAlgorithm=%d, GroupEncAlgorithm=%d\n",
-		  sec->pairwise_enc_algorithm, sec->group_enc_algorithm);
+		 sec->pairwise_enc_algorithm, sec->group_enc_algorithm);
 
 	SET_8812_H2CCMD_AOAC_GLOBAL_INFO_PAIRWISE_ENC_ALG(
 						remote_wakeup_sec_info,
@@ -762,12 +802,13 @@ void rtl8821ae_set_fw_global_info_cmd(struct ieee80211_hw *hw)
 #define PSPOLL_PG		1
 #define NULL_PG			2
 #define QOSNULL_PG		3
-#define ARPRESP_PG		4
-#define REMOTE_PG		5
-#define GTKEXT_PG		6
+#define BT_QOSNULL_PG	4
+#define ARPRESP_PG		5
+#define REMOTE_PG		6
+#define GTKEXT_PG		7
 
-#define TOTAL_RESERVED_PKT_LEN_8812	3584
-#define TOTAL_RESERVED_PKT_LEN_8821	1792
+#define TOTAL_RESERVED_PKT_LEN_8812	4096
+#define TOTAL_RESERVED_PKT_LEN_8821	2048
 
 static u8 reserved_page_packet_8821[TOTAL_RESERVED_PKT_LEN_8821] = {
 	/* page 0: beacon */
@@ -897,13 +938,46 @@ static u8 reserved_page_packet_8821[TOTAL_RESERVED_PKT_LEN_8821] = {
 	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
 	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
 	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
+	0x1A, 0x00, 0x28, 0x8C,  0x00, 0x12, 0x00, 0x00,
+	0x00, 0x00, 0x80, 0x00,  0x00, 0x01, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
+	0x00, 0x80, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
+	/* page 4: BT qos null data */
+	0xC8, 0x01, 0x00, 0x00,  0x84, 0xC9, 0xB2, 0xA7,
+	0xB3, 0x6E, 0x00, 0xE0,  0x4C, 0x02, 0x51, 0x02,
+	0x84, 0xC9, 0xB2, 0xA7,  0xB3, 0x6E, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
 	0x3C, 0x00, 0x28, 0x8C,  0x00, 0x12, 0x00, 0x00,
 	0x00, 0x00, 0x00, 0x00,  0x00, 0x01, 0x00, 0x00,
 	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
 	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
 	0x00, 0x80, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
-	/* page 4~6 is for wowlan */
-	/* page 4: ARP resp */
+	/* page 5~7 is for wowlan */
+	/* page 5: ARP resp */
 	0x08, 0x01, 0x00, 0x00,  0x84, 0xC9, 0xB2, 0xA7,
 	0xB3, 0x6E, 0x00, 0xE0,  0x4C, 0x02, 0x51, 0x02,
 	0x84, 0xC9, 0xB2, 0xA7,  0xB3, 0x6E, 0x00, 0x00,
@@ -936,7 +1010,7 @@ static u8 reserved_page_packet_8821[TOTAL_RESERVED_PKT_LEN_8821] = {
 	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
 	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
 	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
-	/* page 5: H2C_REMOTE_WAKE_CTRL_INFO */
+	/* page 6: H2C_REMOTE_WAKE_CTRL_INFO */
 	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
 	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
 	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
@@ -969,7 +1043,7 @@ static u8 reserved_page_packet_8821[TOTAL_RESERVED_PKT_LEN_8821] = {
 	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
 	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
 	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
-	/* page 6: Rsvd GTK extend memory (zero memory) */
+	/* page 7: Rsvd GTK extend memory (zero memory) */
 	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
 	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
 	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
@@ -1003,7 +1077,6 @@ static u8 reserved_page_packet_8821[TOTAL_RESERVED_PKT_LEN_8821] = {
 	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
 	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
 };
-
 
 static u8 reserved_page_packet_8812[TOTAL_RESERVED_PKT_LEN_8812] = {
 	/* page 0: beacon */
@@ -1261,13 +1334,78 @@ static u8 reserved_page_packet_8812[TOTAL_RESERVED_PKT_LEN_8812] = {
 	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
 	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
 	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
+	0x1A, 0x00, 0x28, 0x8C,  0x00, 0x12, 0x00, 0x00,
+	0x00, 0x00, 0x80, 0x00,  0x00, 0x01, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
+	0x00, 0x80, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
+	/* page 4: BT Qos null data */
+	0xC8, 0x01, 0x00, 0x00,  0x84, 0xC9, 0xB2, 0xA7,
+	0xB3, 0x6E, 0x00, 0xE0,  0x4C, 0x02, 0x51, 0x02,
+	0x84, 0xC9, 0xB2, 0xA7,  0xB3, 0x6E, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
 	0x3C, 0x00, 0x28, 0x8C,  0x00, 0x12, 0x00, 0x00,
 	0x00, 0x00, 0x00, 0x00,  0x00, 0x01, 0x00, 0x00,
 	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
 	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
 	0x00, 0x80, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
-	/* page 4~6 is for wowlan */
-	/* page 4: ARP resp */
+	/* page 5~7 is for wowlan */
+	/* page 5: ARP resp */
 	0x08, 0x01, 0x00, 0x00,  0x84, 0xC9, 0xB2, 0xA7,
 	0xB3, 0x6E, 0x00, 0xE0,  0x4C, 0x02, 0x51, 0x02,
 	0x84, 0xC9, 0xB2, 0xA7,  0xB3, 0x6E, 0x00, 0x00,
@@ -1332,7 +1470,7 @@ static u8 reserved_page_packet_8812[TOTAL_RESERVED_PKT_LEN_8812] = {
 	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
 	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
 	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
-	/* page 5: H2C_REMOTE_WAKE_CTRL_INFO */
+	/* page 6: H2C_REMOTE_WAKE_CTRL_INFO */
 	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
 	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
 	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
@@ -1397,7 +1535,7 @@ static u8 reserved_page_packet_8812[TOTAL_RESERVED_PKT_LEN_8812] = {
 	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
 	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
 	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
-	/* page 6: Rsvd GTK extend memory (zero memory) */
+	/* page 7: Rsvd GTK extend memory (zero memory) */
 	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
 	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
 	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
@@ -1470,21 +1608,22 @@ void rtl8812ae_set_fw_rsvdpagepkt(struct ieee80211_hw *hw,
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_mac *mac = rtl_mac(rtlpriv);
 	struct sk_buff *skb = NULL;
-
 	u32 totalpacketlen;
 	bool rtstatus;
 	u8 u1RsvdPageLoc[5] = { 0 };
 	u8 u1RsvdPageLoc2[7] = { 0 };
 	bool b_dlok = false;
-
 	u8 *beacon;
 	u8 *p_pspoll;
 	u8 *nullfunc;
 	u8 *qosnull;
+	u8 *btqosnull;
 	u8 *arpresp;
+
 	/*---------------------------------------------------------
-				(1) beacon
-	---------------------------------------------------------*/
+	 *			(1) beacon
+	 *---------------------------------------------------------
+	 */
 	beacon = &reserved_page_packet_8812[BEACON_PG * 512];
 	SET_80211_HDR_ADDRESS2(beacon, mac->mac_addr);
 	SET_80211_HDR_ADDRESS3(beacon, mac->bssid);
@@ -1494,8 +1633,9 @@ void rtl8812ae_set_fw_rsvdpagepkt(struct ieee80211_hw *hw,
 		goto out;
 	}
 	/*-------------------------------------------------------
-				(2) ps-poll
-	--------------------------------------------------------*/
+	 *			(2) ps-poll
+	 *--------------------------------------------------------
+	 */
 	p_pspoll = &reserved_page_packet_8812[PSPOLL_PG * 512];
 	SET_80211_PS_POLL_AID(p_pspoll, (mac->assoc_id | 0xc000));
 	SET_80211_PS_POLL_BSSID(p_pspoll, mac->bssid);
@@ -1504,8 +1644,9 @@ void rtl8812ae_set_fw_rsvdpagepkt(struct ieee80211_hw *hw,
 	SET_H2CCMD_RSVDPAGE_LOC_PSPOLL(u1RsvdPageLoc, PSPOLL_PG);
 
 	/*--------------------------------------------------------
-				(3) null data
-	---------------------------------------------------------*/
+	 *			(3) null data
+	 *---------------------------------------------------------
+	 */
 	nullfunc = &reserved_page_packet_8812[NULL_PG * 512];
 	SET_80211_HDR_ADDRESS1(nullfunc, mac->bssid);
 	SET_80211_HDR_ADDRESS2(nullfunc, mac->mac_addr);
@@ -1514,8 +1655,9 @@ void rtl8812ae_set_fw_rsvdpagepkt(struct ieee80211_hw *hw,
 	SET_H2CCMD_RSVDPAGE_LOC_NULL_DATA(u1RsvdPageLoc, NULL_PG);
 
 	/*---------------------------------------------------------
-				(4) Qos null data
-	----------------------------------------------------------*/
+	 *			(4) Qos null data
+	 *----------------------------------------------------------
+	 */
 	qosnull = &reserved_page_packet_8812[QOSNULL_PG * 512];
 	SET_80211_HDR_ADDRESS1(qosnull, mac->bssid);
 	SET_80211_HDR_ADDRESS2(qosnull, mac->mac_addr);
@@ -1523,13 +1665,25 @@ void rtl8812ae_set_fw_rsvdpagepkt(struct ieee80211_hw *hw,
 
 	SET_H2CCMD_RSVDPAGE_LOC_QOS_NULL_DATA(u1RsvdPageLoc, QOSNULL_PG);
 
+	/*---------------------------------------------------------
+	 *			(5) BT Qos null data
+	 *----------------------------------------------------------
+	 */
+	btqosnull = &reserved_page_packet_8812[BT_QOSNULL_PG * 512];
+	SET_80211_HDR_ADDRESS1(btqosnull, mac->bssid);
+	SET_80211_HDR_ADDRESS2(btqosnull, mac->mac_addr);
+	SET_80211_HDR_ADDRESS3(btqosnull, mac->bssid);
+
+	SET_H2CCMD_RSVDPAGE_LOC_BT_QOS_NULL_DATA(u1RsvdPageLoc, BT_QOSNULL_PG);
+
 	if (!dl_whole_packets) {
-		totalpacketlen = 512 * (QOSNULL_PG + 1) - 40;
+		totalpacketlen = 512 * (BT_QOSNULL_PG + 1) - 40;
 		goto out;
 	}
 	/*---------------------------------------------------------
-				(5) ARP Resp
-	----------------------------------------------------------*/
+	 *			(6) ARP Resp
+	 *----------------------------------------------------------
+	 */
 	arpresp = &reserved_page_packet_8812[ARPRESP_PG * 512];
 	SET_80211_HDR_ADDRESS1(arpresp, mac->bssid);
 	SET_80211_HDR_ADDRESS2(arpresp, mac->mac_addr);
@@ -1538,14 +1692,16 @@ void rtl8812ae_set_fw_rsvdpagepkt(struct ieee80211_hw *hw,
 	SET_8821AE_H2CCMD_AOAC_RSVDPAGE_LOC_ARP_RSP(u1RsvdPageLoc2, ARPRESP_PG);
 
 	/*---------------------------------------------------------
-				(6) Remote Wake Ctrl
-	----------------------------------------------------------*/
+	 *			(7) Remote Wake Ctrl
+	 *----------------------------------------------------------
+	 */
 	SET_8821AE_H2CCMD_AOAC_RSVDPAGE_LOC_REMOTE_WAKE_CTRL_INFO(u1RsvdPageLoc2,
 								REMOTE_PG);
 
 	/*---------------------------------------------------------
-				(7) GTK Ext Memory
-	----------------------------------------------------------*/
+	 *			(8) GTK Ext Memory
+	 *----------------------------------------------------------
+	 */
 	SET_8821AE_H2CCMD_AOAC_RSVDPAGE_LOC_GTK_EXT_MEM(u1RsvdPageLoc2, GTKEXT_PG);
 
 	totalpacketlen = TOTAL_RESERVED_PKT_LEN_8812 - 40;
@@ -1556,7 +1712,7 @@ out:
 		      &reserved_page_packet_8812[0], totalpacketlen);
 
 	skb = dev_alloc_skb(totalpacketlen);
-	memcpy((u8 *) skb_put(skb, totalpacketlen),
+	memcpy((u8 *)skb_put(skb, totalpacketlen),
 	       &reserved_page_packet_8812, totalpacketlen);
 
 	rtstatus = rtl_cmd_send_packet(hw, skb);
@@ -1577,10 +1733,9 @@ out:
 		}
 	}
 
-	if (!b_dlok) {
+	if (!b_dlok)
 		RT_TRACE(rtlpriv, COMP_ERR, DBG_WARNING,
 			 "Set RSVD page location to Fw FAIL!!!!!!.\n");
-	}
 }
 
 void rtl8821ae_set_fw_rsvdpagepkt(struct ieee80211_hw *hw,
@@ -1589,21 +1744,22 @@ void rtl8821ae_set_fw_rsvdpagepkt(struct ieee80211_hw *hw,
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_mac *mac = rtl_mac(rtl_priv(hw));
 	struct sk_buff *skb = NULL;
-
 	u32 totalpacketlen;
 	bool rtstatus;
 	u8 u1RsvdPageLoc[5] = { 0 };
 	u8 u1RsvdPageLoc2[7] = { 0 };
 	bool b_dlok = false;
-
 	u8 *beacon;
 	u8 *p_pspoll;
 	u8 *nullfunc;
 	u8 *qosnull;
+	u8 *btqosnull;
 	u8 *arpresp;
+
 	/*---------------------------------------------------------
-				(1) beacon
-	---------------------------------------------------------*/
+	 *			(1) beacon
+	 *---------------------------------------------------------
+	 */
 	beacon = &reserved_page_packet_8821[BEACON_PG * 256];
 	SET_80211_HDR_ADDRESS2(beacon, mac->mac_addr);
 	SET_80211_HDR_ADDRESS3(beacon, mac->bssid);
@@ -1613,8 +1769,9 @@ void rtl8821ae_set_fw_rsvdpagepkt(struct ieee80211_hw *hw,
 		goto out;
 	}
 	/*-------------------------------------------------------
-				(2) ps-poll
-	--------------------------------------------------------*/
+	 *			(2) ps-poll
+	 *--------------------------------------------------------
+	 */
 	p_pspoll = &reserved_page_packet_8821[PSPOLL_PG * 256];
 	SET_80211_PS_POLL_AID(p_pspoll, (mac->assoc_id | 0xc000));
 	SET_80211_PS_POLL_BSSID(p_pspoll, mac->bssid);
@@ -1623,8 +1780,9 @@ void rtl8821ae_set_fw_rsvdpagepkt(struct ieee80211_hw *hw,
 	SET_H2CCMD_RSVDPAGE_LOC_PSPOLL(u1RsvdPageLoc, PSPOLL_PG);
 
 	/*--------------------------------------------------------
-				(3) null data
-	---------------------------------------------------------*/
+	 *			(3) null data
+	 *---------------------------------------------------------i
+	 */
 	nullfunc = &reserved_page_packet_8821[NULL_PG * 256];
 	SET_80211_HDR_ADDRESS1(nullfunc, mac->bssid);
 	SET_80211_HDR_ADDRESS2(nullfunc, mac->mac_addr);
@@ -1633,8 +1791,9 @@ void rtl8821ae_set_fw_rsvdpagepkt(struct ieee80211_hw *hw,
 	SET_H2CCMD_RSVDPAGE_LOC_NULL_DATA(u1RsvdPageLoc, NULL_PG);
 
 	/*---------------------------------------------------------
-				(4) Qos null data
-	----------------------------------------------------------*/
+	 *			(4) Qos null data
+	 *----------------------------------------------------------
+	 */
 	qosnull = &reserved_page_packet_8821[QOSNULL_PG * 256];
 	SET_80211_HDR_ADDRESS1(qosnull, mac->bssid);
 	SET_80211_HDR_ADDRESS2(qosnull, mac->mac_addr);
@@ -1642,13 +1801,25 @@ void rtl8821ae_set_fw_rsvdpagepkt(struct ieee80211_hw *hw,
 
 	SET_H2CCMD_RSVDPAGE_LOC_QOS_NULL_DATA(u1RsvdPageLoc, QOSNULL_PG);
 
+	/*---------------------------------------------------------
+	 *			(5) Qos null data
+	 *----------------------------------------------------------
+	 */
+	btqosnull = &reserved_page_packet_8821[BT_QOSNULL_PG * 256];
+	SET_80211_HDR_ADDRESS1(btqosnull, mac->bssid);
+	SET_80211_HDR_ADDRESS2(btqosnull, mac->mac_addr);
+	SET_80211_HDR_ADDRESS3(btqosnull, mac->bssid);
+
+	SET_H2CCMD_RSVDPAGE_LOC_BT_QOS_NULL_DATA(u1RsvdPageLoc, BT_QOSNULL_PG);
+
 	if (!dl_whole_packets) {
-		totalpacketlen = 256 * (QOSNULL_PG + 1) - 40;
+		totalpacketlen = 256 * (BT_QOSNULL_PG + 1) - 40;
 		goto out;
 	}
 	/*---------------------------------------------------------
-				(5) ARP Resp
-	----------------------------------------------------------*/
+	 *			(6) ARP Resp
+	 *----------------------------------------------------------
+	 */
 	arpresp = &reserved_page_packet_8821[ARPRESP_PG * 256];
 	SET_80211_HDR_ADDRESS1(arpresp, mac->bssid);
 	SET_80211_HDR_ADDRESS2(arpresp, mac->mac_addr);
@@ -1657,14 +1828,16 @@ void rtl8821ae_set_fw_rsvdpagepkt(struct ieee80211_hw *hw,
 	SET_8821AE_H2CCMD_AOAC_RSVDPAGE_LOC_ARP_RSP(u1RsvdPageLoc2, ARPRESP_PG);
 
 	/*---------------------------------------------------------
-				(6) Remote Wake Ctrl
-	----------------------------------------------------------*/
+	 *			(7) Remote Wake Ctrl
+	 *----------------------------------------------------------
+	 */
 	SET_8821AE_H2CCMD_AOAC_RSVDPAGE_LOC_REMOTE_WAKE_CTRL_INFO(u1RsvdPageLoc2,
 									REMOTE_PG);
 
 	/*---------------------------------------------------------
-				(7) GTK Ext Memory
-	----------------------------------------------------------*/
+	 *			(8) GTK Ext Memory
+	 *----------------------------------------------------------
+	 */
 	SET_8821AE_H2CCMD_AOAC_RSVDPAGE_LOC_GTK_EXT_MEM(u1RsvdPageLoc2, GTKEXT_PG);
 
 	totalpacketlen = TOTAL_RESERVED_PKT_LEN_8821 - 40;
@@ -1676,7 +1849,7 @@ out:
 		      &reserved_page_packet_8821[0], totalpacketlen);
 
 	skb = dev_alloc_skb(totalpacketlen);
-	memcpy((u8 *) skb_put(skb, totalpacketlen),
+	memcpy((u8 *)skb_put(skb, totalpacketlen),
 	       &reserved_page_packet_8821, totalpacketlen);
 
 	rtstatus = rtl_cmd_send_packet(hw, skb);
@@ -1707,7 +1880,7 @@ out:
 	}
 }
 
-/*Shoud check FW support p2p or not.*/
+/*Should check FW support p2p or not.*/
 static void rtl8821ae_set_p2p_ctw_period_cmd(struct ieee80211_hw *hw, u8 ctwindow)
 {
 	u8 u1_ctwindow_period[1] = { ctwindow};
@@ -1721,7 +1894,7 @@ void rtl8821ae_set_p2p_ps_offload_cmd(struct ieee80211_hw *hw, u8 p2p_ps_state)
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_ps_ctl *rtlps = rtl_psc(rtl_priv(hw));
 	struct rtl_hal *rtlhal = rtl_hal(rtl_priv(hw));
-	struct rtl_p2p_ps_info *p2pinfo = &(rtlps->p2p_ps_info);
+	struct rtl_p2p_ps_info *p2pinfo = &rtlps->p2p_ps_info;
 	struct p2p_ps_offload_t *p2p_ps_offload = &rtlhal->p2p_ps_offload;
 	u8	i;
 	u16	ctwindow;
@@ -1730,13 +1903,13 @@ void rtl8821ae_set_p2p_ps_offload_cmd(struct ieee80211_hw *hw, u8 p2p_ps_state)
 	switch (p2p_ps_state) {
 	case P2P_PS_DISABLE:
 		RT_TRACE(rtlpriv, COMP_FW, DBG_LOUD, "P2P_PS_DISABLE\n");
-		memset(p2p_ps_offload, 0, 1);
+		memset(p2p_ps_offload, 0, sizeof(*p2p_ps_offload));
 		break;
 	case P2P_PS_ENABLE:
 		RT_TRACE(rtlpriv, COMP_FW, DBG_LOUD, "P2P_PS_ENABLE\n");
 		/* update CTWindow value. */
 		if (p2pinfo->ctwindow > 0) {
-			p2p_ps_offload->CTWindow_En = 1;
+			p2p_ps_offload->ctwindow_en = 1;
 			ctwindow = p2pinfo->ctwindow;
 			rtl8821ae_set_p2p_ctw_period_cmd(hw, ctwindow);
 		}
@@ -1746,9 +1919,9 @@ void rtl8821ae_set_p2p_ps_offload_cmd(struct ieee80211_hw *hw, u8 p2p_ps_state)
 			/* To control the register setting for which NOA*/
 			rtl_write_byte(rtlpriv, 0x5cf, (i << 4));
 			if (i == 0)
-				p2p_ps_offload->NoA0_En = 1;
+				p2p_ps_offload->noa0_en = 1;
 			else
-				p2p_ps_offload->NoA1_En = 1;
+				p2p_ps_offload->noa1_en = 1;
 
 			/* config P2P NoA Descriptor Register */
 			rtl_write_dword(rtlpriv, 0x5E0, p2pinfo->noa_duration[i]);
@@ -1766,19 +1939,19 @@ void rtl8821ae_set_p2p_ps_offload_cmd(struct ieee80211_hw *hw, u8 p2p_ps_state)
 				}
 			}
 			rtl_write_dword(rtlpriv, 0x5E8, start_time);
-			rtl_write_dword(rtlpriv, 0x5EC, p2pinfo->noa_count_type[i]);
-
+			rtl_write_dword(rtlpriv, 0x5EC,
+					p2pinfo->noa_count_type[i]);
 		}
 
 		if ((p2pinfo->opp_ps == 1) || (p2pinfo->noa_num > 0)) {
 			/* rst p2p circuit */
 			rtl_write_byte(rtlpriv, REG_DUAL_TSF_RST, BIT(4));
 
-			p2p_ps_offload->Offload_En = 1;
+			p2p_ps_offload->offload_en = 1;
 
 			if (P2P_ROLE_GO == rtlpriv->mac80211.p2p) {
 				p2p_ps_offload->role = 1;
-				p2p_ps_offload->AllStaSleep = 0;
+				p2p_ps_offload->allstasleep = 0;
 			} else {
 				p2p_ps_offload->role = 0;
 			}
@@ -1801,14 +1974,12 @@ void rtl8821ae_set_p2p_ps_offload_cmd(struct ieee80211_hw *hw, u8 p2p_ps_state)
 
 	rtl8821ae_fill_h2c_cmd(hw,
 			H2C_8821AE_P2P_PS_OFFLOAD, 1, (u8 *)p2p_ps_offload);
-
 }
 
 static void rtl8821ae_c2h_ra_report_handler(struct ieee80211_hw *hw,
 				     u8 *cmd_buf, u8 cmd_len)
 {
 	struct rtl_hal *rtlhal = rtl_hal(rtl_priv(hw));
-
 	u8 rate = cmd_buf[0] & 0x3F;
 
 	rtlhal->current_ra_rate = rtl8821ae_hw_rate_to_mrate(hw, rate);
@@ -1816,43 +1987,44 @@ static void rtl8821ae_c2h_ra_report_handler(struct ieee80211_hw *hw,
 	rtl8821ae_dm_update_init_rate(hw, rate);
 }
 
-
-static void _rtl8821ae_c2h_content_parsing(struct ieee80211_hw *hw,
-					   u8 c2h_cmd_id, u8 c2h_cmd_len,
-					   u8 *tmp_buf)
+void rtl8821ae_c2h_content_parsing(struct ieee80211_hw *hw,
+				   u8 c2h_cmd_id, u8 c2h_cmd_len,
+				   u8 *tmp_buf)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
+	struct rtl_btc_ops *btc_ops = rtlpriv->btcoexist.btc_ops;
 
 	switch (c2h_cmd_id) {
 	case C2H_8812_DBG:
 		RT_TRACE(rtlpriv, COMP_FW, DBG_LOUD, "[C2H], C2H_8812_DBG!!\n");
 		break;
-
+	case C2H_8812_TX_REPORT:
+		rtl_tx_report_handler(hw, tmp_buf, c2h_cmd_len);
+		break;
 	case C2H_8812_RA_RPT:
 		rtl8821ae_c2h_ra_report_handler(hw, tmp_buf, c2h_cmd_len);
 		break;
-
 	case C2H_8812_BT_INFO:
 		RT_TRACE(rtlpriv, COMP_FW, DBG_LOUD,
 			 "[C2H], C2H_8812_BT_INFO!!\n");
 		if (rtlpriv->cfg->ops->get_btc_status())
-			rtlpriv->btcoexist.btc_ops->btc_btinfo_notify(rtlpriv,
-								      tmp_buf,
-								      c2h_cmd_len);
-
+			btc_ops->btc_btinfo_notify(rtlpriv, tmp_buf,
+						   c2h_cmd_len);
 		break;
-
+	case C2H_8812_BT_MP:
+		RT_TRACE(rtlpriv, COMP_FW, DBG_TRACE,
+			 "[C2H], C2H_8812_BT_MP!!\n");
+		if (rtlpriv->cfg->ops->get_btc_status())
+			btc_ops->btc_btmpinfo_notify(rtlpriv, tmp_buf,
+						     c2h_cmd_len);
+		break;
 	default:
 		break;
 	}
-
 }
 
-void rtl8821ae_c2h_packet_handler(
-	struct ieee80211_hw *hw,
-	u8 *buffer,
-	u8 length
-	)
+void rtl8821ae_c2h_packet_handler(struct ieee80211_hw *hw, u8 *buffer,
+				  u8 length)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	u8 c2h_cmd_id = 0, c2h_cmd_seq = 0, c2h_cmd_len = 0;
@@ -1864,10 +2036,20 @@ void rtl8821ae_c2h_packet_handler(
 	tmp_buf = buffer + 2;
 
 	RT_TRACE(rtlpriv, COMP_FW, DBG_LOUD,
-		"[C2H packet], c2hCmdId=0x%x, c2hCmdSeq=0x%x, c2hCmdLen=%d\n",
-		c2h_cmd_id, c2h_cmd_seq, c2h_cmd_len);
+		 "[C2H packet], c2hCmdId=0x%x, c2hCmdSeq=0x%x, c2hCmdLen=%d\n",
+		 c2h_cmd_id, c2h_cmd_seq, c2h_cmd_len);
 
 	RT_PRINT_DATA(rtlpriv, COMP_FW, DBG_LOUD,
-		"[C2H packet], Content Hex:\n", tmp_buf, c2h_cmd_len);
-	_rtl8821ae_c2h_content_parsing(hw, c2h_cmd_id, c2h_cmd_len, tmp_buf);
+		      "[C2H packet], Content Hex:\n", tmp_buf, c2h_cmd_len);
+
+	switch (c2h_cmd_id) {
+	case C2H_8812_BT_INFO:
+		rtl_c2hcmd_enqueue(hw, c2h_cmd_id, c2h_cmd_len, tmp_buf);
+		break;
+
+	default:
+		rtl8821ae_c2h_content_parsing(hw, c2h_cmd_id, c2h_cmd_len,
+					      tmp_buf);
+		break;
+	}
 }

@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Copyright(c) 2009-2010  Realtek Corporation.
+ * Copyright(c) 2009-2014  Realtek Corporation.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of version 2 of the GNU General Public License as
@@ -10,10 +10,6 @@
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
  * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
  * more details.
- *
- * You should have received a copy of the GNU General Public License along with
- * this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110, USA
  *
  * The full GNU General Public License is included in this distribution in the
  * file called LICENSE.
@@ -33,15 +29,15 @@
 #define __RTL8723BE_TABLE__H_
 
 #include <linux/types.h>
-#define  RTL8723BEPHY_REG_1TARRAYLEN	388
+extern u32 RTL8723BEPHY_REG_1TARRAYLEN;
 extern u32 RTL8723BEPHY_REG_1TARRAY[];
-#define RTL8723BEPHY_REG_ARRAY_PGLEN	36
+extern u32 RTL8723BEPHY_REG_ARRAY_PGLEN;
 extern u32 RTL8723BEPHY_REG_ARRAY_PG[];
-#define	RTL8723BE_RADIOA_1TARRAYLEN	206
+extern u32 RTL8723BE_RADIOA_1TARRAYLEN;
 extern u32 RTL8723BE_RADIOA_1TARRAY[];
-#define RTL8723BEMAC_1T_ARRAYLEN	196
+extern u32 RTL8723BEMAC_1T_ARRAYLEN;
 extern u32 RTL8723BEMAC_1T_ARRAY[];
-#define RTL8723BEAGCTAB_1TARRAYLEN	260
+extern u32 RTL8723BEAGCTAB_1TARRAYLEN;
 extern u32 RTL8723BEAGCTAB_1TARRAY[];
 
 #endif

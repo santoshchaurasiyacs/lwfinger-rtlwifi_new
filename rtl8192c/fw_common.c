@@ -11,10 +11,6 @@
  * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
  * more details.
  *
- * You should have received a copy of the GNU General Public License along with
- * this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110, USA
- *
  * The full GNU General Public License is included in this distribution in the
  * file called LICENSE.
  *
@@ -34,9 +30,7 @@
 #include "../rtl8192ce/reg.h"
 #include "../rtl8192ce/def.h"
 #include "fw_common.h"
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,2,0)) 
 #include <linux/export.h>
-#endif
 #include <linux/kmemleak.h>
 
 static void _rtl92c_enable_fw_download(struct ieee80211_hw *hw, bool enable)
@@ -78,26 +72,26 @@ static void _rtl92c_fw_block_write(struct ieee80211_hw *hw,
 				   const u8 *buffer, u32 size)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
-	u32 blockSize = sizeof(u32);
-	u8 *bufferPtr = (u8 *) buffer;
-	u32 *pu4BytePtr = (u32 *) buffer;
-	u32 i, offset, blockCount, remainSize;
+	u32 blocksize = sizeof(u32);
+	u8 *bufferptr = (u8 *)buffer;
+	u32 *pu4byteptr = (u32 *)buffer;
+	u32 i, offset, blockcount, remainsize;
 
-	blockCount = size / blockSize;
-	remainSize = size % blockSize;
+	blockcount = size / blocksize;
+	remainsize = size % blocksize;
 
-	for (i = 0; i < blockCount; i++) {
-		offset = i * blockSize;
+	for (i = 0; i < blockcount; i++) {
+		offset = i * blocksize;
 		rtl_write_dword(rtlpriv, (FW_8192C_START_ADDRESS + offset),
-				*(pu4BytePtr + i));
+				*(pu4byteptr + i));
 	}
 
-	if (remainSize) {
-		offset = blockCount * blockSize;
-		bufferPtr += offset;
-		for (i = 0; i < remainSize; i++) {
+	if (remainsize) {
+		offset = blockcount * blocksize;
+		bufferptr += offset;
+		for (i = 0; i < remainsize; i++) {
 			rtl_write_byte(rtlpriv, (FW_8192C_START_ADDRESS +
-						 offset + i), *(bufferPtr + i));
+						 offset + i), *(bufferptr + i));
 		}
 	}
 }
@@ -137,19 +131,19 @@ static void _rtl92c_write_fw(struct ieee80211_hw *hw,
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_hal *rtlhal = rtl_hal(rtl_priv(hw));
 	bool is_version_b;
-	u8 *bufferPtr = (u8 *) buffer;
+	u8 *bufferptr = (u8 *)buffer;
 
 	RT_TRACE(rtlpriv, COMP_FW, DBG_TRACE, "FW size is %d bytes,\n", size);
 	is_version_b = IS_NORMAL_CHIP(version);
 	if (is_version_b) {
-		u32 pageNums, remainSize;
+		u32 pageNums, remainsize;
 		u32 page, offset;
 
 		if (rtlhal->hw_type == HARDWARE_TYPE_RTL8192CE)
-			_rtl92c_fill_dummy(bufferPtr, &size);
+			_rtl92c_fill_dummy(bufferptr, &size);
 
 		pageNums = size / FW_8192C_PAGE_SIZE;
-		remainSize = size % FW_8192C_PAGE_SIZE;
+		remainsize = size % FW_8192C_PAGE_SIZE;
 
 		if (pageNums > 4) {
 			RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG,
@@ -158,15 +152,15 @@ static void _rtl92c_write_fw(struct ieee80211_hw *hw,
 
 		for (page = 0; page < pageNums; page++) {
 			offset = page * FW_8192C_PAGE_SIZE;
-			_rtl92c_fw_page_write(hw, page, (bufferPtr + offset),
+			_rtl92c_fw_page_write(hw, page, (bufferptr + offset),
 					      FW_8192C_PAGE_SIZE);
 		}
 
-		if (remainSize) {
+		if (remainsize) {
 			offset = pageNums * FW_8192C_PAGE_SIZE;
 			page = pageNums;
-			_rtl92c_fw_page_write(hw, page, (bufferPtr + offset),
-					      remainSize);
+			_rtl92c_fw_page_write(hw, page, (bufferptr + offset),
+					      remainsize);
 		}
 	} else {
 		_rtl92c_fw_block_write(hw, buffer, size);
@@ -227,7 +221,7 @@ int rtl92c_download_fw(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_hal *rtlhal = rtl_hal(rtl_priv(hw));
-	struct rtl92c_firmware_header *pfwheader;
+	struct rtlwifi_firmware_header *pfwheader;
 	u8 *pfwdata;
 	u32 fwsize;
 	int err;
@@ -236,18 +230,19 @@ int rtl92c_download_fw(struct ieee80211_hw *hw)
 	if (!rtlhal->pfirmware)
 		return 1;
 
-	pfwheader = (struct rtl92c_firmware_header *)rtlhal->pfirmware;
-	pfwdata = (u8 *) rtlhal->pfirmware;
+	pfwheader = (struct rtlwifi_firmware_header *)rtlhal->pfirmware;
+	pfwdata = (u8 *)rtlhal->pfirmware;
 	fwsize = rtlhal->fwsize;
-
 	if (IS_FW_HEADER_EXIST(pfwheader)) {
 		RT_TRACE(rtlpriv, COMP_FW, DBG_DMESG,
 			 "Firmware Version(%d), Signature(%#x),Size(%d)\n",
 			  pfwheader->version, pfwheader->signature,
-			  (int)sizeof(struct rtl92c_firmware_header));
+			  (int)sizeof(struct rtlwifi_firmware_header));
 
-		pfwdata = pfwdata + sizeof(struct rtl92c_firmware_header);
-		fwsize = fwsize - sizeof(struct rtl92c_firmware_header);
+		rtlhal->fw_version = le16_to_cpu(pfwheader->version);
+		rtlhal->fw_subversion = pfwheader->subversion;
+		pfwdata = pfwdata + sizeof(struct rtlwifi_firmware_header);
+		fwsize = fwsize - sizeof(struct rtlwifi_firmware_header);
 	}
 
 	_rtl92c_enable_fw_download(hw, true);
@@ -305,8 +300,8 @@ static void _rtl92c_fill_h2c_command(struct ieee80211_hw *hw,
 		spin_lock_irqsave(&rtlpriv->locks.h2c_lock, flag);
 		if (rtlhal->h2c_setinprogress) {
 			RT_TRACE(rtlpriv, COMP_CMD, DBG_LOUD,
-				 "H2C set in progress! Wait to set..element_id(%d).\n", element_id);
-
+				 "H2C set in progress! Wait to set..element_id(%d).\n",
+				 element_id);
 			while (rtlhal->h2c_setinprogress) {
 				spin_unlock_irqrestore(&rtlpriv->locks.h2c_lock,
 						       flag);
@@ -357,17 +352,17 @@ static void _rtl92c_fill_h2c_command(struct ieee80211_hw *hw,
 			break;
 		default:
 			RT_TRACE(rtlpriv, COMP_ERR, DBG_LOUD,
-				 "switch case not process\n");
+				 "switch case %#x not processed\n", boxnum);
 			break;
 		}
 
 		isfw_read = _rtl92c_check_fw_read_last_h2c(hw, boxnum);
 		while (!isfw_read) {
-
 			wait_h2c_limmit--;
 			if (wait_h2c_limmit == 0) {
 				RT_TRACE(rtlpriv, COMP_CMD, DBG_LOUD,
-					 "Wating too long for FW read clear HMEBox(%d)!\n", boxnum);
+					 "Waiting too long for FW read clear HMEBox(%d)!\n",
+					 boxnum);
 				break;
 			}
 
@@ -376,12 +371,14 @@ static void _rtl92c_fill_h2c_command(struct ieee80211_hw *hw,
 			isfw_read = _rtl92c_check_fw_read_last_h2c(hw, boxnum);
 			u1b_tmp = rtl_read_byte(rtlpriv, 0x1BF);
 			RT_TRACE(rtlpriv, COMP_CMD, DBG_LOUD,
-				 "Wating for FW read clear HMEBox(%d)!!! 0x1BF = %2x\n", boxnum, u1b_tmp);
+				 "Waiting for FW read clear HMEBox(%d)!!! 0x1BF = %2x\n",
+				 boxnum, u1b_tmp);
 		}
 
 		if (!isfw_read) {
 			RT_TRACE(rtlpriv, COMP_CMD, DBG_LOUD,
-				 "Write H2C register BOX[%d] fail!!!!! Fw do not read.\n", boxnum);
+				 "Write H2C register BOX[%d] fail!!!!! Fw do not read.\n",
+				 boxnum);
 			break;
 		}
 
@@ -395,7 +392,7 @@ static void _rtl92c_fill_h2c_command(struct ieee80211_hw *hw,
 		switch (cmd_len) {
 		case 1:
 			boxcontent[0] &= ~(BIT(7));
-			memcpy((u8 *) (boxcontent) + 1,
+			memcpy((u8 *)(boxcontent) + 1,
 			       cmdbuffer + buf_index, 1);
 
 			for (idx = 0; idx < 4; idx++) {
@@ -405,7 +402,7 @@ static void _rtl92c_fill_h2c_command(struct ieee80211_hw *hw,
 			break;
 		case 2:
 			boxcontent[0] &= ~(BIT(7));
-			memcpy((u8 *) (boxcontent) + 1,
+			memcpy((u8 *)(boxcontent) + 1,
 			       cmdbuffer + buf_index, 2);
 
 			for (idx = 0; idx < 4; idx++) {
@@ -415,7 +412,7 @@ static void _rtl92c_fill_h2c_command(struct ieee80211_hw *hw,
 			break;
 		case 3:
 			boxcontent[0] &= ~(BIT(7));
-			memcpy((u8 *) (boxcontent) + 1,
+			memcpy((u8 *)(boxcontent) + 1,
 			       cmdbuffer + buf_index, 3);
 
 			for (idx = 0; idx < 4; idx++) {
@@ -425,9 +422,9 @@ static void _rtl92c_fill_h2c_command(struct ieee80211_hw *hw,
 			break;
 		case 4:
 			boxcontent[0] |= (BIT(7));
-			memcpy((u8 *) (boxextcontent),
+			memcpy((u8 *)(boxextcontent),
 			       cmdbuffer + buf_index, 2);
-			memcpy((u8 *) (boxcontent) + 1,
+			memcpy((u8 *)(boxcontent) + 1,
 			       cmdbuffer + buf_index + 2, 2);
 
 			for (idx = 0; idx < 2; idx++) {
@@ -442,9 +439,9 @@ static void _rtl92c_fill_h2c_command(struct ieee80211_hw *hw,
 			break;
 		case 5:
 			boxcontent[0] |= (BIT(7));
-			memcpy((u8 *) (boxextcontent),
+			memcpy((u8 *)(boxextcontent),
 			       cmdbuffer + buf_index, 2);
-			memcpy((u8 *) (boxcontent) + 1,
+			memcpy((u8 *)(boxcontent) + 1,
 			       cmdbuffer + buf_index + 2, 3);
 
 			for (idx = 0; idx < 2; idx++) {
@@ -459,7 +456,7 @@ static void _rtl92c_fill_h2c_command(struct ieee80211_hw *hw,
 			break;
 		default:
 			RT_TRACE(rtlpriv, COMP_ERR, DBG_LOUD,
-				 "switch case not process\n");
+				 "switch case %#x not processed\n", cmd_len);
 			break;
 		}
 
@@ -487,14 +484,15 @@ void rtl92c_fill_h2c_cmd(struct ieee80211_hw *hw,
 	struct rtl_hal *rtlhal = rtl_hal(rtl_priv(hw));
 	u32 tmp_cmdbuf[2];
 
-	if (rtlhal->fw_ready == false) {
-		RT_ASSERT(false, "return H2C cmd because of Fw download fail!!!\n");
+	if (!rtlhal->fw_ready) {
+		RT_ASSERT(false,
+			  "return H2C cmd because of Fw download fail!!!\n");
 		return;
 	}
 
 	memset(tmp_cmdbuf, 0, 8);
 	memcpy(tmp_cmdbuf, cmdbuffer, cmd_len);
-	_rtl92c_fill_h2c_command(hw, element_id, cmd_len, (u8 *) &tmp_cmdbuf);
+	_rtl92c_fill_h2c_command(hw, element_id, cmd_len, (u8 *)&tmp_cmdbuf);
 
 	return;
 }
@@ -668,7 +666,7 @@ void rtl92c_set_fw_rsvdpagepkt(struct ieee80211_hw *hw,
 
 	u32 totalpacketlen;
 	bool rtstatus;
-	u8 u1RsvdPageLoc[3] = { 0 };
+	u8 u1rsvdpageloc[3] = { 0 };
 	bool b_dlok = false;
 
 	u8 *beacon;
@@ -690,7 +688,7 @@ void rtl92c_set_fw_rsvdpagepkt(struct ieee80211_hw *hw,
 	SET_80211_PS_POLL_BSSID(p_pspoll, mac->bssid);
 	SET_80211_PS_POLL_TA(p_pspoll, mac->mac_addr);
 
-	SET_H2CCMD_RSVDPAGE_LOC_PSPOLL(u1RsvdPageLoc, PSPOLL_PG);
+	SET_H2CCMD_RSVDPAGE_LOC_PSPOLL(u1rsvdpageloc, PSPOLL_PG);
 
 	/*--------------------------------------------------------
 				(3) null data
@@ -700,7 +698,7 @@ void rtl92c_set_fw_rsvdpagepkt(struct ieee80211_hw *hw,
 	SET_80211_HDR_ADDRESS2(nullfunc, mac->mac_addr);
 	SET_80211_HDR_ADDRESS3(nullfunc, mac->bssid);
 
-	SET_H2CCMD_RSVDPAGE_LOC_NULL_DATA(u1RsvdPageLoc, NULL_PG);
+	SET_H2CCMD_RSVDPAGE_LOC_NULL_DATA(u1rsvdpageloc, NULL_PG);
 
 	/*---------------------------------------------------------
 				(4) probe response
@@ -710,7 +708,7 @@ void rtl92c_set_fw_rsvdpagepkt(struct ieee80211_hw *hw,
 	SET_80211_HDR_ADDRESS2(p_probersp, mac->mac_addr);
 	SET_80211_HDR_ADDRESS3(p_probersp, mac->bssid);
 
-	SET_H2CCMD_RSVDPAGE_LOC_PROBE_RSP(u1RsvdPageLoc, PROBERSP_PG);
+	SET_H2CCMD_RSVDPAGE_LOC_PROBE_RSP(u1rsvdpageloc, PROBERSP_PG);
 
 	totalpacketlen = TOTAL_RESERVED_PKT_LEN;
 
@@ -719,11 +717,11 @@ void rtl92c_set_fw_rsvdpagepkt(struct ieee80211_hw *hw,
 		      &reserved_page_packet[0], totalpacketlen);
 	RT_PRINT_DATA(rtlpriv, COMP_CMD, DBG_DMESG,
 		      "rtl92c_set_fw_rsvdpagepkt(): HW_VAR_SET_TX_CMD: ALL\n",
-		      u1RsvdPageLoc, 3);
+		      u1rsvdpageloc, 3);
 
 
 	skb = dev_alloc_skb(totalpacketlen);
-	memcpy((u8 *) skb_put(skb, totalpacketlen),
+	memcpy((u8 *)skb_put(skb, totalpacketlen),
 	       &reserved_page_packet, totalpacketlen);
 
 	if (cmd_send_packet)
@@ -739,9 +737,9 @@ void rtl92c_set_fw_rsvdpagepkt(struct ieee80211_hw *hw,
 			 "Set RSVD page location to Fw.\n");
 		RT_PRINT_DATA(rtlpriv, COMP_CMD, DBG_DMESG,
 				"H2C_RSVDPAGE:\n",
-				u1RsvdPageLoc, 3);
+				u1rsvdpageloc, 3);
 		rtl92c_fill_h2c_cmd(hw, H2C_RSVDPAGE,
-				    sizeof(u1RsvdPageLoc), u1RsvdPageLoc);
+				    sizeof(u1rsvdpageloc), u1rsvdpageloc);
 	} else
 		RT_TRACE(rtlpriv, COMP_ERR, DBG_WARNING,
 			 "Set RSVD page location to Fw FAIL!!!!!!.\n");
@@ -765,6 +763,46 @@ static void rtl92c_set_p2p_ctw_period_cmd(struct ieee80211_hw *hw, u8 ctwindow)
 	rtl92c_fill_h2c_cmd(hw, H2C_P2P_PS_CTW_CMD, 1, u1_ctwindow_period);
 }
 
+/* refactored routine */
+static void set_noa_data(struct rtl_priv *rtlpriv,
+			 struct rtl_p2p_ps_info *p2pinfo,
+			 struct p2p_ps_offload_t *p2p_ps_offload)
+{
+	int i;
+	u32	start_time, tsf_low;
+
+	/* hw only support 2 set of NoA */
+	for (i = 0 ; i < p2pinfo->noa_num ; i++) {
+		/* To control the reg setting for which NOA*/
+		rtl_write_byte(rtlpriv, 0x5cf, (i << 4));
+		if (i == 0)
+			p2p_ps_offload->noa0_en = 1;
+		else
+			p2p_ps_offload->noa1_en = 1;
+
+		/* config P2P NoA Descriptor Register */
+		rtl_write_dword(rtlpriv, 0x5E0,
+				p2pinfo->noa_duration[i]);
+		rtl_write_dword(rtlpriv, 0x5E4,
+				p2pinfo->noa_interval[i]);
+
+		/*Get Current TSF value */
+		tsf_low = rtl_read_dword(rtlpriv, REG_TSFTR);
+
+		start_time = p2pinfo->noa_start_time[i];
+		if (p2pinfo->noa_count_type[i] != 1) {
+			while (start_time <= (tsf_low+(50*1024))) {
+				start_time += p2pinfo->noa_interval[i];
+				if (p2pinfo->noa_count_type[i] != 255)
+					p2pinfo->noa_count_type[i]--;
+			}
+		}
+		rtl_write_dword(rtlpriv, 0x5E8, start_time);
+		rtl_write_dword(rtlpriv, 0x5EC,
+				p2pinfo->noa_count_type[i]);
+	}
+}
+
 void rtl92c_set_p2p_ps_offload_cmd(struct ieee80211_hw *hw, u8 p2p_ps_state)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
@@ -772,62 +810,36 @@ void rtl92c_set_p2p_ps_offload_cmd(struct ieee80211_hw *hw, u8 p2p_ps_state)
 	struct rtl_hal *rtlhal = rtl_hal(rtl_priv(hw));
 	struct rtl_p2p_ps_info *p2pinfo = &(rtlps->p2p_ps_info);
 	struct p2p_ps_offload_t *p2p_ps_offload = &rtlhal->p2p_ps_offload;
-	u8	i;
 	u16	ctwindow;
-	u32	start_time, tsf_low;
 
 	switch (p2p_ps_state) {
 	case P2P_PS_DISABLE:
-			RT_TRACE(rtlpriv, COMP_FW, DBG_LOUD, "P2P_PS_DISABLE \n");
-			memset(p2p_ps_offload, 0, 1);
+			RT_TRACE(rtlpriv, COMP_FW, DBG_LOUD,
+				 "P2P_PS_DISABLE\n");
+			memset(p2p_ps_offload, 0, sizeof(*p2p_ps_offload));
 			break;
 	case P2P_PS_ENABLE:
-			RT_TRACE(rtlpriv, COMP_FW, DBG_LOUD, "P2P_PS_ENABLE \n");
+			RT_TRACE(rtlpriv, COMP_FW, DBG_LOUD,
+				 "P2P_PS_ENABLE\n");
 			/* update CTWindow value. */
 			if (p2pinfo->ctwindow > 0) {
-				p2p_ps_offload->CTWindow_En = 1;
+				p2p_ps_offload->ctwindow_en = 1;
 				ctwindow = p2pinfo->ctwindow;
 				rtl92c_set_p2p_ctw_period_cmd(hw, ctwindow);
 			}
-
-			/* hw only support 2 set of NoA */
-			for (i = 0 ; i < p2pinfo->noa_num ; i++) {
-				/* To control the register setting for which NOA*/
-				rtl_write_byte(rtlpriv, 0x5cf, (i << 4));
-				if (i == 0)
-					p2p_ps_offload->NoA0_En = 1;
-				else
-					p2p_ps_offload->NoA1_En = 1;
-
-				/* config P2P NoA Descriptor Register */
-				rtl_write_dword(rtlpriv, 0x5E0, p2pinfo->noa_duration[i]);
-				rtl_write_dword(rtlpriv, 0x5E4, p2pinfo->noa_interval[i]);
-
-				/*Get Current TSF value */
-				tsf_low = rtl_read_dword(rtlpriv, REG_TSFTR);
-
-				start_time = p2pinfo->noa_start_time[i];
-				if (p2pinfo->noa_count_type[i] != 1) {
-					while (start_time <= (tsf_low+(50*1024))) {
-						start_time += p2pinfo->noa_interval[i];
-						if (p2pinfo->noa_count_type[i] != 255)
-							p2pinfo->noa_count_type[i]--;
-					}
-				}
-				rtl_write_dword(rtlpriv, 0x5E8, start_time);
-				rtl_write_dword(rtlpriv, 0x5EC, p2pinfo->noa_count_type[i]);
-
-			}
+			/* call refactored routine */
+			set_noa_data(rtlpriv, p2pinfo, p2p_ps_offload);
 
 			if ((p2pinfo->opp_ps == 1) || (p2pinfo->noa_num > 0)) {
 				/* rst p2p circuit */
-				rtl_write_byte(rtlpriv, REG_DUAL_TSF_RST, BIT(4));
+				rtl_write_byte(rtlpriv, REG_DUAL_TSF_RST,
+					       BIT(4));
 
-				p2p_ps_offload->Offload_En = 1;
+				p2p_ps_offload->offload_en = 1;
 
 				if (P2P_ROLE_GO == rtlpriv->mac80211.p2p) {
 					p2p_ps_offload->role = 1;
-					p2p_ps_offload->AllStaSleep = 0;
+					p2p_ps_offload->allstasleep = 0;
 				} else {
 					p2p_ps_offload->role = 0;
 				}
@@ -836,11 +848,12 @@ void rtl92c_set_p2p_ps_offload_cmd(struct ieee80211_hw *hw, u8 p2p_ps_state)
 			}
 			break;
 	case P2P_PS_SCAN:
-			RT_TRACE(rtlpriv, COMP_FW, DBG_LOUD, "P2P_PS_SCAN \n");
+			RT_TRACE(rtlpriv, COMP_FW, DBG_LOUD, "P2P_PS_SCAN\n");
 			p2p_ps_offload->discovery = 1;
 			break;
 	case P2P_PS_SCAN_DONE:
-			RT_TRACE(rtlpriv, COMP_FW, DBG_LOUD, "P2P_PS_SCAN_DONE \n");
+			RT_TRACE(rtlpriv, COMP_FW, DBG_LOUD,
+				 "P2P_PS_SCAN_DONE\n");
 			p2p_ps_offload->discovery = 0;
 			p2pinfo->p2p_ps_state = P2P_PS_ENABLE;
 			break;

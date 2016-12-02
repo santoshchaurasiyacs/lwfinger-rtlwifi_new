@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Copyright(c) 2009-2010  Realtek Corporation.
+ * Copyright(c) 2009-2012  Realtek Corporation.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of version 2 of the GNU General Public License as
@@ -10,10 +10,6 @@
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
  * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
  * more details.
- *
- * You should have received a copy of the GNU General Public License along with
- * this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110, USA
  *
  * The full GNU General Public License is included in this distribution in the
  * file called LICENSE.
@@ -32,6 +28,7 @@
 #include "fw.h"
 #include "reg.h"
 #include "def.h"
+#include "../rtl8723com/phy_common.h"
 
 static struct bt_coexist_8723 hal_coex_8723;
 
@@ -46,14 +43,13 @@ void rtl8723e_dm_bt_turn_off_bt_coexist_before_enter_lps(struct ieee80211_hw *hw
 	if (ppsc->inactiveps) {
 		RT_TRACE(rtlpriv, COMP_BT_COEXIST, DBG_DMESG,
 			"[BT][DM], Before enter IPS, turn off all Coexist DM\n");
-		rtlpriv->btcoexist.current_state = 0;
+		rtlpriv->btcoexist.cstate = 0;
 		rtlpriv->btcoexist.previous_state = 0;
-		rtlpriv->btcoexist.current_state_h = 0;
+		rtlpriv->btcoexist.cstate_h = 0;
 		rtlpriv->btcoexist.previous_state_h = 0;
 		rtl8723e_btdm_coex_all_off(hw);
 	}
 }
-
 
 static enum rt_media_status mgnt_link_status_query(struct ieee80211_hw *hw)
 {
@@ -93,14 +89,12 @@ void rtl_8723e_bt_wifi_media_status_notify(struct ieee80211_hw *hw,
 	else
 		h2c_parameter[2] = 0x20;
 
-
-	RT_TRACE(rtlpriv, COMP_BT_COEXIST, DBG_DMESG, "[BTCoex], FW write 0x19=0x%x\n",
-		h2c_parameter[0]<<16|h2c_parameter[1]<<8|h2c_parameter[2]);
+	RT_TRACE(rtlpriv, COMP_BT_COEXIST, DBG_DMESG,
+		 "[BTCoex], FW write 0x19=0x%x\n",
+		 h2c_parameter[0]<<16|h2c_parameter[1]<<8|h2c_parameter[2]);
 
 	rtl8723e_fill_h2c_cmd(hw, 0x19, 3, h2c_parameter);
-
 }
-
 
 static bool rtl8723e_dm_bt_is_wifi_busy(struct ieee80211_hw *hw)
 {
@@ -114,12 +108,12 @@ static bool rtl8723e_dm_bt_is_wifi_busy(struct ieee80211_hw *hw)
 }
 
 static void rtl8723e_dm_bt_set_fw_3a(struct ieee80211_hw *hw,
-				u8 byte1, u8 byte2,
-				u8 byte3, u8 byte4,
-				u8 byte5)
+				     u8 byte1, u8 byte2, u8 byte3, u8 byte4,
+				     u8 byte5)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
-	u8 h2c_parameter[5] = {0};
+	u8 h2c_parameter[5];
+
 	h2c_parameter[0] = byte1;
 	h2c_parameter[1] = byte2;
 	h2c_parameter[2] = byte3;
@@ -140,51 +134,49 @@ static bool rtl8723e_dm_bt_need_to_dec_bt_pwr(struct ieee80211_hw *hw)
 	if (mgnt_link_status_query(hw) == RT_MEDIA_CONNECT) {
 		RT_TRACE(rtlpriv, COMP_BT_COEXIST, DBG_DMESG,
 			"Need to decrease bt power\n");
-			rtlpriv->btcoexist.current_state |=
-			BT_COEX_STATE_DEC_BT_POWER;
-			return true;
+		rtlpriv->btcoexist.cstate |=
+		BT_COEX_STATE_DEC_BT_POWER;
+		return true;
 	}
 
-	rtlpriv->btcoexist.current_state &= ~BT_COEX_STATE_DEC_BT_POWER;
+	rtlpriv->btcoexist.cstate &= ~BT_COEX_STATE_DEC_BT_POWER;
 	return false;
 }
-
 
 static bool rtl8723e_dm_bt_is_same_coexist_state(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 
-	if ((rtlpriv->btcoexist.previous_state
-		== rtlpriv->btcoexist.current_state)
-		&& (rtlpriv->btcoexist.previous_state_h
-		== rtlpriv->btcoexist.current_state_h)) {
+	if ((rtlpriv->btcoexist.previous_state ==
+	     rtlpriv->btcoexist.cstate) &&
+	    (rtlpriv->btcoexist.previous_state_h ==
+	     rtlpriv->btcoexist.cstate_h)) {
 		RT_TRACE(rtlpriv, COMP_BT_COEXIST, DBG_DMESG,
-				"[DM][BT], Coexist state do not chang!!\n");
+			 "[DM][BT], Coexist state do not chang!!\n");
 		return true;
 	} else {
 		RT_TRACE(rtlpriv, COMP_BT_COEXIST, DBG_DMESG,
-				"[DM][BT], Coexist state changed!!\n");
+			 "[DM][BT], Coexist state changed!!\n");
 		return false;
 	}
 }
 
 static void rtl8723e_dm_bt_set_coex_table(struct ieee80211_hw *hw,
-					u32 val_0x6c0,
-					u32 val_0x6c8,
-					u32 val_0x6cc)
+					  u32 val_0x6c0, u32 val_0x6c8,
+					  u32 val_0x6cc)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 
 	RT_TRACE(rtlpriv, COMP_BT_COEXIST, DBG_TRACE,
-		"set coex table, set 0x6c0=0x%x\n", val_0x6c0);
+		 "set coex table, set 0x6c0=0x%x\n", val_0x6c0);
 	rtl_write_dword(rtlpriv, 0x6c0, val_0x6c0);
 
 	RT_TRACE(rtlpriv, COMP_BT_COEXIST, DBG_TRACE,
-		"set coex table, set 0x6c8=0x%x\n", val_0x6c8);
+		 "set coex table, set 0x6c8=0x%x\n", val_0x6c8);
 	rtl_write_dword(rtlpriv, 0x6c8, val_0x6c8);
 
 	RT_TRACE(rtlpriv, COMP_BT_COEXIST, DBG_TRACE,
-		"set coex table, set 0x6cc=0x%x\n", val_0x6cc);
+		 "set coex table, set 0x6cc=0x%x\n", val_0x6cc);
 	rtl_write_byte(rtlpriv, 0x6cc, val_0x6cc);
 }
 
@@ -193,7 +185,7 @@ static void rtl8723e_dm_bt_set_hw_pta_mode(struct ieee80211_hw *hw, bool b_mode)
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 
 	if (BT_PTA_MODE_ON == b_mode) {
-		RT_TRACE(rtlpriv, COMP_BT_COEXIST, DBG_TRACE, "PTA mode on, ");
+		RT_TRACE(rtlpriv, COMP_BT_COEXIST, DBG_TRACE, "PTA mode on\n");
 		/*  Enable GPIO 0/1/2/3/8 pins for bt */
 		rtl_write_byte(rtlpriv, 0x40, 0x20);
 		rtlpriv->btcoexist.hw_coexist_all_off = false;
@@ -203,33 +195,29 @@ static void rtl8723e_dm_bt_set_hw_pta_mode(struct ieee80211_hw *hw, bool b_mode)
 	}
 }
 
-static void rtl8723e_dm_bt_set_sw_rf_rx_lpf_corner(struct ieee80211_hw *hw, u8 type)
+static void rtl8723e_dm_bt_set_sw_rf_rx_lpf_corner(struct ieee80211_hw *hw,
+						   u8 type)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 
 	if (BT_RF_RX_LPF_CORNER_SHRINK == type) {
-		/* Shrink RF Rx LPF corner,
-			0x1e[7:4]=1111 ==> [11:4] by Jenyu */
+		/* Shrink RF Rx LPF corner, 0x1e[7:4]=1111 ==> [11:4] */
 		RT_TRACE(rtlpriv, COMP_BT_COEXIST, DBG_TRACE,
-			"Shrink RF Rx LPF corner!!\n");
-		/* PHY_SetRFReg(Adapter,
-			(RF_RADIO_PATH_E)PathA, 0x1e, 0xf0, 0xf); */
-		rtl8723e_phy_set_rf_reg(hw,
-			RF90_PATH_A, 0x1e, 0xfffff, 0xf0ff7);
+			 "Shrink RF Rx LPF corner!!\n");
+		rtl8723e_phy_set_rf_reg(hw, RF90_PATH_A, 0x1e,
+					0xfffff, 0xf0ff7);
 		rtlpriv->btcoexist.sw_coexist_all_off = false;
 	} else if (BT_RF_RX_LPF_CORNER_RESUME == type) {
 		/*Resume RF Rx LPF corner*/
-		RT_TRACE(rtlpriv, COMP_BT_COEXIST,
-			DBG_TRACE, "Resume RF Rx LPF corner!!\n");
-		/* PHY_SetRFReg(Adapter, (RF_RADIO_PATH_E)PathA, 0x1e, 0xf0,
-		 * pHalData->btcoexist.BtRfRegOrigin1E); */
+		RT_TRACE(rtlpriv, COMP_BT_COEXIST, DBG_TRACE,
+			 "Resume RF Rx LPF corner!!\n");
 		rtl8723e_phy_set_rf_reg(hw, RF90_PATH_A, 0x1e, 0xfffff,
-			rtlpriv->btcoexist.bt_rfreg_origin_1e);
+					rtlpriv->btcoexist.bt_rfreg_origin_1e);
 	}
 }
 
-static void rtl8723e_dm_bt_set_sw_penalty_tx_rate_adaptive(struct ieee80211_hw *hw,
-							u8 ra_type)
+static void dm_bt_set_sw_penalty_tx_rate_adapt(struct ieee80211_hw *hw,
+					       u8 ra_type)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	u8 tmp_u1;
@@ -251,55 +239,55 @@ static void rtl8723e_dm_bt_set_sw_penalty_tx_rate_adaptive(struct ieee80211_hw *
 }
 
 static void rtl8723e_dm_bt_btdm_structure_reload(struct ieee80211_hw *hw,
-						struct btdm_8723 *p_btdm)
+						 struct btdm_8723 *btdm)
 {
-	p_btdm->b_all_off = false;
-	p_btdm->b_agc_table_en = false;
-	p_btdm->b_adc_back_off_on = false;
-	p_btdm->b2_ant_hid_en = false;
-	p_btdm->b_low_penalty_rate_adaptive = false;
-	p_btdm->b_rf_rx_lpf_shrink = false;
-	p_btdm->b_reject_aggre_pkt = false;
+	btdm->all_off = false;
+	btdm->agc_table_en = false;
+	btdm->adc_back_off_on = false;
+	btdm->b2_ant_hid_en = false;
+	btdm->low_penalty_rate_adaptive = false;
+	btdm->rf_rx_lpf_shrink = false;
+	btdm->reject_aggre_pkt = false;
 
-	p_btdm->b_tdma_on = false;
-	p_btdm->tdma_ant = TDMA_2ANT;
-	p_btdm->tdma_nav = TDMA_NAV_OFF;
-	p_btdm->tdma_dac_swing = TDMA_DAC_SWING_OFF;
-	p_btdm->fw_dac_swing_lvl = 0x20;
+	btdm->tdma_on = false;
+	btdm->tdma_ant = TDMA_2ANT;
+	btdm->tdma_nav = TDMA_NAV_OFF;
+	btdm->tdma_dac_swing = TDMA_DAC_SWING_OFF;
+	btdm->fw_dac_swing_lvl = 0x20;
 
-	p_btdm->b_tra_tdma_on = false;
-	p_btdm->tra_tdma_ant = TDMA_2ANT;
-	p_btdm->tra_tdma_nav = TDMA_NAV_OFF;
-	p_btdm->b_ignore_wlan_act = false;
+	btdm->tra_tdma_on = false;
+	btdm->tra_tdma_ant = TDMA_2ANT;
+	btdm->tra_tdma_nav = TDMA_NAV_OFF;
+	btdm->ignore_wlan_act = false;
 
-	p_btdm->b_ps_tdma_on = false;
-	p_btdm->ps_tdma_byte[0] = 0x0;
-	p_btdm->ps_tdma_byte[1] = 0x0;
-	p_btdm->ps_tdma_byte[2] = 0x0;
-	p_btdm->ps_tdma_byte[3] = 0x8;
-	p_btdm->ps_tdma_byte[4] = 0x0;
+	btdm->ps_tdma_on = false;
+	btdm->ps_tdma_byte[0] = 0x0;
+	btdm->ps_tdma_byte[1] = 0x0;
+	btdm->ps_tdma_byte[2] = 0x0;
+	btdm->ps_tdma_byte[3] = 0x8;
+	btdm->ps_tdma_byte[4] = 0x0;
 
-	p_btdm->b_pta_on = true;
-	p_btdm->val_0x6c0 = 0x5a5aaaaa;
-	p_btdm->val_0x6c8 = 0xcc;
-	p_btdm->val_0x6cc = 0x3;
+	btdm->pta_on = true;
+	btdm->val_0x6c0 = 0x5a5aaaaa;
+	btdm->val_0x6c8 = 0xcc;
+	btdm->val_0x6cc = 0x3;
 
-	p_btdm->sw_dac_swing_on = false;
-	p_btdm->sw_dac_swing_lvl = 0xc0;
-	p_btdm->wlan_act_hi = 0x20;
-	p_btdm->wlan_act_lo = 0x10;
-	p_btdm->bt_retry_index = 2;
+	btdm->sw_dac_swing_on = false;
+	btdm->sw_dac_swing_lvl = 0xc0;
+	btdm->wlan_act_hi = 0x20;
+	btdm->wlan_act_lo = 0x10;
+	btdm->bt_retry_index = 2;
 
-	p_btdm->b_dec_bt_pwr = false;
+	btdm->dec_bt_pwr = false;
 }
 
 static void rtl8723e_dm_bt_btdm_structure_reload_all_off(struct ieee80211_hw *hw,
-							struct btdm_8723 *p_btdm)
+							 struct btdm_8723 *btdm)
 {
-	rtl8723e_dm_bt_btdm_structure_reload(hw, p_btdm);
-	p_btdm->b_all_off = true;
-	p_btdm->b_pta_on = false;
-	p_btdm->wlan_act_hi = 0x10;
+	rtl8723e_dm_bt_btdm_structure_reload(hw, btdm);
+	btdm->all_off = true;
+	btdm->pta_on = false;
+	btdm->wlan_act_hi = 0x10;
 }
 
 static bool rtl8723e_dm_bt_is_2_ant_common_action(struct ieee80211_hw *hw)
@@ -310,31 +298,31 @@ static bool rtl8723e_dm_bt_is_2_ant_common_action(struct ieee80211_hw *hw)
 
 	rtl8723e_dm_bt_btdm_structure_reload(hw, &btdm8723);
 
-	if (!rtl8723e_dm_bt_is_wifi_busy(hw)
-		&& !rtlpriv->btcoexist.bt_busy) {
+	if (!rtl8723e_dm_bt_is_wifi_busy(hw) &&
+	    !rtlpriv->btcoexist.bt_busy) {
 		RT_TRACE(rtlpriv, COMP_BT_COEXIST, DBG_DMESG,
 			 "Wifi idle + Bt idle, bt coex mechanism always off!!\n");
 		rtl8723e_dm_bt_btdm_structure_reload_all_off(hw, &btdm8723);
 		b_common = true;
-	} else if (rtl8723e_dm_bt_is_wifi_busy(hw)
-		&& !rtlpriv->btcoexist.bt_busy) {
+	} else if (rtl8723e_dm_bt_is_wifi_busy(hw) &&
+		   !rtlpriv->btcoexist.bt_busy) {
 		RT_TRACE(rtlpriv, COMP_BT_COEXIST, DBG_DMESG,
-			"Wifi non-idle + Bt disabled/idle!!\n");
-		btdm8723.b_low_penalty_rate_adaptive = true;
-		btdm8723.b_rf_rx_lpf_shrink = false;
-		btdm8723.b_reject_aggre_pkt = false;
+			 "Wifi non-idle + Bt disabled/idle!!\n");
+		btdm8723.low_penalty_rate_adaptive = true;
+		btdm8723.rf_rx_lpf_shrink = false;
+		btdm8723.reject_aggre_pkt = false;
 
 		/* sw mechanism */
-		btdm8723.b_agc_table_en = false;
-		btdm8723.b_adc_back_off_on = false;
+		btdm8723.agc_table_en = false;
+		btdm8723.adc_back_off_on = false;
 		btdm8723.sw_dac_swing_on = false;
 
-		btdm8723.b_pta_on = true;
+		btdm8723.pta_on = true;
 		btdm8723.val_0x6c0 = 0x5a5aaaaa;
 		btdm8723.val_0x6c8 = 0xcccc;
 		btdm8723.val_0x6cc = 0x3;
 
-		btdm8723.b_tdma_on = false;
+		btdm8723.tdma_on = false;
 		btdm8723.tdma_dac_swing = TDMA_DAC_SWING_OFF;
 		btdm8723.b2_ant_hid_en = false;
 
@@ -349,21 +337,21 @@ static bool rtl8723e_dm_bt_is_2_ant_common_action(struct ieee80211_hw *hw)
 		} else {
 			RT_TRACE(rtlpriv, COMP_BT_COEXIST, DBG_DMESG,
 				"No Wifi connection!\n");
-			btdm8723.b_rf_rx_lpf_shrink = true;
-			btdm8723.b_low_penalty_rate_adaptive = false;
-			btdm8723.b_reject_aggre_pkt = false;
+			btdm8723.rf_rx_lpf_shrink = true;
+			btdm8723.low_penalty_rate_adaptive = false;
+			btdm8723.reject_aggre_pkt = false;
 
 			/* sw mechanism */
-			btdm8723.b_agc_table_en = false;
-			btdm8723.b_adc_back_off_on = false;
+			btdm8723.agc_table_en = false;
+			btdm8723.adc_back_off_on = false;
 			btdm8723.sw_dac_swing_on = false;
 
-			btdm8723.b_pta_on = true;
+			btdm8723.pta_on = true;
 			btdm8723.val_0x6c0 = 0x55555555;
 			btdm8723.val_0x6c8 = 0x0000ffff;
 			btdm8723.val_0x6cc = 0x3;
 
-			btdm8723.b_tdma_on = false;
+			btdm8723.tdma_on = false;
 			btdm8723.tdma_dac_swing = TDMA_DAC_SWING_OFF;
 			btdm8723.b2_ant_hid_en = false;
 
@@ -372,10 +360,10 @@ static bool rtl8723e_dm_bt_is_2_ant_common_action(struct ieee80211_hw *hw)
 	}
 
 	if (rtl8723e_dm_bt_need_to_dec_bt_pwr(hw))
-		btdm8723.b_dec_bt_pwr = true;
+		btdm8723.dec_bt_pwr = true;
 
 	if (b_common)
-		rtlpriv->btcoexist.current_state |=
+		rtlpriv->btcoexist.cstate |=
 			BT_COEX_STATE_BTINFO_COMMON;
 
 	if (b_common && rtl8723e_dm_bt_is_coexist_state_changed(hw))
@@ -393,40 +381,39 @@ static void rtl8723e_dm_bt_set_sw_full_time_dac_swing(
 
 	if (sw_dac_swing_on) {
 		RT_TRACE(rtlpriv, COMP_BT_COEXIST, DBG_TRACE,
-			"[BTCoex], SwDacSwing = 0x%x\n", sw_dac_swing_lvl);
-		rtl8723e_phy_set_bb_reg(hw,
-			0x880, 0xff000000, sw_dac_swing_lvl);
+			 "[BTCoex], SwDacSwing = 0x%x\n", sw_dac_swing_lvl);
+		rtl8723_phy_set_bb_reg(hw, 0x880, 0xff000000,
+				       sw_dac_swing_lvl);
 		rtlpriv->btcoexist.sw_coexist_all_off = false;
 	} else {
 		RT_TRACE(rtlpriv, COMP_BT_COEXIST, DBG_TRACE,
-			"[BTCoex], SwDacSwing Off!\n");
-		rtl8723e_phy_set_bb_reg(hw, 0x880, 0xff000000, 0xc0);
+			 "[BTCoex], SwDacSwing Off!\n");
+		rtl8723_phy_set_bb_reg(hw, 0x880, 0xff000000, 0xc0);
 	}
 }
 
 static void rtl8723e_dm_bt_set_fw_dec_bt_pwr(
-		struct ieee80211_hw *hw, bool b_dec_bt_pwr)
+		struct ieee80211_hw *hw, bool dec_bt_pwr)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	u8 h2c_parameter[1] = {0};
 
 	h2c_parameter[0] = 0;
 
-	if (b_dec_bt_pwr) {
+	if (dec_bt_pwr) {
 		h2c_parameter[0] |= BIT(1);
 		rtlpriv->btcoexist.fw_coexist_all_off = false;
 	}
 
 	RT_TRACE(rtlpriv, COMP_BT_COEXIST, DBG_TRACE,
-		"[BTCoex], decrease Bt Power : %s, write 0x21=0x%x\n",
-		(b_dec_bt_pwr ? "Yes!!":"No!!"), h2c_parameter[0]);
+		 "[BTCoex], decrease Bt Power : %s, write 0x21=0x%x\n",
+		 (dec_bt_pwr ? "Yes!!" : "No!!"), h2c_parameter[0]);
 
 	rtl8723e_fill_h2c_cmd(hw, 0x21, 1, h2c_parameter);
 }
 
-
 static void rtl8723e_dm_bt_set_fw_2_ant_hid(struct ieee80211_hw *hw,
-					bool b_enable, bool b_dac_swing_on)
+					    bool b_enable, bool b_dac_swing_on)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	u8 h2c_parameter[1] = {0};
@@ -439,16 +426,16 @@ static void rtl8723e_dm_bt_set_fw_2_ant_hid(struct ieee80211_hw *hw,
 		h2c_parameter[0] |= BIT(1); /* Dac Swing default enable */
 
 	RT_TRACE(rtlpriv, COMP_BT_COEXIST, DBG_TRACE,
-		"[BTCoex], turn 2-Ant+HID mode %s, DACSwing:%s, write 0x15=0x%x\n",
-		(b_enable ? "ON!!":"OFF!!"), (b_dac_swing_on ? "ON":"OFF"),
-		h2c_parameter[0]);
+		 "[BTCoex], turn 2-Ant+HID mode %s, DACSwing:%s, write 0x15=0x%x\n",
+		 (b_enable ? "ON!!" : "OFF!!"), (b_dac_swing_on ? "ON" : "OFF"),
+		 h2c_parameter[0]);
 
 	rtl8723e_fill_h2c_cmd(hw, 0x15, 1, h2c_parameter);
 }
 
 static void rtl8723e_dm_bt_set_fw_tdma_ctrl(struct ieee80211_hw *hw,
-				bool b_enable, u8 ant_num,
-				u8 nav_en, u8 dac_swing_en)
+					    bool b_enable, u8 ant_num,
+					    u8 nav_en, u8 dac_swing_en)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	u8 h2c_parameter[1] = {0};
@@ -511,16 +498,10 @@ static void rtl8723e_dm_bt_set_fw_tdma_ctrl(struct ieee80211_hw *hw,
 		"[BTCoex], FW2AntTDMA, write 0x14=0x%x\n",
 		h2c_parameter[0]);
 	rtl8723e_fill_h2c_cmd(hw, 0x14, 1, h2c_parameter);
-
-	if (!b_enable) {
-		/* delay_ms(2);
-		 * PlatformEFIOWrite1Byte(Adapter, 0x778, 0x1); */
-	}
 }
 
-
 static void rtl8723e_dm_bt_set_fw_ignore_wlan_act(struct ieee80211_hw *hw,
-					bool b_enable)
+						  bool b_enable)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	u8 h2c_parameter[1] = {0};
@@ -542,10 +523,9 @@ static void rtl8723e_dm_bt_set_fw_ignore_wlan_act(struct ieee80211_hw *hw,
 	rtl8723e_fill_h2c_cmd(hw, 0x25, 1, h2c_parameter);
 }
 
-
 static void rtl8723e_dm_bt_set_fw_tra_tdma_ctrl(struct ieee80211_hw *hw,
-		bool b_enable, u8 ant_num, u8 nav_en
-	)
+						bool b_enable, u8 ant_num,
+						u8 nav_en)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_hal *rtlhal = rtl_hal(rtl_priv(hw));
@@ -597,9 +577,8 @@ static void rtl8723e_dm_bt_set_fw_tra_tdma_ctrl(struct ieee80211_hw *hw,
 	rtl8723e_fill_h2c_cmd(hw, 0x33, 2, h2c_parameter);
 }
 
-
 static void rtl8723e_dm_bt_set_fw_dac_swing_level(struct ieee80211_hw *hw,
-						u8 dac_swing_lvl)
+						  u8 dac_swing_lvl)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	u8 h2c_parameter[1] = {0};
@@ -613,7 +592,8 @@ static void rtl8723e_dm_bt_set_fw_dac_swing_level(struct ieee80211_hw *hw,
 	rtl8723e_fill_h2c_cmd(hw, 0x29, 1, h2c_parameter);
 }
 
-static void rtl8723e_dm_bt_set_fw_bt_hid_info(struct ieee80211_hw *hw, bool b_enable)
+static void rtl8723e_dm_bt_set_fw_bt_hid_info(struct ieee80211_hw *hw,
+					      bool b_enable)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	u8 h2c_parameter[1] = {0};
@@ -632,7 +612,7 @@ static void rtl8723e_dm_bt_set_fw_bt_hid_info(struct ieee80211_hw *hw, bool b_en
 }
 
 static void rtl8723e_dm_bt_set_fw_bt_retry_index(struct ieee80211_hw *hw,
-						u8 retry_index)
+						 u8 retry_index)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	u8 h2c_parameter[1] = {0};
@@ -647,7 +627,7 @@ static void rtl8723e_dm_bt_set_fw_bt_retry_index(struct ieee80211_hw *hw,
 }
 
 static void rtl8723e_dm_bt_set_fw_wlan_act(struct ieee80211_hw *hw,
-					u8 wlan_act_hi, u8 wlan_act_lo)
+					   u8 wlan_act_hi, u8 wlan_act_lo)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	u8 h2c_parameter_hi[1] = {0};
@@ -670,23 +650,23 @@ static void rtl8723e_dm_bt_set_fw_wlan_act(struct ieee80211_hw *hw,
 }
 
 void rtl8723e_dm_bt_set_bt_dm(struct ieee80211_hw *hw,
-				struct btdm_8723 *p_btdm)
+			      struct btdm_8723 *btdm)
 {
 	struct rtl_priv	*rtlpriv = rtl_priv(hw);
-	struct btdm_8723 *p_btdm_8723 = &hal_coex_8723.btdm;
+	struct btdm_8723 *btdm_8723 = &hal_coex_8723.btdm;
 	u8 i;
 
 	bool fw_current_inpsmode = false;
 	bool fw_ps_awake = true;
 
 	rtlpriv->cfg->ops->get_hw_reg(hw, HW_VAR_FW_PSMODE_STATUS,
-					      (u8 *) (&fw_current_inpsmode));
+					      (u8 *)(&fw_current_inpsmode));
 	rtlpriv->cfg->ops->get_hw_reg(hw, HW_VAR_FWLPS_RF_ON,
-					      (u8 *) (&fw_ps_awake));
+					      (u8 *)(&fw_ps_awake));
 
 	/* check new setting is different with the old one, */
 	/* if all the same, don't do the setting again. */
-	if (memcmp(p_btdm_8723, p_btdm, sizeof(struct btdm_8723)) == 0) {
+	if (memcmp(btdm_8723, btdm, sizeof(struct btdm_8723)) == 0) {
 		RT_TRACE(rtlpriv, COMP_BT_COEXIST, DBG_DMESG,
 			"[BTCoex], the same coexist setting, return!!\n");
 		return;
@@ -695,106 +675,106 @@ void rtl8723e_dm_bt_set_bt_dm(struct ieee80211_hw *hw,
 			"[BTCoex], UPDATE TO NEW COEX SETTING!!\n");
 		RT_TRACE(rtlpriv, COMP_BT_COEXIST, DBG_DMESG,
 			"[BTCoex], original/new bAllOff=0x%x/ 0x%x\n",
-			p_btdm_8723->b_all_off, p_btdm->b_all_off);
+			btdm_8723->all_off, btdm->all_off);
 		RT_TRACE(rtlpriv, COMP_BT_COEXIST, DBG_DMESG,
-			"[BTCoex], original/new b_agc_table_en=0x%x/ 0x%x\n",
-			p_btdm_8723->b_agc_table_en, p_btdm->b_agc_table_en);
+			"[BTCoex], original/new agc_table_en=0x%x/ 0x%x\n",
+			btdm_8723->agc_table_en, btdm->agc_table_en);
 		RT_TRACE(rtlpriv, COMP_BT_COEXIST, DBG_DMESG,
-			 "[BTCoex], original/new b_adc_back_off_on=0x%x/ 0x%x\n",
-			 p_btdm_8723->b_adc_back_off_on,
-			 p_btdm->b_adc_back_off_on);
+			 "[BTCoex], original/new adc_back_off_on=0x%x/ 0x%x\n",
+			 btdm_8723->adc_back_off_on,
+			 btdm->adc_back_off_on);
 		RT_TRACE(rtlpriv, COMP_BT_COEXIST, DBG_DMESG,
 			 "[BTCoex], original/new b2_ant_hid_en=0x%x/ 0x%x\n",
-			 p_btdm_8723->b2_ant_hid_en, p_btdm->b2_ant_hid_en);
+			 btdm_8723->b2_ant_hid_en, btdm->b2_ant_hid_en);
 		RT_TRACE(rtlpriv, COMP_BT_COEXIST, DBG_DMESG,
 			 "[BTCoex], original/new bLowPenaltyRateAdaptive=0x%x/ 0x%x\n",
-			 p_btdm_8723->b_low_penalty_rate_adaptive,
-			 p_btdm->b_low_penalty_rate_adaptive);
+			 btdm_8723->low_penalty_rate_adaptive,
+			 btdm->low_penalty_rate_adaptive);
 		RT_TRACE(rtlpriv, COMP_BT_COEXIST, DBG_DMESG,
 			 "[BTCoex], original/new bRfRxLpfShrink=0x%x/ 0x%x\n",
-			 p_btdm_8723->b_rf_rx_lpf_shrink,
-			 p_btdm->b_rf_rx_lpf_shrink);
+			 btdm_8723->rf_rx_lpf_shrink,
+			 btdm->rf_rx_lpf_shrink);
 		RT_TRACE(rtlpriv, COMP_BT_COEXIST, DBG_DMESG,
 			 "[BTCoex], original/new bRejectAggrePkt=0x%x/ 0x%x\n",
-			 p_btdm_8723->b_reject_aggre_pkt,
-			 p_btdm->b_reject_aggre_pkt);
+			 btdm_8723->reject_aggre_pkt,
+			 btdm->reject_aggre_pkt);
 		RT_TRACE(rtlpriv, COMP_BT_COEXIST, DBG_DMESG,
-			 "[BTCoex], original/new b_tdma_on=0x%x/ 0x%x\n",
-			 p_btdm_8723->b_tdma_on, p_btdm->b_tdma_on);
+			 "[BTCoex], original/new tdma_on=0x%x/ 0x%x\n",
+			 btdm_8723->tdma_on, btdm->tdma_on);
 		RT_TRACE(rtlpriv, COMP_BT_COEXIST, DBG_DMESG,
 			 "[BTCoex], original/new tdmaAnt=0x%x/ 0x%x\n",
-			 p_btdm_8723->tdma_ant, p_btdm->tdma_ant);
+			 btdm_8723->tdma_ant, btdm->tdma_ant);
 		RT_TRACE(rtlpriv, COMP_BT_COEXIST, DBG_DMESG,
 			 "[BTCoex], original/new tdmaNav=0x%x/ 0x%x\n",
-			 p_btdm_8723->tdma_nav, p_btdm->tdma_nav);
+			 btdm_8723->tdma_nav, btdm->tdma_nav);
 		RT_TRACE(rtlpriv, COMP_BT_COEXIST, DBG_DMESG,
 			 "[BTCoex], original/new tdma_dac_swing=0x%x/ 0x%x\n",
-			 p_btdm_8723->tdma_dac_swing, p_btdm->tdma_dac_swing);
+			 btdm_8723->tdma_dac_swing, btdm->tdma_dac_swing);
 		RT_TRACE(rtlpriv, COMP_BT_COEXIST, DBG_DMESG,
 			 "[BTCoex], original/new fw_dac_swing_lvl=0x%x/ 0x%x\n",
-			 p_btdm_8723->fw_dac_swing_lvl,
-			 p_btdm->fw_dac_swing_lvl);
+			 btdm_8723->fw_dac_swing_lvl,
+			 btdm->fw_dac_swing_lvl);
 
 		RT_TRACE(rtlpriv, COMP_BT_COEXIST, DBG_DMESG,
 			 "[BTCoex], original/new bTraTdmaOn=0x%x/ 0x%x\n",
-			 p_btdm_8723->b_tra_tdma_on, p_btdm->b_tra_tdma_on);
+			 btdm_8723->tra_tdma_on, btdm->tra_tdma_on);
 		RT_TRACE(rtlpriv, COMP_BT_COEXIST, DBG_DMESG,
 			 "[BTCoex], original/new traTdmaAnt=0x%x/ 0x%x\n",
-			 p_btdm_8723->tra_tdma_ant, p_btdm->tra_tdma_ant);
+			 btdm_8723->tra_tdma_ant, btdm->tra_tdma_ant);
 		RT_TRACE(rtlpriv, COMP_BT_COEXIST, DBG_DMESG,
 			 "[BTCoex], original/new traTdmaNav=0x%x/ 0x%x\n",
-			 p_btdm_8723->tra_tdma_nav, p_btdm->tra_tdma_nav);
+			 btdm_8723->tra_tdma_nav, btdm->tra_tdma_nav);
 		RT_TRACE(rtlpriv, COMP_BT_COEXIST, DBG_DMESG,
 			 "[BTCoex], original/new bPsTdmaOn=0x%x/ 0x%x\n",
-			 p_btdm_8723->b_ps_tdma_on, p_btdm->b_ps_tdma_on);
+			 btdm_8723->ps_tdma_on, btdm->ps_tdma_on);
 		for (i = 0; i < 5; i++) {
 			RT_TRACE(rtlpriv, COMP_BT_COEXIST, DBG_DMESG,
 				 "[BTCoex], original/new psTdmaByte[i]=0x%x/ 0x%x\n",
-				 p_btdm_8723->ps_tdma_byte[i],
-				 p_btdm->ps_tdma_byte[i]);
+				 btdm_8723->ps_tdma_byte[i],
+				 btdm->ps_tdma_byte[i]);
 		}
 		RT_TRACE(rtlpriv, COMP_BT_COEXIST, DBG_DMESG,
 			"[BTCoex], original/new bIgnoreWlanAct=0x%x/ 0x%x\n",
-			p_btdm_8723->b_ignore_wlan_act,
-			p_btdm->b_ignore_wlan_act);
+			btdm_8723->ignore_wlan_act,
+			btdm->ignore_wlan_act);
 
 
 		RT_TRACE(rtlpriv, COMP_BT_COEXIST, DBG_DMESG,
 			"[BTCoex], original/new bPtaOn=0x%x/ 0x%x\n",
-			p_btdm_8723->b_pta_on, p_btdm->b_pta_on);
+			btdm_8723->pta_on, btdm->pta_on);
 		RT_TRACE(rtlpriv, COMP_BT_COEXIST, DBG_DMESG,
 			"[BTCoex], original/new val_0x6c0=0x%x/ 0x%x\n",
-			p_btdm_8723->val_0x6c0, p_btdm->val_0x6c0);
+			btdm_8723->val_0x6c0, btdm->val_0x6c0);
 		RT_TRACE(rtlpriv, COMP_BT_COEXIST, DBG_DMESG,
 			"[BTCoex], original/new val_0x6c8=0x%x/ 0x%x\n",
-			p_btdm_8723->val_0x6c8, p_btdm->val_0x6c8);
+			btdm_8723->val_0x6c8, btdm->val_0x6c8);
 		RT_TRACE(rtlpriv, COMP_BT_COEXIST, DBG_DMESG,
 			"[BTCoex], original/new val_0x6cc=0x%x/ 0x%x\n",
-			p_btdm_8723->val_0x6cc, p_btdm->val_0x6cc);
+			btdm_8723->val_0x6cc, btdm->val_0x6cc);
 		RT_TRACE(rtlpriv, COMP_BT_COEXIST, DBG_DMESG,
 			 "[BTCoex], original/new sw_dac_swing_on=0x%x/ 0x%x\n",
-			 p_btdm_8723->sw_dac_swing_on,
-			 p_btdm->sw_dac_swing_on);
+			 btdm_8723->sw_dac_swing_on,
+			 btdm->sw_dac_swing_on);
 		RT_TRACE(rtlpriv, COMP_BT_COEXIST, DBG_DMESG,
 			 "[BTCoex], original/new sw_dac_swing_lvl=0x%x/ 0x%x\n",
-			 p_btdm_8723->sw_dac_swing_lvl,
-			 p_btdm->sw_dac_swing_lvl);
+			 btdm_8723->sw_dac_swing_lvl,
+			 btdm->sw_dac_swing_lvl);
 		RT_TRACE(rtlpriv, COMP_BT_COEXIST, DBG_DMESG,
 			 "[BTCoex], original/new wlanActHi=0x%x/ 0x%x\n",
-			 p_btdm_8723->wlan_act_hi, p_btdm->wlan_act_hi);
+			 btdm_8723->wlan_act_hi, btdm->wlan_act_hi);
 		RT_TRACE(rtlpriv, COMP_BT_COEXIST, DBG_DMESG,
 			 "[BTCoex], original/new wlanActLo=0x%x/ 0x%x\n",
-			 p_btdm_8723->wlan_act_lo, p_btdm->wlan_act_lo);
+			 btdm_8723->wlan_act_lo, btdm->wlan_act_lo);
 		RT_TRACE(rtlpriv, COMP_BT_COEXIST, DBG_DMESG,
 			 "[BTCoex], original/new btRetryIndex=0x%x/ 0x%x\n",
-			 p_btdm_8723->bt_retry_index, p_btdm->bt_retry_index);
+			 btdm_8723->bt_retry_index, btdm->bt_retry_index);
 
-		memcpy(p_btdm_8723, p_btdm, sizeof(struct btdm_8723));
+		memcpy(btdm_8723, btdm, sizeof(struct btdm_8723));
 	}
-	/*
-	 * Here we only consider when Bt Operation
+	/* Here we only consider when Bt Operation
 	 * inquiry/paging/pairing is ON
-	 * we only need to turn off TDMA */
+	 * we only need to turn off TDMA
+	 */
 
 	if (rtlpriv->btcoexist.hold_for_bt_operation) {
 		RT_TRACE(rtlpriv, COMP_BT_COEXIST, DBG_TRACE,
@@ -803,189 +783,147 @@ void rtl8723e_dm_bt_set_bt_dm(struct ieee80211_hw *hw,
 		return;
 	}
 
-	if (p_btdm->b_all_off) {
+	if (btdm->all_off) {
 		RT_TRACE(rtlpriv, COMP_BT_COEXIST, DBG_TRACE,
 			"[BTCoex], disable all coexist mechanism !!\n");
 		rtl8723e_btdm_coex_all_off(hw);
 		return;
 	}
 
-	rtl8723e_dm_bt_reject_ap_aggregated_packet(hw,
-					p_btdm->b_reject_aggre_pkt);
+	rtl8723e_dm_bt_reject_ap_aggregated_packet(hw, btdm->reject_aggre_pkt);
 
-	if (p_btdm->b_low_penalty_rate_adaptive)
-		rtl8723e_dm_bt_set_sw_penalty_tx_rate_adaptive(hw,
-			BT_TX_RATE_ADAPTIVE_LOW_PENALTY);
+	if (btdm->low_penalty_rate_adaptive)
+		dm_bt_set_sw_penalty_tx_rate_adapt(hw, BT_TX_RATE_ADAPTIVE_LOW_PENALTY);
 	else
-		rtl8723e_dm_bt_set_sw_penalty_tx_rate_adaptive(hw,
-			BT_TX_RATE_ADAPTIVE_NORMAL);
+		dm_bt_set_sw_penalty_tx_rate_adapt(hw,
+						   BT_TX_RATE_ADAPTIVE_NORMAL);
 
-	if (p_btdm->b_rf_rx_lpf_shrink)
+	if (btdm->rf_rx_lpf_shrink)
 		rtl8723e_dm_bt_set_sw_rf_rx_lpf_corner(hw,
 				BT_RF_RX_LPF_CORNER_SHRINK);
 	else
 		rtl8723e_dm_bt_set_sw_rf_rx_lpf_corner(hw,
 				BT_RF_RX_LPF_CORNER_RESUME);
 
-	if (p_btdm->b_agc_table_en)
+	if (btdm->agc_table_en)
 		rtl8723e_dm_bt_agc_table(hw, BT_AGCTABLE_ON);
 	else
 		rtl8723e_dm_bt_agc_table(hw, BT_AGCTABLE_OFF);
 
-	if (p_btdm->b_adc_back_off_on)
+	if (btdm->adc_back_off_on)
 		rtl8723e_dm_bt_bb_back_off_level(hw, BT_BB_BACKOFF_ON);
 	else
 		rtl8723e_dm_bt_bb_back_off_level(hw, BT_BB_BACKOFF_OFF);
 
-	rtl8723e_dm_bt_set_fw_bt_retry_index(hw, p_btdm->bt_retry_index);
+	rtl8723e_dm_bt_set_fw_bt_retry_index(hw, btdm->bt_retry_index);
 
-	rtl8723e_dm_bt_set_fw_dac_swing_level(hw, p_btdm->fw_dac_swing_lvl);
-	rtl8723e_dm_bt_set_fw_wlan_act(hw,
-				p_btdm->wlan_act_hi, p_btdm->wlan_act_lo);
+	rtl8723e_dm_bt_set_fw_dac_swing_level(hw, btdm->fw_dac_swing_lvl);
+	rtl8723e_dm_bt_set_fw_wlan_act(hw, btdm->wlan_act_hi,
+				       btdm->wlan_act_lo);
 
-	rtl8723e_dm_bt_set_coex_table(hw, p_btdm->val_0x6c0,
-		p_btdm->val_0x6c8, p_btdm->val_0x6cc);
-	rtl8723e_dm_bt_set_hw_pta_mode(hw, p_btdm->b_pta_on);
+	rtl8723e_dm_bt_set_coex_table(hw, btdm->val_0x6c0,
+				      btdm->val_0x6c8, btdm->val_0x6cc);
+	rtl8723e_dm_bt_set_hw_pta_mode(hw, btdm->pta_on);
 
-	/*
-	 * Note: There is a constraint between TDMA and 2AntHID
+	/* Note: There is a constraint between TDMA and 2AntHID
 	 * Only one of 2AntHid and tdma can be turn on
 	 * We should turn off those mechanisms should be turned off first
 	 * and then turn on those mechanisms should be turned on.
 	*/
-#if 1
-	if (p_btdm->b2_ant_hid_en) {
+	if (btdm->b2_ant_hid_en) {
 		/* turn off tdma */
-		rtl8723e_dm_bt_set_fw_tra_tdma_ctrl(hw, p_btdm->b_tra_tdma_on,
-							p_btdm->tra_tdma_ant,
-							p_btdm->tra_tdma_nav);
-		rtl8723e_dm_bt_set_fw_tdma_ctrl(hw, false, p_btdm->tdma_ant,
-							p_btdm->tdma_nav,
-							p_btdm->tdma_dac_swing);
+		rtl8723e_dm_bt_set_fw_tra_tdma_ctrl(hw, btdm->tra_tdma_on,
+						    btdm->tra_tdma_ant,
+						    btdm->tra_tdma_nav);
+		rtl8723e_dm_bt_set_fw_tdma_ctrl(hw, false, btdm->tdma_ant,
+						btdm->tdma_nav,
+						btdm->tdma_dac_swing);
 
 		/* turn off Pstdma */
-		rtl8723e_dm_bt_set_fw_ignore_wlan_act(hw, p_btdm->b_ignore_wlan_act);
+		rtl8723e_dm_bt_set_fw_ignore_wlan_act(hw,
+						      btdm->ignore_wlan_act);
 		/* Antenna control by PTA, 0x870 = 0x300. */
 		rtl8723e_dm_bt_set_fw_3a(hw, 0x0, 0x0, 0x0, 0x8, 0x0);
 
 		/* turn on 2AntHid */
 		rtl8723e_dm_bt_set_fw_bt_hid_info(hw, true);
 		rtl8723e_dm_bt_set_fw_2_ant_hid(hw, true, true);
-	} else if (p_btdm->b_tdma_on) {
+	} else if (btdm->tdma_on) {
 		/* turn off 2AntHid */
 		rtl8723e_dm_bt_set_fw_bt_hid_info(hw, false);
 		rtl8723e_dm_bt_set_fw_2_ant_hid(hw, false, false);
 
 		/* turn off pstdma */
 		rtl8723e_dm_bt_set_fw_ignore_wlan_act(hw,
-						p_btdm->b_ignore_wlan_act);
+						      btdm->ignore_wlan_act);
 		/* Antenna control by PTA, 0x870 = 0x300. */
 		rtl8723e_dm_bt_set_fw_3a(hw, 0x0, 0x0, 0x0, 0x8, 0x0);
 
 		/* turn on tdma */
-		rtl8723e_dm_bt_set_fw_tra_tdma_ctrl(hw, p_btdm->b_tra_tdma_on,
-							p_btdm->tra_tdma_ant,
-							p_btdm->tra_tdma_nav);
-		rtl8723e_dm_bt_set_fw_tdma_ctrl(hw, true, p_btdm->tdma_ant,
-							p_btdm->tdma_nav,
-							p_btdm->tdma_dac_swing);
-	} else if (p_btdm->b_ps_tdma_on) {
+		rtl8723e_dm_bt_set_fw_tra_tdma_ctrl(hw, btdm->tra_tdma_on,
+						    btdm->tra_tdma_ant,
+						    btdm->tra_tdma_nav);
+		rtl8723e_dm_bt_set_fw_tdma_ctrl(hw, true, btdm->tdma_ant,
+						btdm->tdma_nav,
+						btdm->tdma_dac_swing);
+	} else if (btdm->ps_tdma_on) {
 		/* turn off 2AntHid */
 		rtl8723e_dm_bt_set_fw_bt_hid_info(hw, false);
 		rtl8723e_dm_bt_set_fw_2_ant_hid(hw, false, false);
 
 		/* turn off tdma */
-		rtl8723e_dm_bt_set_fw_tra_tdma_ctrl(hw, p_btdm->b_tra_tdma_on,
-							p_btdm->tra_tdma_ant,
-							p_btdm->tra_tdma_nav);
-		rtl8723e_dm_bt_set_fw_tdma_ctrl(hw, false, p_btdm->tdma_ant,
-							p_btdm->tdma_nav,
-							p_btdm->tdma_dac_swing);
+		rtl8723e_dm_bt_set_fw_tra_tdma_ctrl(hw, btdm->tra_tdma_on,
+						    btdm->tra_tdma_ant,
+						    btdm->tra_tdma_nav);
+		rtl8723e_dm_bt_set_fw_tdma_ctrl(hw, false, btdm->tdma_ant,
+						btdm->tdma_nav,
+						btdm->tdma_dac_swing);
 
 		/* turn on pstdma */
 		rtl8723e_dm_bt_set_fw_ignore_wlan_act(hw,
-					p_btdm->b_ignore_wlan_act);
-		rtl8723e_dm_bt_set_fw_3a(hw,
-			p_btdm->ps_tdma_byte[0],
-			p_btdm->ps_tdma_byte[1],
-			p_btdm->ps_tdma_byte[2],
-			p_btdm->ps_tdma_byte[3],
-			p_btdm->ps_tdma_byte[4]);
+						      btdm->ignore_wlan_act);
+		rtl8723e_dm_bt_set_fw_3a(hw, btdm->ps_tdma_byte[0],
+					 btdm->ps_tdma_byte[1],
+					 btdm->ps_tdma_byte[2],
+					 btdm->ps_tdma_byte[3],
+					 btdm->ps_tdma_byte[4]);
 	} else {
 		/* turn off 2AntHid */
 		rtl8723e_dm_bt_set_fw_bt_hid_info(hw, false);
 		rtl8723e_dm_bt_set_fw_2_ant_hid(hw, false, false);
 
 		/* turn off tdma */
-		rtl8723e_dm_bt_set_fw_tra_tdma_ctrl(hw, p_btdm->b_tra_tdma_on,
-							p_btdm->tra_tdma_ant,
-							p_btdm->tra_tdma_nav);
-		rtl8723e_dm_bt_set_fw_tdma_ctrl(hw, false, p_btdm->tdma_ant,
-							p_btdm->tdma_nav,
-							p_btdm->tdma_dac_swing);
+		rtl8723e_dm_bt_set_fw_tra_tdma_ctrl(hw, btdm->tra_tdma_on,
+						    btdm->tra_tdma_ant,
+						    btdm->tra_tdma_nav);
+		rtl8723e_dm_bt_set_fw_tdma_ctrl(hw, false, btdm->tdma_ant,
+						btdm->tdma_nav,
+						btdm->tdma_dac_swing);
 
 		/* turn off pstdma */
 		rtl8723e_dm_bt_set_fw_ignore_wlan_act(hw,
-						p_btdm->b_ignore_wlan_act);
+						btdm->ignore_wlan_act);
 		/* Antenna control by PTA, 0x870 = 0x300. */
 		rtl8723e_dm_bt_set_fw_3a(hw, 0x0, 0x0, 0x0, 0x8, 0x0);
 	}
-#else
-	if (p_btdm->b_tdma_on) {
-		if (!p_btdm->b_ps_tdma_on) {
-			rtl8723e_dm_bt_set_fw_3a(hw, 0x0, 0x0, 0x0, 0x8, 0x0);
 
-		/* Turn off 2AntHID first then turn tdma ON */
-		rtl8723e_dm_bt_set_fw_bt_hid_info(hw, false);
-		rtl8723e_dm_bt_set_fw_2_ant_hid(hw, false, false);
-		rtl8723e_dm_bt_set_fw_tra_tdma_ctrl(hw, p_btdm->b_tra_tdma_on,
-							p_btdm->tra_tdma_ant,
-							p_btdm->tra_tdma_nav);
-		rtl8723e_dm_bt_set_fw_tdma_ctrl(hw, true,
-			p_btdm->tdma_ant, p_btdm->tdma_nav,
-			p_btdm->tdma_dac_swing);
-	} else {
-		/* Turn off tdma first then turn 2AntHID ON if need */
-		rtl8723e_dm_bt_set_fw_tra_tdma_ctrl(hw, p_btdm->b_tra_tdma_on,
-							p_btdm->tra_tdma_ant,
-							p_btdm->tra_tdma_nav);
-		rtl8723e_dm_bt_set_fw_tdma_ctrl(hw, false, p_btdm->tdma_ant,
-			p_btdm->tdma_nav, p_btdm->tdma_dac_swing);
-		if (p_btdm->b2_ant_hid_en) {
-			rtl8723e_dm_bt_set_fw_bt_hid_info(hw, true);
-			rtl8723e_dm_bt_set_fw_2_ant_hid(hw, true, true);
-		} else {
-			rtl8723e_dm_bt_set_fw_bt_hid_info(hw, false);
-			rtl8723e_dm_bt_set_fw_2_ant_hid(hw, false, false);
-		}
-		if (p_btdm->b_ps_tdma_on) {
-			rtl8723e_dm_bt_set_fw_3a(hw, p_btdm->ps_tdma_byte[0],
-							p_btdm->ps_tdma_byte[1],
-				p_btdm->ps_tdma_byte[2], p_btdm->ps_tdma_byte[3],
-							p_btdm->ps_tdma_byte[4]);
-		} else {
-			rtl8723e_dm_bt_set_fw_3a(hw, 0x0, 0x0, 0x0, 0x8, 0x0);
-		}
-	}
-#endif
-
-	/*
-	 * Note:
+	/* Note:
 	 * We should add delay for making sure
-		sw DacSwing can be set sucessfully.
+	 *	sw DacSwing can be set sucessfully.
 	 * because of that rtl8723e_dm_bt_set_fw_2_ant_hid()
-		and rtl8723e_dm_bt_set_fw_tdma_ctrl()
+	 *	and rtl8723e_dm_bt_set_fw_tdma_ctrl()
 	 * will overwrite the reg 0x880.
 	*/
 	mdelay(30);
-	rtl8723e_dm_bt_set_sw_full_time_dac_swing(hw,
-		p_btdm->sw_dac_swing_on, p_btdm->sw_dac_swing_lvl);
-	rtl8723e_dm_bt_set_fw_dec_bt_pwr(hw, p_btdm->b_dec_bt_pwr);
+	rtl8723e_dm_bt_set_sw_full_time_dac_swing(hw, btdm->sw_dac_swing_on,
+						  btdm->sw_dac_swing_lvl);
+	rtl8723e_dm_bt_set_fw_dec_bt_pwr(hw, btdm->dec_bt_pwr);
 }
 
 /* ============================================================ */
 /* extern function start with BTDM_ */
-/* ============================================================ */
+/* ============================================================i
+ */
 static u32 rtl8723e_dm_bt_tx_rx_couter_h(struct ieee80211_hw *hw)
 {
 	u32	counters = 0;
@@ -1013,60 +951,57 @@ static u8 rtl8723e_dm_bt_bt_tx_rx_counter_level(struct ieee80211_hw *hw)
 	bt_tx_rx_cnt = rtl8723e_dm_bt_tx_rx_couter_h(hw)
 				+ rtl8723e_dm_bt_tx_rx_couter_l(hw);
 	RT_TRACE(rtlpriv, COMP_BT_COEXIST, DBG_DMESG,
-		"[BTCoex], BT TxRx Counters = %d\n", bt_tx_rx_cnt);
+		 "[BTCoex], BT TxRx Counters = %d\n", bt_tx_rx_cnt);
 
-	rtlpriv->btcoexist.current_state_h &= ~
+	rtlpriv->btcoexist.cstate_h &= ~
 		 (BT_COEX_STATE_BT_CNT_LEVEL_0 | BT_COEX_STATE_BT_CNT_LEVEL_1|
 		  BT_COEX_STATE_BT_CNT_LEVEL_2);
 
 	if (bt_tx_rx_cnt >= BT_TXRX_CNT_THRES_3) {
 		RT_TRACE(rtlpriv, COMP_BT_COEXIST, DBG_DMESG,
-			"[BTCoex], BT TxRx Counters at level 3\n");
+			 "[BTCoex], BT TxRx Counters at level 3\n");
 		bt_tx_rx_cnt_lvl = BT_TXRX_CNT_LEVEL_3;
-		rtlpriv->btcoexist.current_state_h |=
+		rtlpriv->btcoexist.cstate_h |=
 			BT_COEX_STATE_BT_CNT_LEVEL_3;
 	} else if (bt_tx_rx_cnt >= BT_TXRX_CNT_THRES_2) {
 		RT_TRACE(rtlpriv, COMP_BT_COEXIST, DBG_DMESG,
-			"[BTCoex], BT TxRx Counters at level 2\n");
+			 "[BTCoex], BT TxRx Counters at level 2\n");
 		bt_tx_rx_cnt_lvl = BT_TXRX_CNT_LEVEL_2;
-		rtlpriv->btcoexist.current_state_h |=
+		rtlpriv->btcoexist.cstate_h |=
 			BT_COEX_STATE_BT_CNT_LEVEL_2;
 	} else if (bt_tx_rx_cnt >= BT_TXRX_CNT_THRES_1) {
 		RT_TRACE(rtlpriv, COMP_BT_COEXIST, DBG_DMESG,
-			"[BTCoex], BT TxRx Counters at level 1\n");
+			 "[BTCoex], BT TxRx Counters at level 1\n");
 		bt_tx_rx_cnt_lvl = BT_TXRX_CNT_LEVEL_1;
-		rtlpriv->btcoexist.current_state_h  |=
+		rtlpriv->btcoexist.cstate_h  |=
 			BT_COEX_STATE_BT_CNT_LEVEL_1;
 	} else {
 		RT_TRACE(rtlpriv, COMP_BT_COEXIST, DBG_DMESG,
-			"[BTCoex], BT TxRx Counters at level 0\n");
+			 "[BTCoex], BT TxRx Counters at level 0\n");
 		bt_tx_rx_cnt_lvl = BT_TXRX_CNT_LEVEL_0;
-		rtlpriv->btcoexist.current_state_h |=
+		rtlpriv->btcoexist.cstate_h |=
 			BT_COEX_STATE_BT_CNT_LEVEL_0;
 	}
 	return bt_tx_rx_cnt_lvl;
 }
-
 
 static void rtl8723e_dm_bt_2_ant_hid_sco_esco(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_phy *rtlphy = &(rtlpriv->phy);
 	struct btdm_8723 btdm8723;
-
 	u8 bt_rssi_state, bt_rssi_state1;
 	u8	bt_tx_rx_cnt_lvl = 0;
 
 	rtl8723e_dm_bt_btdm_structure_reload(hw, &btdm8723);
 
-
-	btdm8723.b_rf_rx_lpf_shrink = true;
-	btdm8723.b_low_penalty_rate_adaptive = true;
-	btdm8723.b_reject_aggre_pkt = false;
+	btdm8723.rf_rx_lpf_shrink = true;
+	btdm8723.low_penalty_rate_adaptive = true;
+	btdm8723.reject_aggre_pkt = false;
 
 	bt_tx_rx_cnt_lvl = rtl8723e_dm_bt_bt_tx_rx_counter_level(hw);
 	RT_TRACE(rtlpriv, COMP_BT_COEXIST, DBG_DMESG,
-		"[BTCoex], BT TxRx Counters = %d\n", bt_tx_rx_cnt_lvl);
+		 "[BTCoex], BT TxRx Counters = %d\n", bt_tx_rx_cnt_lvl);
 
 	if (rtlphy->current_chan_bw == HT_CHANNEL_WIDTH_20_40) {
 		RT_TRACE(rtlpriv, COMP_BT_COEXIST, DBG_DMESG, "HT40\n");
@@ -1076,15 +1011,15 @@ static void rtl8723e_dm_bt_2_ant_hid_sco_esco(struct ieee80211_hw *hw)
 		btdm8723.val_0x6cc = 0x3;
 
 		/* sw mechanism */
-		btdm8723.b_agc_table_en = false;
-		btdm8723.b_adc_back_off_on = false;
+		btdm8723.agc_table_en = false;
+		btdm8723.adc_back_off_on = false;
 		btdm8723.sw_dac_swing_on = false;
 
 		/* fw mechanism */
-		btdm8723.b_ps_tdma_on = true;
+		btdm8723.ps_tdma_on = true;
 		if (bt_tx_rx_cnt_lvl == BT_TXRX_CNT_LEVEL_2) {
 			RT_TRACE(rtlpriv, COMP_BT_COEXIST, DBG_DMESG,
-			"[BTCoex], BT TxRx Counters >= 1400\n");
+				 "[BTCoex], BT TxRx Counters >= 1400\n");
 			btdm8723.ps_tdma_byte[0] = 0xa3;
 			btdm8723.ps_tdma_byte[1] = 0x5;
 			btdm8723.ps_tdma_byte[2] = 0x5;
@@ -1092,7 +1027,7 @@ static void rtl8723e_dm_bt_2_ant_hid_sco_esco(struct ieee80211_hw *hw)
 			btdm8723.ps_tdma_byte[4] = 0x80;
 		} else if (bt_tx_rx_cnt_lvl == BT_TXRX_CNT_LEVEL_1) {
 			RT_TRACE(rtlpriv, COMP_BT_COEXIST, DBG_DMESG,
-			"[BTCoex], BT TxRx Counters >= 1200 && < 1400\n");
+				 "[BTCoex], BT TxRx Counters >= 1200 && < 1400\n");
 			btdm8723.ps_tdma_byte[0] = 0xa3;
 			btdm8723.ps_tdma_byte[1] = 0xa;
 			btdm8723.ps_tdma_byte[2] = 0xa;
@@ -1100,7 +1035,7 @@ static void rtl8723e_dm_bt_2_ant_hid_sco_esco(struct ieee80211_hw *hw)
 			btdm8723.ps_tdma_byte[4] = 0x80;
 		} else {
 			RT_TRACE(rtlpriv, COMP_BT_COEXIST, DBG_DMESG,
-			"[BTCoex], BT TxRx Counters < 1200\n");
+				 "[BTCoex], BT TxRx Counters < 1200\n");
 			btdm8723.ps_tdma_byte[0] = 0xa3;
 			btdm8723.ps_tdma_byte[1] = 0xf;
 			btdm8723.ps_tdma_byte[2] = 0xf;
@@ -1108,11 +1043,12 @@ static void rtl8723e_dm_bt_2_ant_hid_sco_esco(struct ieee80211_hw *hw)
 			btdm8723.ps_tdma_byte[4] = 0x80;
 		}
 	} else {
-		RT_TRACE(rtlpriv, COMP_BT_COEXIST, DBG_DMESG, "HT20 or Legacy\n");
-		bt_rssi_state = rtl8723e_dm_bt_check_coex_rssi_state(hw,
-								2, 47, 0);
-		bt_rssi_state1 = rtl8723e_dm_bt_check_coex_rssi_state1(hw,
-								2, 27, 0);
+		RT_TRACE(rtlpriv, COMP_BT_COEXIST, DBG_DMESG,
+			 "HT20 or Legacy\n");
+		bt_rssi_state =
+		  rtl8723e_dm_bt_check_coex_rssi_state(hw, 2, 47, 0);
+		bt_rssi_state1 =
+		  rtl8723e_dm_bt_check_coex_rssi_state1(hw, 2, 27, 0);
 
 		/* coex table */
 		btdm8723.val_0x6c0 = 0x55555555;
@@ -1124,23 +1060,23 @@ static void rtl8723e_dm_bt_2_ant_hid_sco_esco(struct ieee80211_hw *hw)
 			(bt_rssi_state == BT_RSSI_STATE_STAY_HIGH)) {
 			RT_TRACE(rtlpriv, COMP_BT_COEXIST, DBG_DMESG,
 					"Wifi rssi high\n");
-			btdm8723.b_agc_table_en = true;
-			btdm8723.b_adc_back_off_on = true;
+			btdm8723.agc_table_en = true;
+			btdm8723.adc_back_off_on = true;
 			btdm8723.sw_dac_swing_on = false;
 		} else {
 			RT_TRACE(rtlpriv, COMP_BT_COEXIST, DBG_DMESG,
 					"Wifi rssi low\n");
-			btdm8723.b_agc_table_en = false;
-			btdm8723.b_adc_back_off_on = false;
+			btdm8723.agc_table_en = false;
+			btdm8723.adc_back_off_on = false;
 			btdm8723.sw_dac_swing_on = false;
 		}
 
 		/* fw mechanism */
-		btdm8723.b_ps_tdma_on = true;
+		btdm8723.ps_tdma_on = true;
 		if ((bt_rssi_state1 == BT_RSSI_STATE_HIGH) ||
 			(bt_rssi_state1 == BT_RSSI_STATE_STAY_HIGH)) {
-			RT_TRACE(rtlpriv, COMP_BT_COEXIST,
-				DBG_DMESG, "Wifi rssi-1 high\n");
+			RT_TRACE(rtlpriv, COMP_BT_COEXIST, DBG_DMESG,
+				 "Wifi rssi-1 high\n");
 			/* only rssi high we need to do this, */
 			/* when rssi low, the value will modified by fw */
 			rtl_write_byte(rtlpriv, 0x883, 0x40);
@@ -1201,8 +1137,7 @@ static void rtl8723e_dm_bt_2_ant_hid_sco_esco(struct ieee80211_hw *hw)
 	}
 
 	if (rtl8723e_dm_bt_need_to_dec_bt_pwr(hw))
-		btdm8723.b_dec_bt_pwr = true;
-
+		btdm8723.dec_bt_pwr = true;
 
 	/* Always ignore WlanAct if bHid|bSCOBusy|bSCOeSCO */
 
@@ -1210,10 +1145,10 @@ static void rtl8723e_dm_bt_2_ant_hid_sco_esco(struct ieee80211_hw *hw)
 		 "[BTCoex], BT btInqPageStartTime = 0x%x, btTxRxCntLvl = %d\n",
 		 hal_coex_8723.bt_inq_page_start_time, bt_tx_rx_cnt_lvl);
 	if ((hal_coex_8723.bt_inq_page_start_time) ||
-		(BT_TXRX_CNT_LEVEL_3 == bt_tx_rx_cnt_lvl)) {
+	    (BT_TXRX_CNT_LEVEL_3 == bt_tx_rx_cnt_lvl)) {
 		RT_TRACE(rtlpriv, COMP_BT_COEXIST, DBG_DMESG,
 			 "[BTCoex], Set BT inquiry / page scan 0x3a setting\n");
-		btdm8723.b_ps_tdma_on = true;
+		btdm8723.ps_tdma_on = true;
 		btdm8723.ps_tdma_byte[0] = 0xa3;
 		btdm8723.ps_tdma_byte[1] = 0x5;
 		btdm8723.ps_tdma_byte[2] = 0x5;
@@ -1237,9 +1172,9 @@ static void rtl8723e_dm_bt_2_ant_ftp_a2dp(struct ieee80211_hw *hw)
 
 	rtl8723e_dm_bt_btdm_structure_reload(hw, &btdm8723);
 
-	btdm8723.b_rf_rx_lpf_shrink = true;
-	btdm8723.b_low_penalty_rate_adaptive = true;
-	btdm8723.b_reject_aggre_pkt = false;
+	btdm8723.rf_rx_lpf_shrink = true;
+	btdm8723.low_penalty_rate_adaptive = true;
+	btdm8723.reject_aggre_pkt = false;
 
 	bt_tx_rx_cnt_lvl = rtl8723e_dm_bt_bt_tx_rx_counter_level(hw);
 
@@ -1248,8 +1183,8 @@ static void rtl8723e_dm_bt_2_ant_ftp_a2dp(struct ieee80211_hw *hw)
 
 	if (rtlphy->current_chan_bw == HT_CHANNEL_WIDTH_20_40) {
 		RT_TRACE(rtlpriv, COMP_BT_COEXIST, DBG_DMESG, "HT40\n");
-		bt_rssi_state = rtl8723e_dm_bt_check_coex_rssi_state(hw,
-								2, 37, 0);
+		bt_rssi_state =
+		  rtl8723e_dm_bt_check_coex_rssi_state(hw, 2, 37, 0);
 
 		/* coex table */
 		btdm8723.val_0x6c0 = 0x55555555;
@@ -1257,12 +1192,12 @@ static void rtl8723e_dm_bt_2_ant_ftp_a2dp(struct ieee80211_hw *hw)
 		btdm8723.val_0x6cc = 0x3;
 
 		/* sw mechanism */
-		btdm8723.b_agc_table_en = false;
-		btdm8723.b_adc_back_off_on = true;
+		btdm8723.agc_table_en = false;
+		btdm8723.adc_back_off_on = true;
 		btdm8723.sw_dac_swing_on = false;
 
 		/* fw mechanism */
-		btdm8723.b_ps_tdma_on = true;
+		btdm8723.ps_tdma_on = true;
 		if ((bt_rssi_state == BT_RSSI_STATE_HIGH) ||
 			(bt_rssi_state == BT_RSSI_STATE_STAY_HIGH)) {
 			RT_TRACE(rtlpriv, COMP_BT_COEXIST, DBG_DMESG,
@@ -1325,10 +1260,10 @@ static void rtl8723e_dm_bt_2_ant_ftp_a2dp(struct ieee80211_hw *hw)
 	} else {
 		RT_TRACE(rtlpriv, COMP_BT_COEXIST, DBG_DMESG,
 			 "HT20 or Legacy\n");
-		bt_rssi_state = rtl8723e_dm_bt_check_coex_rssi_state(hw,
-								2, 47, 0);
-		bt_rssi_state1 = rtl8723e_dm_bt_check_coex_rssi_state1(hw,
-								2, 27, 0);
+		bt_rssi_state =
+		  rtl8723e_dm_bt_check_coex_rssi_state(hw, 2, 47, 0);
+		bt_rssi_state1 =
+		  rtl8723e_dm_bt_check_coex_rssi_state1(hw, 2, 27, 0);
 
 		/* coex table */
 		btdm8723.val_0x6c0 = 0x55555555;
@@ -1340,19 +1275,19 @@ static void rtl8723e_dm_bt_2_ant_ftp_a2dp(struct ieee80211_hw *hw)
 			(bt_rssi_state == BT_RSSI_STATE_STAY_HIGH)) {
 			RT_TRACE(rtlpriv, COMP_BT_COEXIST, DBG_DMESG,
 				 "Wifi rssi high\n");
-			btdm8723.b_agc_table_en = true;
-			btdm8723.b_adc_back_off_on = true;
+			btdm8723.agc_table_en = true;
+			btdm8723.adc_back_off_on = true;
 			btdm8723.sw_dac_swing_on = false;
 		} else {
 			RT_TRACE(rtlpriv, COMP_BT_COEXIST, DBG_DMESG,
 				 "Wifi rssi low\n");
-			btdm8723.b_agc_table_en = false;
-			btdm8723.b_adc_back_off_on = false;
+			btdm8723.agc_table_en = false;
+			btdm8723.adc_back_off_on = false;
 			btdm8723.sw_dac_swing_on = false;
 		}
 
 		/* fw mechanism */
-		btdm8723.b_ps_tdma_on = true;
+		btdm8723.ps_tdma_on = true;
 		if ((bt_rssi_state1 == BT_RSSI_STATE_HIGH) ||
 			(bt_rssi_state1 == BT_RSSI_STATE_STAY_HIGH)) {
 			RT_TRACE(rtlpriv, COMP_BT_COEXIST, DBG_DMESG,
@@ -1417,17 +1352,17 @@ static void rtl8723e_dm_bt_2_ant_ftp_a2dp(struct ieee80211_hw *hw)
 	}
 
 	if (rtl8723e_dm_bt_need_to_dec_bt_pwr(hw))
-		btdm8723.b_dec_bt_pwr = true;
+		btdm8723.dec_bt_pwr = true;
 
 	RT_TRACE(rtlpriv, COMP_BT_COEXIST, DBG_DMESG,
 		 "[BTCoex], BT btInqPageStartTime = 0x%x, btTxRxCntLvl = %d\n",
 		 hal_coex_8723.bt_inq_page_start_time, bt_tx_rx_cnt_lvl);
 
 	if ((hal_coex_8723.bt_inq_page_start_time) ||
-		(BT_TXRX_CNT_LEVEL_3 == bt_tx_rx_cnt_lvl)) {
+	    (BT_TXRX_CNT_LEVEL_3 == bt_tx_rx_cnt_lvl)) {
 		RT_TRACE(rtlpriv, COMP_BT_COEXIST, DBG_DMESG,
 			 "[BTCoex], Set BT inquiry / page scan 0x3a setting\n");
-		btdm8723.b_ps_tdma_on = true;
+		btdm8723.ps_tdma_on = true;
 		btdm8723.ps_tdma_byte[0] = 0xa3;
 		btdm8723.ps_tdma_byte[1] = 0x5;
 		btdm8723.ps_tdma_byte[2] = 0x5;
@@ -1446,10 +1381,10 @@ static void rtl8723e_dm_bt_inq_page_monitor(struct ieee80211_hw *hw)
 	u32 cur_time;
 
 	cur_time = jiffies;
-	if (hal_coex_8723.b_c2h_bt_inquiry_page) {
+	if (hal_coex_8723.c2h_bt_inquiry_page) {
 		/* bt inquiry or page is started. */
 		if (hal_coex_8723.bt_inq_page_start_time == 0) {
-			rtlpriv->btcoexist.current_state  |=
+			rtlpriv->btcoexist.cstate  |=
 			BT_COEX_STATE_BT_INQ_PAGE;
 			hal_coex_8723.bt_inq_page_start_time = cur_time;
 			RT_TRACE(rtlpriv, COMP_BT_COEXIST, DBG_DMESG,
@@ -1466,9 +1401,9 @@ static void rtl8723e_dm_bt_inq_page_monitor(struct ieee80211_hw *hw)
 			(long)hal_coex_8723.bt_inq_page_start_time) / HZ)
 			>= 10) {
 			RT_TRACE(rtlpriv, COMP_BT_COEXIST, DBG_DMESG,
-				"[BTCoex], BT Inquiry/page >= 10sec!!!");
+				"[BTCoex], BT Inquiry/page >= 10sec!!!\n");
 			hal_coex_8723.bt_inq_page_start_time = 0;
-			rtlpriv->btcoexist.current_state &=
+			rtlpriv->btcoexist.cstate &=
 				~BT_COEX_STATE_BT_INQ_PAGE;
 		}
 	}
@@ -1478,11 +1413,11 @@ static void rtl8723e_dm_bt_reset_action_profile_state(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 
-	rtlpriv->btcoexist.current_state &= ~
+	rtlpriv->btcoexist.cstate &= ~
 		(BT_COEX_STATE_PROFILE_HID | BT_COEX_STATE_PROFILE_A2DP|
 		BT_COEX_STATE_PROFILE_PAN | BT_COEX_STATE_PROFILE_SCO);
 
-	rtlpriv->btcoexist.current_state &= ~
+	rtlpriv->btcoexist.cstate &= ~
 		(BT_COEX_STATE_BTINFO_COMMON |
 		BT_COEX_STATE_BTINFO_B_HID_SCOESCO|
 		BT_COEX_STATE_BTINFO_B_FTP_A2DP);
@@ -1498,7 +1433,7 @@ static void _rtl8723e_dm_bt_coexist_2_ant(struct ieee80211_hw *hw)
 
 	_rtl8723_dm_bt_check_wifi_state(hw);
 
-	if (hal_coex_8723.b_c2h_bt_info_req_sent) {
+	if (hal_coex_8723.c2h_bt_info_req_sent) {
 			RT_TRACE(rtlpriv, COMP_BT_COEXIST, DBG_TRACE,
 				"[BTCoex] c2h for bt_info not rcvd yet!!\n");
 	}
@@ -1520,7 +1455,7 @@ static void _rtl8723e_dm_bt_coexist_2_ant(struct ieee80211_hw *hw)
 		if ((bt_info_original & BTINFO_B_HID) ||
 			(bt_info_original & BTINFO_B_SCO_BUSY) ||
 			(bt_info_original & BTINFO_B_SCO_ESCO)) {
-				rtlpriv->btcoexist.current_state |=
+				rtlpriv->btcoexist.cstate |=
 					BT_COEX_STATE_BTINFO_B_HID_SCOESCO;
 				rtlpriv->btcoexist.bt_profile_case =
 					BT_COEX_MECH_HID_SCO_ESCO;
@@ -1531,17 +1466,17 @@ static void _rtl8723e_dm_bt_coexist_2_ant(struct ieee80211_hw *hw)
 				rtl8723e_dm_bt_2_ant_hid_sco_esco(hw);
 		} else if ((bt_info_original & BTINFO_B_FTP) ||
 				(bt_info_original & BTINFO_B_A2DP)) {
-				rtlpriv->btcoexist.current_state |=
+				rtlpriv->btcoexist.cstate |=
 					BT_COEX_STATE_BTINFO_B_FTP_A2DP;
 				rtlpriv->btcoexist.bt_profile_case =
 					BT_COEX_MECH_FTP_A2DP;
 				rtlpriv->btcoexist.bt_profile_action =
 					BT_COEX_MECH_FTP_A2DP;
 				RT_TRACE(rtlpriv, COMP_BT_COEXIST, DBG_DMESG,
-					"BTInfo: bFTP|bA2DP\n");
+					 "BTInfo: bFTP|bA2DP\n");
 				rtl8723e_dm_bt_2_ant_ftp_a2dp(hw);
 		} else {
-				rtlpriv->btcoexist.current_state |=
+				rtlpriv->btcoexist.cstate |=
 					BT_COEX_STATE_BTINFO_B_HID_SCOESCO;
 				rtlpriv->btcoexist.bt_profile_case =
 					BT_COEX_MECH_NONE;
@@ -1570,10 +1505,10 @@ void rtl8723e_dm_bt_fw_coex_all_off_8723a(struct ieee80211_hw *hw)
 	rtl8723e_dm_bt_set_fw_ignore_wlan_act(hw, false);
 	rtl8723e_dm_bt_set_fw_3a(hw, 0x0, 0x0, 0x0, 0x8, 0x0);
 	rtl8723e_dm_bt_set_fw_2_ant_hid(hw, false, false);
-	rtl8723e_dm_bt_set_fw_tra_tdma_ctrl(hw,
-		false, TDMA_2ANT, TDMA_NAV_OFF);
-	rtl8723e_dm_bt_set_fw_tdma_ctrl(hw, false, TDMA_2ANT,
-				TDMA_NAV_OFF, TDMA_DAC_SWING_OFF);
+	rtl8723e_dm_bt_set_fw_tra_tdma_ctrl(hw, false, TDMA_2ANT,
+					    TDMA_NAV_OFF);
+	rtl8723e_dm_bt_set_fw_tdma_ctrl(hw, false, TDMA_2ANT, TDMA_NAV_OFF,
+					TDMA_DAC_SWING_OFF);
 	rtl8723e_dm_bt_set_fw_dac_swing_level(hw, 0);
 	rtl8723e_dm_bt_set_fw_bt_hid_info(hw, false);
 	rtl8723e_dm_bt_set_fw_bt_retry_index(hw, 2);
@@ -1587,8 +1522,7 @@ void rtl8723e_dm_bt_sw_coex_all_off_8723a(struct ieee80211_hw *hw)
 	rtl8723e_dm_bt_bb_back_off_level(hw, BT_BB_BACKOFF_OFF);
 	rtl8723e_dm_bt_reject_ap_aggregated_packet(hw, false);
 
-	rtl8723e_dm_bt_set_sw_penalty_tx_rate_adaptive(hw,
-							BT_TX_RATE_ADAPTIVE_NORMAL);
+	dm_bt_set_sw_penalty_tx_rate_adapt(hw, BT_TX_RATE_ADAPTIVE_NORMAL);
 	rtl8723e_dm_bt_set_sw_rf_rx_lpf_corner(hw, BT_RF_RX_LPF_CORNER_RESUME);
 	rtl8723e_dm_bt_set_sw_full_time_dac_swing(hw, false, 0xc0);
 }
@@ -1598,7 +1532,7 @@ static void rtl8723e_dm_bt_query_bt_information(struct ieee80211_hw *hw)
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	u8 h2c_parameter[1] = {0};
 
-	hal_coex_8723.b_c2h_bt_info_req_sent = true;
+	hal_coex_8723.c2h_bt_info_req_sent = true;
 
 	h2c_parameter[0] |=  BIT(0);
 
@@ -1653,47 +1587,47 @@ static void rtl8723e_dm_bt_bt_enable_disable_check(struct ieee80211_hw *hw)
 	bool bt_alife = true;
 
 	if (hal_coex_8723.high_priority_tx == 0 &&
-		hal_coex_8723.high_priority_rx == 0 &&
-		hal_coex_8723.low_priority_tx == 0 &&
-		hal_coex_8723.low_priority_rx == 0) {
+	    hal_coex_8723.high_priority_rx == 0 &&
+	    hal_coex_8723.low_priority_tx == 0 &&
+	    hal_coex_8723.low_priority_rx == 0) {
 		bt_alife = false;
 	}
 	if (hal_coex_8723.high_priority_tx == 0xeaea &&
-		hal_coex_8723.high_priority_rx == 0xeaea &&
-		hal_coex_8723.low_priority_tx == 0xeaea &&
-		hal_coex_8723.low_priority_rx == 0xeaea) {
+	    hal_coex_8723.high_priority_rx == 0xeaea &&
+	    hal_coex_8723.low_priority_tx == 0xeaea &&
+	    hal_coex_8723.low_priority_rx == 0xeaea) {
 		bt_alife = false;
 	}
 	if (hal_coex_8723.high_priority_tx == 0xffff &&
-		hal_coex_8723.high_priority_rx == 0xffff &&
-		hal_coex_8723.low_priority_tx == 0xffff &&
-		hal_coex_8723.low_priority_rx == 0xffff) {
+	    hal_coex_8723.high_priority_rx == 0xffff &&
+	    hal_coex_8723.low_priority_tx == 0xffff &&
+	    hal_coex_8723.low_priority_rx == 0xffff) {
 		bt_alife = false;
 	}
 	if (bt_alife) {
 		rtlpriv->btcoexist.bt_active_zero_cnt = 0;
 		rtlpriv->btcoexist.cur_bt_disabled = false;
-		RT_TRACE(rtlpriv, COMP_BT_COEXIST,
-			DBG_TRACE, "8723A BT is enabled !!\n");
+		RT_TRACE(rtlpriv, COMP_BT_COEXIST, DBG_TRACE,
+			 "8723A BT is enabled !!\n");
 	} else {
 		rtlpriv->btcoexist.bt_active_zero_cnt++;
 		RT_TRACE(rtlpriv, COMP_BT_COEXIST, DBG_TRACE,
-			"8723A bt all counters=0, %d times!!\n",
-			rtlpriv->btcoexist.bt_active_zero_cnt);
+			 "8723A bt all counters=0, %d times!!\n",
+			 rtlpriv->btcoexist.bt_active_zero_cnt);
 		if (rtlpriv->btcoexist.bt_active_zero_cnt >= 2) {
 			rtlpriv->btcoexist.cur_bt_disabled = true;
 			RT_TRACE(rtlpriv, COMP_BT_COEXIST, DBG_TRACE,
-				"8723A BT is disabled !!\n");
+				 "8723A BT is disabled !!\n");
 		}
 	}
 	if (rtlpriv->btcoexist.pre_bt_disabled !=
 		rtlpriv->btcoexist.cur_bt_disabled) {
 		RT_TRACE(rtlpriv, COMP_BT_COEXIST,
-			DBG_TRACE, "8723A BT is from %s to %s!!\n",
-			(rtlpriv->btcoexist.pre_bt_disabled ?
-				"disabled":"enabled"),
-			(rtlpriv->btcoexist.cur_bt_disabled ?
-				"disabled":"enabled"));
+			 DBG_TRACE, "8723A BT is from %s to %s!!\n",
+			 (rtlpriv->btcoexist.pre_bt_disabled ?
+				"disabled" : "enabled"),
+			 (rtlpriv->btcoexist.cur_bt_disabled ?
+				"disabled" : "enabled"));
 		rtlpriv->btcoexist.pre_bt_disabled
 			= rtlpriv->btcoexist.cur_bt_disabled;
 	}
@@ -1723,38 +1657,35 @@ void rtl8723e_dm_bt_coexist_8723(struct ieee80211_hw *hw)
 			 "[BTCoex], Coexist State[bitMap] change from 0x%x%8x to 0x%x%8x\n",
 			 rtlpriv->btcoexist.previous_state_h,
 			 rtlpriv->btcoexist.previous_state,
-			 rtlpriv->btcoexist.current_state_h,
-			 rtlpriv->btcoexist.current_state);
+			 rtlpriv->btcoexist.cstate_h,
+			 rtlpriv->btcoexist.cstate);
 		rtlpriv->btcoexist.previous_state
-			= rtlpriv->btcoexist.current_state;
+			= rtlpriv->btcoexist.cstate;
 		rtlpriv->btcoexist.previous_state_h
-			= rtlpriv->btcoexist.current_state_h;
+			= rtlpriv->btcoexist.cstate_h;
 	}
 }
 
 static void rtl8723e_dm_bt_parse_bt_info(struct ieee80211_hw *hw,
-				u8 *tmp_buf, u8 len)
+					 u8 *tmp_buf, u8 len)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	u8 bt_info;
 	u8 i;
 
-	hal_coex_8723.b_c2h_bt_info_req_sent = false;
+	hal_coex_8723.c2h_bt_info_req_sent = false;
 	hal_coex_8723.bt_retry_cnt = 0;
 	for (i = 0; i < len; i++) {
-
 		if (i == 0)
 			hal_coex_8723.c2h_bt_info_original = tmp_buf[i];
 		else if (i == 1)
 			hal_coex_8723.bt_retry_cnt = tmp_buf[i];
-
-
 		if (i == len-1)
 			RT_TRACE(rtlpriv, COMP_BT_COEXIST, DBG_TRACE,
-				"0x%2x]", tmp_buf[i]);
+				 "0x%2x]", tmp_buf[i]);
 		else
 			RT_TRACE(rtlpriv, COMP_BT_COEXIST, DBG_TRACE,
-				"0x%2x, ", tmp_buf[i]);
+				 "0x%2x, ", tmp_buf[i]);
 
 	}
 	RT_TRACE(rtlpriv, COMP_BT_COEXIST, DBG_DMESG,
@@ -1763,21 +1694,21 @@ static void rtl8723e_dm_bt_parse_bt_info(struct ieee80211_hw *hw,
 	bt_info = hal_coex_8723.c2h_bt_info_original;
 
 	if (bt_info & BIT(2))
-		hal_coex_8723.b_c2h_bt_inquiry_page = true;
+		hal_coex_8723.c2h_bt_inquiry_page = true;
 	else
-		hal_coex_8723.b_c2h_bt_inquiry_page = false;
+		hal_coex_8723.c2h_bt_inquiry_page = false;
 
 
 	if (bt_info & BTINFO_B_CONNECTION) {
 		RT_TRACE(rtlpriv, COMP_BT_COEXIST, DBG_DMESG,
 			"[BTC2H], BTInfo: bConnect=true\n");
 		rtlpriv->btcoexist.bt_busy = true;
-		rtlpriv->btcoexist.current_state &= ~BT_COEX_STATE_BT_IDLE;
+		rtlpriv->btcoexist.cstate &= ~BT_COEX_STATE_BT_IDLE;
 	} else {
 		RT_TRACE(rtlpriv, COMP_BT_COEXIST, DBG_DMESG,
 			"[BTC2H], BTInfo: bConnect=false\n");
 		rtlpriv->btcoexist.bt_busy = false;
-		rtlpriv->btcoexist.current_state |= BT_COEX_STATE_BT_IDLE;
+		rtlpriv->btcoexist.cstate |= BT_COEX_STATE_BT_IDLE;
 	}
 }
 void rtl_8723e_c2h_command_handle(struct ieee80211_hw *hw)
@@ -1794,8 +1725,9 @@ void rtl_8723e_c2h_command_handle(struct ieee80211_hw *hw)
 	c2h_event.cmd_id = u1b_tmp & 0xF;
 	c2h_event.cmd_len = (u1b_tmp & 0xF0) >> 4;
 	c2h_event.cmd_seq = rtl_read_byte(rtlpriv, REG_C2HEVT_MSG_NORMAL + 1);
-	RT_TRACE(rtlpriv, COMP_FW, DBG_DMESG, "cmd_id: %d, cmd_len: %d, cmd_seq: %d\n",
-		c2h_event.cmd_id , c2h_event.cmd_len, c2h_event.cmd_seq);
+	RT_TRACE(rtlpriv, COMP_FW, DBG_DMESG,
+		 "cmd_id: %d, cmd_len: %d, cmd_seq: %d\n",
+		 c2h_event.cmd_id , c2h_event.cmd_len, c2h_event.cmd_seq);
 	u1b_tmp = rtl_read_byte(rtlpriv, 0x01AF);
 	if (u1b_tmp == C2H_EVT_HOST_CLOSE) {
 		return;
@@ -1803,9 +1735,10 @@ void rtl_8723e_c2h_command_handle(struct ieee80211_hw *hw)
 		rtl_write_byte(rtlpriv, 0x1AF, 0x00);
 		return;
 	}
-	ptmp_buf = (u8 *)kzalloc(c2h_event.cmd_len, GFP_KERNEL);
+	ptmp_buf = kzalloc(c2h_event.cmd_len, GFP_KERNEL);
 	if (ptmp_buf == NULL) {
-		RT_TRACE(rtlpriv, COMP_FW, DBG_TRACE, "malloc cmd buf failed\n");
+		RT_TRACE(rtlpriv, COMP_FW, DBG_TRACE,
+			 "malloc cmd buf failed\n");
 		return;
 	}
 
@@ -1841,9 +1774,7 @@ void rtl_8723e_c2h_command_handle(struct ieee80211_hw *hw)
 	default:
 		break;
 	}
-
-	if (ptmp_buf)
-		kfree(ptmp_buf);
+	kfree(ptmp_buf);
 
 	rtl_write_byte(rtlpriv, 0x01AF, C2H_EVT_HOST_CLOSE);
 }

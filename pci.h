@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Copyright(c) 2009-2010  Realtek Corporation.
+ * Copyright(c) 2009-2012  Realtek Corporation.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of version 2 of the GNU General Public License as
@@ -39,7 +39,6 @@
 #define RTL_PCI_RX_CMD_QUEUE			1
 #define RTL_PCI_MAX_RX_QUEUE			2
 
-#define RX_DESC_NUM_92E				512
 #define RTL_PCI_MAX_RX_COUNT			512/*64*/
 #define RTL_PCI_MAX_TX_QUEUE_COUNT		9
 
@@ -92,6 +91,7 @@
 #define RTL_PCI_8173_DID	0x8173	/*8191 SE Crab */
 #define RTL_PCI_8172_DID	0x8172	/*8191 SE RE */
 #define RTL_PCI_8171_DID	0x8171	/*8191 SE Unicron */
+#define RTL_PCI_8723AE_DID	0x8723	/*8723AE */
 #define RTL_PCI_0045_DID	0x0045	/*8190 PCI for Ceraga */
 #define RTL_PCI_0046_DID	0x0046	/*8190 Cardbus for Ceraga */
 #define RTL_PCI_0044_DID	0x0044	/*8192e PCIE for Ceraga */
@@ -143,8 +143,9 @@ struct rtl_pci_capabilities_header {
 };
 
 /* In new TRX flow, Buffer_desc is new concept
-  * But TX wifi info == TX descriptor in old flow
-  * RX wifi info == RX descriptor in old flow */
+ * But TX wifi info == TX descriptor in old flow
+ * RX wifi info == RX descriptor in old flow
+ */
 struct rtl_tx_buffer_desc {
 #if (RTL8192EE_SEG_NUM == 2)
 	u32 dword[2*(DMA_IS_64BIT + 1)*8]; /*seg = 8*/
@@ -155,7 +156,7 @@ struct rtl_tx_buffer_desc {
 #endif
 } __packed;
 
-struct rtl_tx_desc {/*old: tx desc new: tx wifi info*/
+struct rtl_tx_desc {
 	u32 dword[16];
 } __packed;
 
@@ -172,8 +173,8 @@ struct rtl_tx_cmd_desc {
 } __packed;
 
 struct rtl8192_tx_ring {
-	struct rtl_tx_desc *desc; /*tx desc / tx wifi info*/
-	dma_addr_t dma; /*tx desc dma memory / tx wifi info dma memory*/
+	struct rtl_tx_desc *desc;
+	dma_addr_t dma;
 	unsigned int idx;
 	unsigned int entries;
 	struct sk_buff_head queue;
@@ -186,8 +187,7 @@ struct rtl8192_tx_ring {
 };
 
 struct rtl8192_rx_ring {
-	struct rtl_rx_desc *desc;/*for old trx flow, not uesd in new trx*/
-	/*dma matches either 'desc' or 'buffer_desc'*/
+	struct rtl_rx_desc *desc;
 	dma_addr_t dma;
 	unsigned int idx;
 	struct sk_buff *rx_buf[RTL_PCI_MAX_RX_COUNT];
@@ -199,6 +199,12 @@ struct rtl8192_rx_ring {
 struct rtl_pci {
 	struct pci_dev *pdev;
 	bool irq_enabled;
+
+	bool driver_is_goingto_unload;
+	bool up_first_time;
+	bool first_init;
+	bool being_init_adapter;
+	bool init_ready;
 
 	/*Tx */
 	struct rtl8192_tx_ring tx_ring[RTL_PCI_MAX_TX_QUEUE_COUNT];
@@ -241,6 +247,7 @@ struct rtl_pci {
 	/* MSI support */
 	bool msi_support;
 	bool using_msi;
+	/* interrupt clear before set */
 	bool int_clear;
 };
 
@@ -259,7 +266,6 @@ struct mp_adapter {
 	u16 pcibridge_vendorid;
 	u16 pcibridge_deviceid;
 
-	u32 pcicfg_addrport;
 	u8 num4bytes;
 
 	u8 pcibridge_pciehdr_offset;
@@ -272,6 +278,7 @@ struct rtl_pci_priv {
 	struct rtl_pci dev;
 	struct mp_adapter ndis_adapter;
 	struct rtl_led_ctl ledctl;
+	struct bt_coexist_info bt_coexist;
 };
 
 #define rtl_pcipriv(hw)		(((struct rtl_pci_priv *)(rtl_priv(hw))->priv))
@@ -279,17 +286,18 @@ struct rtl_pci_priv {
 
 int rtl_pci_reset_trx_ring(struct ieee80211_hw *hw);
 
-extern struct rtl_intf_ops rtl_pci_ops;
+extern const struct rtl_intf_ops rtl_pci_ops;
 
 int rtl_pci_probe(struct pci_dev *pdev,
-			const struct pci_device_id *id);
+			    const struct pci_device_id *id);
 void rtl_pci_disconnect(struct pci_dev *pdev);
+#ifdef CONFIG_PM_SLEEP
 int rtl_pci_suspend(struct device *dev);
 int rtl_pci_resume(struct device *dev);
-
+#endif /* CONFIG_PM_SLEEP */
 static inline u8 pci_read8_sync(struct rtl_priv *rtlpriv, u32 addr)
 {
-	return readb((u8 __iomem *)rtlpriv->io.pci_mem_start + addr);
+	return readb((u8 __iomem *) rtlpriv->io.pci_mem_start + addr);
 }
 
 static inline u16 pci_read16_sync(struct rtl_priv *rtlpriv, u32 addr)
@@ -319,43 +327,11 @@ static inline void pci_write32_async(struct rtl_priv *rtlpriv,
 	writel(val, (u8 __iomem *) rtlpriv->io.pci_mem_start + addr);
 }
 
-static inline void rtl_pci_raw_write_port_ulong(u32 port, u32 val)
+static inline u16 calc_fifo_space(u16 rp, u16 wp)
 {
-	outl(val, port);
+	if (rp <= wp)
+		return RTL_PCI_MAX_RX_COUNT - 1 + rp - wp;
+	return rp - wp - 1;
 }
-
-static inline void rtl_pci_raw_write_port_uchar(u32 port, u8 val)
-{
-	outb(val, port);
-}
-
-static inline void rtl_pci_raw_read_port_uchar(u32 port, u8 *pval)
-{
-	*pval = inb(port);
-}
-
-static inline void rtl_pci_raw_read_port_ushort(u32 port, u16 *pval)
-{
-	*pval = inw(port);
-}
-
-static inline void rtl_pci_raw_read_port_ulong(u32 port, u32 *pval)
-{
-	*pval = inl(port);
-}
-
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,17,0))
-static inline void *
-pci_zalloc_consistent(struct pci_dev *hwdev, size_t size,
-		      dma_addr_t *dma_handle)
-{
-	void *tmp;
-
-	tmp = pci_alloc_consistent(hwdev, size, dma_handle);
-	if (tmp)
-		memset(tmp, 0, size);
-	return tmp;
-}
-#endif
 
 #endif

@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Copyright(c) 2009-2010  Realtek Corporation.
+ * Copyright(c) 2009-2012  Realtek Corporation.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of version 2 of the GNU General Public License as
@@ -10,10 +10,6 @@
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
  * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
  * more details.
- *
- * You should have received a copy of the GNU General Public License along with
- * this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110, USA
  *
  * The full GNU General Public License is included in this distribution in the
  * file called LICENSE.
@@ -209,8 +205,8 @@
 	SET_BITS_TO_LE_4BYTE(__pdesc+12, 30, 1, __val)
 #define SET_TX_DESC_HWSEQ_EN_8723(__pdesc, __val)   \
 	SET_BITS_TO_LE_4BYTE(__pdesc+12, 31, 1, __val)
-#define SET_TX_DESC_HWSEQ_SEL_8723(__pTxDesc, __Value) \
-	SET_BITS_TO_LE_4BYTE(__pTxDesc+16, 6, 2, __Value)
+#define SET_TX_DESC_HWSEQ_SEL_8723(__txdesc, __value) \
+	SET_BITS_TO_LE_4BYTE(__txdesc+16, 6, 2, __value)
 
 #define SET_TX_DESC_RTS_RATE(__pdesc, __val)		\
 	SET_BITS_TO_LE_4BYTE(__pdesc+16, 0, 5, __val)
@@ -519,15 +515,15 @@ do {								\
 		memset(__pdesc, 0, TX_DESC_NEXT_DESC_OFFSET);	\
 	else							\
 		memset(__pdesc, 0, _size);			\
-} while (0);
+} while (0)
 
 struct rx_fwinfo_8723e {
 	u8 gain_trsw[4];
 	u8 pwdb_all;
 	u8 cfosho[4];
 	u8 cfotail[4];
-	char rxevm[2];
-	char rxsnr[4];
+	s8 rxevm[2];
+	s8 rxsnr[4];
 	u8 pdsnr[2];
 	u8 csi_current[2];
 	u8 csi_target[2];
@@ -700,25 +696,25 @@ struct rx_desc_8723e {
 } __packed;
 
 void rtl8723e_tx_fill_desc(struct ieee80211_hw *hw,
-			  struct ieee80211_hdr *hdr,
-			  u8 *pdesc, u8 *txbd,
-			  struct ieee80211_tx_info *info,
-			  struct ieee80211_sta *sta,
-			  struct sk_buff *skb, u8 hw_queue,
-			  struct rtl_tcb_desc *ptcb_desc);
+			   struct ieee80211_hdr *hdr,
+			   u8 *pdesc, u8 *txbd,
+			   struct ieee80211_tx_info *info,
+			   struct ieee80211_sta *sta,
+			   struct sk_buff *skb, u8 hw_queue,
+			   struct rtl_tcb_desc *ptcb_desc);
 bool rtl8723e_rx_query_desc(struct ieee80211_hw *hw,
-			   struct rtl_stats *status,
-			   struct ieee80211_rx_status *rx_status,
-			   u8 *pdesc, struct sk_buff *skb);
+			    struct rtl_stats *status,
+			    struct ieee80211_rx_status *rx_status,
+			    u8 *pdesc, struct sk_buff *skb);
 void rtl8723e_set_desc(struct ieee80211_hw *hw,
-			u8 *pdesc, bool istx, u8 desc_name, u8 *val);
+		       u8 *pdesc, bool istx, u8 desc_name, u8 *val);
 u32 rtl8723e_get_desc(u8 *pdesc, bool istx, u8 desc_name);
 bool rtl8723e_is_tx_desc_closed(struct ieee80211_hw *hw,
 				u8 hw_queue, u16 index);
 void rtl8723e_tx_polling(struct ieee80211_hw *hw, u8 hw_queue);
 void rtl8723e_tx_fill_cmddesc(struct ieee80211_hw *hw, u8 *pdesc,
-			     bool firstseg, bool lastseg,
-			     struct sk_buff *skb);
+			      bool firstseg, bool lastseg,
+			      struct sk_buff *skb);
 u32 rtl8723e_rx_command_packet(struct ieee80211_hw *hw,
 			       const struct rtl_stats *status,
 			       struct sk_buff *skb);

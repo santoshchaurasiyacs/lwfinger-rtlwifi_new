@@ -114,64 +114,20 @@
 
 #define	MGN_UNKNOWN			0xff
 
-
 /* 30 ms */
 #define	WIFI_NAV_UPPER_US				30000
 #define HAL_92C_NAV_UPPER_UNIT			128
 
-#define HAL_RETRY_LIMIT_INFRA				48
-#define HAL_RETRY_LIMIT_AP_ADHOC			7
-
-#define RESET_DELAY_8185					20
-
-#define RT_IBSS_INT_MASKS	(IMR_BCNINT | IMR_TBDOK | IMR_TBDER)
-#define RT_AC_INT_MASKS		(IMR_VIDOK | IMR_VODOK | IMR_BEDOK|IMR_BKDOK)
-
-#define NUM_OF_FIRMWARE_QUEUE				10
-#define NUM_OF_PAGES_IN_FW					0x100
-#define NUM_OF_PAGE_IN_FW_QUEUE_BK			0x07
-#define NUM_OF_PAGE_IN_FW_QUEUE_BE			0x07
-#define NUM_OF_PAGE_IN_FW_QUEUE_VI			0x07
-#define NUM_OF_PAGE_IN_FW_QUEUE_VO			0x07
-#define NUM_OF_PAGE_IN_FW_QUEUE_HCCA		0x0
-#define NUM_OF_PAGE_IN_FW_QUEUE_CMD			0x0
-#define NUM_OF_PAGE_IN_FW_QUEUE_MGNT		0x02
-#define NUM_OF_PAGE_IN_FW_QUEUE_HIGH		0x02
-#define NUM_OF_PAGE_IN_FW_QUEUE_BCN			0x2
-#define NUM_OF_PAGE_IN_FW_QUEUE_PUB			0xA1
-
-#define NUM_OF_PAGE_IN_FW_QUEUE_BK_DTM		0x026
-#define NUM_OF_PAGE_IN_FW_QUEUE_BE_DTM		0x048
-#define NUM_OF_PAGE_IN_FW_QUEUE_VI_DTM		0x048
-#define NUM_OF_PAGE_IN_FW_QUEUE_VO_DTM		0x026
-#define NUM_OF_PAGE_IN_FW_QUEUE_PUB_DTM		0x00
-
 #define MAX_RX_DMA_BUFFER_SIZE				0x3E80
-
-
-#define MAX_LINES_HWCONFIG_TXT				1000
-#define MAX_BYTES_LINE_HWCONFIG_TXT			256
-
-#define SW_THREE_WIRE						0
-#define HW_THREE_WIRE						2
-
-#define BT_DEMO_BOARD						0
-#define BT_QA_BOARD							1
-#define BT_FPGA								2
 
 #define HAL_PRIME_CHNL_OFFSET_DONT_CARE		0
 #define HAL_PRIME_CHNL_OFFSET_LOWER			1
 #define HAL_PRIME_CHNL_OFFSET_UPPER			2
 
-#define MAX_H2C_QUEUE_NUM					10
-
 #define RX_MPDU_QUEUE						0
 #define RX_CMD_QUEUE						1
-#define RX_MAX_QUEUE						2
-#define AC2QUEUEID(_AC)						(_AC)
 
 #define MAX_RX_DMA_BUFFER_SIZE_8812	0x3E80
-
 
 #define	C2H_RX_CMD_HDR_LEN					8
 #define	GET_C2H_CMD_CMD_LEN(__prxhdr)		\
@@ -221,8 +177,6 @@
 #define E_CUT_VERSION				BIT(14)
 #define	RF_RL_ID			(BIT(31)|BIT(30)|BIT(29)|BIT(28))
 
-
-
 enum version_8821ae {
 	VERSION_TEST_CHIP_1T1R_8812 = 0x0004,
 	VERSION_TEST_CHIP_2T2R_8812 = 0x0024,
@@ -250,7 +204,6 @@ enum vht_data_sc {
 	VHT_DATA_SC_40_LOWER_OF_80MHZ = 10,
 };
 
-
 /* MASK */
 #define IC_TYPE_MASK			(BIT(0)|BIT(1)|BIT(2))
 #define CHIP_TYPE_MASK			BIT(3)
@@ -260,12 +213,12 @@ enum vht_data_sc {
 #define CUT_VERSION_MASK		(BIT(15)|BIT(14)|BIT(13)|BIT(12))
 
 /* Get element */
-#define GET_CVID_IC_TYPE(version)		((version) & IC_TYPE_MASK)
-#define GET_CVID_CHIP_TYPE(version)		((version) & CHIP_TYPE_MASK)
-#define GET_CVID_RF_TYPE(version)		((version) & RF_TYPE_MASK)
-#define GET_CVID_MANUFACTUER(version)		((version) & MANUFACTUER_MASK)
-#define GET_CVID_ROM_VERSION(version)		((version) & ROM_VERSION_MASK)
-#define GET_CVID_CUT_VERSION(version)		((version) & CUT_VERSION_MASK)
+#define GET_CVID_IC_TYPE(version)	((version) & IC_TYPE_MASK)
+#define GET_CVID_CHIP_TYPE(version)	((version) & CHIP_TYPE_MASK)
+#define GET_CVID_RF_TYPE(version)	((version) & RF_TYPE_MASK)
+#define GET_CVID_MANUFACTUER(version)	((version) & MANUFACTUER_MASK)
+#define GET_CVID_ROM_VERSION(version)	((version) & ROM_VERSION_MASK)
+#define GET_CVID_CUT_VERSION(version)	((version) & CUT_VERSION_MASK)
 
 #define IS_1T1R(version)	((GET_CVID_RF_TYPE(version)) ? false : true)
 #define IS_1T2R(version)	((GET_CVID_RF_TYPE(version) == RF_TYPE_1T2R)\
@@ -279,37 +232,26 @@ enum vht_data_sc {
 								true : false)
 
 #define IS_VENDOR_8812A_TEST_CHIP(version)	((IS_8812_SERIES(version)) ? \
-						((IS_NORMAL_CHIP(version)) ? \
-							false : true) : false)
+					((IS_NORMAL_CHIP(version)) ? \
+						false : true) : false)
 #define IS_VENDOR_8812A_MP_CHIP(version)	((IS_8812_SERIES(version)) ? \
-						((IS_NORMAL_CHIP(version)) ? \
-							true : false) : false)
-#define IS_VENDOR_8812A_C_CUT(version)		((IS_8812_SERIES(version)) ? \
-						((GET_CVID_CUT_VERSION(version) == \
-						C_CUT_VERSION) ? \
+					((IS_NORMAL_CHIP(version)) ? \
 						true : false) : false)
+#define IS_VENDOR_8812A_C_CUT(version)		((IS_8812_SERIES(version)) ? \
+					((GET_CVID_CUT_VERSION(version) == \
+					C_CUT_VERSION) ? \
+					true : false) : false)
 
 #define IS_VENDOR_8821A_TEST_CHIP(version)	((IS_8821_SERIES(version)) ? \
-						((IS_NORMAL_CHIP(version)) ? \
-						false : true) : false)
+					((IS_NORMAL_CHIP(version)) ? \
+					false : true) : false)
 #define IS_VENDOR_8821A_MP_CHIP(version)	((IS_8821_SERIES(version)) ? \
-						((IS_NORMAL_CHIP(version)) ? \
-							true : false) : false)
-#define IS_VENDOR_8821A_B_CUT(version)		((IS_8821_SERIES(version)) ? \
-						((GET_CVID_CUT_VERSION(version) == \
-						B_CUT_VERSION) ? \
+					((IS_NORMAL_CHIP(version)) ? \
 						true : false) : false)
-enum board_type {
-	ODM_BOARD_DEFAULT = 0,	  /* The DEFAULT case. */
-	ODM_BOARD_MINICARD = BIT(0), /* 0 = non-mini card, 1 = mini card. */
-	ODM_BOARD_SLIM = BIT(1), /* 0 = non-slim card, 1 = slim card */
-	ODM_BOARD_BT = BIT(2), /* 0 = without BT card, 1 = with BT */
-	ODM_BOARD_EXT_PA = BIT(3), /* 1 = existing 2G ext-PA */
-	ODM_BOARD_EXT_LNA = BIT(4), /* 1 = existing 2G ext-LNA */
-	ODM_BOARD_EXT_TRSW = BIT(5), /* 1 = existing ext-TRSW */
-	ODM_BOARD_EXT_PA_5G = BIT(6), /* 1 = existing 5G ext-PA */
-	ODM_BOARD_EXT_LNA_5G = BIT(7), /* 1 = existing 5G ext-LNA */
-};
+#define IS_VENDOR_8821A_B_CUT(version)		((IS_8821_SERIES(version)) ? \
+					((GET_CVID_CUT_VERSION(version) == \
+					B_CUT_VERSION) ? \
+					true : false) : false)
 
 enum rf_optype {
 	RF_OP_BY_SW_3WIRE = 0,
@@ -344,24 +286,24 @@ enum interface_select_pci {
 };
 
 enum hal_fw_c2h_cmd_id {
-	HAL_FW_C2H_CMD_Read_MACREG = 0,
-	HAL_FW_C2H_CMD_Read_BBREG = 1,
-	HAL_FW_C2H_CMD_Read_RFREG = 2,
-	HAL_FW_C2H_CMD_Read_EEPROM = 3,
-	HAL_FW_C2H_CMD_Read_EFUSE = 4,
-	HAL_FW_C2H_CMD_Read_CAM = 5,
-	HAL_FW_C2H_CMD_Get_BasicRate = 6,
-	HAL_FW_C2H_CMD_Get_DataRate = 7,
-	HAL_FW_C2H_CMD_Survey = 8,
-	HAL_FW_C2H_CMD_SurveyDone = 9,
-	HAL_FW_C2H_CMD_JoinBss = 10,
-	HAL_FW_C2H_CMD_AddSTA = 11,
-	HAL_FW_C2H_CMD_DelSTA = 12,
-	HAL_FW_C2H_CMD_AtimDone = 13,
-	HAL_FW_C2H_CMD_TX_Report = 14,
-	HAL_FW_C2H_CMD_CCX_Report = 15,
-	HAL_FW_C2H_CMD_DTM_Report = 16,
-	HAL_FW_C2H_CMD_TX_Rate_Statistics = 17,
+	HAL_FW_C2H_CMD_READ_MACREG = 0,
+	HAL_FW_C2H_CMD_READ_BBREG = 1,
+	HAL_FW_C2H_CMD_READ_RFREG = 2,
+	HAL_FW_C2H_CMD_READ_EEPROM = 3,
+	HAL_FW_C2H_CMD_READ_EFUSE = 4,
+	HAL_FW_C2H_CMD_READ_CAM = 5,
+	HAL_FW_C2H_CMD_GET_BASICRATE = 6,
+	HAL_FW_C2H_CMD_GET_DATARATE = 7,
+	HAL_FW_C2H_CMD_SURVEY = 8,
+	HAL_FW_C2H_CMD_SURVEYDONE = 9,
+	HAL_FW_C2H_CMD_JOINBSS = 10,
+	HAL_FW_C2H_CMD_ADDSTA = 11,
+	HAL_FW_C2H_CMD_DELSTA = 12,
+	HAL_FW_C2H_CMD_ATIMDONE = 13,
+	HAL_FW_C2H_CMD_TX_REPORT = 14,
+	HAL_FW_C2H_CMD_CCX_REPORT = 15,
+	HAL_FW_C2H_CMD_DTM_REPORT = 16,
+	HAL_FW_C2H_CMD_TX_RATE_STATISTICS = 17,
 	HAL_FW_C2H_CMD_C2HLBK = 18,
 	HAL_FW_C2H_CMD_C2HDBG = 19,
 	HAL_FW_C2H_CMD_C2HFEEDBACK = 20,

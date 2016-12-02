@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Copyright(c) 2009-2010  Realtek Corporation.
+ * Copyright(c) 2009-2014  Realtek Corporation.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of version 2 of the GNU General Public License as
@@ -10,10 +10,6 @@
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
  * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
  * more details.
- *
- * You should have received a copy of the GNU General Public License along with
- * this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110, USA
  *
  * The full GNU General Public License is included in this distribution in the
  * file called LICENSE.
@@ -54,12 +50,14 @@ void rtl8723be_update_hal_rate_tbl(struct ieee80211_hw *hw,
 void rtl8723be_update_channel_access_setting(struct ieee80211_hw *hw);
 bool rtl8723be_gpio_radio_on_off_checking(struct ieee80211_hw *hw, u8 *valid);
 void rtl8723be_enable_hw_security_config(struct ieee80211_hw *hw);
+void rtl8723be_set_key(struct ieee80211_hw *hw, u32 key_index,
+		       u8 *p_macaddr, bool is_group, u8 enc_algo,
+		       bool is_wepkey, bool clear_all);
 void rtl8723be_read_bt_coexist_info_from_hwpg(struct ieee80211_hw *hw,
 					      bool autoload_fail, u8 *hwinfo);
 void rtl8723be_bt_reg_init(struct ieee80211_hw *hw);
 void rtl8723be_bt_hw_init(struct ieee80211_hw *hw);
 void rtl8723be_suspend(struct ieee80211_hw *hw);
 void rtl8723be_resume(struct ieee80211_hw *hw);
-void rtl8723be_allow_all_destaddr(struct ieee80211_hw *hw, bool allow_all_da,
-				  bool write_into_reg);
+
 #endif

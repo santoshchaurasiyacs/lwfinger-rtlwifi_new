@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Copyright(c) 2009-2010  Realtek Corporation.
+ * Copyright(c) 2009-2012  Realtek Corporation.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of version 2 of the GNU General Public License as
@@ -27,17 +27,14 @@
  *
  *****************************************************************************/
 
-#include <linux/firmware.h>
 #include "wifi.h"
 #include "core.h"
 #include "pci.h"
 #include "base.h"
 #include "ps.h"
 #include "efuse.h"
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,2,0))
+#include <linux/interrupt.h>
 #include <linux/export.h>
-#endif
-#include "efuse.h"
 #include <linux/kmemleak.h>
 #include <linux/module.h>
 
@@ -46,6 +43,16 @@ MODULE_AUTHOR("Realtek WlanFAE	<wlanfae@realtek.com>");
 MODULE_AUTHOR("Larry Finger	<Larry.FInger@lwfinger.net>");
 MODULE_LICENSE("GPL");
 MODULE_DESCRIPTION("PCI basic driver for rtlwifi");
+
+#ifndef pci_zalloc_consistent
+static inline void *
+pci_zalloc_consistent(struct pci_dev *hwdev, size_t size,
+                      dma_addr_t *dma_handle)
+{
+        return dma_zalloc_coherent(hwdev == NULL ? NULL : &hwdev->dev,
+                                   size, dma_handle, GFP_ATOMIC);
+}
+#endif
 
 static const u16 pcibridge_vendors[PCI_BRIDGE_VENDOR_MAX] = {
 	INTEL_VENDOR_ID,
@@ -62,7 +69,7 @@ static const u8 ac_to_hwq[] = {
 };
 
 static u8 _rtl_mac_to_hwqueue(struct ieee80211_hw *hw,
-		struct sk_buff *skb)
+		       struct sk_buff *skb)
 {
 	struct rtl_hal *rtlhal = rtl_hal(rtl_priv(hw));
 	__le16 fc = rtl_get_fc(skb);
@@ -90,7 +97,7 @@ static void _rtl_pci_update_default_setting(struct ieee80211_hw *hw)
 	u8 init_aspm;
 
 	ppsc->reg_rfps_level = 0;
-	ppsc->support_aspm = 0;
+	ppsc->support_aspm = false;
 
 	/*Update PCI ASPM setting */
 	ppsc->const_amdpci_aspm = rtlpci->const_amdpci_aspm;
@@ -182,7 +189,8 @@ static void _rtl_pci_update_default_setting(struct ieee80211_hw *hw)
 		break;
 	default:
 		RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG,
-			"switch case not process\n");
+			 "switch case %#x not processed\n",
+			 rtlpci->const_support_pciaspm);
 		break;
 	}
 
@@ -194,35 +202,31 @@ static void _rtl_pci_update_default_setting(struct ieee80211_hw *hw)
 		ppsc->support_aspm = false;
 }
 
-static bool _rtl_pci_platform_switch_device_pci_aspm(struct ieee80211_hw *hw,
-						     u8 value)
+static bool _rtl_pci_platform_switch_device_pci_aspm(
+			struct ieee80211_hw *hw,
+			u8 value)
 {
 	struct rtl_pci *rtlpci = rtl_pcidev(rtl_pcipriv(hw));
 	struct rtl_hal *rtlhal = rtl_hal(rtl_priv(hw));
-	bool bresult = false;
 
 	if (rtlhal->hw_type != HARDWARE_TYPE_RTL8192SE)
 		value |= 0x40;
 
 	pci_write_config_byte(rtlpci->pdev, 0x80, value);
 
-	return bresult;
+	return false;
 }
 
 /*When we set 0x01 to enable clk request. Set 0x0 to disable clk req.*/
-static bool _rtl_pci_switch_clk_req(struct ieee80211_hw *hw, u8 value)
+static void _rtl_pci_switch_clk_req(struct ieee80211_hw *hw, u8 value)
 {
 	struct rtl_pci *rtlpci = rtl_pcidev(rtl_pcipriv(hw));
 	struct rtl_hal *rtlhal = rtl_hal(rtl_priv(hw));
-	bool bresult = false;
 
 	pci_write_config_byte(rtlpci->pdev, 0x81, value);
-	bresult = true;
 
 	if (rtlhal->hw_type == HARDWARE_TYPE_RTL8192SE)
 		udelay(100);
-
-	return bresult;
 }
 
 /*Disable RTL8192SE ASPM & Disable Pci Bridge ASPM*/
@@ -246,7 +250,7 @@ static void rtl_pci_disable_aspm(struct ieee80211_hw *hw)
 
 	if (pcibridge_vendor == PCI_BRIDGE_VENDOR_UNKNOWN) {
 		RT_TRACE(rtlpriv, COMP_POWER, DBG_TRACE,
-			 "PCI(Bridge) UNKNOWN.\n");
+			 "PCI(Bridge) UNKNOWN\n");
 
 		return;
 	}
@@ -297,11 +301,12 @@ static void rtl_pci_enable_aspm(struct ieee80211_hw *hw)
 
 	if (pcibridge_vendor == PCI_BRIDGE_VENDOR_UNKNOWN) {
 		RT_TRACE(rtlpriv, COMP_POWER, DBG_TRACE,
-			 "PCI(Bridge) UNKNOWN.\n");
+			 "PCI(Bridge) UNKNOWN\n");
 		return;
 	}
 
 	/*4 Enable Pci Bridge ASPM */
+
 	u_pcibridge_aspmsetting =
 	    pcipriv->ndis_adapter.pcibridge_linkctrlreg |
 	    rtlpci->const_hostpci_aspm_setting;
@@ -314,8 +319,8 @@ static void rtl_pci_enable_aspm(struct ieee80211_hw *hw)
 
 	RT_TRACE(rtlpriv, COMP_INIT, DBG_LOUD,
 		 "PlatformEnableASPM(): Write reg[%x] = %x\n",
-		  (pcipriv->ndis_adapter.pcibridge_pciehdr_offset + 0x10),
-		  u_pcibridge_aspmsetting);
+		 (pcipriv->ndis_adapter.pcibridge_pciehdr_offset + 0x10),
+		 u_pcibridge_aspmsetting);
 
 	udelay(50);
 
@@ -360,47 +365,44 @@ static bool rtl_pci_get_amd_l1_patch(struct ieee80211_hw *hw)
 }
 
 static bool rtl_pci_check_buddy_priv(struct ieee80211_hw *hw,
-			      struct rtl_priv **buddy_priv)
+				     struct rtl_priv **buddy_priv)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_pci_priv *pcipriv = rtl_pcipriv(hw);
-	bool b_find_buddy_priv = false;
-	struct rtl_priv *temp_priv = NULL;
-	struct rtl_pci_priv *temp_pcipriv = NULL;
+	bool find_buddy_priv = false;
+	struct rtl_priv *tpriv;
+	struct rtl_pci_priv *tpcipriv = NULL;
 
 	if (!list_empty(&rtlpriv->glb_var->glb_priv_list)) {
-		list_for_each_entry(temp_priv, &rtlpriv->glb_var->glb_priv_list,
-			list) {
-			if (temp_priv == NULL)
-				break;
-
-			temp_pcipriv = (struct rtl_pci_priv *)temp_priv->priv;
+		list_for_each_entry(tpriv, &rtlpriv->glb_var->glb_priv_list,
+				    list) {
+			tpcipriv = (struct rtl_pci_priv *)tpriv->priv;
 			RT_TRACE(rtlpriv, COMP_INIT, DBG_LOUD,
-				"pcipriv->ndis_adapter.funcnumber %x\n",
+				 "pcipriv->ndis_adapter.funcnumber %x\n",
 				pcipriv->ndis_adapter.funcnumber);
 			RT_TRACE(rtlpriv, COMP_INIT, DBG_LOUD,
-				"temp_pcipriv->ndis_adapter.funcnumber %x\n",
-				temp_pcipriv->ndis_adapter.funcnumber);
+				 "tpcipriv->ndis_adapter.funcnumber %x\n",
+				tpcipriv->ndis_adapter.funcnumber);
 
 			if ((pcipriv->ndis_adapter.busnumber ==
-			     temp_pcipriv->ndis_adapter.busnumber) &&
+			     tpcipriv->ndis_adapter.busnumber) &&
 			    (pcipriv->ndis_adapter.devnumber ==
-			     temp_pcipriv->ndis_adapter.devnumber) &&
+			    tpcipriv->ndis_adapter.devnumber) &&
 			    (pcipriv->ndis_adapter.funcnumber !=
-			     temp_pcipriv->ndis_adapter.funcnumber)) {
-				b_find_buddy_priv = true;
+			    tpcipriv->ndis_adapter.funcnumber)) {
+				find_buddy_priv = true;
 				break;
 			}
 		}
 	}
 
 	RT_TRACE(rtlpriv, COMP_INIT, DBG_LOUD,
-		"b_find_buddy_priv %d\n", b_find_buddy_priv);
+		 "find_buddy_priv %d\n", find_buddy_priv);
 
-	if (b_find_buddy_priv)
-		*buddy_priv = temp_priv;
+	if (find_buddy_priv)
+		*buddy_priv = tpriv;
 
-	return b_find_buddy_priv;
+	return find_buddy_priv;
 }
 
 static void rtl_pci_get_linkcontrol_field(struct ieee80211_hw *hw)
@@ -420,7 +422,7 @@ static void rtl_pci_get_linkcontrol_field(struct ieee80211_hw *hw)
 }
 
 static void rtl_pci_parse_configuration(struct pci_dev *pdev,
-					struct ieee80211_hw *hw)
+		struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_pci_priv *pcipriv = rtl_pcipriv(hw);
@@ -432,9 +434,8 @@ static void rtl_pci_parse_configuration(struct pci_dev *pdev,
 	pcie_capability_read_word(pdev, PCI_EXP_LNKCTL, &linkctrl_reg);
 	pcipriv->ndis_adapter.linkctrl_reg = (u8)linkctrl_reg;
 
-	RT_TRACE(rtlpriv, COMP_INIT, DBG_TRACE,
-		 "Link Control Register =%x\n",
-		  pcipriv->ndis_adapter.linkctrl_reg);
+	RT_TRACE(rtlpriv, COMP_INIT, DBG_TRACE, "Link Control Register =%x\n",
+		 pcipriv->ndis_adapter.linkctrl_reg);
 
 	pci_read_config_byte(pdev, 0x98, &tmp);
 	tmp |= BIT(4);
@@ -475,16 +476,14 @@ static void _rtl_pci_io_handler_init(struct device *dev,
 
 }
 
-static bool _rtl_pci_update_earlymode_info(struct ieee80211_hw *hw,
-					   struct sk_buff *skb,
-					   struct rtl_tcb_desc *tcb_desc,
-					   u8 tid)
+static bool _rtl_update_earlymode_info(struct ieee80211_hw *hw,
+		struct sk_buff *skb, struct rtl_tcb_desc *tcb_desc, u8 tid)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct ieee80211_tx_info *info = IEEE80211_SKB_CB(skb);
 	struct rtl_hal *rtlhal = rtl_hal(rtl_priv(hw));
-	u8 additionlen = FCS_LEN;
 	struct sk_buff *next_skb;
+	u8 additionlen = FCS_LEN;
 
 	/* here open is 4, wep/tkip is 8, aes is 12*/
 	if (info->control.hw_key)
@@ -494,8 +493,9 @@ static bool _rtl_pci_update_earlymode_info(struct ieee80211_hw *hw,
 	tcb_desc->empkt_num = 0;
 	spin_lock_bh(&rtlpriv->locks.waitq_lock);
 	skb_queue_walk(&rtlpriv->mac80211.skb_waitq[tid], next_skb) {
-		struct ieee80211_tx_info *next_info =
-					IEEE80211_SKB_CB(next_skb);
+		struct ieee80211_tx_info *next_info;
+
+		next_info = IEEE80211_SKB_CB(next_skb);
 		if (next_info->flags & IEEE80211_TX_CTL_AMPDU) {
 			tcb_desc->empkt_len[tcb_desc->empkt_num] =
 				next_skb->len + additionlen;
@@ -512,6 +512,7 @@ static bool _rtl_pci_update_earlymode_info(struct ieee80211_hw *hw,
 			break;
 	}
 	spin_unlock_bh(&rtlpriv->locks.waitq_lock);
+
 	return true;
 }
 
@@ -521,17 +522,18 @@ static void _rtl_pci_tx_chk_waitq(struct ieee80211_hw *hw)
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_mac *mac = rtl_mac(rtl_priv(hw));
 	struct rtl_pci *rtlpci = rtl_pcidev(rtl_pcipriv(hw));
-	struct rtl_hal *rtlhal = rtl_hal(rtl_priv(hw));
 	struct sk_buff *skb = NULL;
 	struct ieee80211_tx_info *info = NULL;
-	int tid; /* should be int */
+	struct rtl_hal *rtlhal = rtl_hal(rtl_priv(hw));
+	int tid;
 
 	if (!rtlpriv->rtlhal.earlymode_enable)
 		return;
+
 	if (rtlpriv->dm.supp_phymode_switch &&
-		(rtlpriv->easy_concurrent_ctl.switch_in_process ||
-		(rtlpriv->buddy_priv &&
-		 rtlpriv->buddy_priv->easy_concurrent_ctl.switch_in_process)))
+	    (rtlpriv->easy_concurrent_ctl.switch_in_process ||
+	    (rtlpriv->buddy_priv &&
+	    rtlpriv->buddy_priv->easy_concurrent_ctl.switch_in_process)))
 		return;
 	/* we juse use em for BE/BK/VI/VO */
 	for (tid = 7; tid >= 0; tid--) {
@@ -557,22 +559,20 @@ static void _rtl_pci_tx_chk_waitq(struct ieee80211_hw *hw)
 			 * multicast/broadcast/no_qos data */
 			info = IEEE80211_SKB_CB(skb);
 			if (info->flags & IEEE80211_TX_CTL_AMPDU)
-				_rtl_pci_update_earlymode_info(hw, skb,
-							       &tcb_desc, tid);
+				_rtl_update_earlymode_info(hw, skb,
+							   &tcb_desc, tid);
 
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,7,0))
-			rtlpriv->intf_ops->adapter_tx(hw, skb, &tcb_desc);
-#else
 			rtlpriv->intf_ops->adapter_tx(hw, NULL, skb, &tcb_desc);
-#endif
 		}
 	}
 }
+
 
 static void _rtl_pci_tx_isr(struct ieee80211_hw *hw, int prio)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_pci *rtlpci = rtl_pcidev(rtl_pcipriv(hw));
+
 	struct rtl8192_tx_ring *ring = &rtlpci->tx_ring[prio];
 
 	while (skb_queue_len(&ring->queue)) {
@@ -589,21 +589,19 @@ static void _rtl_pci_tx_isr(struct ieee80211_hw *hw, int prio)
 
 		if (rtlpriv->cfg->ops->get_available_desc &&
 		    rtlpriv->cfg->ops->get_available_desc(hw, prio) <= 1) {
-			printk("no available desc!\n");
+			RT_TRACE(rtlpriv, (COMP_INTR | COMP_SEND), DBG_DMESG,
+				 "no available desc!\n");
 			return;
 		}
 
-		if (prio != BEACON_QUEUE &&
-		    !rtlpriv->cfg->ops->is_tx_desc_closed(hw, prio, ring->idx))
+		if (!rtlpriv->cfg->ops->is_tx_desc_closed(hw, prio, ring->idx))
 			return;
-
 		ring->idx = (ring->idx + 1) % ring->entries;
 
 		skb = __skb_dequeue(&ring->queue);
-
 		pci_unmap_single(rtlpci->pdev,
 				 rtlpriv->cfg->ops->
-					     get_desc((u8 *) entry, true,
+					     get_desc((u8 *)entry, true,
 						      HW_DESC_TXBUFF_ADDR),
 				 skb->len, PCI_DMA_TODEVICE);
 
@@ -612,10 +610,10 @@ static void _rtl_pci_tx_isr(struct ieee80211_hw *hw, int prio)
 			skb_pull(skb, EM_HDR_LEN);
 
 		RT_TRACE(rtlpriv, (COMP_INTR | COMP_SEND), DBG_TRACE,
-			"new ring->idx:%d,free: skb_queue_len:%d, free: seq:%d\n",
+			 "new ring->idx:%d, free: skb_queue_len:%d, free: seq:%x\n",
 			 ring->idx,
 			 skb_queue_len(&ring->queue),
-			 *(u16 *) (skb->data + 22));
+			 *(u16 *)(skb->data + 22));
 
 		if (prio == TXCMD_QUEUE) {
 			dev_kfree_skb(skb);
@@ -624,22 +622,23 @@ static void _rtl_pci_tx_isr(struct ieee80211_hw *hw, int prio)
 		}
 
 		/* for sw LPS, just after NULL skb send out, we can
-		 * sure AP kown we are sleeped, our we should not let
-		 * rf to sleep*/
+		 * sure AP knows we are sleeping, we should not let
+		 * rf sleep
+		 */
 		fc = rtl_get_fc(skb);
 		if (ieee80211_is_nullfunc(fc)) {
 			if (ieee80211_has_pm(fc)) {
-				rtlpriv->mac80211.offchan_deley = true;
-				rtlpriv->psc.state_inap = 1;
+				rtlpriv->mac80211.offchan_delay = true;
+				rtlpriv->psc.state_inap = true;
 			} else {
-				rtlpriv->psc.state_inap = 0;
+				rtlpriv->psc.state_inap = false;
 			}
 		}
 		if (ieee80211_is_action(fc)) {
-			struct ieee80211_mgmt_compat *action_frame =
-				(struct ieee80211_mgmt_compat *)skb->data;
+			struct ieee80211_mgmt *action_frame =
+				(struct ieee80211_mgmt *)skb->data;
 			if (action_frame->u.action.u.ht_smps.action ==
-				WLAN_HT_ACTION_SMPS) {
+			    WLAN_HT_ACTION_SMPS) {
 				dev_kfree_skb(skb);
 				goto tx_status_ok;
 			}
@@ -661,9 +660,9 @@ static void _rtl_pci_tx_isr(struct ieee80211_hw *hw, int prio)
 		if ((ring->entries - skb_queue_len(&ring->queue)) <= 4) {
 
 			RT_TRACE(rtlpriv, COMP_ERR, DBG_DMESG,
-					"more desc left, wake skb_queue@%d,ring->idx = %d, skb_queue_len = 0x%d\n",
-					 prio, ring->idx,
-					 skb_queue_len(&ring->queue));
+				 "more desc left, wake skb_queue@%d, ring->idx = %d, skb_queue_len = 0x%x\n",
+				 prio, ring->idx,
+				 skb_queue_len(&ring->queue));
 
 			ieee80211_wake_queue(hw,
 					skb_get_queue_mapping
@@ -674,10 +673,9 @@ tx_status_ok:
 	}
 
 	if (((rtlpriv->link_info.num_rx_inperiod +
-		rtlpriv->link_info.num_tx_inperiod) > 8) ||
-		(rtlpriv->link_info.num_rx_inperiod > 2)) {
+	      rtlpriv->link_info.num_tx_inperiod) > 8) ||
+	      (rtlpriv->link_info.num_rx_inperiod > 2))
 		rtl_lps_leave(hw);
-	}
 }
 
 static int _rtl_pci_init_one_rxdesc(struct ieee80211_hw *hw,
@@ -708,38 +706,39 @@ remap:
 		return 0;
 	rtlpci->rx_ring[rxring_idx].rx_buf[desc_idx] = skb;
 	if (rtlpriv->use_new_trx_flow) {
-		rtlpriv->cfg->ops->set_desc(hw, (u8 *) entry, false,
+		rtlpriv->cfg->ops->set_desc(hw, (u8 *)entry, false,
 					    HW_DESC_RX_PREPARE,
-					    (u8 *) &bufferaddress);
+					    (u8 *)&bufferaddress);
 	} else {
-		rtlpriv->cfg->ops->set_desc(hw, (u8 *) entry, false,
+		rtlpriv->cfg->ops->set_desc(hw, (u8 *)entry, false,
 					    HW_DESC_RXBUFF_ADDR,
-					    (u8 *) &bufferaddress);
-		rtlpriv->cfg->ops->set_desc(hw, (u8 *) entry, false,
+					    (u8 *)&bufferaddress);
+		rtlpriv->cfg->ops->set_desc(hw, (u8 *)entry, false,
 					    HW_DESC_RXPKT_LEN,
-					    (u8 *) &rtlpci->rxbuffersize);
-		rtlpriv->cfg->ops->set_desc(hw, (u8 *) entry, false,
+					    (u8 *)&rtlpci->rxbuffersize);
+		rtlpriv->cfg->ops->set_desc(hw, (u8 *)entry, false,
 					    HW_DESC_RXOWN,
-					    (u8 *) &tmp_one);
+					    (u8 *)&tmp_one);
 	}
-
 	return 1;
 }
 
 /* inorder to receive 8K AMSDU we have set skb to
  * 9100bytes in init rx ring, but if this packet is
- * not a AMSDU, this so big packet will be sent to
+ * not a AMSDU, this large packet will be sent to
  * TCP/IP directly, this cause big packet ping fail
  * like: "ping -s 65507", so here we will realloc skb
- * based on the true size of packet, I think mac80211
- * do it will be better, but now mac80211 haven't */
-
-/* but some platform will fail when alloc skb sometimes.
+ * based on the true size of packet, Mac80211
+ * Probably will do it better, but does not yet.
+ *
+ * Some platform will fail when alloc skb sometimes.
  * in this condition, we will send the old skb to
  * mac80211 directly, this will not cause any other
- * issues, but only be losted by TCP/IP */
+ * issues, but only this packet will be lost by TCP/IP
+ */
 static void _rtl_pci_rx_to_mac80211(struct ieee80211_hw *hw,
-	struct sk_buff *skb, struct ieee80211_rx_status rx_status)
+				    struct sk_buff *skb,
+				    struct ieee80211_rx_status rx_status)
 {
 	if (unlikely(!rtl_action_proc(hw, skb, false))) {
 		dev_kfree_skb_any(skb);
@@ -750,11 +749,10 @@ static void _rtl_pci_rx_to_mac80211(struct ieee80211_hw *hw,
 		uskb = dev_alloc_skb(skb->len + 128);
 		if (likely(uskb)) {
 			memcpy(IEEE80211_SKB_RXCB(uskb), &rx_status,
-					sizeof(rx_status));
+			       sizeof(rx_status));
 			pdata = (u8 *)skb_put(uskb, skb->len);
 			memcpy(pdata, skb->data, skb->len);
 			dev_kfree_skb_any(skb);
-
 			ieee80211_rx_irqsafe(hw, uskb);
 		} else {
 			ieee80211_rx_irqsafe(hw, skb);
@@ -778,16 +776,14 @@ static void _rtl_pci_rx_interrupt(struct ieee80211_hw *hw)
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_pci *rtlpci = rtl_pcidev(rtl_pcipriv(hw));
 	int rxring_idx = RTL_PCI_RX_MPDU_QUEUE;
-
 	struct ieee80211_rx_status rx_status = { 0 };
 	unsigned int count = rtlpci->rxringcount;
+	u8 own;
+	u8 tmp_one;
 	bool unicast = false;
 	u8 hw_queue = 0;
 	unsigned int rx_remained_cnt;
-	u8 own;
-	u8 tmp_one;
-
-	struct rtl_stats status = {
+	struct rtl_stats stats = {
 		.signal = 0,
 		.rate = 0,
 	};
@@ -803,7 +799,7 @@ static void _rtl_pci_rx_interrupt(struct ieee80211_hw *hw)
 		struct rtl_rx_desc *pdesc = NULL;
 		/*rx pkt */
 		struct sk_buff *skb = rtlpci->rx_ring[rxring_idx].rx_buf[
-					rtlpci->rx_ring[rxring_idx].idx];
+				      rtlpci->rx_ring[rxring_idx].idx];
 		struct sk_buff *new_skb;
 
 		if (rtlpriv->use_new_trx_flow) {
@@ -819,9 +815,9 @@ static void _rtl_pci_rx_interrupt(struct ieee80211_hw *hw)
 			pdesc = &rtlpci->rx_ring[rxring_idx].desc[
 				rtlpci->rx_ring[rxring_idx].idx];
 
-			own = (u8) rtlpriv->cfg->ops->get_desc((u8 *) pdesc,
-							       false,
-							       HW_DESC_OWN);
+			own = (u8)rtlpriv->cfg->ops->get_desc((u8 *)pdesc,
+							      false,
+							      HW_DESC_OWN);
 			if (own) /* wait data to be filled by hardware */
 				return;
 		}
@@ -838,8 +834,8 @@ static void _rtl_pci_rx_interrupt(struct ieee80211_hw *hw)
 		if (unlikely(!new_skb))
 			goto no_new;
 		memset(&rx_status , 0 , sizeof(rx_status));
-		rtlpriv->cfg->ops->query_rx_desc(hw, &status,
-						 &rx_status, (u8 *) pdesc, skb);
+		rtlpriv->cfg->ops->query_rx_desc(hw, &stats,
+						 &rx_status, (u8 *)pdesc, skb);
 
 		if (rtlpriv->use_new_trx_flow)
 			rtlpriv->cfg->ops->rx_check_dma_ok(hw,
@@ -852,37 +848,36 @@ static void _rtl_pci_rx_interrupt(struct ieee80211_hw *hw)
 		if (skb->end - skb->tail > len) {
 			skb_put(skb, len);
 			if (rtlpriv->use_new_trx_flow)
-				skb_reserve(skb, status.rx_drvinfo_size +
-						 status.rx_bufshift + 24);
+				skb_reserve(skb, stats.rx_drvinfo_size +
+					    stats.rx_bufshift + 24);
 			else
-				skb_reserve(skb, status.rx_drvinfo_size +
-						 status.rx_bufshift);
-
+				skb_reserve(skb, stats.rx_drvinfo_size +
+					    stats.rx_bufshift);
 		} else {
 			RT_TRACE(rtlpriv, COMP_ERR, DBG_WARNING,
-			"skb->end - skb->tail = %d, len is %d\n",
-			skb->end - skb->tail, len);
+				 "skb->end - skb->tail = %d, len is %d\n",
+				 skb->end - skb->tail, len);
 			dev_kfree_skb_any(skb);
 			goto new_trx_end;
 		}
-
 		/* handle command packet here */
-		if (rtlpriv->cfg->ops->rx_command_packet(hw, &status, skb)) {
+		if (rtlpriv->cfg->ops->rx_command_packet &&
+		    rtlpriv->cfg->ops->rx_command_packet(hw, &stats, skb)) {
 				dev_kfree_skb_any(skb);
 				goto new_trx_end;
 		}
 
 		/*
-		 *NOTICE This can not be use for mac80211,
-		 *this is done in mac80211 code,
-		 *if you done here sec DHCP will fail
-		 *skb_trim(skb, skb->len - 4);
+		 * NOTICE This can not be use for mac80211,
+		 * this is done in mac80211 code,
+		 * if done here sec DHCP will fail
+		 * skb_trim(skb, skb->len - 4);
 		 */
 
 		hdr = rtl_get_hdr(skb);
 		fc = rtl_get_fc(skb);
 
-		if (!status.crc && !status.hwerror) {
+		if (!stats.crc && !stats.hwerror) {
 			memcpy(IEEE80211_SKB_RXCB(skb), &rx_status,
 			       sizeof(rx_status));
 
@@ -894,15 +889,15 @@ static void _rtl_pci_rx_interrupt(struct ieee80211_hw *hw)
 				unicast = true;
 				rtlpriv->stats.rxbytesunicast += skb->len;
 			}
-
-			rtl_is_special_data(hw, skb, false);
+			rtl_is_special_data(hw, skb, false, true);
 
 			if (ieee80211_is_data(fc)) {
 				rtlpriv->cfg->ops->led_control(hw, LED_CTL_RX);
-
 				if (unicast)
 					rtlpriv->link_info.num_rx_inperiod++;
 			}
+
+			rtl_collect_scan_list(hw, skb);
 
 			/* static bcn for roaming */
 			rtl_beacon_statistic(hw, skb);
@@ -911,7 +906,8 @@ static void _rtl_pci_rx_interrupt(struct ieee80211_hw *hw)
 			rtl_swlps_beacon(hw, (void *)skb->data, skb->len);
 			rtl_recognize_peer(hw, (void *)skb->data, skb->len);
 			if ((rtlpriv->mac80211.opmode == NL80211_IFTYPE_AP) &&
-			    (rtlpriv->rtlhal.current_bandtype == BAND_ON_2_4G) &&
+			    (rtlpriv->rtlhal.current_bandtype ==
+			     BAND_ON_2_4G) &&
 			    (ieee80211_is_beacon(fc) ||
 			     ieee80211_is_probe_resp(fc))) {
 				dev_kfree_skb_any(skb);
@@ -924,20 +920,17 @@ static void _rtl_pci_rx_interrupt(struct ieee80211_hw *hw)
 new_trx_end:
 		if (rtlpriv->use_new_trx_flow) {
 			rtlpci->rx_ring[hw_queue].next_rx_rp += 1;
-			rtlpci->rx_ring[hw_queue].next_rx_rp %= RX_DESC_NUM_92E;
+			rtlpci->rx_ring[hw_queue].next_rx_rp %=
+					RTL_PCI_MAX_RX_COUNT;
 
 			rx_remained_cnt--;
-
-			rtl_write_word(rtlpriv, 0x3B4, rtlpci->rx_ring[hw_queue].next_rx_rp);
-
+			rtl_write_word(rtlpriv, 0x3B4,
+				       rtlpci->rx_ring[hw_queue].next_rx_rp);
 		}
 		if (((rtlpriv->link_info.num_rx_inperiod +
 		      rtlpriv->link_info.num_tx_inperiod) > 8) ||
-		    (rtlpriv->link_info.num_rx_inperiod > 2)) {
+		      (rtlpriv->link_info.num_rx_inperiod > 2))
 			rtl_lps_leave(hw);
-		}
-
-
 		skb = new_skb;
 no_new:
 		if (rtlpriv->use_new_trx_flow) {
@@ -948,13 +941,12 @@ no_new:
 			_rtl_pci_init_one_rxdesc(hw, skb, (u8 *)pdesc,
 						 rxring_idx,
 						 rtlpci->rx_ring[rxring_idx].idx);
-
 			if (rtlpci->rx_ring[rxring_idx].idx ==
 			    rtlpci->rxringcount - 1)
-				rtlpriv->cfg->ops->set_desc(hw, (u8 *) pdesc,
+				rtlpriv->cfg->ops->set_desc(hw, (u8 *)pdesc,
 							    false,
 							    HW_DESC_RXERO,
-							    (u8 *) &tmp_one);
+							    (u8 *)&tmp_one);
 		}
 		rtlpci->rx_ring[rxring_idx].idx =
 				(rtlpci->rx_ring[rxring_idx].idx + 1) %
@@ -965,15 +957,16 @@ no_new:
 static irqreturn_t _rtl_pci_interrupt(int irq, void *dev_id)
 {
 	struct ieee80211_hw *hw = dev_id;
-	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_pci *rtlpci = rtl_pcidev(rtl_pcipriv(hw));
+	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_hal *rtlhal = rtl_hal(rtl_priv(hw));
 	unsigned long flags;
 	u32 inta = 0;
 	u32 intb = 0;
+	irqreturn_t ret = IRQ_HANDLED;
 
 	if (rtlpci->irq_enabled == 0)
-		return IRQ_HANDLED;
+		return ret;
 
 	spin_lock_irqsave(&rtlpriv->locks.irq_th_lock , flags);
 	rtlpriv->cfg->ops->disable_interrupt(hw);
@@ -984,28 +977,31 @@ static irqreturn_t _rtl_pci_interrupt(int irq, void *dev_id)
 	/*Shared IRQ or HW disappared */
 	if (!inta || inta == 0xffff)
 		goto done;
+
 	/*<1> beacon related */
-	if (inta & rtlpriv->cfg->maps[RTL_IMR_TBDOK])
+	if (inta & rtlpriv->cfg->maps[RTL_IMR_TBDOK]) {
 		RT_TRACE(rtlpriv, COMP_INTR, DBG_TRACE,
 			 "beacon ok interrupt!\n");
+	}
 
-	if (unlikely(inta & rtlpriv->cfg->maps[RTL_IMR_TBDER]))
+	if (unlikely(inta & rtlpriv->cfg->maps[RTL_IMR_TBDER])) {
 		RT_TRACE(rtlpriv, COMP_INTR, DBG_TRACE,
 			 "beacon err interrupt!\n");
+	}
 
-	if (inta & rtlpriv->cfg->maps[RTL_IMR_BDOK])
-		RT_TRACE(rtlpriv, COMP_INTR, DBG_TRACE,
-			 "beacon interrupt!\n");
+	if (inta & rtlpriv->cfg->maps[RTL_IMR_BDOK]) {
+		RT_TRACE(rtlpriv, COMP_INTR, DBG_TRACE, "beacon interrupt!\n");
+	}
 
-	if (inta & rtlpriv->cfg->maps[RTL_IMR_BcnInt]) {
+	if (inta & rtlpriv->cfg->maps[RTL_IMR_BCNINT]) {
 		RT_TRACE(rtlpriv, COMP_INTR, DBG_TRACE,
 			 "prepare beacon for interrupt!\n");
 		tasklet_schedule(&rtlpriv->works.irq_prepare_bcn_tasklet);
 	}
 
-	/*<2> tx related */
+	/*<2> Tx related */
 	if (unlikely(intb & rtlpriv->cfg->maps[RTL_IMR_TXFOVW]))
-		RT_TRACE(rtlpriv, COMP_ERR, DBG_TRACE, "IMR_TXFOVW!\n");
+		RT_TRACE(rtlpriv, COMP_ERR, DBG_WARNING, "IMR_TXFOVW!\n");
 
 	if (inta & rtlpriv->cfg->maps[RTL_IMR_MGNTDOK]) {
 		RT_TRACE(rtlpriv, COMP_INTR, DBG_TRACE,
@@ -1061,10 +1057,9 @@ static irqreturn_t _rtl_pci_interrupt(int irq, void *dev_id)
 		}
 	}
 
-	/*<3> rx related */
+	/*<3> Rx related */
 	if (inta & rtlpriv->cfg->maps[RTL_IMR_ROK]) {
-		RT_TRACE(rtlpriv, COMP_INTR, DBG_TRACE,
-			 "Rx ok interrupt!\n");
+		RT_TRACE(rtlpriv, COMP_INTR, DBG_TRACE, "Rx ok interrupt!\n");
 		_rtl_pci_rx_interrupt(hw);
 	}
 
@@ -1093,12 +1088,13 @@ static irqreturn_t _rtl_pci_interrupt(int irq, void *dev_id)
 	/* Only 8188EE & 8723BE Supported.
 	 * If Other ICs Come in, System will corrupt,
 	 * because maps[RTL_IMR_HSISR_IND] & maps[MAC_HSISR]
-	 * are not initialized*/
+	 * are not initialized
+	 */
 	if (rtlhal->hw_type == HARDWARE_TYPE_RTL8188EE ||
 	    rtlhal->hw_type == HARDWARE_TYPE_RTL8723BE) {
 		if (unlikely(inta & rtlpriv->cfg->maps[RTL_IMR_HSISR_IND])) {
 			RT_TRACE(rtlpriv, COMP_INTR, DBG_TRACE,
-					 "hsisr interrupt!\n");
+				 "hsisr interrupt!\n");
 			_rtl_pci_hs_interrupt(hw);
 		}
 	}
@@ -1109,7 +1105,7 @@ static irqreturn_t _rtl_pci_interrupt(int irq, void *dev_id)
 done:
 	rtlpriv->cfg->ops->enable_interrupt(hw);
 	spin_unlock_irqrestore(&rtlpriv->locks.irq_th_lock, flags);
-	return IRQ_HANDLED;
+	return ret;
 }
 
 static void _rtl_pci_irq_tasklet(struct ieee80211_hw *hw)
@@ -1158,7 +1154,7 @@ static void _rtl_pci_prepare_bcn_tasklet(struct ieee80211_hw *hw)
 	if (rtlpriv->use_new_trx_flow)
 		pbuffer_desc = &ring->buffer_desc[0];
 
-	rtlpriv->cfg->ops->fill_tx_desc(hw, hdr, (u8 *) pdesc,
+	rtlpriv->cfg->ops->fill_tx_desc(hw, hdr, (u8 *)pdesc,
 					(u8 *)pbuffer_desc, info, NULL, pskb,
 					BEACON_QUEUE, &tcb_desc);
 
@@ -1166,13 +1162,12 @@ static void _rtl_pci_prepare_bcn_tasklet(struct ieee80211_hw *hw)
 
 	if (rtlpriv->use_new_trx_flow) {
 		temp_one = 4;
-		rtlpriv->cfg->ops->set_desc(hw, (u8 *) pbuffer_desc, true, HW_DESC_OWN,
-			    (u8 *) &temp_one);
+		rtlpriv->cfg->ops->set_desc(hw, (u8 *)pbuffer_desc, true,
+					    HW_DESC_OWN, (u8 *)&temp_one);
 	} else {
-		rtlpriv->cfg->ops->set_desc(hw, (u8 *) pdesc, true, HW_DESC_OWN,
-				    (u8 *) &temp_one);
+		rtlpriv->cfg->ops->set_desc(hw, (u8 *)pdesc, true, HW_DESC_OWN,
+					    &temp_one);
 	}
-
 	return;
 }
 
@@ -1198,12 +1193,11 @@ static void _rtl_pci_init_trx_var(struct ieee80211_hw *hw)
 	 */
 	rtlpci->txringcount[BEACON_QUEUE] = 2;
 
-	/*
-	 *BE queue need more descriptor for performance
+	/*BE queue need more descriptor for performance
 	 *consideration or, No more tx desc will happen,
 	 *and may cause mac80211 mem leakage.
 	 */
-	if (rtl_priv(hw)->use_new_trx_flow == false)
+	if (!rtl_priv(hw)->use_new_trx_flow)
 		rtlpci->txringcount[BE_QUEUE] = RT_TXDESC_NUM_BE_QUEUE;
 
 	rtlpci->rxbuffersize = 9100;	/*2048/1024; */
@@ -1218,8 +1212,8 @@ static void _rtl_pci_init_struct(struct ieee80211_hw *hw,
 	struct rtl_pci *rtlpci = rtl_pcidev(rtl_pcipriv(hw));
 	struct rtl_hal *rtlhal = rtl_hal(rtl_priv(hw));
 
-	rtlpriv->rtlhal.up_first_time = true;
-	rtlpriv->rtlhal.being_init_adapter = false;
+	rtlpci->up_first_time = true;
+	rtlpci->being_init_adapter = false;
 
 	rtlhal->hw = hw;
 	rtlpci->pdev = pdev;
@@ -1227,7 +1221,8 @@ static void _rtl_pci_init_struct(struct ieee80211_hw *hw,
 	/*Tx/Rx related var */
 	_rtl_pci_init_trx_var(hw);
 
-	/*IBSS*/ mac->beacon_interval = 100;
+	/*IBSS*/
+	mac->beacon_interval = 100;
 
 	/*AMPDU*/
 	mac->min_space_cfg = 0;
@@ -1235,6 +1230,10 @@ static void _rtl_pci_init_struct(struct ieee80211_hw *hw,
 	/*set sane AMPDU defaults */
 	mac->current_ampdu_density = 7;
 	mac->current_ampdu_factor = 3;
+
+	/*Retry Limit*/
+	mac->retry_short = 7;
+	mac->retry_long = 7;
 
 	/*QOS*/
 	rtlpci->acm_method = EACMWAY2_SW;
@@ -1263,9 +1262,10 @@ static int _rtl_pci_init_tx_ring(struct ieee80211_hw *hw,
 
 	/* alloc tx buffer desc for new trx flow*/
 	if (rtlpriv->use_new_trx_flow) {
-		buffer_desc = pci_zalloc_consistent(rtlpci->pdev,
-					sizeof(*buffer_desc) * entries,
-					&buffer_desc_dma);
+		buffer_desc =
+		   pci_zalloc_consistent(rtlpci->pdev,
+					 sizeof(*buffer_desc) * entries,
+					 &buffer_desc_dma);
 
 		if (!buffer_desc || (unsigned long)buffer_desc & 0xFF) {
 			RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG,
@@ -1280,12 +1280,11 @@ static int _rtl_pci_init_tx_ring(struct ieee80211_hw *hw,
 		rtlpci->tx_ring[prio].cur_tx_rp = 0;
 		rtlpci->tx_ring[prio].cur_tx_wp = 0;
 		rtlpci->tx_ring[prio].avl_desc = entries;
-
 	}
 
 	/* alloc dma for this ring */
 	desc = pci_zalloc_consistent(rtlpci->pdev,
-				    sizeof(*desc) * entries, &desc_dma);
+				     sizeof(*desc) * entries, &desc_dma);
 
 	if (!desc || (unsigned long)desc & 0xFF) {
 		RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG,
@@ -1299,20 +1298,21 @@ static int _rtl_pci_init_tx_ring(struct ieee80211_hw *hw,
 	rtlpci->tx_ring[prio].idx = 0;
 	rtlpci->tx_ring[prio].entries = entries;
 	skb_queue_head_init(&rtlpci->tx_ring[prio].queue);
-	RT_TRACE(rtlpriv, COMP_INIT, DBG_LOUD,
-		 "queue:%d, ring_addr:%p\n", prio, desc);
+
+	RT_TRACE(rtlpriv, COMP_INIT, DBG_LOUD, "queue:%d, ring_addr:%p\n",
+		 prio, desc);
 
 	/* init every desc in this ring */
-	if (rtlpriv->use_new_trx_flow == false) {
+	if (!rtlpriv->use_new_trx_flow) {
 		for (i = 0; i < entries; i++) {
-			nextdescaddress = (u32) desc_dma +
-						      ((i +	1) % entries) *
-						      sizeof(*desc);
+			nextdescaddress = (u32)desc_dma +
+					  ((i +	1) % entries) *
+					  sizeof(*desc);
 
-			rtlpriv->cfg->ops->set_desc(hw, (u8 *) &(desc[i]),
+			rtlpriv->cfg->ops->set_desc(hw, (u8 *)&desc[i],
 						    true,
 						    HW_DESC_TX_NEXTDESC_ADDR,
-						    (u8 *) &nextdescaddress);
+						    (u8 *)&nextdescaddress);
 		}
 	}
 	return 0;
@@ -1322,7 +1322,6 @@ static int _rtl_pci_init_rx_ring(struct ieee80211_hw *hw, int rxring_idx)
 {
 	struct rtl_pci *rtlpci = rtl_pcidev(rtl_pcipriv(hw));
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
-
 	int i;
 
 	if (rtlpriv->use_new_trx_flow) {
@@ -1330,13 +1329,14 @@ static int _rtl_pci_init_rx_ring(struct ieee80211_hw *hw, int rxring_idx)
 		/* alloc dma for this ring */
 		rtlpci->rx_ring[rxring_idx].buffer_desc =
 		    pci_zalloc_consistent(rtlpci->pdev,
-					 sizeof(*rtlpci->rx_ring[rxring_idx].
-						buffer_desc) *
-						rtlpci->rxringcount,
-					 &rtlpci->rx_ring[rxring_idx].dma);
+					  sizeof(*rtlpci->rx_ring[rxring_idx].
+						 buffer_desc) *
+						 rtlpci->rxringcount,
+					  &rtlpci->rx_ring[rxring_idx].dma);
 		if (!rtlpci->rx_ring[rxring_idx].buffer_desc ||
-		    (unsigned long)rtlpci->rx_ring[rxring_idx].buffer_desc & 0xFF) {
-			RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG, "Cannot allocate RX ring\n");
+		    (ulong)rtlpci->rx_ring[rxring_idx].buffer_desc & 0xFF) {
+			RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG,
+				 "Cannot allocate RX ring\n");
 			return -ENOMEM;
 		}
 
@@ -1354,9 +1354,9 @@ static int _rtl_pci_init_rx_ring(struct ieee80211_hw *hw, int rxring_idx)
 		/* alloc dma for this ring */
 		rtlpci->rx_ring[rxring_idx].desc =
 		    pci_zalloc_consistent(rtlpci->pdev,
-					 sizeof(*rtlpci->rx_ring[rxring_idx].
-					desc) * rtlpci->rxringcount,
-					 &rtlpci->rx_ring[rxring_idx].dma);
+					  sizeof(*rtlpci->rx_ring[rxring_idx].
+					  desc) * rtlpci->rxringcount,
+					  &rtlpci->rx_ring[rxring_idx].dma);
 		if (!rtlpci->rx_ring[rxring_idx].desc ||
 		    (unsigned long)rtlpci->rx_ring[rxring_idx].desc & 0xFF) {
 			RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG,
@@ -1366,20 +1366,22 @@ static int _rtl_pci_init_rx_ring(struct ieee80211_hw *hw, int rxring_idx)
 
 		/* init every desc in this ring */
 		rtlpci->rx_ring[rxring_idx].idx = 0;
+
 		for (i = 0; i < rtlpci->rxringcount; i++) {
 			entry = &rtlpci->rx_ring[rxring_idx].desc[i];
 			if (!_rtl_pci_init_one_rxdesc(hw, NULL, (u8 *)entry,
 						      rxring_idx, i))
 				return -ENOMEM;
 		}
-		rtlpriv->cfg->ops->set_desc(hw, (u8 *) entry, false,
-					    HW_DESC_RXERO, (u8 *) &tmp_one);
+
+		rtlpriv->cfg->ops->set_desc(hw, (u8 *)entry, false,
+					    HW_DESC_RXERO, &tmp_one);
 	}
 	return 0;
 }
 
 static void _rtl_pci_free_tx_ring(struct ieee80211_hw *hw,
-				  unsigned int prio)
+		unsigned int prio)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_pci *rtlpci = rtl_pcidev(rtl_pcipriv(hw));
@@ -1389,14 +1391,16 @@ static void _rtl_pci_free_tx_ring(struct ieee80211_hw *hw,
 	while (skb_queue_len(&ring->queue)) {
 		u8 *entry;
 		struct sk_buff *skb = __skb_dequeue(&ring->queue);
+
 		if (rtlpriv->use_new_trx_flow)
 			entry = (u8 *)(&ring->buffer_desc[ring->idx]);
 		else
 			entry = (u8 *)(&ring->desc[ring->idx]);
 
 		pci_unmap_single(rtlpci->pdev,
-				 rtlpriv->cfg->ops->get_desc(
-				 (u8 *) entry, true, HW_DESC_TXBUFF_ADDR),
+				 rtlpriv->cfg->
+					     ops->get_desc((u8 *)entry, true,
+						   HW_DESC_TXBUFF_ADDR),
 				 skb->len, PCI_DMA_TODEVICE);
 		kfree_skb(skb);
 		ring->idx = (ring->idx + 1) % ring->entries;
@@ -1424,10 +1428,10 @@ static void _rtl_pci_free_rx_ring(struct ieee80211_hw *hw, int rxring_idx)
 	/* free every desc in this ring */
 	for (i = 0; i < rtlpci->rxringcount; i++) {
 		struct sk_buff *skb = rtlpci->rx_ring[rxring_idx].rx_buf[i];
+
 		if (!skb)
 			continue;
-
-		pci_unmap_single(rtlpci->pdev, *((dma_addr_t *) skb->cb),
+		pci_unmap_single(rtlpci->pdev, *((dma_addr_t *)skb->cb),
 				 rtlpci->rxbuffersize, PCI_DMA_FROMDEVICE);
 		kfree_skb(skb);
 	}
@@ -1435,10 +1439,10 @@ static void _rtl_pci_free_rx_ring(struct ieee80211_hw *hw, int rxring_idx)
 	/* free dma of this ring */
 	if (rtlpriv->use_new_trx_flow) {
 		pci_free_consistent(rtlpci->pdev,
-				sizeof(*rtlpci->rx_ring[rxring_idx].
-				buffer_desc) * rtlpci->rxringcount,
-				rtlpci->rx_ring[rxring_idx].buffer_desc,
-				rtlpci->rx_ring[rxring_idx].dma);
+				    sizeof(*rtlpci->rx_ring[rxring_idx].
+				    buffer_desc) * rtlpci->rxringcount,
+				    rtlpci->rx_ring[rxring_idx].buffer_desc,
+				    rtlpci->rx_ring[rxring_idx].dma);
 		rtlpci->rx_ring[rxring_idx].buffer_desc = NULL;
 	} else {
 		pci_free_consistent(rtlpci->pdev,
@@ -1457,7 +1461,8 @@ static int _rtl_pci_init_trx_ring(struct ieee80211_hw *hw)
 	int i, rxring_idx;
 
 	/* rxring_idx 0:RX_MPDU_QUEUE
-	 * rxring_idx 1:RX_CMD_QUEUE */
+	 * rxring_idx 1:RX_CMD_QUEUE
+	 */
 	for (rxring_idx = 0; rxring_idx < RTL_PCI_MAX_RX_QUEUE; rxring_idx++) {
 		ret = _rtl_pci_init_rx_ring(hw, rxring_idx);
 		if (ret)
@@ -1465,7 +1470,8 @@ static int _rtl_pci_init_trx_ring(struct ieee80211_hw *hw)
 	}
 
 	for (i = 0; i < RTL_PCI_MAX_TX_QUEUE_COUNT; i++) {
-		ret = _rtl_pci_init_tx_ring(hw, i, rtlpci->txringcount[i]);
+		ret = _rtl_pci_init_tx_ring(hw, i,
+				 rtlpci->txringcount[i]);
 		if (ret)
 			goto err_free_rings;
 	}
@@ -1511,47 +1517,56 @@ int rtl_pci_reset_trx_ring(struct ieee80211_hw *hw)
 	/* rxring_idx 1:RX_CMD_QUEUE */
 	for (rxring_idx = 0; rxring_idx < RTL_PCI_MAX_RX_QUEUE; rxring_idx++) {
 		/* force the rx_ring[RX_MPDU_QUEUE/
-		 * RX_CMD_QUEUE].idx to the first one */
-		/*new trx flow, do nothing*/
-		if ((rtlpriv->use_new_trx_flow == false) &&
-		     rtlpci->rx_ring[rxring_idx].desc) {
+		 * RX_CMD_QUEUE].idx to the first one
+		 *new trx flow, do nothing
+		*/
+		if (!rtlpriv->use_new_trx_flow &&
+		    rtlpci->rx_ring[rxring_idx].desc) {
 			struct rtl_rx_desc *entry = NULL;
 
 			rtlpci->rx_ring[rxring_idx].idx = 0;
 			for (i = 0; i < rtlpci->rxringcount; i++) {
 				entry = &rtlpci->rx_ring[rxring_idx].desc[i];
-				bufferaddress = rtlpriv->cfg->ops->get_desc((u8 *) entry,
-					false , HW_DESC_RXBUFF_ADDR);
-				memset((u8 *) entry , 0 ,
-					sizeof(*rtlpci->rx_ring[rxring_idx].desc));/*clear one entry*/
+				bufferaddress =
+				  rtlpriv->cfg->ops->get_desc((u8 *)entry,
+				  false , HW_DESC_RXBUFF_ADDR);
+				memset((u8 *)entry , 0 ,
+				       sizeof(*rtlpci->rx_ring
+				       [rxring_idx].desc));/*clear one entry*/
 				if (rtlpriv->use_new_trx_flow) {
-					rtlpriv->cfg->ops->set_desc(hw, (u8 *) entry, false,
+					rtlpriv->cfg->ops->set_desc(hw,
+					    (u8 *)entry, false,
 					    HW_DESC_RX_PREPARE,
-					    (u8 *) &bufferaddress);
+					    (u8 *)&bufferaddress);
 				} else {
-					rtlpriv->cfg->ops->set_desc(hw, (u8 *) entry, false,
+					rtlpriv->cfg->ops->set_desc(hw,
+					    (u8 *)entry, false,
 					    HW_DESC_RXBUFF_ADDR,
-					    (u8 *) &bufferaddress);
-					rtlpriv->cfg->ops->set_desc(hw, (u8 *) entry, false,
+					    (u8 *)&bufferaddress);
+					rtlpriv->cfg->ops->set_desc(hw,
+					    (u8 *)entry, false,
 					    HW_DESC_RXPKT_LEN,
-					    (u8 *) &rtlpci->rxbuffersize);
-					rtlpriv->cfg->ops->set_desc(hw, (u8 *) entry, false,
+					    (u8 *)&rtlpci->rxbuffersize);
+					rtlpriv->cfg->ops->set_desc(hw,
+					    (u8 *)entry, false,
 					    HW_DESC_RXOWN,
-					    (u8 *) &tmp_one);
+					    (u8 *)&tmp_one);
 				}
 			}
-			rtlpriv->cfg->ops->set_desc(hw, (u8 *) entry, false,
-					    HW_DESC_RXERO, (u8 *) &tmp_one);
+			rtlpriv->cfg->ops->set_desc(hw, (u8 *)entry, false,
+					    HW_DESC_RXERO, (u8 *)&tmp_one);
 		}
 		rtlpci->rx_ring[rxring_idx].idx = 0;
 	}
 
-	/* after reset, release previous pending packet,
-	 * and force the  tx idx to the first one */
+	/*
+	 *after reset, release previous pending packet,
+	 *and force the  tx idx to the first one
+	 */
 	spin_lock_irqsave(&rtlpriv->locks.irq_th_lock, flags);
 	for (i = 0; i < RTL_PCI_MAX_TX_QUEUE_COUNT; i++) {
 		if (rtlpci->tx_ring[i].desc ||
-			rtlpci->tx_ring[i].buffer_desc) {
+		    rtlpci->tx_ring[i].buffer_desc) {
 			struct rtl8192_tx_ring *ring = &rtlpci->tx_ring[i];
 
 			while (skb_queue_len(&ring->queue)) {
@@ -1565,36 +1580,28 @@ int rtl_pci_reset_trx_ring(struct ieee80211_hw *hw)
 					entry = (u8 *)(&ring->desc[ring->idx]);
 
 				pci_unmap_single(rtlpci->pdev,
-					rtlpriv->cfg->ops->get_desc(
-							(u8 *)entry, true,
-							HW_DESC_TXBUFF_ADDR),
-					skb->len, PCI_DMA_TODEVICE);
-				kfree_skb(skb);
+						 rtlpriv->cfg->ops->
+							 get_desc((u8 *)
+							 entry,
+							 true,
+							 HW_DESC_TXBUFF_ADDR),
+						 skb->len, PCI_DMA_TODEVICE);
+				dev_kfree_skb_irq(skb);
 				ring->idx = (ring->idx + 1) % ring->entries;
 			}
 			ring->idx = 0;
 		}
 	}
-
 	spin_unlock_irqrestore(&rtlpriv->locks.irq_th_lock, flags);
 
 	return 0;
 }
 
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,7,0))
-static bool rtl_pci_tx_chk_waitq_insert(struct ieee80211_hw *hw,
-					struct sk_buff *skb)
-#else
 static bool rtl_pci_tx_chk_waitq_insert(struct ieee80211_hw *hw,
 					struct ieee80211_sta *sta,
 					struct sk_buff *skb)
-#endif
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,7,0))
-	struct ieee80211_tx_info *info = IEEE80211_SKB_CB(skb);
-	struct ieee80211_sta *sta = info->control.sta;
-#endif
 	struct rtl_sta_info *sta_entry = NULL;
 	u8 tid = rtl_get_tid(skb);
 	__le16 fc = rtl_get_fc(skb);
@@ -1611,13 +1618,13 @@ static bool rtl_pci_tx_chk_waitq_insert(struct ieee80211_hw *hw,
 		return false;
 	if (ieee80211_is_pspoll(fc))
 		return false;
-
 	if (sta_entry->tids[tid].agg.agg_state != RTL_AGG_OPERATIONAL)
 		return false;
 	if (_rtl_mac_to_hwqueue(hw, skb) > VO_QUEUE)
 		return false;
 	if (tid > 7)
 		return false;
+
 	/* maybe every tid should be checked */
 	if (!rtlpriv->link_info.higher_busytxtraffic[tid])
 		return false;
@@ -1629,28 +1636,18 @@ static bool rtl_pci_tx_chk_waitq_insert(struct ieee80211_hw *hw,
 	return true;
 }
 
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,7,0))
-int rtl_pci_tx(struct ieee80211_hw *hw, struct sk_buff *skb,
-	       struct rtl_tcb_desc *ptcb_desc)
-#else
 static int rtl_pci_tx(struct ieee80211_hw *hw,
 		      struct ieee80211_sta *sta,
 		      struct sk_buff *skb,
 		      struct rtl_tcb_desc *ptcb_desc)
-#endif
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_sta_info *sta_entry = NULL;
 	struct ieee80211_tx_info *info = IEEE80211_SKB_CB(skb);
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,7,0))
-	struct ieee80211_sta *sta = info->control.sta;
-#endif
 	struct rtl8192_tx_ring *ring;
 	struct rtl_tx_desc *pdesc;
 	struct rtl_tx_buffer_desc *ptx_bd_desc = NULL;
 	u16 idx;
-	u8 own;
-	u8 temp_one = 1;
 	u8 hw_queue = _rtl_mac_to_hwqueue(hw, skb);
 	unsigned long flags;
 	struct ieee80211_hdr *hdr = rtl_get_hdr(skb);
@@ -1660,13 +1657,15 @@ static int rtl_pci_tx(struct ieee80211_hw *hw,
 	/*ssn */
 	u8 tid = 0;
 	u16 seq_number = 0;
+	u8 own;
+	u8 temp_one = 1;
 
 	if (ieee80211_is_mgmt(fc))
 		rtl_tx_mgmt_proc(hw, skb);
 
 	if (rtlpriv->psc.sw_ps_enabled) {
 		if (ieee80211_is_data(fc) && !ieee80211_is_nullfunc(fc) &&
-		    !ieee80211_has_pm(fc))
+			!ieee80211_has_pm(fc))
 			hdr->frame_control |= cpu_to_le16(IEEE80211_FCTL_PM);
 	}
 
@@ -1692,18 +1691,17 @@ static int rtl_pci_tx(struct ieee80211_hw *hw,
 	}
 
 	pdesc = &ring->desc[idx];
-
 	if (rtlpriv->use_new_trx_flow) {
 		ptx_bd_desc = &ring->buffer_desc[idx];
 	} else {
-		own = (u8) rtlpriv->cfg->ops->get_desc((u8 *) pdesc,
+		own = (u8) rtlpriv->cfg->ops->get_desc((u8 *)pdesc,
 				true, HW_DESC_OWN);
 
 		if ((own == 1) && (hw_queue != BEACON_QUEUE)) {
 			RT_TRACE(rtlpriv, COMP_ERR, DBG_WARNING,
-				 "No more TX desc@%d, ring->idx = %d,idx = %d, skb_queue_len = 0x%d\n",
-				  hw_queue, ring->idx, idx,
-				  skb_queue_len(&ring->queue));
+				 "No more TX desc@%d, ring->idx = %d, idx = %d, skb_queue_len = 0x%x\n",
+				 hw_queue, ring->idx, idx,
+				 skb_queue_len(&ring->queue));
 
 			spin_unlock_irqrestore(&rtlpriv->locks.irq_th_lock,
 					       flags);
@@ -1713,11 +1711,11 @@ static int rtl_pci_tx(struct ieee80211_hw *hw,
 
 	if (rtlpriv->cfg->ops->get_available_desc &&
 	    rtlpriv->cfg->ops->get_available_desc(hw, hw_queue) == 0) {
-		RT_TRACE(rtlpriv, COMP_ERR, DBG_WARNING, "get_available_desc fail\n");
-		spin_unlock_irqrestore(&rtlpriv->locks.irq_th_lock,
-				       flags);
-		return skb->len;
-
+			RT_TRACE(rtlpriv, COMP_ERR, DBG_WARNING,
+				 "get_available_desc fail\n");
+			spin_unlock_irqrestore(&rtlpriv->locks.irq_th_lock,
+					       flags);
+			return skb->len;
 	}
 
 	if (ieee80211_is_data_qos(fc)) {
@@ -1736,26 +1734,25 @@ static int rtl_pci_tx(struct ieee80211_hw *hw,
 	if (ieee80211_is_data(fc))
 		rtlpriv->cfg->ops->led_control(hw, LED_CTL_TX);
 
-	rtlpriv->cfg->ops->fill_tx_desc(hw, hdr, (u8 *) pdesc,
-					(u8 *)ptx_bd_desc, info, sta, skb,
-					hw_queue, ptcb_desc);
+	rtlpriv->cfg->ops->fill_tx_desc(hw, hdr, (u8 *)pdesc,
+			(u8 *)ptx_bd_desc, info, sta, skb, hw_queue, ptcb_desc);
 
 	__skb_queue_tail(&ring->queue, skb);
+
 	if (rtlpriv->use_new_trx_flow) {
-		rtlpriv->cfg->ops->set_desc(hw, (u8 *) pdesc, true,
-					    HW_DESC_OWN, (u8 *) &hw_queue);
+		rtlpriv->cfg->ops->set_desc(hw, (u8 *)pdesc, true,
+					    HW_DESC_OWN, &hw_queue);
 	} else {
-		rtlpriv->cfg->ops->set_desc(hw, (u8 *) pdesc, true,
-					    HW_DESC_OWN, (u8 *) &temp_one);
+		rtlpriv->cfg->ops->set_desc(hw, (u8 *)pdesc, true,
+					    HW_DESC_OWN, &temp_one);
 	}
 
 	if ((ring->entries - skb_queue_len(&ring->queue)) < 2 &&
 	    hw_queue != BEACON_QUEUE) {
-
 		RT_TRACE(rtlpriv, COMP_ERR, DBG_LOUD,
-			 "less desc left, stop skb_queue@%d, ring->idx = %d,idx = %d, skb_queue_len = 0x%d\n",
-			  hw_queue, ring->idx, idx,
-			  skb_queue_len(&ring->queue));
+			 "less desc left, stop skb_queue@%d, ring->idx = %d, idx = %d, skb_queue_len = 0x%x\n",
+			 hw_queue, ring->idx, idx,
+			 skb_queue_len(&ring->queue));
 
 		ieee80211_stop_queue(hw, skb_get_queue_mapping(skb));
 	}
@@ -1766,12 +1763,13 @@ static int rtl_pci_tx(struct ieee80211_hw *hw,
 
 	return 0;
 }
+
 static void rtl_pci_flush(struct ieee80211_hw *hw, u32 queues, bool drop)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_pci_priv *pcipriv = rtl_pcipriv(hw);
-	struct rtl_mac *mac = rtl_mac(rtl_priv(hw));
 	struct rtl_hal *rtlhal = rtl_hal(rtl_priv(hw));
+	struct rtl_mac *mac = rtl_mac(rtl_priv(hw));
 	u16 i = 0;
 	int queue_id;
 	struct rtl8192_tx_ring *ring;
@@ -1781,6 +1779,7 @@ static void rtl_pci_flush(struct ieee80211_hw *hw, u32 queues, bool drop)
 
 	for (queue_id = RTL_PCI_MAX_TX_QUEUE_COUNT - 1; queue_id >= 0;) {
 		u32 queue_len;
+
 		if (((queues >> queue_id) & 0x1) == 0) {
 			queue_id--;
 			continue;
@@ -1792,7 +1791,7 @@ static void rtl_pci_flush(struct ieee80211_hw *hw, u32 queues, bool drop)
 			queue_id--;
 			continue;
 		} else {
-			msleep(5);
+			msleep(20);
 			i++;
 		}
 
@@ -1812,6 +1811,7 @@ static void rtl_pci_deinit(struct ieee80211_hw *hw)
 
 	synchronize_irq(rtlpci->pdev->irq);
 	tasklet_kill(&rtlpriv->works.irq_tasklet);
+	cancel_work_sync(&rtlpriv->works.lps_change_work);
 
 	flush_workqueue(rtlpriv->works.rtl_wq);
 	destroy_workqueue(rtlpriv->works.rtl_wq);
@@ -1828,47 +1828,52 @@ static int rtl_pci_init(struct ieee80211_hw *hw, struct pci_dev *pdev)
 	err = _rtl_pci_init_trx_ring(hw);
 	if (err) {
 		RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG,
-			 "tx ring initialization failed");
+			 "tx ring initialization failed\n");
 		return err;
 	}
 
-	return 1;
+	return 0;
 }
 
 static int rtl_pci_start(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_hal *rtlhal = rtl_hal(rtl_priv(hw));
+	struct rtl_pci *rtlpci = rtl_pcidev(rtl_pcipriv(hw));
 	struct rtl_ps_ctl *ppsc = rtl_psc(rtl_priv(hw));
+	struct rtl_mac *rtlmac = rtl_mac(rtl_priv(hw));
 
-	int err = 0;
-	RT_TRACE(rtlpriv, COMP_INIT, DBG_DMESG, " rtl_pci_start\n");
+	int err;
+
 	rtl_pci_reset_trx_ring(hw);
 
-	rtlpriv->rtlhal.driver_is_goingto_unload = false;
-	if (rtlpriv->cfg->ops->get_btc_status()) {
+	rtlpci->driver_is_goingto_unload = false;
+	if (rtlpriv->cfg->ops->get_btc_status &&
+	    rtlpriv->cfg->ops->get_btc_status()) {
+		rtlpriv->btcoexist.btc_info.ap_num = 36;
 		rtlpriv->btcoexist.btc_ops->btc_init_variables(rtlpriv);
 		rtlpriv->btcoexist.btc_ops->btc_init_hal_vars(rtlpriv);
 	}
-
 	err = rtlpriv->cfg->ops->hw_init(hw);
 	if (err) {
 		RT_TRACE(rtlpriv, COMP_INIT, DBG_DMESG,
-			 "Failed to config hardware err %x!\n" , err);
+			 "Failed to config hardware!\n");
 		return err;
 	}
+	rtlpriv->cfg->ops->set_hw_reg(hw, HW_VAR_RETRY_LIMIT,
+			&rtlmac->retry_long);
 
 	rtlpriv->cfg->ops->enable_interrupt(hw);
 	RT_TRACE(rtlpriv, COMP_INIT, DBG_LOUD, "enable_interrupt OK\n");
 
 	rtl_init_rx_config(hw);
 
-	/*should after adapter start and interrupt enable. */
+	/*should be after adapter start and interrupt enable. */
 	set_hal_start(rtlhal);
 
 	RT_CLEAR_PS_LEVEL(ppsc, RT_RF_OFF_LEVL_HALT_NIC);
 
-	rtlpriv->rtlhal.up_first_time = false;
+	rtlpci->up_first_time = false;
 
 	RT_TRACE(rtlpriv, COMP_INIT, DBG_DMESG, "rtl_pci_start OK\n");
 	return 0;
@@ -1877,48 +1882,54 @@ static int rtl_pci_start(struct ieee80211_hw *hw)
 static void rtl_pci_stop(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
+	struct rtl_pci *rtlpci = rtl_pcidev(rtl_pcipriv(hw));
 	struct rtl_ps_ctl *ppsc = rtl_psc(rtl_priv(hw));
 	struct rtl_hal *rtlhal = rtl_hal(rtl_priv(hw));
+	unsigned long flags;
 	u8 RFInProgressTimeOut = 0;
 
 	if (rtlpriv->cfg->ops->get_btc_status())
 		rtlpriv->btcoexist.btc_ops->btc_halt_notify();
 
 	/*
-	 *should before disable interrrupt&adapter
+	 *should be before disable interrupt&adapter
 	 *and will do it immediately.
 	 */
 	set_hal_stop(rtlhal);
 
+	rtlpci->driver_is_goingto_unload = true;
 	rtlpriv->cfg->ops->disable_interrupt(hw);
+	cancel_work_sync(&rtlpriv->works.lps_change_work);
 
-	spin_lock(&rtlpriv->locks.rf_ps_lock);
+	spin_lock_irqsave(&rtlpriv->locks.rf_ps_lock, flags);
 	while (ppsc->rfchange_inprogress) {
-		spin_unlock(&rtlpriv->locks.rf_ps_lock);
+		spin_unlock_irqrestore(&rtlpriv->locks.rf_ps_lock, flags);
 		if (RFInProgressTimeOut > 100) {
-			spin_lock(&rtlpriv->locks.rf_ps_lock);
+			spin_lock_irqsave(&rtlpriv->locks.rf_ps_lock, flags);
 			break;
 		}
 		mdelay(1);
 		RFInProgressTimeOut++;
-		spin_lock(&rtlpriv->locks.rf_ps_lock);
+		spin_lock_irqsave(&rtlpriv->locks.rf_ps_lock, flags);
 	}
 	ppsc->rfchange_inprogress = true;
-	spin_unlock(&rtlpriv->locks.rf_ps_lock);
+	spin_unlock_irqrestore(&rtlpriv->locks.rf_ps_lock, flags);
 
-	rtlpriv->rtlhal.driver_is_goingto_unload = true;
 	rtlpriv->cfg->ops->hw_disable(hw);
+	/* some things are not needed if firmware not available */
+	if (!rtlpriv->max_fw_size)
+		return;
 	rtlpriv->cfg->ops->led_control(hw, LED_CTL_POWER_OFF);
 
-	spin_lock(&rtlpriv->locks.rf_ps_lock);
+	spin_lock_irqsave(&rtlpriv->locks.rf_ps_lock, flags);
 	ppsc->rfchange_inprogress = false;
-	spin_unlock(&rtlpriv->locks.rf_ps_lock);
+	spin_unlock_irqrestore(&rtlpriv->locks.rf_ps_lock, flags);
 
 	rtl_pci_enable_aspm(hw);
 }
 
 static bool _rtl_pci_find_adapter(struct pci_dev *pdev,
-				  struct ieee80211_hw *hw)
+		struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_pci_priv *pcipriv = rtl_pcipriv(hw);
@@ -1930,10 +1941,21 @@ static bool _rtl_pci_find_adapter(struct pci_dev *pdev,
 	u16 irqline;
 	u8 tmp;
 
+	pcipriv->ndis_adapter.pcibridge_vendor = PCI_BRIDGE_VENDOR_UNKNOWN;
 	venderid = pdev->vendor;
 	deviceid = pdev->device;
 	pci_read_config_byte(pdev, 0x8, &revisionid);
 	pci_read_config_word(pdev, 0x3C, &irqline);
+
+	/* PCI ID 0x10ec:0x8192 occurs for both RTL8192E, which uses
+	 * r8192e_pci, and RTL8192SE, which uses this driver. If the
+	 * revision ID is RTL_PCI_REVISION_ID_8192PCIE (0x01), then
+	 * the correct driver is r8192e_pci, thus this routine should
+	 * return false.
+	 */
+	if (deviceid == RTL_PCI_8192SE_DID &&
+	    revisionid == RTL_PCI_REVISION_ID_8192PCIE)
+		return false;
 
 	if (deviceid == RTL_PCI_8192_DID ||
 	    deviceid == RTL_PCI_0044_DID ||
@@ -1946,11 +1968,10 @@ static bool _rtl_pci_find_adapter(struct pci_dev *pdev,
 		switch (revisionid) {
 		case RTL_PCI_REVISION_ID_8192PCIE:
 			RT_TRACE(rtlpriv, COMP_INIT, DBG_DMESG,
-				 "8192E is found but not supported now-vid/did=%x/%x\n",
+				 "8192 PCI-E is found - vid/did=%x/%x\n",
 				 venderid, deviceid);
 			rtlhal->hw_type = HARDWARE_TYPE_RTL8192E;
 			return false;
-			break;
 		case RTL_PCI_REVISION_ID_8192SE:
 			RT_TRACE(rtlpriv, COMP_INIT, DBG_DMESG,
 				 "8192SE is found - vid/did=%x/%x\n",
@@ -1968,8 +1989,8 @@ static bool _rtl_pci_find_adapter(struct pci_dev *pdev,
 	} else if (deviceid == RTL_PCI_8723AE_DID) {
 		rtlhal->hw_type = HARDWARE_TYPE_RTL8723AE;
 		RT_TRACE(rtlpriv, COMP_INIT, DBG_DMESG,
-			 "8723AE PCI-E is found - vid/did=%x/%x\n",
-			 venderid, deviceid);
+			 "8723AE PCI-E is found - "
+			 "vid/did=%x/%x\n", venderid, deviceid);
 	} else if (deviceid == RTL_PCI_8192CET_DID ||
 		   deviceid == RTL_PCI_8192CE_DID ||
 		   deviceid == RTL_PCI_8191CE_DID ||
@@ -1981,14 +2002,13 @@ static bool _rtl_pci_find_adapter(struct pci_dev *pdev,
 	} else if (deviceid == RTL_PCI_8192DE_DID ||
 		   deviceid == RTL_PCI_8192DE_DID2) {
 		rtlhal->hw_type = HARDWARE_TYPE_RTL8192DE;
-		rtlhal->bandset = BAND_ON_BOTH;
 		RT_TRACE(rtlpriv, COMP_INIT, DBG_DMESG,
 			 "8192D PCI-E is found - vid/did=%x/%x\n",
 			 venderid, deviceid);
 	} else if (deviceid == RTL_PCI_8188EE_DID) {
-			rtlhal->hw_type = HARDWARE_TYPE_RTL8188EE;
-			RT_TRACE(rtlpriv, COMP_INIT , DBG_LOUD,
-				 "Find adapter, Hardware type is 8188EE\n");
+		rtlhal->hw_type = HARDWARE_TYPE_RTL8188EE;
+		RT_TRACE(rtlpriv, COMP_INIT, DBG_LOUD,
+			 "Find adapter, Hardware type is 8188EE\n");
 	} else if (deviceid == RTL_PCI_8723BE_DID) {
 			rtlhal->hw_type = HARDWARE_TYPE_RTL8723BE;
 			RT_TRACE(rtlpriv, COMP_INIT , DBG_LOUD,
@@ -1999,14 +2019,12 @@ static bool _rtl_pci_find_adapter(struct pci_dev *pdev,
 				 "Find adapter, Hardware type is 8192EE\n");
 	} else if (deviceid == RTL_PCI_8821AE_DID) {
 			rtlhal->hw_type = HARDWARE_TYPE_RTL8821AE;
-			rtlhal->bandset = BAND_ON_BOTH;
 			RT_TRACE(rtlpriv, COMP_INIT , DBG_LOUD,
-				"Find adapter, Hardware type is 8821AE\n");
+				 "Find adapter, Hardware type is 8821AE\n");
 	} else if (deviceid == RTL_PCI_8812AE_DID) {
 			rtlhal->hw_type = HARDWARE_TYPE_RTL8812AE;
-			rtlhal->bandset = BAND_ON_BOTH;
 			RT_TRACE(rtlpriv, COMP_INIT , DBG_LOUD,
-				"Find adapter, Hardware type is 8812AE\n");
+				 "Find adapter, Hardware type is 8812AE\n");
 	} else {
 		RT_TRACE(rtlpriv, COMP_ERR, DBG_WARNING,
 			 "Err: Unknown device - vid/did=%x/%x\n",
@@ -2019,11 +2037,11 @@ static bool _rtl_pci_find_adapter(struct pci_dev *pdev,
 		if (revisionid == 0 || revisionid == 1) {
 			if (revisionid == 0) {
 				RT_TRACE(rtlpriv, COMP_INIT, DBG_LOUD,
-					 "Find 92DE MAC0.\n");
+					 "Find 92DE MAC0\n");
 				rtlhal->interfaceindex = 0;
 			} else if (revisionid == 1) {
 				RT_TRACE(rtlpriv, COMP_INIT, DBG_LOUD,
-					 "Find 92DE MAC1.\n");
+					 "Find 92DE MAC1\n");
 				rtlhal->interfaceindex = 1;
 			}
 		} else {
@@ -2048,32 +2066,30 @@ static bool _rtl_pci_find_adapter(struct pci_dev *pdev,
 	/*find bridge info */
 	pcipriv->ndis_adapter.pcibridge_vendor = PCI_BRIDGE_VENDOR_UNKNOWN;
 	/* some ARM have no bridge_pdev and will crash here
-	 * so we should check if bridge_pdev is NULL */
+	 * so we should check if bridge_pdev is NULL
+	 */
 	if (bridge_pdev) {
+		/*find bridge info if available */
 		pcipriv->ndis_adapter.pcibridge_vendorid = bridge_pdev->vendor;
 		for (tmp = 0; tmp < PCI_BRIDGE_VENDOR_MAX; tmp++) {
 			if (bridge_pdev->vendor == pcibridge_vendors[tmp]) {
 				pcipriv->ndis_adapter.pcibridge_vendor = tmp;
 				RT_TRACE(rtlpriv, COMP_INIT, DBG_DMESG,
 					 "Pci Bridge Vendor is found index: %d\n",
-					  tmp);
+					 tmp);
 				break;
 			}
 		}
 	}
 
 	if (pcipriv->ndis_adapter.pcibridge_vendor !=
-	    PCI_BRIDGE_VENDOR_UNKNOWN) {
+		PCI_BRIDGE_VENDOR_UNKNOWN) {
 		pcipriv->ndis_adapter.pcibridge_busnum =
 		    bridge_pdev->bus->number;
 		pcipriv->ndis_adapter.pcibridge_devnum =
 		    PCI_SLOT(bridge_pdev->devfn);
 		pcipriv->ndis_adapter.pcibridge_funcnum =
 		    PCI_FUNC(bridge_pdev->devfn);
-		pcipriv->ndis_adapter.pcicfg_addrport =
-		    (pcipriv->ndis_adapter.pcibridge_busnum << 16) |
-		    (pcipriv->ndis_adapter.pcibridge_devnum << 11) |
-		    (pcipriv->ndis_adapter.pcibridge_funcnum << 8) | (1 << 31);
 		pcipriv->ndis_adapter.pcibridge_pciehdr_offset =
 		    pci_pcie_cap(bridge_pdev);
 		pcipriv->ndis_adapter.num4bytes =
@@ -2089,24 +2105,25 @@ static bool _rtl_pci_find_adapter(struct pci_dev *pdev,
 	}
 
 	RT_TRACE(rtlpriv, COMP_INIT, DBG_DMESG,
-		 "pcidev busnumber:devnumber:funcnumber: vendor:link_ctl %d:%d:%d:%x:%x\n",
-		  pcipriv->ndis_adapter.busnumber,
-		  pcipriv->ndis_adapter.devnumber,
-		  pcipriv->ndis_adapter.funcnumber,
-		  pdev->vendor, pcipriv->ndis_adapter.linkctrl_reg);
+		 "pcidev busnumber:devnumber:funcnumber:vendor:link_ctl %d:%d:%d:%x:%x\n",
+		 pcipriv->ndis_adapter.busnumber,
+		 pcipriv->ndis_adapter.devnumber,
+		 pcipriv->ndis_adapter.funcnumber,
+		 pdev->vendor, pcipriv->ndis_adapter.linkctrl_reg);
 
 	RT_TRACE(rtlpriv, COMP_INIT, DBG_DMESG,
 		 "pci_bridge busnumber:devnumber:funcnumber:vendor:pcie_cap:link_ctl_reg:amd %d:%d:%d:%x:%x:%x:%x\n",
-		  pcipriv->ndis_adapter.pcibridge_busnum,
-		  pcipriv->ndis_adapter.pcibridge_devnum,
-		  pcipriv->ndis_adapter.pcibridge_funcnum,
-		  pcibridge_vendors[pcipriv->ndis_adapter.pcibridge_vendor],
-		  pcipriv->ndis_adapter.pcibridge_pciehdr_offset,
-		  pcipriv->ndis_adapter.pcibridge_linkctrlreg,
-		  pcipriv->ndis_adapter.amd_l1_patch);
+		 pcipriv->ndis_adapter.pcibridge_busnum,
+		 pcipriv->ndis_adapter.pcibridge_devnum,
+		 pcipriv->ndis_adapter.pcibridge_funcnum,
+		 pcibridge_vendors[pcipriv->ndis_adapter.pcibridge_vendor],
+		 pcipriv->ndis_adapter.pcibridge_pciehdr_offset,
+		 pcipriv->ndis_adapter.pcibridge_linkctrlreg,
+		 pcipriv->ndis_adapter.amd_l1_patch);
 
 	rtl_pci_parse_configuration(pdev, hw);
 	list_add_tail(&rtlpriv->list, &rtlpriv->glb_var->glb_priv_list);
+
 	return true;
 }
 
@@ -2116,22 +2133,22 @@ static int rtl_pci_intr_mode_msi(struct ieee80211_hw *hw)
 	struct rtl_pci_priv *pcipriv = rtl_pcipriv(hw);
 	struct rtl_pci *rtlpci = rtl_pcidev(pcipriv);
 	int ret;
+
 	ret = pci_enable_msi(rtlpci->pdev);
-	if (ret < 0) {
-		pr_info("pci_enable_msi returned %d\n", ret);
+	if (ret < 0)
 		return ret;
-	}
+
 	ret = request_irq(rtlpci->pdev->irq, &_rtl_pci_interrupt,
 			  IRQF_SHARED, KBUILD_MODNAME, hw);
 	if (ret < 0) {
-		pr_info("MSI disabled\n");
 		pci_disable_msi(rtlpci->pdev);
 		return ret;
 	}
 
 	rtlpci->using_msi = true;
 
-	RT_TRACE(rtlpriv, COMP_INIT|COMP_INTR, DBG_DMESG, "MSI Interrupt Mode!\n");
+	RT_TRACE(rtlpriv, COMP_INIT|COMP_INTR, DBG_DMESG,
+		 "MSI Interrupt Mode!\n");
 	return 0;
 }
 
@@ -2158,7 +2175,8 @@ static int rtl_pci_intr_mode_decide(struct ieee80211_hw *hw)
 	struct rtl_pci_priv *pcipriv = rtl_pcipriv(hw);
 	struct rtl_pci *rtlpci = rtl_pcidev(pcipriv);
 	int ret;
-	if (rtlpci->msi_support == true) {
+
+	if (rtlpci->msi_support) {
 		ret = rtl_pci_intr_mode_msi(hw);
 		if (ret < 0)
 			ret = rtl_pci_intr_mode_legacy(hw);
@@ -2169,7 +2187,7 @@ static int rtl_pci_intr_mode_decide(struct ieee80211_hw *hw)
 }
 
 int rtl_pci_probe(struct pci_dev *pdev,
-		  const struct pci_device_id *id)
+			    const struct pci_device_id *id)
 {
 	struct ieee80211_hw *hw = NULL;
 
@@ -2181,15 +2199,15 @@ int rtl_pci_probe(struct pci_dev *pdev,
 
 	err = pci_enable_device(pdev);
 	if (err) {
-		RT_ASSERT(false,
-			  "%s : Cannot enable new PCI device\n",
-			   pci_name(pdev));
+		RT_ASSERT(false, "%s : Cannot enable new PCI device\n",
+			  pci_name(pdev));
 		return err;
 	}
 
 	if (!pci_set_dma_mask(pdev, DMA_BIT_MASK(32))) {
 		if (pci_set_consistent_dma_mask(pdev, DMA_BIT_MASK(32))) {
-			RT_ASSERT(false, "Unable to obtain 32bit DMA for consistent allocations\n");
+			RT_ASSERT(false,
+				  "Unable to obtain 32bit DMA for consistent allocations\n");
 			err = -ENOMEM;
 			goto fail1;
 		}
@@ -2259,8 +2277,8 @@ int rtl_pci_probe(struct pci_dev *pdev,
 
 	RT_TRACE(rtlpriv, COMP_INIT, DBG_DMESG,
 		 "mem mapped space: start: 0x%08lx len:%08lx flags:%08lx, after map:0x%08lx\n",
-		  pmem_start, pmem_len, pmem_flags,
-		  rtlpriv->io.pci_mem_start);
+		 pmem_start, pmem_len, pmem_flags,
+		 rtlpriv->io.pci_mem_start);
 
 	/* Disable Clk Request */
 	pci_write_config_byte(pdev, 0x81, 0);
@@ -2270,7 +2288,6 @@ int rtl_pci_probe(struct pci_dev *pdev,
 	pci_write_config_byte(pdev, 0x04, 0x07);
 
 	/* find adapter */
-	/* if chip not support, will return false */
 	if (!_rtl_pci_find_adapter(pdev, hw)) {
 		err = -ENODEV;
 		goto fail3;
@@ -2296,14 +2313,14 @@ int rtl_pci_probe(struct pci_dev *pdev,
 	err = rtl_init_core(hw);
 	if (err) {
 		RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG,
-			 "Can't allocate sw for mac80211.\n");
+			 "Can't allocate sw for mac80211\n");
 		goto fail3;
 	}
 
 	/* Init PCI sw */
-	err = !rtl_pci_init(hw, pdev);
+	err = rtl_pci_init(hw, pdev);
 	if (err) {
-		RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG, "Failed to init PCI.\n");
+		RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG, "Failed to init PCI\n");
 		goto fail3;
 	}
 
@@ -2311,16 +2328,21 @@ int rtl_pci_probe(struct pci_dev *pdev,
 	if (err) {
 		RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG,
 			 "Can't register mac80211 hw.\n");
+		err = -ENODEV;
 		goto fail3;
-	} else {
-		rtlpriv->mac80211.mac80211_registered = 1;
 	}
+	rtlpriv->mac80211.mac80211_registered = 1;
+
 	err = sysfs_create_group(&pdev->dev.kobj, &rtl_attribute_group);
 	if (err) {
 		RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG,
 			 "failed to create sysfs device attributes\n");
 		goto fail3;
 	}
+
+	/* add for debug */
+	rtl_debug_add_one(hw);
+
 	/*init rfkill */
 	rtl_init_rfkill(hw);	/* Init PCI sw */
 
@@ -2329,20 +2351,17 @@ int rtl_pci_probe(struct pci_dev *pdev,
 	if (err) {
 		RT_TRACE(rtlpriv, COMP_INIT, DBG_DMESG,
 			 "%s: failed to register IRQ handler\n",
-			  wiphy_name(hw->wiphy));
+			 wiphy_name(hw->wiphy));
 		goto fail3;
-	} else {
-		rtlpci->irq_alloc = 1;
 	}
+	rtlpci->irq_alloc = 1;
 
 	set_bit(RTL_STATUS_INTERFACE_START, &rtlpriv->status);
-
 	return 0;
 
 fail3:
 	pci_set_drvdata(pdev, NULL);
 	rtl_deinit_core(hw);
-	ieee80211_free_hw(hw);
 
 	if (rtlpriv->io.pci_mem_start != 0)
 		pci_iounmap(pdev, (void __iomem *)rtlpriv->io.pci_mem_start);
@@ -2357,6 +2376,7 @@ fail1:
 	pci_disable_device(pdev);
 
 	return err;
+
 }
 EXPORT_SYMBOL(rtl_pci_probe);
 
@@ -2374,6 +2394,9 @@ void rtl_pci_disconnect(struct pci_dev *pdev)
 
 	sysfs_remove_group(&pdev->dev.kobj, &rtl_attribute_group);
 
+	/* remove form debug */
+	rtl_debug_remove_one(hw);
+
 	/*ieee80211_unregister_hw will call ops_stop */
 	if (rtlmac->mac80211_registered == 1) {
 		ieee80211_unregister_hw(hw);
@@ -2382,6 +2405,7 @@ void rtl_pci_disconnect(struct pci_dev *pdev)
 		rtl_deinit_deferred_work(hw);
 		rtlpriv->intf_ops->adapter_stop(hw);
 	}
+	rtlpriv->cfg->ops->disable_interrupt(hw);
 
 	/*deinit rfkill */
 	rtl_deinit_rfkill(hw);
@@ -2395,7 +2419,7 @@ void rtl_pci_disconnect(struct pci_dev *pdev)
 		rtlpci->irq_alloc = 0;
 	}
 
-	if (rtlpci->using_msi == true)
+	if (rtlpci->using_msi)
 		pci_disable_msi(rtlpci->pdev);
 
 	list_del(&rtlpriv->list);
@@ -2414,6 +2438,7 @@ void rtl_pci_disconnect(struct pci_dev *pdev)
 }
 EXPORT_SYMBOL(rtl_pci_disconnect);
 
+#ifdef CONFIG_PM_SLEEP
 /***************************************
 kernel pci power state define:
 PCI_D0         ((pci_power_t __force) 0)
@@ -2450,12 +2475,12 @@ int rtl_pci_resume(struct device *dev)
 
 	rtlpriv->cfg->ops->hw_resume(hw);
 	rtl_init_rfkill(hw);
-
 	return 0;
 }
 EXPORT_SYMBOL(rtl_pci_resume);
+#endif /* CONFIG_PM_SLEEP */
 
-struct rtl_intf_ops rtl_pci_ops = {
+const struct rtl_intf_ops rtl_pci_ops = {
 	.read_efuse_byte = read_efuse_byte,
 	.adapter_start = rtl_pci_start,
 	.adapter_stop = rtl_pci_stop,

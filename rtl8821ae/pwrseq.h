@@ -26,7 +26,7 @@
 #ifndef __RTL8821AE_PWRSEQ_H__
 #define __RTL8821AE_PWRSEQ_H__
 
-#include "pwrseqcmd.h"
+#include "../pwrseqcmd.h"
 #include "../btcoexist/halbt_precomp.h"
 
 #define	RTL8812_TRANS_CARDEMU_TO_ACT_STEPS	15
@@ -35,10 +35,9 @@
 #define	RTL8812_TRANS_SUS_TO_CARDEMU_STEPS	15
 #define	RTL8812_TRANS_CARDEMU_TO_PDN_STEPS	25
 #define	RTL8812_TRANS_PDN_TO_CARDEMU_STEPS	15
-#define	RTL8812_TRANS_ACT_TO_LPS_STEPS	15
-#define	RTL8812_TRANS_LPS_TO_ACT_STEPS	15
-#define	RTL8812_TRANS_END_STEPS	1
-
+#define	RTL8812_TRANS_ACT_TO_LPS_STEPS		15
+#define	RTL8812_TRANS_LPS_TO_ACT_STEPS		15
+#define	RTL8812_TRANS_END_STEPS			1
 
 /* The following macros have the following format:
  * { offset, cut_msk, fab_msk|interface_msk, base|cmd, msk, value

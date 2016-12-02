@@ -11,12 +11,17 @@
  * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
  * more details.
  *
- * You should have received a copy of the GNU General Public License along with
- * this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110, USA
+ * The full GNU General Public License is included in this distribution in the
+ * file called LICENSE.
  *
+ * Contact Information:
+ * wlanfae <wlanfae@realtek.com>
+ * Realtek Corporation, No. 2, Innovation Road II, Hsinchu Science Park,
+ * Hsinchu 300, Taiwan.
+ * Larry Finger <Larry.Finger@lwfinger.net>
  *
  ******************************************************************************/
+
 #ifndef	__HALBT_PRECOMP_H__
 #define __HALBT_PRECOMP_H__
 /*************************************************************
@@ -32,6 +37,27 @@
 
 #include "halbtcoutsrc.h"
 
+/* Interface type */
+#define RT_PCI_INTERFACE	1
+#define RT_USB_INTERFACE	2
+#define RT_SDIO_INTERFACE	3
+#define DEV_BUS_TYPE		RT_PCI_INTERFACE
+
+/* IC type */
+#define RTL_HW_TYPE(_adapter)	(rtl_hal((struct rtl_priv *)_adapter)->hw_type)
+
+#define IS_NEW_GENERATION_IC(_adapter)		\
+			(RTL_HW_TYPE(_adapter) >= HARDWARE_TYPE_RTL8192EE)
+#define IS_HARDWARE_TYPE_8812(_adapter)		\
+			(RTL_HW_TYPE(_adapter) == HARDWARE_TYPE_RTL8812AE)
+#define IS_HARDWARE_TYPE_8821(_adapter)		\
+			(RTL_HW_TYPE(_adapter) == HARDWARE_TYPE_RTL8821AE)
+#define IS_HARDWARE_TYPE_8723A(_adapter)	\
+			(RTL_HW_TYPE(_adapter) == HARDWARE_TYPE_RTL8723AE)
+#define IS_HARDWARE_TYPE_8723B(_adapter)	\
+			(RTL_HW_TYPE(_adapter) == HARDWARE_TYPE_RTL8723BE)
+#define IS_HARDWARE_TYPE_8192E(_adapter)	\
+			(RTL_HW_TYPE(_adapter) == HARDWARE_TYPE_RTL8192EE)
 
 #include "halbtc8192e2ant.h"
 #include "halbtc8723b1ant.h"
@@ -40,7 +66,6 @@
 #include "halbtc8821a1ant.h"
 
 #define GetDefaultAdapter(padapter)	padapter
-
 
 #define BIT0	0x00000001
 #define BIT1	0x00000002
@@ -74,17 +99,5 @@
 #define BIT29	0x20000000
 #define BIT30	0x40000000
 #define BIT31	0x80000000
-
-#define	MASKBYTE0	0xff
-#define	MASKBYTE1	0xff00
-#define	MASKBYTE2	0xff0000
-#define	MASKBYTE3	0xff000000
-#define	MASKHWORD	0xffff0000
-#define	MASKLWORD	0x0000ffff
-#define	MASKDWORD	0xffffffff
-#define	MASK12BITS	0xfff
-#define	MASKH4BITS	0xf0000000
-#define MASKOFDM_D	0xffc00000
-#define	MASKCCK		0x3f3f3f3f
 
 #endif	/* __HALBT_PRECOMP_H__ */

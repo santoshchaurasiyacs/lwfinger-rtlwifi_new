@@ -48,6 +48,7 @@ obj-m	+= rtl8192de/
 obj-m	+= rtl8192ee/
 obj-m	+= rtl8192se/
 obj-m	+= rtl8723ae/
+obj-m	+= rtl8723com/
 obj-m	+= rtl8723be/
 obj-m	+= rtl8821ae/
 
@@ -71,6 +72,7 @@ endif
 	@mkdir -p $(MODDESTDIR)/rtl8192se
 	@mkdir -p $(MODDESTDIR)/rtl8723ae
 	@mkdir -p $(MODDESTDIR)/rtl8723be
+	@mkdir -p $(MODDESTDIR)/rtl8723com
 	@mkdir -p $(MODDESTDIR)/rtl8821ae
 	@install -p -D -m 644 rtl_pci.ko $(MODDESTDIR)	
 	@install -p -D -m 644 rtl_usb.ko $(MODDESTDIR)	
@@ -85,6 +87,7 @@ endif
 	@install -p -D -m 644 ./rtl8192se/rtl8192se.ko $(MODDESTDIR)/rtl8192se
 	@install -p -D -m 644 ./rtl8723ae/rtl8723ae.ko $(MODDESTDIR)/rtl8723ae
 	@install -p -D -m 644 ./rtl8723be/rtl8723be.ko $(MODDESTDIR)/rtl8723be
+	@install -p -D -m 644 ./rtl8723com/rtl8723-common.ko $(MODDESTDIR)/rtl8723com
 	@install -p -D -m 644 ./rtl8821ae/rtl8821ae.ko $(MODDESTDIR)/rtl8821ae
 ifeq ($(COMPRESS_GZIP), y)
 	@gzip -f $(MODDESTDIR)/*.ko

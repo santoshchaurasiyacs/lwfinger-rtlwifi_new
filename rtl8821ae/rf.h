@@ -27,16 +27,16 @@
 #define __RTL8821AE_RF_H__
 
 #define RF6052_MAX_TX_PWR		0x3F
-#define RF6052_MAX_REG			0x3F
 
-extern void rtl8821ae_phy_rf6052_set_bandwidth(struct ieee80211_hw *hw,
-							u8 bandwidth);
-extern void rtl8821ae_phy_rf6052_set_cck_txpower(struct ieee80211_hw *hw,
-							u8 *ppowerlevel);
-extern void rtl8821ae_phy_rf6052_set_ofdm_txpower(struct ieee80211_hw *hw,
-							u8 *ppowerlevel_ofdm,
-							u8 *ppowerlevel_bw20,
-							u8 *ppowerlevel_bw40,
-							u8 channel);
-extern bool rtl8821ae_phy_rf6052_config(struct ieee80211_hw *hw);
+void rtl8821ae_phy_rf6052_set_bandwidth(struct ieee80211_hw *hw,
+					u8 bandwidth);
+void rtl8821ae_phy_rf6052_set_cck_txpower(struct ieee80211_hw *hw,
+					  u8 *ppowerlevel);
+void rtl8821ae_phy_rf6052_set_ofdm_txpower(struct ieee80211_hw *hw,
+					   u8 *ppowerlevel_ofdm,
+					   u8 *ppowerlevel_bw20,
+					   u8 *ppowerlevel_bw40,
+					   u8 channel);
+bool rtl8821ae_phy_rf6052_config(struct ieee80211_hw *hw);
+
 #endif

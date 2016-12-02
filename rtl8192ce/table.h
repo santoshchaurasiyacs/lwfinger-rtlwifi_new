@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Copyright(c) 2009-2010  Realtek Corporation.
+ * Copyright(c) 2009-2012  Realtek Corporation.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of version 2 of the GNU General Public License as
@@ -48,7 +48,7 @@ extern u32 RTL8192CE_RADIOB_2TARRAY[RADIOB_2TARRAYLENGTH];
 extern u32 RTL8192CE_RADIOA_1TARRAY[RADIOA_1TARRAYLENGTH];
 #define RADIOB_1TARRAYLENGTH	1
 extern u32 RTL8192CE_RADIOB_1TARRAY[RADIOB_1TARRAYLENGTH];
-#define MAC_2T_ARRAYLENGTH		162
+#define MAC_2T_ARRAYLENGTH	162
 extern u32 RTL8192CEMAC_2T_ARRAY[MAC_2T_ARRAYLENGTH];
 #define AGCTAB_2TARRAYLENGTH	320
 extern u32 RTL8192CEAGCTAB_2TARRAY[AGCTAB_2TARRAYLENGTH];

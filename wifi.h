@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Copyright(c) 2009-2010  Realtek Corporation.
+ * Copyright(c) 2009-2012  Realtek Corporation.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of version 2 of the GNU General Public License as
@@ -10,10 +10,6 @@
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
  * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
  * more details.
- *
- * You should have received a copy of the GNU General Public License along with
- * this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110, USA
  *
  * The full GNU General Public License is included in this distribution in the
  * file called LICENSE.
@@ -30,34 +26,73 @@
 #ifndef __RTL_WIFI_H__
 #define __RTL_WIFI_H__
 
-#include <linux/interrupt.h>
+#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
+
 #include <linux/sched.h>
 #include <linux/firmware.h>
-#include <linux/version.h>
 #include <linux/etherdevice.h>
+#include <linux/vmalloc.h>
 #include <linux/usb.h>
 #include <net/mac80211.h>
+#include <linux/completion.h>
+#include <linux/version.h>
 #include "debug.h"
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 7, 0))
-#define ieee80211_band nl80211_band
-#define IEEE80211_BAND_2GHZ NL80211_BAND_2GHZ
-#define IEEE80211_BAND_5GHZ NL80211_BAND_5GHZ
-#define IEEE80211_NUM_BANDS NUM_NL80211_BANDS
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(4, 8, 0))
+#define nl80211_band ieee80211_band
+#define NL80211_BAND_2GHZ IEEE80211_BAND_2GHZ
+#define NL80211_BAND_5GHZ IEEE80211_BAND_5GHZ
+#define NUM_NL80211_BANDS IEEE80211_NUM_BANDS
 #endif
 
-#define RF_CHANGE_BY_INIT		0
-#define RF_CHANGE_BY_IPS		BIT(28)
-#define RF_CHANGE_BY_PS			BIT(29)
-#define RF_CHANGE_BY_HW			BIT(30)
-#define RF_CHANGE_BY_SW			BIT(31)
+#ifndef _ieee80211_is_robust_mgmt_frame
+#define _ieee80211_is_robust_mgmt_frame ieee80211_is_robust_mgmt_frame
+#endif
 
-#define IQK_ADDA_REG_NUM		16
-#define IQK_MAC_REG_NUM			4
-#define IQK_THRESHOLD			8
+#define	MASKBYTE0				0xff
+#define	MASKBYTE1				0xff00
+#define	MASKBYTE2				0xff0000
+#define	MASKBYTE3				0xff000000
+#define	MASKHWORD				0xffff0000
+#define	MASKLWORD				0x0000ffff
+#define	MASKDWORD				0xffffffff
+#define	MASK12BITS				0xfff
+#define	MASKH4BITS				0xf0000000
+#define MASKOFDM_D				0xffc00000
+#define	MASKCCK					0x3f3f3f3f
 
-#define MAX_KEY_LEN			61
-#define KEY_BUF_SIZE			5
+#define	MASK4BITS				0x0f
+#define	MASK20BITS				0xfffff
+#define RFREG_OFFSET_MASK			0xfffff
+
+#define	MASKBYTE0				0xff
+#define	MASKBYTE1				0xff00
+#define	MASKBYTE2				0xff0000
+#define	MASKBYTE3				0xff000000
+#define	MASKHWORD				0xffff0000
+#define	MASKLWORD				0x0000ffff
+#define	MASKDWORD				0xffffffff
+#define	MASK12BITS				0xfff
+#define	MASKH4BITS				0xf0000000
+#define MASKOFDM_D				0xffc00000
+#define	MASKCCK					0x3f3f3f3f
+
+#define	MASK4BITS				0x0f
+#define	MASK20BITS				0xfffff
+#define RFREG_OFFSET_MASK			0xfffff
+
+#define RF_CHANGE_BY_INIT			0
+#define RF_CHANGE_BY_IPS			BIT(28)
+#define RF_CHANGE_BY_PS				BIT(29)
+#define RF_CHANGE_BY_HW				BIT(30)
+#define RF_CHANGE_BY_SW				BIT(31)
+
+#define IQK_ADDA_REG_NUM			16
+#define IQK_MAC_REG_NUM				4
+#define IQK_THRESHOLD				8
+
+#define MAX_KEY_LEN				61
+#define KEY_BUF_SIZE				5
 
 /* QoS related. */
 /*aci: 0x00	Best Effort*/
@@ -65,54 +100,40 @@
 /*aci: 0x10	Video*/
 /*aci: 0x11	Voice*/
 /*Max: define total number.*/
-#define AC0_BE				0
-#define AC1_BK				1
-#define AC2_VI				2
-#define AC3_VO				3
-#define AC_MAX				4
-#define QOS_QUEUE_NUM			4
-#define RTL_MAC80211_NUM_QUEUE		5
+#define AC0_BE					0
+#define AC1_BK					1
+#define AC2_VI					2
+#define AC3_VO					3
+#define AC_MAX					4
+#define QOS_QUEUE_NUM				4
+#define RTL_MAC80211_NUM_QUEUE			5
 #define REALTEK_USB_VENQT_MAX_BUF_SIZE		254
 #define RTL_USB_MAX_RX_COUNT			100
+#define QBSS_LOAD_SIZE				5
+#define MAX_WMMELE_LENGTH			64
 
-#define QBSS_LOAD_SIZE			5
-#define MAX_WMMELE_LENGTH		64
+#define TOTAL_CAM_ENTRY				32
 
 /*slot time for 11g. */
-#define RTL_SLOT_TIME_9			9
-#define RTL_SLOT_TIME_20		20
+#define RTL_SLOT_TIME_9				9
+#define RTL_SLOT_TIME_20			20
 
-/*related with tcp/ip. */
-/*if_ehther.h*/
-#define ETH_P_PAE			0x888E	/*Port Access Entity
-						 *(IEEE 802.1X) */
-#define ETH_P_IP			0x0800	/*Internet Protocol packet */
-#define ETH_P_ARP			0x0806	/*Address Resolution packet */
-#define SNAP_SIZE			6
-#define PROTOC_TYPE_SIZE		2
+/*related to tcp/ip. */
+#define SNAP_SIZE		6
+#define PROTOC_TYPE_SIZE	2
 
 /*related with 802.11 frame*/
-#define MAC80211_3ADDR_LEN		24
-#define MAC80211_4ADDR_LEN		30
+#define MAC80211_3ADDR_LEN			24
+#define MAC80211_4ADDR_LEN			30
 
-#define CHANNEL_MAX_NUMBER		(14 + 24 + 21)	/* 14 is the max
-							 * channel number */
+#define CHANNEL_MAX_NUMBER	(14 + 24 + 21)	/* 14 is the max channel no */
 #define CHANNEL_MAX_NUMBER_2G		14
-#define CHANNEL_MAX_NUMBER_5G		49  	/*28+14+7*/
-
-
-#define MAX_REGULATION_NUM		4
-#define MAX_RF_PATH_NUM			2
-#define MAX_RATE_SECTION_NUM		6
-#define MAX_2_4G_BANDWITH_NUM		4
-#define MAX_5G_BANDWITH_NUM		4
-
-
-
-
+#define CHANNEL_MAX_NUMBER_5G		49 /* Please refer to
+					    *"phy_GetChnlGroup8812A" and
+					    * "Hal_ReadTxPowerInfo8812A"
+					    */
 #define CHANNEL_MAX_NUMBER_5G_80M	7
-#define CHANNEL_GROUP_MAX		(3 + 9)	/* ch1~3, ch4~9, ch10~14
-						 * total three groups */
+#define CHANNEL_GROUP_MAX	(3 + 9)	/*  ch1~3, 4~9, 10~14 = three groups */
 #define MAX_PG_GROUP			13
 #define	CHANNEL_GROUP_MAX_2G		3
 #define	CHANNEL_GROUP_IDX_5GL		3
@@ -121,21 +142,38 @@
 #define	CHANNEL_GROUP_MAX_5G		9
 #define CHANNEL_MAX_NUMBER_2G		14
 #define AVG_THERMAL_NUM			8
-#define AVG_THERMAL_NUM_92E		4
 #define AVG_THERMAL_NUM_88E		4
 #define AVG_THERMAL_NUM_8723BE		4
 #define MAX_TID_COUNT			9
-#define MAX_NUM_RATES			264
 
-/*for 88E use*/
-/*It must always set to 4, otherwise read efuse table secquence will be wrong.*/
+/* for early mode */
+#define FCS_LEN				4
+#define EM_HDR_LEN			8
+
+enum rtl8192c_h2c_cmd {
+	H2C_AP_OFFLOAD = 0,
+	H2C_SETPWRMODE = 1,
+	H2C_JOINBSSRPT = 2,
+	H2C_RSVDPAGE = 3,
+	H2C_RSSI_REPORT = 5,
+	H2C_RA_MASK = 6,
+	H2C_MACID_PS_MODE = 7,
+	H2C_P2P_PS_OFFLOAD = 8,
+	H2C_MAC_MODE_SEL = 9,
+	H2C_PWRM = 15,
+	H2C_P2P_PS_CTW_CMD = 24,
+	MAX_H2CCMD
+};
+
 #define MAX_TX_COUNT			4
+#define MAX_REGULATION_NUM		4
+#define MAX_RF_PATH_NUM			4
+#define MAX_RATE_SECTION_NUM		6
+#define MAX_2_4G_BANDWITH_NUM		4
+#define MAX_5G_BANDWITH_NUM		4
 #define	MAX_RF_PATH			4
 #define	MAX_CHNL_GROUP_24G		6
 #define	MAX_CHNL_GROUP_5G		14
-
-/* BK, BE, VI, VO, HCCA, MANAGEMENT, COMMAND, HIGH, BEACON. */
-#define MAX_TX_QUEUE			9
 
 #define TX_PWR_BY_RATE_NUM_BAND		2
 #define TX_PWR_BY_RATE_NUM_RF		4
@@ -143,13 +181,23 @@
 #define MAX_BASE_NUM_IN_PHY_REG_PG_24G  6
 #define MAX_BASE_NUM_IN_PHY_REG_PG_5G	5
 
-#define DEL_SW_IDX_SZ	30
-#define BAND_NUM				3
-/*Now, it's just for 8192ee
- *not OK yet, keep it 0*/
+#define RTL8192EE_SEG_NUM		1 /* 0:2 seg, 1: 4 seg, 2: 8 seg */
+
+#define DEL_SW_IDX_SZ		30
+#define BAND_NUM			3
+
+/* For now, it's just for 8192ee
+ * but not OK yet, keep it 0
+ */
 #define DMA_IS_64BIT 0
 #define RTL8192EE_SEG_NUM		1 /* 0:2 seg, 1: 4 seg, 2: 8 seg */
 
+enum rf_tx_num {
+	RF_1TX = 0,
+	RF_2TX,
+	RF_MAX_TX_NUM,
+	RF_TX_NUM_NONIMPLEMENT,
+};
 
 #define PACKET_NORMAL			0
 #define PACKET_DHCP			1
@@ -181,6 +229,25 @@
 #define	WOL_REASON_REALWOW_V2_WAKEUPPKT	BIT(9)
 #define	WOL_REASON_REALWOW_V2_ACKLOST	BIT(10)
 
+struct rtlwifi_firmware_header {
+	__le16 signature;
+	u8 category;
+	u8 function;
+	__le16 version;
+	u8 subversion;
+	u8 rsvd1;
+	u8 month;
+	u8 date;
+	u8 hour;
+	u8 minute;
+	__le16 ramcodeSize;
+	__le16 rsvd2;
+	__le32 svnindex;
+	__le32 rsvd3;
+	__le32 rsvd4;
+	__le32 rsvd5;
+};
+
 struct txpower_info_2g {
 	u8 index_cck_base[MAX_RF_PATH][MAX_CHNL_GROUP_24G];
 	u8 index_bw40_base[MAX_RF_PATH][MAX_CHNL_GROUP_24G];
@@ -189,6 +256,8 @@ struct txpower_info_2g {
 	u8 ofdm_diff[MAX_RF_PATH][MAX_TX_COUNT];
 	u8 bw20_diff[MAX_RF_PATH][MAX_TX_COUNT];
 	u8 bw40_diff[MAX_RF_PATH][MAX_TX_COUNT];
+	u8 bw80_diff[MAX_RF_PATH][MAX_TX_COUNT];
+	u8 bw160_diff[MAX_RF_PATH][MAX_TX_COUNT];
 };
 
 struct txpower_info_5g {
@@ -199,35 +268,6 @@ struct txpower_info_5g {
 	u8 bw40_diff[MAX_RF_PATH][MAX_TX_COUNT];
 	u8 bw80_diff[MAX_RF_PATH][MAX_TX_COUNT];
 	u8 bw160_diff[MAX_RF_PATH][MAX_TX_COUNT];
-};
-
-
-/* for early mode */
-#define EM_HDR_LEN			8
-#define FCS_LEN				4
-
-#define MAX_VIRTUAL_MAC			1
-
-enum rtl8192c_h2c_cmd {
-	H2C_AP_OFFLOAD = 0,
-	H2C_SETPWRMODE = 1,
-	H2C_JOINBSSRPT = 2,
-	H2C_RSVDPAGE = 3,
-	H2C_RSSI_REPORT = 5,
-	H2C_RA_MASK = 6,
-	H2C_MACID_PS_MODE = 7,
-	H2C_P2P_PS_OFFLOAD = 8,
-	H2C_MAC_MODE_SEL = 9,
-	H2C_PWRM = 15,
-	H2C_P2P_PS_CTW_CMD = 24,
-	MAX_H2CCMD
-};
-
-enum rf_tx_num {
-	RF_1TX = 0,
-	RF_2TX,
-	RF_MAX_TX_NUM,
-	RF_TX_NUM_NONIMPLEMENT,
 };
 
 enum rate_section {
@@ -260,14 +300,13 @@ enum regulation_txpwr_lmt {
 	TXPWR_LMT_MAX_REGULATION_NUM = 4
 };
 
-
 enum rt_eeprom_type {
 	EEPROM_93C46,
 	EEPROM_93C56,
 	EEPROM_BOOT_EFUSE,
 };
 
-enum rtl_status {
+enum ttl_status {
 	RTL_STATUS_INTERFACE_START = 0,
 };
 
@@ -281,14 +320,41 @@ enum hardware_type {
 	HARDWARE_TYPE_RTL8192DE,
 	HARDWARE_TYPE_RTL8192DU,
 	HARDWARE_TYPE_RTL8723AE,
+	HARDWARE_TYPE_RTL8723U,
 	HARDWARE_TYPE_RTL8188EE,
 	HARDWARE_TYPE_RTL8723BE,
 	HARDWARE_TYPE_RTL8192EE,
 	HARDWARE_TYPE_RTL8821AE,
 	HARDWARE_TYPE_RTL8812AE,
+
 	/* keep it last */
 	HARDWARE_TYPE_NUM
 };
+
+#define IS_HARDWARE_TYPE_8192SU(rtlhal)			\
+	(rtlhal->hw_type == HARDWARE_TYPE_RTL8192SU)
+#define IS_HARDWARE_TYPE_8192SE(rtlhal)			\
+	(rtlhal->hw_type == HARDWARE_TYPE_RTL8192SE)
+#define IS_HARDWARE_TYPE_8192CE(rtlhal)			\
+	(rtlhal->hw_type == HARDWARE_TYPE_RTL8192CE)
+#define IS_HARDWARE_TYPE_8192CU(rtlhal)			\
+	(rtlhal->hw_type == HARDWARE_TYPE_RTL8192CU)
+#define IS_HARDWARE_TYPE_8192DE(rtlhal)			\
+	(rtlhal->hw_type == HARDWARE_TYPE_RTL8192DE)
+#define IS_HARDWARE_TYPE_8192DU(rtlhal)			\
+	(rtlhal->hw_type == HARDWARE_TYPE_RTL8192DU)
+#define IS_HARDWARE_TYPE_8723E(rtlhal)			\
+	(rtlhal->hw_type == HARDWARE_TYPE_RTL8723E)
+#define IS_HARDWARE_TYPE_8723U(rtlhal)			\
+	(rtlhal->hw_type == HARDWARE_TYPE_RTL8723U)
+#define	IS_HARDWARE_TYPE_8192S(rtlhal)			\
+(IS_HARDWARE_TYPE_8192SE(rtlhal) || IS_HARDWARE_TYPE_8192SU(rtlhal))
+#define	IS_HARDWARE_TYPE_8192C(rtlhal)			\
+(IS_HARDWARE_TYPE_8192CE(rtlhal) || IS_HARDWARE_TYPE_8192CU(rtlhal))
+#define	IS_HARDWARE_TYPE_8192D(rtlhal)			\
+(IS_HARDWARE_TYPE_8192DE(rtlhal) || IS_HARDWARE_TYPE_8192DU(rtlhal))
+#define	IS_HARDWARE_TYPE_8723(rtlhal)			\
+(IS_HARDWARE_TYPE_8723E(rtlhal) || IS_HARDWARE_TYPE_8723U(rtlhal))
 
 #define RX_HAL_IS_CCK_RATE(rxmcs)			\
 	((rxmcs) == DESC_RATE1M ||			\
@@ -321,15 +387,15 @@ struct bb_reg_def {
 	u32 rftxgain_stage;
 	u32 rfhssi_para1;
 	u32 rfhssi_para2;
-	u32 rfswitch_control;
+	u32 rfsw_ctrl;
 	u32 rfagc_control1;
 	u32 rfagc_control2;
-	u32 rfrxiq_imbalance;
+	u32 rfrxiq_imbal;
 	u32 rfrx_afe;
-	u32 rftxiq_imbalance;
+	u32 rftxiq_imbal;
 	u32 rftx_afe;
-	u32 rflssi_readback;
-	u32 rflssi_readbackpi;
+	u32 rf_rb;		/* rflssi_readback */
+	u32 rf_rbpi;		/* rflssi_readbackpi */
 };
 
 enum io_type {
@@ -340,110 +406,110 @@ enum io_type {
 };
 
 enum hw_variables {
-	HW_VAR_ETHER_ADDR,
-	HW_VAR_MULTICAST_REG,
-	HW_VAR_BASIC_RATE,
-	HW_VAR_BSSID,
-	HW_VAR_MEDIA_STATUS,
-	HW_VAR_SECURITY_CONF,
-	HW_VAR_BEACON_INTERVAL,
-	HW_VAR_ATIM_WINDOW,
-	HW_VAR_LISTEN_INTERVAL,
-	HW_VAR_CS_COUNTER,
-	HW_VAR_DEFAULTKEY0,
-	HW_VAR_DEFAULTKEY1,
-	HW_VAR_DEFAULTKEY2,
-	HW_VAR_DEFAULTKEY3,
-	HW_VAR_SIFS,
-	HW_VAR_R2T_SIFS,
-	HW_VAR_DIFS,
-	HW_VAR_EIFS,
-	HW_VAR_SLOT_TIME,
-	HW_VAR_ACK_PREAMBLE,
-	HW_VAR_CW_CONFIG,
-	HW_VAR_CW_VALUES,
-	HW_VAR_RATE_FALLBACK_CONTROL,
-	HW_VAR_CONTENTION_WINDOW,
-	HW_VAR_RETRY_COUNT,
-	HW_VAR_TR_SWITCH,
-	HW_VAR_COMMAND,
-	HW_VAR_WPA_CONFIG,
-	HW_VAR_AMPDU_MIN_SPACE,
-	HW_VAR_SHORTGI_DENSITY,
-	HW_VAR_AMPDU_FACTOR,
-	HW_VAR_MCS_RATE_AVAILABLE,
-	HW_VAR_AC_PARAM,
-	HW_VAR_ACM_CTRL,
-	HW_VAR_DIS_Req_Qsize,
-	HW_VAR_CCX_CHNL_LOAD,
-	HW_VAR_CCX_NOISE_HISTOGRAM,
-	HW_VAR_CCX_CLM_NHM,
-	HW_VAR_TxOPLimit,
-	HW_VAR_TURBO_MODE,
-	HW_VAR_RF_STATE,
-	HW_VAR_RF_OFF_BY_HW,
-	HW_VAR_BUS_SPEED,
-	HW_VAR_SET_DEV_POWER,
+	HW_VAR_ETHER_ADDR = 0x0,
+	HW_VAR_MULTICAST_REG = 0x1,
+	HW_VAR_BASIC_RATE = 0x2,
+	HW_VAR_BSSID = 0x3,
+	HW_VAR_MEDIA_STATUS= 0x4,
+	HW_VAR_SECURITY_CONF= 0x5,
+	HW_VAR_BEACON_INTERVAL = 0x6,
+	HW_VAR_ATIM_WINDOW = 0x7,
+	HW_VAR_LISTEN_INTERVAL = 0x8,
+	HW_VAR_CS_COUNTER = 0x9,
+	HW_VAR_DEFAULTKEY0 = 0xa,
+	HW_VAR_DEFAULTKEY1 = 0xb,
+	HW_VAR_DEFAULTKEY2 = 0xc,
+	HW_VAR_DEFAULTKEY3 = 0xd,
+	HW_VAR_SIFS = 0xe,
+	HW_VAR_R2T_SIFS = 0xf,
+	HW_VAR_DIFS = 0x10,
+	HW_VAR_EIFS = 0x11,
+	HW_VAR_SLOT_TIME = 0x12,
+	HW_VAR_ACK_PREAMBLE = 0x13,
+	HW_VAR_CW_CONFIG = 0x14,
+	HW_VAR_CW_VALUES = 0x15,
+	HW_VAR_RATE_FALLBACK_CONTROL= 0x16,
+	HW_VAR_CONTENTION_WINDOW = 0x17,
+	HW_VAR_RETRY_COUNT = 0x18,
+	HW_VAR_TR_SWITCH = 0x19,
+	HW_VAR_COMMAND = 0x1a,
+	HW_VAR_WPA_CONFIG = 0x1b,
+	HW_VAR_AMPDU_MIN_SPACE = 0x1c,
+	HW_VAR_SHORTGI_DENSITY = 0x1d,
+	HW_VAR_AMPDU_FACTOR = 0x1e,
+	HW_VAR_MCS_RATE_AVAILABLE = 0x1f,
+	HW_VAR_AC_PARAM = 0x20,
+	HW_VAR_ACM_CTRL = 0x21,
+	HW_VAR_DIS_Req_Qsize = 0x22,
+	HW_VAR_CCX_CHNL_LOAD = 0x23,
+	HW_VAR_CCX_NOISE_HISTOGRAM = 0x24,
+	HW_VAR_CCX_CLM_NHM = 0x25,
+	HW_VAR_TxOPLimit = 0x26,
+	HW_VAR_TURBO_MODE = 0x27,
+	HW_VAR_RF_STATE = 0x28,
+	HW_VAR_RF_OFF_BY_HW = 0x29,
+	HW_VAR_BUS_SPEED = 0x2a,
+	HW_VAR_SET_DEV_POWER = 0x2b,
 
-	HW_VAR_RCR,
-	HW_VAR_RATR_0,
-	HW_VAR_RRSR,
-	HW_VAR_CPU_RST,
-	HW_VAR_CECHK_BSSID,
-	HW_VAR_LBK_MODE,
-	HW_VAR_AES_11N_FIX,
-	HW_VAR_USB_RX_AGGR,
-	HW_VAR_USER_CONTROL_TURBO_MODE,
-	HW_VAR_RETRY_LIMIT,
-	HW_VAR_INIT_TX_RATE,
-	HW_VAR_TX_RATE_REG,
-	HW_VAR_EFUSE_USAGE,
-	HW_VAR_EFUSE_BYTES,
-	HW_VAR_AUTOLOAD_STATUS,
-	HW_VAR_RF_2R_DISABLE,
-	HW_VAR_SET_RPWM,
-	HW_VAR_H2C_FW_PWRMODE,
-	HW_VAR_H2C_FW_JOINBSSRPT,
-	HW_VAR_H2C_FW_MEDIASTATUSRPT,
-	HW_VAR_H2C_FW_P2P_PS_OFFLOAD,
-	HW_VAR_FW_PSMODE_STATUS,
-	HW_VAR_INIT_RTS_RATE,
-	HW_VAR_RESUME_CLK_ON,
-	HW_VAR_FW_LPS_ACTION,
-	HW_VAR_1X1_RECV_COMBINE,
-	HW_VAR_STOP_SEND_BEACON,
-	HW_VAR_TSF_TIMER,
-	HW_VAR_IO_CMD,
+	HW_VAR_RCR = 0x2c,
+	HW_VAR_RATR_0 = 0x2d,
+	HW_VAR_RRSR = 0x2e,
+	HW_VAR_CPU_RST = 0x2f,
+	HW_VAR_CHECK_BSSID = 0x30,
+	HW_VAR_LBK_MODE = 0x31,
+	HW_VAR_AES_11N_FIX = 0x32,
+	HW_VAR_USB_RX_AGGR = 0x33,
+	HW_VAR_USER_CONTROL_TURBO_MODE = 0x34,
+	HW_VAR_RETRY_LIMIT = 0x35,
+	HW_VAR_INIT_TX_RATE = 0x36,
+	HW_VAR_TX_RATE_REG = 0x37,
+	HW_VAR_EFUSE_USAGE = 0x38,
+	HW_VAR_EFUSE_BYTES = 0x39,
+	HW_VAR_AUTOLOAD_STATUS = 0x3a,
+	HW_VAR_RF_2R_DISABLE = 0x3b,
+	HW_VAR_SET_RPWM = 0x3c,
+	HW_VAR_H2C_FW_PWRMODE = 0x3d,
+	HW_VAR_H2C_FW_JOINBSSRPT = 0x3e,
+	HW_VAR_H2C_FW_MEDIASTATUSRPT = 0x3f,
+	HW_VAR_H2C_FW_P2P_PS_OFFLOAD = 0x40,
+	HW_VAR_FW_PSMODE_STATUS = 0x41,
+	HW_VAR_INIT_RTS_RATE = 0x42,
+	HW_VAR_RESUME_CLK_ON = 0x43,
+	HW_VAR_FW_LPS_ACTION = 0x44,
+	HW_VAR_1X1_RECV_COMBINE = 0x45,
+	HW_VAR_STOP_SEND_BEACON = 0x46,
+	HW_VAR_TSF_TIMER = 0x47,
+	HW_VAR_IO_CMD = 0x48,
 
-	HW_VAR_RF_RECOVERY,
-	HW_VAR_H2C_FW_UPDATE_GTK,
-	HW_VAR_WF_MASK,
-	HW_VAR_WF_CRC,
-	HW_VAR_WF_IS_MAC_ADDR,
-	HW_VAR_H2C_FW_OFFLOAD,
-	HW_VAR_RESET_WFCRC,
+	HW_VAR_RF_RECOVERY = 0x49,
+	HW_VAR_H2C_FW_UPDATE_GTK = 0x4a,
+	HW_VAR_WF_MASK = 0x4b,
+	HW_VAR_WF_CRC = 0x4c,
+	HW_VAR_WF_IS_MAC_ADDR = 0x4d,
+	HW_VAR_H2C_FW_OFFLOAD = 0x4e,
+	HW_VAR_RESET_WFCRC = 0x4f,
 
-	HW_VAR_HANDLE_FW_C2H,
-	HW_VAR_DL_FW_RSVD_PAGE,
-	HW_VAR_AID,
-	HW_VAR_HW_SEQ_ENABLE,
-	HW_VAR_CORRECT_TSF,
-	HW_VAR_BCN_VALID,
-	HW_VAR_FWLPS_RF_ON,
-	HW_VAR_DUAL_TSF_RST,
-	HW_VAR_SWITCH_EPHY_WoWLAN,
-	HW_VAR_INT_MIGRATION,
-	HW_VAR_INT_AC,
-	HW_VAR_RF_TIMING,
+	HW_VAR_HANDLE_FW_C2H = 0x50,
+	HW_VAR_DL_FW_RSVD_PAGE = 0x51,
+	HW_VAR_AID = 0x52,
+	HW_VAR_HW_SEQ_ENABLE = 0x53,
+	HW_VAR_CORRECT_TSF = 0x54,
+	HW_VAR_BCN_VALID = 0x55,
+	HW_VAR_FWLPS_RF_ON = 0x56,
+	HW_VAR_DUAL_TSF_RST = 0x57,
+	HW_VAR_SWITCH_EPHY_WoWLAN = 0x58,
+	HW_VAR_INT_MIGRATION = 0x59,
+	HW_VAR_INT_AC = 0x5a,
+	HW_VAR_RF_TIMING = 0x5b,
 
-	HAL_DEF_WOWLAN,
-	HW_VAR_MRC,
-	HW_VAR_KEEP_ALIVE,
-	HW_VAR_NAV_UPPER,
+	HAL_DEF_WOWLAN = 0x5c,
+	HW_VAR_MRC = 0x5d,
+	HW_VAR_KEEP_ALIVE = 0x5e,
+	HW_VAR_NAV_UPPER = 0x5f,
 
-	HW_VAR_MGT_FILTER,
-	HW_VAR_CTRL_FILTER,
-	HW_VAR_DATA_FILTER,
+	HW_VAR_MGT_FILTER = 0x60,
+	HW_VAR_CTRL_FILTER = 0x61,
+	HW_VAR_DATA_FILTER = 0x62,
 };
 
 enum rt_media_status {
@@ -458,34 +524,34 @@ enum rt_oem_id {
 	RT_CID_8187_HW_LED = 3,
 	RT_CID_8187_NETGEAR = 4,
 	RT_CID_WHQL = 5,
-	RT_CID_819x_CAMEO = 6,
-	RT_CID_819x_RUNTOP = 7,
-	RT_CID_819x_Senao = 8,
+	RT_CID_819X_CAMEO = 6,
+	RT_CID_819X_RUNTOP = 7,
+	RT_CID_819X_SENAO = 8,
 	RT_CID_TOSHIBA = 9,
-	RT_CID_819x_Netcore = 10,
-	RT_CID_Nettronix = 11,
+	RT_CID_819X_NETCORE = 10,
+	RT_CID_NETTRONIX = 11,
 	RT_CID_DLINK = 12,
 	RT_CID_PRONET = 13,
 	RT_CID_COREGA = 14,
-	RT_CID_819x_ALPHA = 15,
-	RT_CID_819x_Sitecom = 16,
+	RT_CID_819X_ALPHA = 15,
+	RT_CID_819X_SITECOM = 16,
 	RT_CID_CCX = 17,
 	RT_CID_819X_LENOVO = 18,
 	RT_CID_819X_QMI = 19,
-	RT_CID_819x_Edimax_Belkin = 20,
-	RT_CID_819x_Sercomm_Belkin = 21,
-	RT_CID_819x_CAMEO1 = 22,
-	RT_CID_819x_MSI = 23,
+	RT_CID_819X_EDIMAX_BELKIN = 20,
+	RT_CID_819X_SERCOMM_BELKIN = 21,
+	RT_CID_819X_CAMEO1 = 22,
+	RT_CID_819X_MSI = 23,
 	RT_CID_819X_ACER = 24,
 	RT_CID_819X_HP = 27,
-	RT_CID_819x_CLEVO = 28,
-	RT_CID_819x_Arcadyan_Belkin = 29,
-	RT_CID_819x_SAMSUNG = 30,
-	RT_CID_819x_WNC_COREGA = 31,
-	RT_CID_819x_Foxcoon = 32,
-	RT_CID_819x_DELL = 33,
-	RT_CID_819x_PRONETS = 34,
-	RT_CID_819x_Edimax_ASUS = 35,
+	RT_CID_819X_CLEVO = 28,
+	RT_CID_819X_ARCADYAN_BELKIN = 29,
+	RT_CID_819X_SAMSUNG = 30,
+	RT_CID_819X_WNC_COREGA = 31,
+	RT_CID_819X_FOXCOON = 32,
+	RT_CID_819X_DELL = 33,
+	RT_CID_819X_PRONETS = 34,
+	RT_CID_819X_EDIMAX_ASUS = 35,
 	RT_CID_NETGEAR = 36,
 	RT_CID_PLANEX = 37,
 	RT_CID_CC_C = 38,
@@ -622,6 +688,7 @@ enum rtl_var_map {
 	EFUSE_REAL_CONTENT_SIZE,
 	EFUSE_OOB_PROTECT_BYTES_LEN,
 	EFUSE_ACCESS,
+
 	/*CAM map */
 	RWCAM,
 	WCAMI,
@@ -653,7 +720,7 @@ enum rtl_var_map {
 	RTL_IMR_TIMEOUT1,	/*Timeout interrupt 1 */
 	RTL_IMR_TXFOVW,		/*Transmit FIFO Overflow */
 	RTL_IMR_PSTIMEOUT,	/*Power save time out interrupt */
-	RTL_IMR_BcnInt,		/*Beacon DMA Interrupt 0 */
+	RTL_IMR_BCNINT,		/*Beacon DMA Interrupt 0 */
 	RTL_IMR_RXFOVW,		/*Receive FIFO Overflow */
 	RTL_IMR_RDU,		/*Receive Descriptor Unavailable */
 	RTL_IMR_ATIMEND,	/*For 92C,ATIM Window End Interrupt */
@@ -668,8 +735,8 @@ enum rtl_var_map {
 	RTL_IMR_VIDOK,		/*AC_VI DMA OK Interrupt */
 	RTL_IMR_VODOK,		/*AC_VO DMA Interrupt */
 	RTL_IMR_ROK,		/*Receive DMA OK Interrupt */
-	RTL_IMR_HSISR_IND,  /*HSISR Interrupt*/
-	RTL_IBSS_INT_MASKS,	/*(RTL_IMR_BcnInt | RTL_IMR_TBDOK |
+	RTL_IMR_HSISR_IND,	/*HSISR Interrupt*/
+	RTL_IBSS_INT_MASKS,	/*(RTL_IMR_BCNINT | RTL_IMR_TBDOK |
 				 * RTL_IMR_TBDER) */
 	RTL_IMR_C2HCMD,		/*fw interrupt*/
 
@@ -790,7 +857,7 @@ enum wireless_mode {
 	WIRELESS_MODE_N_24G = 0x10,
 	WIRELESS_MODE_N_5G = 0x20,
 	WIRELESS_MODE_AC_5G = 0x40,
-	WIRELESS_MODE_AC_24G = 0x80,
+	WIRELESS_MODE_AC_24G  = 0x80,
 	WIRELESS_MODE_AC_ONLY = 0x100,
 	WIRELESS_MODE_MAX = 0x800
 };
@@ -870,6 +937,26 @@ enum wolpattern_type {
 	UNKNOWN_TYPE = 4,
 };
 
+enum package_type {
+	PACKAGE_DEFAULT,
+	PACKAGE_QFN68,
+	PACKAGE_TFBGA90,
+	PACKAGE_TFBGA80,
+	PACKAGE_TFBGA79
+};
+
+enum board_type {
+	ODM_BOARD_DEFAULT = 0,	  /* The DEFAULT case. */
+	ODM_BOARD_MINICARD = BIT(0), /* 0 = non-mini card, 1 = mini card. */
+	ODM_BOARD_SLIM = BIT(1), /* 0 = non-slim card, 1 = slim card */
+	ODM_BOARD_BT = BIT(2), /* 0 = without BT card, 1 = with BT */
+	ODM_BOARD_EXT_PA = BIT(3), /* 1 = existing 2G ext-PA */
+	ODM_BOARD_EXT_LNA = BIT(4), /* 1 = existing 2G ext-LNA */
+	ODM_BOARD_EXT_TRSW = BIT(5), /* 1 = existing ext-TRSW */
+	ODM_BOARD_EXT_PA_5G = BIT(6), /* 1 = existing 5G ext-PA */
+	ODM_BOARD_EXT_LNA_5G = BIT(7), /* 1 = existing 5G ext-LNA */
+};
+
 struct octet_string {
 	u8 *octet;
 	u16 length;
@@ -929,71 +1016,6 @@ struct rt_smooth_data {
 	u32 total_num;		/*num of valid elements */
 	u32 total_val;		/*sum of valid elements */
 };
-
-struct rtl_ht_agg {
-	u16 txq_id;
-	u16 wait_for_ba;
-	u16 start_idx;
-	u64 bitmap;
-	u32 rate_n_flags;
-	u8 agg_state;
-	u8 rx_agg_state;
-};
-
-struct rtl_tid_data {
-	u16 seq_number;
-	struct rtl_ht_agg agg;
-};
-
-struct rssi_sta {
-	long undec_sm_pwdb;
-};
-
-struct rtl_sta_info {
-	struct list_head list;
-	u8 ratr_index;
-	u8 wireless_mode;
-	u8 mimo_ps;
-	u8 mac_addr[6];
-	struct rtl_tid_data tids[MAX_TID_COUNT];
-
-	/* just used for ap adhoc or mesh*/
-	struct rssi_sta rssi_stat;
-	u8 cam_entry_id;
-} __packed;
-
-#ifdef VIF_TODO
-struct rtl_vif {
-	unsigned int id;
-	/* struct ieee80211_vif __rcu *vif; */
-	struct ieee80211_vif *vif;
-};
-
-struct rtl_vif_info {
-	struct list_head list;
-	bool active;
-	unsigned int id;
-	struct sk_buff *beacon;
-	bool enable_beacon;
-};
-
-struct vif_priv {
-	struct list_head vif_list;
-
-	/* interface mode settings */
-	unsigned long vif_bitmap;
-	unsigned int vifs;
-	struct rtl_vif vif[MAX_VIRTUAL_MAC];
-
-	/* beaconing */
-	spinlock_t beacon_lock;
-	unsigned int global_pretbtt;
-	unsigned int global_beacon_int;
-	/* struct rtl_vif_info __rcu *beacon_iter; */
-	struct rtl_vif_info *beacon_iter;
-	unsigned int beacon_enabled;
-};
-#endif
 
 struct false_alarm_statistics {
 	u32 cnt_parity_fail;
@@ -1059,8 +1081,10 @@ struct rate_adaptive {
 
 	u32 high_rssi_thresh_for_ra;
 	u32 high2low_rssi_thresh_for_ra;
-	u8 low2high_rssi_thresh_for_ra;
-	u32 low_rssi_thresh_for_ra;
+	u8 low2high_rssi_thresh_for_ra40m;
+	u32 low_rssi_thresh_for_ra40m;
+	u8 low2high_rssi_thresh_for_ra20m;
+	u32 low_rssi_thresh_for_ra20m;
 	u32 upper_rssi_threshold_ratr;
 	u32 middleupper_rssi_threshold_ratr;
 	u32 middle_rssi_threshold_ratr;
@@ -1097,7 +1121,7 @@ struct dynamic_primary_cca {
 };
 
 struct rtl_regulatory {
-	char alpha2[2];
+	s8 alpha2[2];
 	u16 country_code;
 	u16 max_power_level;
 	u32 tp_scale;
@@ -1132,44 +1156,46 @@ enum p2p_ps_state {
 enum p2p_ps_mode {
 	P2P_PS_NONE = 0,
 	P2P_PS_CTWINDOW = 1,
-	P2P_PS_NOA = 2,
-	P2P_PS_MIX = 3, /* CTWindow and NoA*/
+	P2P_PS_NOA	 = 2,
+	P2P_PS_MIX = 3, /* CTWindow and NoA */
 };
 
 struct rtl_p2p_ps_info {
 	enum p2p_ps_mode p2p_ps_mode; /* indicate p2p ps mode */
-	enum p2p_ps_state p2p_ps_state; /* indicate p2p ps state */
-	u8 noa_index; /* Identifies and instance of Notice of Absence timing. */
-	/* Client traffic window. A period of time in TU after TBTT. */
+	enum p2p_ps_state p2p_ps_state; /*  indicate p2p ps state */
+	u8 noa_index; /*  Identifies instance of Notice of Absence timing. */
+	/*  Client traffic window. A period of time in TU after TBTT. */
 	u8 ctwindow;
-	u8 opp_ps; /* opportunistic power save. */
-	u8 noa_num; /* number of NoA descriptor in P2P IE. */
-	/* Count for owner, Type of client. */
+	u8 opp_ps; /*  opportunistic power save. */
+	u8 noa_num; /*  number of NoA descriptor in P2P IE. */
+	/*  Count for owner, Type of client. */
 	u8 noa_count_type[P2P_MAX_NOA_NUM];
-	/* Max duration for owner, preferred or
-	 * min acceptable duration for client. */
+	/*  Max duration for owner, preferred or min acceptable duration
+	 * for client.
+	 */
 	u32 noa_duration[P2P_MAX_NOA_NUM];
-	/* Length of interval for owner, preferred or
-	 * max acceptable interval of client. */
+	/*  Length of interval for owner, preferred or max acceptable intervali
+	 * of client.
+	 */
 	u32 noa_interval[P2P_MAX_NOA_NUM];
-	/* schedule expressed in terms of the lower 4 bytes of the TSF timer. */
+	/*  schedule in terms of the lower 4 bytes of the TSF timer. */
 	u32 noa_start_time[P2P_MAX_NOA_NUM];
 };
 
 struct p2p_ps_offload_t {
-	u8 Offload_En:1;
+	u8 offload_en:1;
 	u8 role:1; /* 1: Owner, 0: Client */
-	u8 CTWindow_En:1;
-	u8 NoA0_En:1;
-	u8 NoA1_En:1;
-	u8 AllStaSleep:1;
+	u8 ctwindow_en:1;
+	u8 noa0_en:1;
+	u8 noa1_en:1;
+	u8 allstasleep:1;
 	u8 discovery:1;
 	u8 reserved:1;
 };
 
 #define IQK_MATRIX_REG_NUM	8
-/* Channels_2_4G_NUM + Channels_5G_20M_NUM + Channels_5G */
-#define IQK_MATRIX_SETTINGS_NUM	(14 + 24 + 21)
+#define IQK_MATRIX_SETTINGS_NUM	(1 + 24 + 21)
+
 struct iqk_matrix_regs {
 	bool iqk_done;
 	long value[1][IQK_MATRIX_REG_NUM];
@@ -1210,7 +1236,6 @@ struct rtl_phy {
 	u8 h2c_box_num;
 	u8 set_io_inprogress;
 	u8 lck_inprogress;
-	bool iqk_inprogress;
 
 	/* record for power tracking */
 	s32 reg_e94;
@@ -1231,13 +1256,13 @@ struct rtl_phy {
 	bool iqk_initialized;
 
 	bool rfpath_rx_enable[MAX_RF_PATH];
-	/*Jaguar*/
 	u8 reg_837;
-	/* Dul mac */
+	/* Dual mac */
 	bool need_iqk;
-	struct iqk_matrix_regs iqk_matrix_regsetting[IQK_MATRIX_SETTINGS_NUM];
+	struct iqk_matrix_regs iqk_matrix[IQK_MATRIX_SETTINGS_NUM];
 
 	bool rfpi_enable;
+	bool iqk_in_progress;
 
 	u8 pwrgroup_cnt;
 	u8 cck_high_power;
@@ -1245,7 +1270,6 @@ struct rtl_phy {
 	u32 mcs_txpwrlevel_origoffset[MAX_PG_GROUP][16];
 	/* MAX_PG_GROUP groups of pwr diff by rates */
 	u32 mcs_offset[MAX_PG_GROUP][16];
-	/* this is for 92EE */
 	u32 tx_power_by_rate_offset[TX_PWR_BY_RATE_NUM_BAND]
 				   [TX_PWR_BY_RATE_NUM_RF]
 				   [TX_PWR_BY_RATE_NUM_RF]
@@ -1253,7 +1277,6 @@ struct rtl_phy {
 	u8 txpwr_by_rate_base_24g[TX_PWR_BY_RATE_NUM_RF]
 				 [TX_PWR_BY_RATE_NUM_RF]
 				 [MAX_BASE_NUM_IN_PHY_REG_PG_24G];
-
 	u8 txpwr_by_rate_base_5g[TX_PWR_BY_RATE_NUM_RF]
 				[TX_PWR_BY_RATE_NUM_RF]
 				[MAX_BASE_NUM_IN_PHY_REG_PG_5G];
@@ -1265,16 +1288,16 @@ struct rtl_phy {
 	u8 cur_bw20_txpwridx;
 	u8 cur_bw40_txpwridx;
 
-	char txpwr_limit_2_4g[MAX_REGULATION_NUM]
-				[MAX_2_4G_BANDWITH_NUM]
-				[MAX_RATE_SECTION_NUM]
-				[CHANNEL_MAX_NUMBER_2G]
-				[MAX_RF_PATH_NUM];
-	char txpwr_limit_5g[MAX_REGULATION_NUM]
-			   [MAX_5G_BANDWITH_NUM]
+	s8 txpwr_limit_2_4g[MAX_REGULATION_NUM]
+			   [MAX_2_4G_BANDWITH_NUM]
 			   [MAX_RATE_SECTION_NUM]
-			   [CHANNEL_MAX_NUMBER_5G]
+			   [CHANNEL_MAX_NUMBER_2G]
 			   [MAX_RF_PATH_NUM];
+	s8 txpwr_limit_5g[MAX_REGULATION_NUM]
+			 [MAX_5G_BANDWITH_NUM]
+			 [MAX_RATE_SECTION_NUM]
+			 [CHANNEL_MAX_NUMBER_5G]
+			 [MAX_RF_PATH_NUM];
 
 	u32 rfreg_chnlval[2];
 	bool apk_done;
@@ -1289,15 +1312,52 @@ struct rtl_phy {
 	struct phy_parameters hwparam_tables[MAX_TAB];
 	u16 rf_pathmap;
 
+	u8 hw_rof_enable; /*Enable GPIO[9] as WL RF HW PDn source*/
 	enum rt_polarity_ctl polarity_ctl;
 };
 
-#define RTL_AGG_STOP						0
-#define RTL_AGG_PROGRESS					1
-#define RTL_AGG_START						2
-#define RTL_AGG_OPERATIONAL					3
-#define RTL_RX_AGG_START					1
-#define RTL_RX_AGG_STOP						0
+#define MAX_TID_COUNT				9
+#define RTL_AGG_STOP				0
+#define RTL_AGG_PROGRESS			1
+#define RTL_AGG_START				2
+#define RTL_AGG_OPERATIONAL			3
+#define RTL_AGG_OFF				0
+#define RTL_AGG_ON				1
+#define RTL_RX_AGG_START			1
+#define RTL_RX_AGG_STOP				0
+#define RTL_AGG_EMPTYING_HW_QUEUE_ADDBA		2
+#define RTL_AGG_EMPTYING_HW_QUEUE_DELBA		3
+
+struct rtl_ht_agg {
+	u16 txq_id;
+	u16 wait_for_ba;
+	u16 start_idx;
+	u64 bitmap;
+	u32 rate_n_flags;
+	u8 agg_state;
+	u8 rx_agg_state;
+};
+
+struct rssi_sta {
+	long undec_sm_pwdb;
+	long undec_sm_cck;
+};
+
+struct rtl_tid_data {
+	u16 seq_number;
+	struct rtl_ht_agg agg;
+};
+
+struct rtl_sta_info {
+	struct list_head list;
+	struct rtl_tid_data tids[MAX_TID_COUNT];
+	/* just used for ap adhoc or mesh*/
+	struct rssi_sta rssi_stat;
+	u16 wireless_mode;
+	u8 ratr_index;
+	u8 mimo_ps;
+	u8 mac_addr[ETH_ALEN];
+} __packed;
 
 struct rtl_priv;
 struct rtl_io {
@@ -1311,15 +1371,16 @@ struct rtl_io {
 	/*PCI IO map */
 	unsigned long pci_base_addr;	/*device I/O address */
 
-	void (*write8_async)(struct rtl_priv *rtlpriv, u32 addr, u8 val);
-	void (*write16_async)(struct rtl_priv *rtlpriv, u32 addr, u16 val);
-	void (*write32_async)(struct rtl_priv *rtlpriv, u32 addr, u32 val);
-	void (*writeN_sync)(struct rtl_priv *rtlpriv, u32 addr, void *buf,
-			    u16 len);
+	void (*write8_async) (struct rtl_priv *rtlpriv, u32 addr, u8 val);
+	void (*write16_async) (struct rtl_priv *rtlpriv, u32 addr, u16 val);
+	void (*write32_async) (struct rtl_priv *rtlpriv, u32 addr, u32 val);
+	void (*writeN_sync) (struct rtl_priv *rtlpriv, u32 addr, void *buf,
+			     u16 len);
 
-	u8 (*read8_sync)(struct rtl_priv *rtlpriv, u32 addr);
-	u16 (*read16_sync)(struct rtl_priv *rtlpriv, u32 addr);
-	u32 (*read32_sync)(struct rtl_priv *rtlpriv, u32 addr);
+	u8(*read8_sync) (struct rtl_priv *rtlpriv, u32 addr);
+	u16(*read16_sync) (struct rtl_priv *rtlpriv, u32 addr);
+	u32(*read32_sync) (struct rtl_priv *rtlpriv, u32 addr);
+
 };
 
 struct rtl_mac {
@@ -1330,7 +1391,7 @@ struct rtl_mac {
 	u32 tx_ss_num;
 	u32 rx_ss_num;
 
-	struct ieee80211_supported_band bands[IEEE80211_NUM_BANDS];
+	struct ieee80211_supported_band bands[NUM_NL80211_BANDS];
 	struct ieee80211_hw *hw;
 	struct ieee80211_vif *vif;
 	enum nl80211_iftype opmode;
@@ -1342,7 +1403,7 @@ struct rtl_mac {
 	int n_channels;
 	int n_bitrates;
 
-	bool offchan_deley;
+	bool offchan_delay;
 	u8 p2p;	/*using p2p role*/
 	bool p2p_in_use;
 
@@ -1360,9 +1421,6 @@ struct rtl_mac {
 	/* skb wait queue */
 	struct sk_buff_head skb_waitq[MAX_TID_COUNT];
 
-	/*RDG*/
-	bool rdg_en;
-
 	u8 ht_stbc_cap;
 	u8 ht_cur_stbc;
 
@@ -1374,13 +1432,19 @@ struct rtl_mac {
 	u8 vht_stbc_cap;
 	u8 vht_ldpc_cap;
 
+	/*RDG*/
+	bool rdg_en;
+
 	/*AP*/
-	u8 bssid[6];
+	u8 bssid[ETH_ALEN] __aligned(2);
 	u32 vendor;
+	u8 mcs[16];	/* 16 bytes mcs for HT rates. */
 	u32 basic_rates; /* b/g rates */
-	u16 mode;		/* wireless mode */
 	u8 ht_enable;
+	u8 sgi_40;
+	u8 sgi_20;
 	u8 bw_40;
+	u16 mode;		/* wireless mode */
 	u8 slot_time;
 	u8 short_preamble;
 	u8 use_cts_protect;
@@ -1405,11 +1469,62 @@ struct rtl_mac {
 	/*QOS & EDCA */
 	struct ieee80211_tx_queue_params edca_param[RTL_MAC80211_NUM_QUEUE];
 	struct rtl_qos_parameters ac[AC_MAX];
+
+	/* counters */
+	u64 last_txok_cnt;
+	u64 last_rxok_cnt;
+	u32 last_bt_edca_ul;
+	u32 last_bt_edca_dl;
+};
+
+struct btdm_8723 {
+	bool all_off;
+	bool agc_table_en;
+	bool adc_back_off_on;
+	bool b2_ant_hid_en;
+	bool low_penalty_rate_adaptive;
+	bool rf_rx_lpf_shrink;
+	bool reject_aggre_pkt;
+	bool tra_tdma_on;
+	u8 tra_tdma_nav;
+	u8 tra_tdma_ant;
+	bool tdma_on;
+	u8 tdma_ant;
+	u8 tdma_nav;
+	u8 tdma_dac_swing;
+	u8 fw_dac_swing_lvl;
+	bool ps_tdma_on;
+	u8 ps_tdma_byte[5];
+	bool pta_on;
+	u32 val_0x6c0;
+	u32 val_0x6c8;
+	u32 val_0x6cc;
+	bool sw_dac_swing_on;
+	u32 sw_dac_swing_lvl;
+	u32 wlan_act_hi;
+	u32 wlan_act_lo;
+	u32 bt_retry_index;
+	bool dec_bt_pwr;
+	bool ignore_wlan_act;
+};
+
+struct bt_coexist_8723 {
+	u32 high_priority_tx;
+	u32 high_priority_rx;
+	u32 low_priority_tx;
+	u32 low_priority_rx;
+	u8 c2h_bt_info;
+	bool c2h_bt_info_req_sent;
+	bool c2h_bt_inquiry_page;
+	u32 bt_inq_page_start_time;
+	u8 bt_retry_cnt;
+	u8 c2h_bt_info_original;
+	u8 bt_inquiry_page_cnt;
+	struct btdm_8723 btdm;
 };
 
 struct rtl_hal {
 	struct ieee80211_hw *hw;
-
 	bool driver_is_goingto_unload;
 	bool up_first_time;
 	bool first_init;
@@ -1417,6 +1532,7 @@ struct rtl_hal {
 	bool bbrf_ready;
 	bool mac_func_enable;
 	bool pre_edcca_enable;
+	struct bt_coexist_8723 hal_coex_8723;
 
 	enum intf_type interface;
 	u16 hw_type;		/*92c or 92d or 92s and so on */
@@ -1425,6 +1541,7 @@ struct rtl_hal {
 	u32 version;		/*version of chip */
 	u8 state;		/*stop 0, start 1 */
 	u8 board_type;
+	u8 package_type;
 	u8 external_pa;
 
 	u8 pa_mode;
@@ -1436,6 +1553,10 @@ struct rtl_hal {
 	u8 external_lna_2g;
 	u8 external_pa_5g;
 	u8 external_lna_5g;
+	u8 type_glna;
+	u8 type_gpa;
+	u8 type_alna;
+	u8 type_apa;
 	u8 rfe_type;
 
 	/*firmware */
@@ -1446,7 +1567,6 @@ struct rtl_hal {
 	bool h2c_setinprogress;
 	u8 last_hmeboxnum;
 	bool fw_ready;
-
 	/*Reserve page start offset except beacon in TxQ. */
 	u8 fw_rsvdpage_startoffset;
 	u8 h2c_txcmd_seq;
@@ -1458,28 +1578,28 @@ struct rtl_hal {
 	bool set_fwcmd_inprogress;
 	u8 current_fwcmd_io;
 
+	struct p2p_ps_offload_t p2p_ps_offload;
 	bool fw_clk_change_in_progress;
 	bool allow_sw_to_change_hwclc;
 	u8 fw_ps_state;
-	 struct p2p_ps_offload_t p2p_ps_offload;
 	/**/
 	bool driver_going2unload;
 
 	/*AMPDU init min space*/
 	u8 minspace_cfg;	/*For Min spacing configurations */
 
-	/* Dul mac */
+	/* Dual mac */
 	enum macphy_mode macphymode;
 	enum band_type current_bandtype;	/* 0:2.4G, 1:5G */
 	enum band_type current_bandtypebackup;
 	enum band_type bandset;
 	/* dual MAC 0--Mac0 1--Mac1 */
 	u32 interfaceindex;
-	/* just for DulMac S3S4 */
+	/* just for DualMac S3S4 */
 	u8 macphyctl_reg;
 	bool earlymode_enable;
 	u8 max_earlymode_num;
-	/* Dul mac*/
+	/* Dual mac*/
 	bool during_mac0init_radiob;
 	bool during_mac1init_radioa;
 	bool reloadtxpowerindex;
@@ -1519,85 +1639,44 @@ struct rtl_security {
 	enum rt_enc_alg pairwise_enc_algorithm;
 	/*Encryption Algorithm for Brocast/Multicast */
 	enum rt_enc_alg group_enc_algorithm;
-
 	/*Cam Entry Bitmap */
-	u32 cam_bitmap;
+	u32 hwsec_cam_bitmap;
+	u8 hwsec_cam_sta_addr[TOTAL_CAM_ENTRY][ETH_ALEN];
+	/*local Key buffer, indx 0 is for
+	   pairwise key 1-4 is for agoup key. */
+	u8 key_buf[KEY_BUF_SIZE][MAX_KEY_LEN];
+	u8 key_len[KEY_BUF_SIZE];
 
-
-
+	/*The pointer of Pairwise Key,
+	   it always points to KeyBuf[4] */
+	u8 *pairwise_key;
 };
 
-struct rtl_dig {
-	u8 dig_enable_flag;
-	u8 dig_ext_port_stage;
-
-	u32 rssi_lowthresh;
-	u32 rssi_highthresh;
-
-	u32 fa_lowthresh;
-	u32 fa_highthresh;
-
-	u8 cursta_connectstate;
-	u8 presta_connectstate;
-	u8 curmultista_connectstate;
-
-	u8 pre_igvalue;
-	u8 cur_igvalue;
-
-	char backoff_val;
-	char backoff_val_range_max;
-	char backoff_val_range_min;
-	u8 rx_gain_range_max;
-	u8 rx_gain_range_min;
-	u8 rssi_val_min;
-	u8 min_undecorated_pwdb_for_dm;
-	long last_min_undecorated_pwdb_for_dm;
-
-	u8 pre_cck_pd_state;
-	u8 cur_cck_pd_state;
-
-	u8 large_fa_hit;
-	u8 forbidden_igi;
-	u32 recover_cnt;
-
-};
-
-struct rtl_pstbl {
-	u8 pre_ccastate;
-	u8 cur_ccasate;
-
-	u8 pre_rfstate;
-	u8 cur_rfstate;
-
-	long rssi_val_min;
-
-};
-
-#define ASSOCIATE_ENTRY_NUM	(32 + 1)
+#define ASSOCIATE_ENTRY_NUM	33
 
 struct fast_ant_training {
-	u8 bssid[6];
-	u8 antsel_rx_keep_0;
-	u8 antsel_rx_keep_1;
-	u8 antsel_rx_keep_2;
-	u32 ant_sum_rssi[7];
-	u32 ant_rssi_cnt[7];
-	u32 ant_ave_rssi[7];
-	u8 fat_state;
-	u32 train_idx;
-	u8 antsel_a[ASSOCIATE_ENTRY_NUM];
-	u8 antsel_b[ASSOCIATE_ENTRY_NUM];
-	u8 antsel_c[ASSOCIATE_ENTRY_NUM];
-	u32 main_ant_sum[ASSOCIATE_ENTRY_NUM];
-	u32 aux_ant_sum[ASSOCIATE_ENTRY_NUM];
-	u32 main_ant_cnt[ASSOCIATE_ENTRY_NUM];
-	u32 aux_ant_cnt[ASSOCIATE_ENTRY_NUM];
-	u8 rx_idle_ant;
-	bool becomelinked;
+	u8	bssid[6];
+	u8	antsel_rx_keep_0;
+	u8	antsel_rx_keep_1;
+	u8	antsel_rx_keep_2;
+	u32	ant_sum[7];
+	u32	ant_cnt[7];
+	u32	ant_ave[7];
+	u8	fat_state;
+	u32	train_idx;
+	u8	antsel_a[ASSOCIATE_ENTRY_NUM];
+	u8	antsel_b[ASSOCIATE_ENTRY_NUM];
+	u8	antsel_c[ASSOCIATE_ENTRY_NUM];
+	u32	main_ant_sum[ASSOCIATE_ENTRY_NUM];
+	u32	aux_ant_sum[ASSOCIATE_ENTRY_NUM];
+	u32	main_ant_cnt[ASSOCIATE_ENTRY_NUM];
+	u32	aux_ant_cnt[ASSOCIATE_ENTRY_NUM];
+	u8	rx_idle_ant;
+	bool	becomelinked;
 };
 
 struct dm_phy_dbg_info {
-	char rx_snrdb[4];
+	s8 rx_snrdb[4];
 	u64 num_qry_phy_status;
 	u64 num_qry_phy_status_cck;
 	u64 num_qry_phy_status_ofdm;
@@ -1607,14 +1686,15 @@ struct dm_phy_dbg_info {
 };
 
 struct rtl_dm {
-	/*PHY status for DM */
+	/*PHY status for Dynamic Management */
 	long entry_min_undec_sm_pwdb;
 	long undec_sm_cck;
 	long undec_sm_pwdb;	/*out dm */
 	long entry_max_undec_sm_pwdb;
+	s32 ofdm_pkt_cnt;
 	bool dm_initialgain_enable;
 	bool dynamic_txpower_enable;
-	bool bcurrent_turbo_edca;
+	bool current_turbo_edca;
 	bool is_any_nonbepkts;	/*out dm */
 	bool is_cur_rdlstate;
 	bool txpower_trackinginit;
@@ -1632,33 +1712,36 @@ struct rtl_dm {
 	u8 thermalvalue_iqk;
 	u8 thermalvalue_lck;
 	u8 thermalvalue;
+	u8 last_dtp_lvl;
 	u8 thermalvalue_avg[AVG_THERMAL_NUM];
 	u8 thermalvalue_avg_index;
+	u8 tm_trigger;
 	bool done_txpower;
-	u8 last_dtp_lvl;
 	u8 dynamic_txhighpower_lvl;	/*Tx high power level */
-	u8 dm_flag;	/*Indicate if each dynamic mechanism's status. */
+	u8 dm_flag;		/*Indicate each dynamic mechanism's status. */
+	u8 dm_flag_tmp;
 	u8 dm_type;
+	u8 dm_rssi_sel;
 	u8 txpower_track_control;
 	bool interrupt_migration;
 	bool disable_tx_int;
-	char ofdm_index[MAX_RF_PATH];
-	char cck_index;
+	s8 ofdm_index[MAX_RF_PATH];
 	u8 default_ofdm_index;
 	u8 default_cck_index;
-	char delta_power_index[MAX_RF_PATH];
-	char delta_power_index_last[MAX_RF_PATH];
-	char power_index_offset[MAX_RF_PATH];
-	char absolute_ofdm_swing_idx[MAX_RF_PATH];
-	char remnant_ofdm_swing_idx[MAX_RF_PATH];
-	char remnant_cck_idx;
+	s8 cck_index;
+	s8 delta_power_index[MAX_RF_PATH];
+	s8 delta_power_index_last[MAX_RF_PATH];
+	s8 power_index_offset[MAX_RF_PATH];
+	s8 absolute_ofdm_swing_idx[MAX_RF_PATH];
+	s8 remnant_ofdm_swing_idx[MAX_RF_PATH];
+	s8 remnant_cck_idx;
 	bool modify_txagc_flag_path_a;
 	bool modify_txagc_flag_path_b;
 
 	bool one_entry_only;
 	struct dm_phy_dbg_info dbginfo;
-	/* Dynamic ATC switch */
 
+	/* Dynamic ATC switch */
 	bool atc_status;
 	bool large_cfo_hit;
 	bool is_freeze;
@@ -1670,37 +1753,56 @@ struct rtl_dm {
 	u32 packet_count_pre;
 	u8 tx_rate;
 
-
 	/*88e tx power tracking*/
-	u8 swing_idx_ofdm[2];
-	u8 swing_idx_ofdm_current;
-	u8 swing_idx_ofdm_base[MAX_RF_PATH];
-	bool bb_swing_flag_Ofdm;
-	u8 bb_swing_idx_cck;
-	u8 bb_swing_idx_cck_current;
-	u8 bb_swing_idx_cck_base;
-	bool bb_swing_flag_cck;
+	u8	swing_idx_ofdm[MAX_RF_PATH];
+	u8	swing_idx_ofdm_cur;
+	u8	swing_idx_ofdm_base[MAX_RF_PATH];
+	bool	swing_flag_ofdm;
+	u8	swing_idx_cck;
+	u8	swing_idx_cck_cur;
+	u8	swing_idx_cck_base;
+	bool	swing_flag_cck;
 
-	char bb_swing_diff_2g;
-	char bb_swing_diff_5g;
+	s8	swing_diff_2g;
+	s8	swing_diff_5g;
+
+	u8 delta_swing_table_idx_24gccka_p[DEL_SW_IDX_SZ];
+	u8 delta_swing_table_idx_24gccka_n[DEL_SW_IDX_SZ];
+	u8 delta_swing_table_idx_24gcckb_p[DEL_SW_IDX_SZ];
+	u8 delta_swing_table_idx_24gcckb_n[DEL_SW_IDX_SZ];
+	u8 delta_swing_table_idx_24ga_p[DEL_SW_IDX_SZ];
+	u8 delta_swing_table_idx_24ga_n[DEL_SW_IDX_SZ];
+	u8 delta_swing_table_idx_24gb_p[DEL_SW_IDX_SZ];
+	u8 delta_swing_table_idx_24gb_n[DEL_SW_IDX_SZ];
+	u8 delta_swing_table_idx_5ga_p[BAND_NUM][DEL_SW_IDX_SZ];
+	u8 delta_swing_table_idx_5ga_n[BAND_NUM][DEL_SW_IDX_SZ];
+	u8 delta_swing_table_idx_5gb_p[BAND_NUM][DEL_SW_IDX_SZ];
+	u8 delta_swing_table_idx_5gb_n[BAND_NUM][DEL_SW_IDX_SZ];
+	u8 delta_swing_table_idx_24ga_p_8188e[DEL_SW_IDX_SZ];
+	u8 delta_swing_table_idx_24ga_n_8188e[DEL_SW_IDX_SZ];
 
 	/* DMSP */
 	bool supp_phymode_switch;
 
 	/* DulMac */
-	struct rtl_dig dm_digtable;
-	struct rtl_pstbl dm_pstable;
 	struct fast_ant_training fat_table;
 
+	u8	resp_tx_path;
+	u8	path_sel;
+	u32	patha_sum;
+	u32	pathb_sum;
+	u32	patha_cnt;
+	u32	pathb_cnt;
+
+	u8 pre_channel;
+	u8 *p_channel;
 	u8 linked_interval;
 
 	u64 last_tx_ok_cnt;
 	u64 last_rx_ok_cnt;
-
-	bool cck_high_power;
 };
 
-#define	EFUSE_MAX_LOGICAL_SIZE		256
+#define	EFUSE_MAX_LOGICAL_SIZE			512
 
 struct rtl_efuse {
 	bool autoLoad_ok;
@@ -1726,10 +1828,10 @@ struct rtl_efuse {
 	u8 eeprom_oemid;
 	u16 eeprom_channelplan;
 	u8 eeprom_version;
-
-	u8 dev_addr[6];
 	u8 board_type;
 	u8 external_pa;
+
+	u8 dev_addr[6];
 	u8 wowlan_enable;
 	u8 antenna_div_cfg;
 	u8 antenna_div_type;
@@ -1740,10 +1842,9 @@ struct rtl_efuse {
 	u8 eeprom_tssi_5g[3][2]; /* for 5GL/5GM/5GH band. */
 	u8 eeprom_pwrlimit_ht20[CHANNEL_GROUP_MAX];
 	u8 eeprom_pwrlimit_ht40[CHANNEL_GROUP_MAX];
-	u8 eeprom_chnlarea_txpwr_cck[2][CHANNEL_GROUP_MAX_2G];
-	u8 eeprom_chnlarea_txpwr_ht40_1s[2][CHANNEL_GROUP_MAX];
-	u8 eprom_chnl_txpwr_ht40_2sdf[2][CHANNEL_GROUP_MAX];
-
+	u8 eeprom_chnlarea_txpwr_cck[MAX_RF_PATH][CHANNEL_GROUP_MAX_2G];
+	u8 eeprom_chnlarea_txpwr_ht40_1s[MAX_RF_PATH][CHANNEL_GROUP_MAX];
+	u8 eprom_chnl_txpwr_ht40_2sdf[MAX_RF_PATH][CHANNEL_GROUP_MAX];
 
 	u8 internal_pa_5g[2];	/* pathA / pathB */
 	u8 eeprom_c9;
@@ -1774,27 +1875,26 @@ struct rtl_efuse {
 	 *
 	 * Sizes of these arrays are decided by the larger ones.
 	 */
-	char txpwr_cckdiff[MAX_RF_PATH][CHANNEL_MAX_NUMBER];
-	char txpwr_ht20diff[MAX_RF_PATH][CHANNEL_MAX_NUMBER];
-	char txpwr_ht40diff[MAX_RF_PATH][CHANNEL_MAX_NUMBER];
-	char txpwr_legacyhtdiff[MAX_RF_PATH][CHANNEL_MAX_NUMBER];
-	/*--------------------------------------------------------*/
+	s8 txpwr_cckdiff[MAX_RF_PATH][CHANNEL_MAX_NUMBER];
+	s8 txpwr_ht20diff[MAX_RF_PATH][CHANNEL_MAX_NUMBER];
+	s8 txpwr_ht40diff[MAX_RF_PATH][CHANNEL_MAX_NUMBER];
+	s8 txpwr_legacyhtdiff[MAX_RF_PATH][CHANNEL_MAX_NUMBER];
 
 	u8 txpwr_5g_bw40base[MAX_RF_PATH][CHANNEL_MAX_NUMBER];
 	u8 txpwr_5g_bw80base[MAX_RF_PATH][CHANNEL_MAX_NUMBER_5G_80M];
-	char txpwr_5g_ofdmdiff[MAX_RF_PATH][MAX_TX_COUNT];
-	char txpwr_5g_bw20diff[MAX_RF_PATH][MAX_TX_COUNT];
-	char txpwr_5g_bw40diff[MAX_RF_PATH][MAX_TX_COUNT];
-	char txpwr_5g_bw80diff[MAX_RF_PATH][MAX_TX_COUNT];
+	s8 txpwr_5g_ofdmdiff[MAX_RF_PATH][MAX_TX_COUNT];
+	s8 txpwr_5g_bw20diff[MAX_RF_PATH][MAX_TX_COUNT];
+	s8 txpwr_5g_bw40diff[MAX_RF_PATH][MAX_TX_COUNT];
+	s8 txpwr_5g_bw80diff[MAX_RF_PATH][MAX_TX_COUNT];
 
-	u8 txpwr_safetyflag;		/* Band edge enable flag */
+	u8 txpwr_safetyflag;			/* Band edge enable flag */
 	u16 eeprom_txpowerdiff;
 	u8 legacy_httxpowerdiff;	/* Legacy to HT rate power diff */
 	u8 antenna_txpwdiff[3];
 
 	u8 eeprom_regulatory;
 	u8 eeprom_thermalmeter;
-	u8 thermalmeter[2];/*ThermalMeter, index 0 for RFIC0, and 1 for RFIC1 */
+	u8 thermalmeter[2]; /*ThermalMeter, index 0 for RFIC0, 1 for RFIC1 */
 	u16 tssi_13dbm;
 	u8 crystalcap;		/* CrystalCap. */
 	u8 delta_iqk;
@@ -1808,6 +1908,13 @@ struct rtl_efuse {
 
 	/*channel plan */
 	u8 channel_plan;
+};
+
+struct rtl_tx_report {
+	atomic_t sn;
+	u16 last_sent_sn;
+	unsigned long last_sent_time;
+	u16 last_recv_sn;
 };
 
 struct rtl_ps_ctl {
@@ -1890,8 +1997,8 @@ struct rtl_stats {
 	u32 mac_time[2];
 	s8 rssi;
 	u8 signal;
+	u8 noise;
 	u8 rate;		/* hw desc rate */
-	u8 rawdata;
 	u8 received_channel;
 	u8 control;
 	u8 mask;
@@ -1943,7 +2050,7 @@ struct rtl_stats {
 	bool is_ht;
 	bool packet_toself;
 	bool packet_beacon;	/*for rssi */
-	char cck_adc_pwdb[4];	/*for rx path selection */
+	s8 cck_adc_pwdb[4];	/*for rx path selection */
 
 	bool is_vht;
 	bool is_short_gi;
@@ -1957,8 +2064,9 @@ struct rtl_stats {
 	u32 macid_valid_entry[2];
 };
 
+
 struct rt_link_detect {
-	/* count for raoming */
+	/* count for roaming */
 	u32 bcn_rx_inperiod;
 	u32 roam_times;
 
@@ -1968,8 +2076,6 @@ struct rt_link_detect {
 	u32 num_tx_inperiod;
 	u32 num_rx_inperiod;
 
-	u32 num_tx_packets_unicast;
-	u32 num_rx_packets_unicast;
 	bool busytraffic;
 	bool tx_busy_traffic;
 	bool rx_busy_traffic;
@@ -2000,6 +2106,8 @@ struct rtl_tcb_desc {
 	u8 use_driver_rate:1;
 	u8 disable_ratefallback:1;
 
+	u8 use_spe_rpt:1;
+
 	u8 ratr_index;
 	u8 mac_id;
 	u8 hw_rate;
@@ -2013,9 +2121,6 @@ struct rtl_tcb_desc {
 	/* The max value by HW */
 	u32 empkt_len[10];
 	bool tx_enable_sw_calc_duration;
-	/* used for hal construct pkt,
-	 * we may set desc when tx */
-	u8 self_desc;
 };
 
 struct rtl_wow_pattern {
@@ -2024,102 +2129,90 @@ struct rtl_wow_pattern {
 	u32 mask[4];
 };
 
-struct proxim {
-	bool proxim_on;
-
-	void *proximity_priv;
-	int (*proxim_rx)(struct ieee80211_hw *hw, struct rtl_stats *status,
-		struct sk_buff *skb);
-	u8  (*proxim_get_var)(struct ieee80211_hw *hw, u8 type);
-};
-
 struct rtl_hal_ops {
-	int (*init_sw_vars)(struct ieee80211_hw *hw);
-	void (*deinit_sw_vars)(struct ieee80211_hw *hw);
+	int (*init_sw_vars) (struct ieee80211_hw *hw);
+	void (*deinit_sw_vars) (struct ieee80211_hw *hw);
 	void (*read_chip_version)(struct ieee80211_hw *hw);
-	void (*read_eeprom_info)(struct ieee80211_hw *hw);
-	void (*interrupt_recognized)(struct ieee80211_hw *hw,
-				     u32 *inta, u32 *intb);
-	int (*hw_init)(struct ieee80211_hw *hw);
-	void (*hw_disable)(struct ieee80211_hw *hw);
-	void (*hw_suspend)(struct ieee80211_hw *hw);
-	void (*hw_resume)(struct ieee80211_hw *hw);
-	void (*enable_interrupt)(struct ieee80211_hw *hw);
-	void (*disable_interrupt)(struct ieee80211_hw *hw);
-	int (*set_network_type)(struct ieee80211_hw *hw,
+	void (*read_eeprom_info) (struct ieee80211_hw *hw);
+	void (*interrupt_recognized) (struct ieee80211_hw *hw,
+				      u32 *p_inta, u32 *p_intb);
+	int (*hw_init) (struct ieee80211_hw *hw);
+	void (*hw_disable) (struct ieee80211_hw *hw);
+	void (*hw_suspend) (struct ieee80211_hw *hw);
+	void (*hw_resume) (struct ieee80211_hw *hw);
+	void (*enable_interrupt) (struct ieee80211_hw *hw);
+	void (*disable_interrupt) (struct ieee80211_hw *hw);
+	int (*set_network_type) (struct ieee80211_hw *hw,
 				 enum nl80211_iftype type);
 	void (*set_chk_bssid)(struct ieee80211_hw *hw,
-			      bool check_bssid);
-	void (*set_bw_mode)(struct ieee80211_hw *hw,
+				bool check_bssid);
+	void (*set_bw_mode) (struct ieee80211_hw *hw,
 			     enum nl80211_channel_type ch_type);
-	 u8 (*switch_channel)(struct ieee80211_hw *hw);
-	void (*set_qos)(struct ieee80211_hw *hw, int aci);
-	void (*set_bcn_reg)(struct ieee80211_hw *hw);
-	void (*set_bcn_intv)(struct ieee80211_hw *hw);
-	void (*update_interrupt_mask)(struct ieee80211_hw *hw,
+	 u8(*switch_channel) (struct ieee80211_hw *hw);
+	void (*set_qos) (struct ieee80211_hw *hw, int aci);
+	void (*set_bcn_reg) (struct ieee80211_hw *hw);
+	void (*set_bcn_intv) (struct ieee80211_hw *hw);
+	void (*update_interrupt_mask) (struct ieee80211_hw *hw,
 				       u32 add_msr, u32 rm_msr);
-	void (*get_hw_reg)(struct ieee80211_hw *hw, u8 variable, u8 *val);
-	void (*set_hw_reg)(struct ieee80211_hw *hw, u8 variable, u8 *val);
-	void (*update_rate_tbl)(struct ieee80211_hw *hw,
-				 struct ieee80211_sta *sta, u8 rssi_level);
+	void (*get_hw_reg) (struct ieee80211_hw *hw, u8 variable, u8 *val);
+	void (*set_hw_reg) (struct ieee80211_hw *hw, u8 variable, u8 *val);
+	void (*update_rate_tbl) (struct ieee80211_hw *hw,
+			      struct ieee80211_sta *sta, u8 rssi_level);
 	void (*pre_fill_tx_bd_desc)(struct ieee80211_hw *hw, u8 *tx_bd_desc,
-				     u8 *desc, u8 queue_index,
-				     struct sk_buff *skb, dma_addr_t addr);
+				    u8 *desc, u8 queue_index,
+				    struct sk_buff *skb, dma_addr_t addr);
 	void (*update_rate_mask) (struct ieee80211_hw *hw, u8 rssi_level);
 	u16 (*rx_desc_buff_remained_cnt)(struct ieee80211_hw *hw,
-					  u8 queue_index);
+					 u8 queue_index);
 	void (*rx_check_dma_ok)(struct ieee80211_hw *hw, u8 *header_desc,
-				 u8 queue_index);
-	void (*fill_tx_desc)(struct ieee80211_hw *hw,
-			      struct ieee80211_hdr *hdr,
-			      u8 *pdesc_tx, u8 *pbd_desc,
+				u8 queue_index);
+	void (*fill_tx_desc) (struct ieee80211_hw *hw,
+			      struct ieee80211_hdr *hdr, u8 *pdesc_tx,
+			      u8 *pbd_desc_tx,
 			      struct ieee80211_tx_info *info,
 			      struct ieee80211_sta *sta,
 			      struct sk_buff *skb, u8 hw_queue,
 			      struct rtl_tcb_desc *ptcb_desc);
 	void (*fill_fake_txdesc) (struct ieee80211_hw *hw, u8 *pDesc,
 				  u32 buffer_len, bool bIsPsPoll);
-	void (*fill_tx_cmddesc)(struct ieee80211_hw *hw, u8 *pdesc,
+	void (*fill_tx_cmddesc) (struct ieee80211_hw *hw, u8 *pdesc,
 				 bool firstseg, bool lastseg,
 				 struct sk_buff *skb);
-	bool (*cmd_send_packet)(struct ieee80211_hw *hw, struct sk_buff *skb);
-	bool (*query_rx_desc)(struct ieee80211_hw *hw,
-			       struct rtl_stats *status,
+	bool (*query_rx_desc) (struct ieee80211_hw *hw,
+			       struct rtl_stats *stats,
 			       struct ieee80211_rx_status *rx_status,
 			       u8 *pdesc, struct sk_buff *skb);
-	void (*set_channel_access)(struct ieee80211_hw *hw);
-	bool (*radio_onoff_checking)(struct ieee80211_hw *hw, u8 *valid);
-	void (*dm_watchdog)(struct ieee80211_hw *hw);
-	void (*scan_operation_backup)(struct ieee80211_hw *hw, u8 operation);
-	bool (*set_rf_power_state)(struct ieee80211_hw *hw,
+	void (*set_channel_access) (struct ieee80211_hw *hw);
+	bool (*radio_onoff_checking) (struct ieee80211_hw *hw, u8 *valid);
+	void (*dm_watchdog) (struct ieee80211_hw *hw);
+	void (*scan_operation_backup) (struct ieee80211_hw *hw, u8 operation);
+	bool (*set_rf_power_state) (struct ieee80211_hw *hw,
 				    enum rf_pwrstate rfpwr_state);
-	void (*led_control)(struct ieee80211_hw *hw,
+	void (*led_control) (struct ieee80211_hw *hw,
 			     enum led_ctl_mode ledaction);
 	void (*set_desc)(struct ieee80211_hw *hw, u8 *pdesc, bool istx,
-			  u8 desc_name, u8 *val);
-	 u32 (*get_desc)(u8 *pdesc, bool istx, u8 desc_name);
-	bool (*is_tx_desc_closed)(struct ieee80211_hw *hw,
+			 u8 desc_name, u8 *val);
+	u32 (*get_desc) (u8 *pdesc, bool istx, u8 desc_name);
+	bool (*is_tx_desc_closed) (struct ieee80211_hw *hw,
 				   u8 hw_queue, u16 index);
-	void (*tx_polling)(struct ieee80211_hw *hw, u8 hw_queue);
-	void (*enable_hw_sec)(struct ieee80211_hw *hw);
-	void (*set_key)(struct ieee80211_hw *hw, u32 key_index,
+	void (*tx_polling) (struct ieee80211_hw *hw, u8 hw_queue);
+	void (*enable_hw_sec) (struct ieee80211_hw *hw);
+	void (*set_key) (struct ieee80211_hw *hw, u32 key_index,
 			 u8 *macaddr, bool is_group, u8 enc_algo,
 			 bool is_wepkey, bool clear_all);
-	void (*init_sw_leds)(struct ieee80211_hw *hw);
-	void (*deinit_sw_leds)(struct ieee80211_hw *hw);
-	 u32 (*get_bbreg)(struct ieee80211_hw *hw, u32 regaddr, u32 bitmask);
-	void (*set_bbreg)(struct ieee80211_hw *hw, u32 regaddr, u32 bitmask,
+	void (*init_sw_leds) (struct ieee80211_hw *hw);
+	void (*deinit_sw_leds) (struct ieee80211_hw *hw);
+	u32 (*get_bbreg) (struct ieee80211_hw *hw, u32 regaddr, u32 bitmask);
+	void (*set_bbreg) (struct ieee80211_hw *hw, u32 regaddr, u32 bitmask,
 			   u32 data);
-	 u32 (*get_rfreg)(struct ieee80211_hw *hw, enum radio_path rfpath,
+	u32 (*get_rfreg) (struct ieee80211_hw *hw, enum radio_path rfpath,
 			  u32 regaddr, u32 bitmask);
-	void (*set_rfreg)(struct ieee80211_hw *hw, enum radio_path rfpath,
+	void (*set_rfreg) (struct ieee80211_hw *hw, enum radio_path rfpath,
 			   u32 regaddr, u32 bitmask, u32 data);
-	void (*allow_all_destaddr)(struct ieee80211_hw *hw,
-				   bool allow_all_da, bool write_into_reg);
-	void (*linked_set_reg)(struct ieee80211_hw *hw);
-	void (*check_switch_to_dmdp)(struct ieee80211_hw *hw);
-	void (*dualmac_easy_concurrent)(struct ieee80211_hw *hw);
-	void (*dualmac_switch_to_dmdp)(struct ieee80211_hw *hw);
+	void (*linked_set_reg) (struct ieee80211_hw *hw);
+	void (*chk_switch_dmdp) (struct ieee80211_hw *hw);
+	void (*dualmac_easy_concurrent) (struct ieee80211_hw *hw);
+	void (*dualmac_switch_to_dmdp) (struct ieee80211_hw *hw);
 	bool (*phy_rf6052_config) (struct ieee80211_hw *hw);
 	void (*phy_rf6052_set_cck_txpower) (struct ieee80211_hw *hw,
 					    u8 *powerlevel);
@@ -2132,50 +2225,45 @@ struct rtl_hal_ops {
 	void (*phy_lc_calibrate) (struct ieee80211_hw *hw, bool is2t);
 	void (*phy_set_bw_mode_callback) (struct ieee80211_hw *hw);
 	void (*dm_dynamic_txpower) (struct ieee80211_hw *hw);
-	void (*c2h_command_handle)(struct ieee80211_hw *hw);
-	void (*bt_wifi_media_status_notify)(struct ieee80211_hw *hw,
+	void (*c2h_command_handle) (struct ieee80211_hw *hw);
+	void (*bt_wifi_media_status_notify) (struct ieee80211_hw *hw,
 					     bool mstate);
-	void (*bt_turn_off_bt_coexist_before_enter_lps)(struct ieee80211_hw *hw);
-	void (*fill_h2c_cmd)(struct ieee80211_hw *hw, u8 element_id,
-			      u32 cmd_len, u8 *cmdbuffer);
-	bool (*get_btc_status)(void);
-//	bool (*is_fw_header) (struct rtl92c_firmware_header *hdr);
+	void (*bt_coex_off_before_lps) (struct ieee80211_hw *hw);
+	void (*fill_h2c_cmd) (struct ieee80211_hw *hw, u8 element_id,
+			      u32 cmd_len, u8 *p_cmdbuffer);
+	bool (*get_btc_status) (void);
+	bool (*is_fw_header)(struct rtlwifi_firmware_header *hdr);
 	u32 (*rx_command_packet)(struct ieee80211_hw *hw,
-				  const struct rtl_stats *status, struct sk_buff *skb);
-	void (*add_wowlan_pattern)(struct ieee80211_hw *hw, struct rtl_wow_pattern *rtl_pattern, u8 index);
-	u16 (*get_available_desc)(struct ieee80211_hw *hw , u8 q_idx);
+				 const struct rtl_stats *status, struct sk_buff *skb);
+	void (*add_wowlan_pattern)(struct ieee80211_hw *hw,
+				   struct rtl_wow_pattern *rtl_pattern,
+				   u8 index);
+	u16 (*get_available_desc)(struct ieee80211_hw *hw, u8 q_idx);
+	void (*c2h_content_parsing)(struct ieee80211_hw *hw, u8 tag, u8 len,
+				    u8 *val);
 };
 
 struct rtl_intf_ops {
 	/*com */
 	void (*read_efuse_byte)(struct ieee80211_hw *hw, u16 _offset, u8 *pbuf);
-	int (*adapter_start)(struct ieee80211_hw *hw);
-	void (*adapter_stop)(struct ieee80211_hw *hw);
+	int (*adapter_start) (struct ieee80211_hw *hw);
+	void (*adapter_stop) (struct ieee80211_hw *hw);
 	bool (*check_buddy_priv)(struct ieee80211_hw *hw,
-			struct rtl_priv **buddy_priv);
+				 struct rtl_priv **buddy_priv);
 
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,7,0))
-	int (*adapter_tx) (struct ieee80211_hw * hw, struct sk_buff * skb,
-			   struct rtl_tcb_desc *ptcb_desc);
-#else
-	int (*adapter_tx)(struct ieee80211_hw *hw,
+	int (*adapter_tx) (struct ieee80211_hw *hw,
 			   struct ieee80211_sta *sta,
 			   struct sk_buff *skb,
 			   struct rtl_tcb_desc *ptcb_desc);
-#endif
 	void (*flush)(struct ieee80211_hw *hw, u32 queues, bool drop);
-	int (*reset_trx_ring)(struct ieee80211_hw *hw);
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,7,0))
-	bool (*waitq_insert) (struct ieee80211_hw *hw, struct sk_buff *skb);
-#else
-	bool (*waitq_insert)(struct ieee80211_hw *hw,
+	int (*reset_trx_ring) (struct ieee80211_hw *hw);
+	bool (*waitq_insert) (struct ieee80211_hw *hw,
 			      struct ieee80211_sta *sta,
 			      struct sk_buff *skb);
-#endif
 
 	/*pci */
-	void (*disable_aspm)(struct ieee80211_hw *hw);
-	void (*enable_aspm)(struct ieee80211_hw *hw);
+	void (*disable_aspm) (struct ieee80211_hw *hw);
+	void (*enable_aspm) (struct ieee80211_hw *hw);
 
 	/*usb */
 };
@@ -2196,9 +2284,11 @@ struct rtl_mod_params {
 	/* default: 1 = using linked fw power save */
 	bool fwctrl_lps;
 
-	/* default: 0 = not using MSI interrupts mode */
-	/* submodules should set their own default value */
+	/* default: 0 = not using MSI interrupts mode
+	 * submodules should set their own default value
+	 */
 	bool msi_support;
+
 	/* default 0: 1 means disable */
 	bool disable_watchdog;
 
@@ -2236,7 +2326,6 @@ struct rtl_hal_cfg {
 	u8 bar_id;
 	bool write_readback;
 	char *name;
-	char *fw_name;
 	char *alt_fw_name;
 	struct rtl_hal_ops *ops;
 	struct rtl_mod_params *mod_params;
@@ -2251,10 +2340,13 @@ struct rtl_hal_cfg {
 struct rtl_locks {
 	/* mutex */
 	struct mutex conf_mutex;
+	struct mutex ps_mutex;
 
 	/*spin lock */
 	spinlock_t ips_lock;
 	spinlock_t irq_th_lock;
+	spinlock_t irq_pci_lock;
+	spinlock_t tx_lock;
 	spinlock_t h2c_lock;
 	spinlock_t rf_ps_lock;
 	spinlock_t rf_lock;
@@ -2262,11 +2354,13 @@ struct rtl_locks {
 	spinlock_t waitq_lock;
 	spinlock_t entry_list_lock;
 	spinlock_t usb_lock;
+	spinlock_t c2hcmd_lock;
+	spinlock_t scan_list_lock;
 
 	/*FW clock change */
 	spinlock_t fw_ps_lock;
 
-	/*Dul mac*/
+	/*Dual mac*/
 	spinlock_t cck_and_rw_pagea_lock;
 
 	/*Easy concurrent*/
@@ -2291,6 +2385,7 @@ struct rtl_works {
 	struct workqueue_struct *rtl_wq;
 	struct delayed_work watchdog_wq;
 	struct delayed_work ips_nic_off_wq;
+	struct delayed_work c2hcmd_wq;
 
 	/* For SW LPS */
 	struct delayed_work ps_work;
@@ -2303,12 +2398,12 @@ struct rtl_works {
 
 struct rtl_debug {
 	u32 dbgp_type[DBGP_TYPE_MAX];
-	u32 global_debuglevel;
+	int global_debuglevel;
 	u64 global_debugcomponents;
 
-	/* add for proc debug */
-	struct proc_dir_entry *proc_dir;
-	char proc_name[20];
+	/* add for debug */
+	struct dentry *debugfs_dir;
+	char debugfs_name[20];
 };
 
 #define MIMO_PS_STATIC			0
@@ -2367,8 +2462,8 @@ struct dig_t {
 	u8 presta_cstate;
 	u8 curmultista_cstate;
 	u8 stop_dig;
-	u8 back_val;
-	u8 back_range_max;
+	s8 back_val;
+	s8 back_range_max;
 	s8 back_range_min;
 	u8 rx_gain_max;
 	u8 rx_gain_min;
@@ -2383,8 +2478,6 @@ struct dig_t {
 	u8 pre_ccastate;
 	u8 cur_ccasate;
 	u8 large_fa_hit;
-	u8 dig_dynamic_min_0;
-	u8 dig_dynamic_min_1;
 	u8 forbidden_igi;
 	u8 dig_state;
 	u8 dig_highpwrstate;
@@ -2397,6 +2490,8 @@ struct dig_t {
 	u8 cur_cs_ratiostate;
 	u8 pre_cs_ratiostate;
 	u8 backoff_enable_flag;
+	s8 backoffval_range_max;
+	s8 backoffval_range_min;
 	u8 dig_min_0;
 	u8 dig_min_1;
 	u8 bt30_cur_igi;
@@ -2414,42 +2509,27 @@ struct rtl_global_var {
 	spinlock_t glb_list_lock;
 };
 
+#define IN_4WAY_TIMEOUT_TIME	(30 * MSEC_PER_SEC)	/* 30 seconds */
+
 struct rtl_btc_info {
 	u8 bt_type;
 	u8 btcoexist;
 	u8 ant_num;
 	u8 single_ant_path;
+
+	u8 ap_num;
+	bool in_4way;
+	unsigned long in_4way_ts;
 };
 
-struct rtl_btc_ops {
-	void (*btc_init_variables)(struct rtl_priv *rtlpriv);
-	void (*btc_init_hal_vars)(struct rtl_priv *rtlpriv);
-	void (*btc_init_hw_config)(struct rtl_priv *rtlpriv);
-	void (*btc_ips_notify)(struct rtl_priv *rtlpriv, u8 type);
-	void (*btc_lps_notify)(struct rtl_priv *rtlpriv, u8 type);
-	void (*btc_scan_notify)(struct rtl_priv *rtlpriv, u8 scantype);
-	void (*btc_connect_notify)(struct rtl_priv *rtlpriv, u8 action);
-	void (*btc_mediastatus_notify)(struct rtl_priv *rtlpriv,
-					enum rt_media_status mstatus);
-	void (*btc_periodical)(struct rtl_priv *rtlpriv);
-	void (*btc_halt_notify)(void);
-	void (*btc_btinfo_notify)(struct rtl_priv *rtlpriv,
-					u8 *tmp_buf, u8 length);
-	bool (*btc_is_limited_dig)(struct rtl_priv *rtlpriv);
-	bool (*btc_is_disable_edca_turbo)(struct rtl_priv *rtlpriv);
-	bool (*btc_is_bt_disabled)(struct rtl_priv *rtlpriv);
-	void (*btc_special_packet_notify)(struct rtl_priv *rtlpriv,
-					u8 pkt_type);
-};
-
-struct rtl_bt_coexist {
+struct bt_coexist_info {
 	struct rtl_btc_ops *btc_ops;
 	struct rtl_btc_info btc_info;
 	/* EEPROM BT info. */
 	u8 eeprom_bt_coexist;
 	u8 eeprom_bt_type;
 	u8 eeprom_bt_ant_num;
-	u8 eeprom_bt_ant_isolation;
+	u8 eeprom_bt_ant_isol;
 	u8 eeprom_bt_radio_shared;
 
 	u8 bt_coexistence;
@@ -2477,9 +2557,9 @@ struct rtl_bt_coexist {
 	bool fw_coexist_all_off;
 	bool sw_coexist_all_off;
 	bool hw_coexist_all_off;
-	u32 current_state;
+	u32 cstate;
 	u32 previous_state;
-	u32 current_state_h;
+	u32 cstate_h;
 	u32 previous_state_h;
 
 	u8 bt_pre_rssi_state;
@@ -2499,19 +2579,69 @@ struct rtl_bt_coexist {
 	u8 lps_counter;
 };
 
-#if (LINUX_VERSION_CODE <= KERNEL_VERSION(3,11,0)) 
-#define cfg80211_pkt_pattern cfg80211_wowlan_trig_pkt_pattern
-#endif
+struct rtl_btc_ops {
+	void (*btc_init_variables) (struct rtl_priv *rtlpriv);
+	void (*btc_init_hal_vars) (struct rtl_priv *rtlpriv);
+	void (*btc_power_on_setting)(struct rtl_priv *rtlpriv);
+	void (*btc_init_hw_config) (struct rtl_priv *rtlpriv);
+	void (*btc_ips_notify) (struct rtl_priv *rtlpriv, u8 type);
+	void (*btc_lps_notify)(struct rtl_priv *rtlpriv, u8 type);
+	void (*btc_scan_notify) (struct rtl_priv *rtlpriv, u8 scantype);
+	void (*btc_connect_notify) (struct rtl_priv *rtlpriv, u8 action);
+	void (*btc_mediastatus_notify) (struct rtl_priv *rtlpriv,
+					enum rt_media_status mstatus);
+	void (*btc_periodical) (struct rtl_priv *rtlpriv);
+	void (*btc_halt_notify) (void);
+	void (*btc_btinfo_notify) (struct rtl_priv *rtlpriv,
+				   u8 *tmp_buf, u8 length);
+	void (*btc_btmpinfo_notify)(struct rtl_priv *rtlpriv,
+				    u8 *tmp_buf, u8 length);
+	bool (*btc_is_limited_dig) (struct rtl_priv *rtlpriv);
+	bool (*btc_is_disable_edca_turbo) (struct rtl_priv *rtlpriv);
+	bool (*btc_is_bt_disabled) (struct rtl_priv *rtlpriv);
+	void (*btc_special_packet_notify)(struct rtl_priv *rtlpriv,
+					  u8 pkt_type);
+	void (*btc_display_bt_coex_info)(u8 *buff, u32 size);
+	void (*btc_record_pwr_mode)(struct rtl_priv *rtlpriv, u8 *buf, u8 len);
+	u8   (*btc_get_lps_val)(struct rtl_priv *rtlpriv);
+	u8   (*btc_get_rpwm_val)(struct rtl_priv *rtlpriv);
+	bool (*btc_is_bt_ctrl_lps)(struct rtl_priv *rtlpriv);
+	void (*btc_get_ampdu_cfg)(struct rtl_priv *rtlpriv, u8 *reject_agg,
+				  u8 *ctrl_agg_size, u8 *agg_size);
+	bool (*btc_is_bt_lps_on)(struct rtl_priv *rtlpriv);
+};
+
+struct proxim {
+	bool proxim_on;
+
+	void *proximity_priv;
+	int (*proxim_rx)(struct ieee80211_hw *hw, struct rtl_stats *status,
+			 struct sk_buff *skb);
+	u8  (*proxim_get_var)(struct ieee80211_hw *hw, u8 type);
+};
+
+struct rtl_c2hcmd {
+	struct list_head list;
+	u8 tag;
+	u8 len;
+	u8 *val;
+};
+
+struct rtl_bssid_entry {
+	struct list_head list;
+	u8 bssid[ETH_ALEN];
+	u32 age;
+};
+
+struct rtl_scan_list {
+	int num;
+	struct list_head list;	/* sort by age */
+};
 
 struct rtl_priv {
 	struct ieee80211_hw *hw;
-	/* Used to load a second firmware */
-	void (*rtl_fw_second_cb)(struct rtl_priv *rtlpriv);
-	struct list_head list;
 	struct completion firmware_loading_complete;
-#ifdef VIF_TODO
-	struct vif_priv vif_priv;
-#endif
+	struct list_head list;
 	struct rtl_priv *buddy_priv;
 	struct rtl_global_var *glb_var;
 	struct rtl_dualmac_easy_concurrent_ctl easy_concurrent_ctl;
@@ -2527,6 +2657,8 @@ struct rtl_priv {
 	struct rtl_dm dm;
 	struct rtl_security sec;
 	struct rtl_efuse efuse;
+	struct rtl_tx_report tx_report;
+	struct rtl_scan_list scan_list;
 
 	struct rtl_ps_ctl psc;
 	struct rate_adaptive ra;
@@ -2537,18 +2669,21 @@ struct rtl_priv {
 
 	struct rtl_rate_priv *rate_priv;
 
-	struct rtl_debug dbg;
-	int max_fw_size;
-
 	/* sta entry list for ap adhoc or mesh */
 	struct list_head entry_list;
+
+	/* c2hcmd list for kthread level access */
+	struct list_head c2hcmd_list;
+
+	struct rtl_debug dbg;
+	int max_fw_size;
 
 	/*
 	 *hal_cfg : for diff cards
 	 *intf_ops : for diff interrface usb/pcie
 	 */
 	struct rtl_hal_cfg *cfg;
-	struct rtl_intf_ops *intf_ops;
+	const struct rtl_intf_ops *intf_ops;
 
 	/*this var will be set by set_bit,
 	   and was used to indicate status of
@@ -2558,21 +2693,31 @@ struct rtl_priv {
 	/* tables for dm */
 	struct dig_t dm_digtable;
 	struct ps_t dm_pstable;
+
+	u32 reg_874;
+	u32 reg_c70;
+	u32 reg_85c;
+	u32 reg_a74;
+	bool reg_init;	/* true if regs saved */
+	bool bt_operation_on;
 	__le32 *usb_data;
 	int usb_data_index;
+	bool initialized;
 	bool enter_ps;	/* true when entering PS */
 	u8 rate_mask[5];
 
 	/* intel Proximity, should be alloc mem
 	 * in intel Proximity module and can only
-	 * be used in intel Proximity mode */
+	 * be used in intel Proximity mode
+	 */
 	struct proxim proximity;
 
 	/*for bt coexist use*/
-	struct rtl_bt_coexist btcoexist;
+	struct bt_coexist_info btcoexist;
 
-	/* seperate 92ee from other ICs,
-	  * 92ee use new trx flow. */
+	/* separate 92ee from other ICs,
+	 * 92ee use new trx flow.
+	 */
 	bool use_new_trx_flow;
 
 #ifdef CONFIG_PM
@@ -2590,10 +2735,10 @@ struct rtl_priv {
 #define rtl_hal(rtlpriv)	(&((rtlpriv)->rtlhal))
 #define rtl_efuse(rtlpriv)	(&((rtlpriv)->efuse))
 #define rtl_psc(rtlpriv)	(&((rtlpriv)->psc))
-#define rtl_sec(rtlpriv)	(&((rtlpriv)->sec))
-#define rtl_dm(rtlpriv)	(&((rtlpriv)->dm))
+
+
 /***************************************
-    Bluetooth Co-existance Related
+    Bluetooth Co-existence Related
 ****************************************/
 
 enum bt_ant_num {
@@ -2642,6 +2787,7 @@ enum bt_radio_shared {
 	BT_RADIO_SHARED = 0,
 	BT_RADIO_INDIVIDUAL = 1,
 };
+
 
 /****************************************
 	mem access macro define start
@@ -2781,7 +2927,7 @@ value to host byte ordering.*/
 	mem access macro define end
 ****************************************/
 
-#define byte(x , n) ((x >> (8 * n)) & 0xff)
+#define byte(x, n) ((x >> (8 * n)) & 0xff)
 
 #define packet_get_type(_packet) (EF1BYTE((_packet).octet[0]) & 0xFC)
 #define RTL_WATCH_DOG_TIME	2000
@@ -2813,17 +2959,17 @@ value to host byte ordering.*/
 #define	RT_SET_PS_LEVEL(ppsc, _ps_flg)		\
 	(ppsc->cur_ps_level |= _ps_flg)
 
-#define container_of_dwork_rtl(x , y , z) \
-	container_of(container_of(x, struct delayed_work, work), y, z)
+#define container_of_dwork_rtl(x, y, z) \
+	container_of(to_delayed_work(x), y, z)
 
-#define FILL_OCTET_STRING(_os , _octet , _len)	\
+#define FILL_OCTET_STRING(_os, _octet, _len)	\
 		(_os).octet = (u8 *)(_octet);		\
 		(_os).length = (_len);
 
-#define CP_MACADDR(des , src)	\
-	((des)[0] = (src)[0] , (des)[1] = (src)[1],\
-	(des)[2] = (src)[2] , (des)[3] = (src)[3],\
-	(des)[4] = (src)[4] , (des)[5] = (src)[5])
+#define CP_MACADDR(des, src)	\
+	((des)[0] = (src)[0], (des)[1] = (src)[1],\
+	(des)[2] = (src)[2], (des)[3] = (src)[3],\
+	(des)[4] = (src)[4], (des)[5] = (src)[5])
 
 #define	LDPC_HT_ENABLE_RX			BIT(0)
 #define	LDPC_HT_ENABLE_TX			BIT(1)
@@ -2835,7 +2981,6 @@ value to host byte ordering.*/
 #define	STBC_HT_TEST_TX_ENABLE			BIT(2)
 #define	STBC_HT_CAP_TX				BIT(3)
 
-
 #define	LDPC_VHT_ENABLE_RX			BIT(0)
 #define	LDPC_VHT_ENABLE_TX			BIT(1)
 #define	LDPC_VHT_TEST_TX_ENABLE			BIT(2)
@@ -2846,6 +2991,9 @@ value to host byte ordering.*/
 #define	STBC_VHT_TEST_TX_ENABLE			BIT(2)
 #define	STBC_VHT_CAP_TX				BIT(3)
 
+extern u8 channel5g[CHANNEL_MAX_NUMBER_5G];
+
+extern u8 channel5g_80m[CHANNEL_MAX_NUMBER_5G_80M];
 
 static inline u8 rtl_read_byte(struct rtl_priv *rtlpriv, u32 addr)
 {
@@ -2870,6 +3018,14 @@ static inline void rtl_write_byte(struct rtl_priv *rtlpriv, u32 addr, u8 val8)
 		rtlpriv->io.read8_sync(rtlpriv, addr);
 }
 
+static inline void rtl_write_byte_with_val32(struct ieee80211_hw *hw,
+					     u32 addr, u32 val8)
+{
+	struct rtl_priv *rtlpriv = rtl_priv(hw);
+
+	rtl_write_byte(rtlpriv, addr, (u8)val8);
+}
+
 static inline void rtl_write_word(struct rtl_priv *rtlpriv, u32 addr, u16 val16)
 {
 	rtlpriv->io.write16_async(rtlpriv, addr, val16);
@@ -2890,42 +3046,46 @@ static inline void rtl_write_dword(struct rtl_priv *rtlpriv,
 static inline u32 rtl_get_bbreg(struct ieee80211_hw *hw,
 				u32 regaddr, u32 bitmask)
 {
-	return ((struct rtl_priv *)(hw)->priv)->cfg->ops->get_bbreg(hw,
-								    regaddr,
-								    bitmask);
+	struct rtl_priv *rtlpriv = hw->priv;
+
+	return rtlpriv->cfg->ops->get_bbreg(hw, regaddr, bitmask);
 }
 
 static inline void rtl_set_bbreg(struct ieee80211_hw *hw, u32 regaddr,
 				 u32 bitmask, u32 data)
 {
-	((struct rtl_priv *)(hw)->priv)->cfg->ops->set_bbreg(hw,
-							     regaddr, bitmask,
-							     data);
+	struct rtl_priv *rtlpriv = hw->priv;
 
+	rtlpriv->cfg->ops->set_bbreg(hw, regaddr, bitmask, data);
+}
+
+static inline void rtl_set_bbreg_with_dwmask(struct ieee80211_hw *hw,
+					     u32 regaddr, u32 data)
+{
+	rtl_set_bbreg(hw, regaddr, 0xffffffff, data);
 }
 
 static inline u32 rtl_get_rfreg(struct ieee80211_hw *hw,
 				enum radio_path rfpath, u32 regaddr,
 				u32 bitmask)
 {
-	return ((struct rtl_priv *)(hw)->priv)->cfg->ops->get_rfreg(hw,
-								    rfpath,
-								    regaddr,
-								    bitmask);
+	struct rtl_priv *rtlpriv = hw->priv;
+
+	return rtlpriv->cfg->ops->get_rfreg(hw, rfpath, regaddr, bitmask);
 }
 
 static inline void rtl_set_rfreg(struct ieee80211_hw *hw,
 				 enum radio_path rfpath, u32 regaddr,
 				 u32 bitmask, u32 data)
 {
-	((struct rtl_priv *)(hw)->priv)->cfg->ops->set_rfreg(hw,
-							     rfpath, regaddr,
-							     bitmask, data);
+	struct rtl_priv *rtlpriv = hw->priv;
+
+	rtlpriv->cfg->ops->set_rfreg(hw, rfpath, regaddr, bitmask, data);
 }
 
 static inline bool is_hal_stop(struct rtl_hal *rtlhal)
 {
-	return _HAL_STATE_STOP == rtlhal->state;
+	return (_HAL_STATE_STOP == rtlhal->state);
 }
 
 static inline void set_hal_start(struct rtl_hal *rtlhal)
@@ -2963,14 +3123,18 @@ static inline u16 rtl_get_tid(struct sk_buff *skb)
 	return rtl_get_tid_h(rtl_get_hdr(skb));
 }
 
+static inline struct ieee80211_sta *get_sta(struct ieee80211_hw *hw,
+					    struct ieee80211_vif *vif,
+					    const u8 *bssid)
+{
+	return ieee80211_find_sta(vif, bssid);
+}
+
 static inline struct ieee80211_sta *rtl_find_sta(struct ieee80211_hw *hw,
-						 u8 *mac_addr)
+		u8 *mac_addr)
 {
 	struct rtl_mac *mac = rtl_mac(rtl_priv(hw));
 	return ieee80211_find_sta(mac->vif, mac_addr);
 }
-
-struct ieee80211_hw *rtl_pci_get_hw_pointer(void);
-
 
 #endif
