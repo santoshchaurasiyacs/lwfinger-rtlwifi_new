@@ -45,7 +45,7 @@
 #define NUM_NL80211_BANDS IEEE80211_NUM_BANDS
 #endif
 
-#ifndef _ieee80211_is_robust_mgmt_frame
+#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 15, 0)
 #define _ieee80211_is_robust_mgmt_frame ieee80211_is_robust_mgmt_frame
 #endif
 

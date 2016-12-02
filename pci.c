@@ -44,7 +44,7 @@ MODULE_AUTHOR("Larry Finger	<Larry.FInger@lwfinger.net>");
 MODULE_LICENSE("GPL");
 MODULE_DESCRIPTION("PCI basic driver for rtlwifi");
 
-#ifndef pci_zalloc_consistent
+#if LINUX_VERSION_CODE < KERNEL_VERSION (3, 17, 0)
 static inline void *
 pci_zalloc_consistent(struct pci_dev *hwdev, size_t size,
                       dma_addr_t *dma_handle)
