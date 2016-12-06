@@ -1565,7 +1565,7 @@ bool rtl_is_tx_report_skb(struct ieee80211_hw *hw, struct sk_buff *skb)
 	return false;
 }
 
-u16 rtl_get_tx_report_sn(struct ieee80211_hw *hw)
+static u16 rtl_get_tx_report_sn(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_tx_report *tx_report = &rtlpriv->tx_report;
@@ -1581,7 +1581,18 @@ u16 rtl_get_tx_report_sn(struct ieee80211_hw *hw)
 
 	return sn;
 }
-EXPORT_SYMBOL_GPL(rtl_get_tx_report_sn);
+
+void rtl_get_tx_report(struct rtl_tcb_desc *ptcb_desc, u8 *pdesc,
+		       struct ieee80211_hw *hw)
+{
+	if (ptcb_desc->use_spe_rpt) {
+		u16 sn = rtl_get_tx_report_sn(hw);
+
+		SET_TX_DESC_SPE_RPT(pdesc, 1);
+		SET_TX_DESC_SW_DEFINE(pdesc, sn);
+	}
+}
+EXPORT_SYMBOL_GPL(rtl_get_tx_report);
 
 void rtl_tx_report_handler(struct ieee80211_hw *hw, u8 *tmp_buf, u8 c2h_cmd_len)
 {

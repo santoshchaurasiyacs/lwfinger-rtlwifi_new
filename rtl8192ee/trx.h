@@ -252,7 +252,7 @@
 
 /* Dword 6 */
 #define SET_TX_DESC_SW_DEFINE(__pdesc, __val)		\
-	SET_BITS_TO_LE_4BYTE(__pdesc+24, 0, 12, __val)
+	SET_BITS_TO_LE_4BYTE(__pdesc + 24, 0, 12, __val)
 #define SET_TX_DESC_ANTSEL_A(__pdesc, __val)		\
 	SET_BITS_TO_LE_4BYTE(__pdesc+24, 16, 3, __val)
 #define SET_TX_DESC_ANTSEL_B(__pdesc, __val)		\

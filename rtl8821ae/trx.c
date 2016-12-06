@@ -745,12 +745,7 @@ void rtl8821ae_tx_fill_desc(struct ieee80211_hw *hw,
 		}
 
 		/* tx report */
-		if (ptcb_desc->use_spe_rpt) {
-			u16 sn = rtl_get_tx_report_sn(hw);
-
-			SET_TX_DESC_SPE_RPT(pdesc, 1);
-			SET_TX_DESC_SW_DEFINE(pdesc, sn);
-		}
+		rtl_get_tx_report(ptcb_desc, pdesc, hw);
 
 		/* ptcb_desc->use_driver_rate = true; */
 		SET_TX_DESC_TX_RATE(pdesc, ptcb_desc->hw_rate);
