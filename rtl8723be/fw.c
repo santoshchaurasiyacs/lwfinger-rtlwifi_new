@@ -224,7 +224,7 @@ void rtl8723be_fill_h2c_cmd(struct ieee80211_hw *hw, u8 element_id,
 	u32 tmp_cmdbuf[2];
 
 	if (!rtlhal->fw_ready) {
-		RT_ASSERT(false,
+		WARN_ONCE(true,
 			  "return H2C cmd because of Fw download fail!!!\n");
 		return;
 	}

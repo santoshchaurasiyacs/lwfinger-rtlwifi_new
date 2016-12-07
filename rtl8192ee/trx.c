@@ -994,7 +994,7 @@ void rtl92ee_set_desc(struct ieee80211_hw *hw, u8 *pdesc, bool istx,
 			SET_RX_DESC_EOR(pdesc, 1);
 			break;
 		default:
-			RT_ASSERT(false,
+			WARN_ONCE(true,
 				  "ERR rxdesc :%d not process\n", desc_name);
 			break;
 		}
@@ -1014,7 +1014,7 @@ u32 rtl92ee_get_desc(u8 *pdesc, bool istx, u8 desc_name)
 			ret = GET_TXBUFFER_DESC_ADDR_LOW(pdesc, 1);
 			break;
 		default:
-			RT_ASSERT(false,
+			WARN_ONCE(true,
 				  "ERR txdesc :%d not process\n", desc_name);
 			break;
 		}
@@ -1030,7 +1030,7 @@ u32 rtl92ee_get_desc(u8 *pdesc, bool istx, u8 desc_name)
 			ret = GET_RX_DESC_BUFF_ADDR(pdesc);
 			break;
 		default:
-			RT_ASSERT(false,
+			WARN_ONCE(true,
 				  "ERR rxdesc :%d not process\n", desc_name);
 			break;
 		}

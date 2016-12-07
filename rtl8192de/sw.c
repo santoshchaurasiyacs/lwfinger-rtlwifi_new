@@ -406,7 +406,7 @@ static int __init rtl92de_module_init(void)
 
 	ret = pci_register_driver(&rtl92de_driver);
 	if (ret)
-		RT_ASSERT(false, "No device found\n");
+		WARN_ONCE(true, "No device found\n");
 	return ret;
 }
 

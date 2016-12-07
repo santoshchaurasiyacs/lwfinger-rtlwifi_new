@@ -168,15 +168,6 @@ enum dbgp_flag_e {
 
 #ifdef CONFIG_RTLWIFI_DEBUG
 
-#define RT_ASSERT(_exp, fmt, ...)					\
-do {									\
-	if (!(_exp)) {							\
-		printk(KERN_DEBUG KBUILD_MODNAME ":%s(): " fmt,		\
-		       __func__, ##__VA_ARGS__);			\
-	}								\
-} while (0)
-
-
 struct rtl_priv;
 
 __printf(5, 6)

@@ -133,7 +133,7 @@ static void _rtl8723e_phy_fw_rf_serial_write(struct ieee80211_hw *hw,
 					     enum radio_path rfpath, u32 offset,
 					     u32 data)
 {
-	RT_ASSERT(false, "deprecated!\n");
+	WARN_ONCE(true, "deprecated!\n");
 }
 
 static void _rtl8723e_phy_bb_config_1t(struct ieee80211_hw *hw)
@@ -885,7 +885,7 @@ u8 rtl8723e_phy_sw_chnl(struct ieee80211_hw *hw)
 		return 0;
 	if (rtlphy->set_bwmode_inprogress)
 		return 0;
-	RT_ASSERT((rtlphy->current_channel <= 14),
+	WARN_ONCE((rtlphy->current_channel > 14),
 		  "WIRELESS_MODE_G but channel>14");
 	rtlphy->sw_chnl_inprogress = true;
 	rtlphy->sw_chnl_stage = 0;
@@ -954,7 +954,7 @@ static bool _rtl8723e_phy_sw_chnl_step_by_step(struct ieee80211_hw *hw,
 
 	rfdependcmdcnt = 0;
 
-	RT_ASSERT((channel >= 1 && channel <= 14),
+	WARN_ONCE((channel < 1 || channel > 14),
 		  "illegal channel for Zebra: %d\n", channel);
 
 	rtl8723_phy_set_sw_chnl_cmdarray(rfdependcmd, rfdependcmdcnt++,

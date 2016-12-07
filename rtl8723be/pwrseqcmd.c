@@ -133,7 +133,7 @@ bool rtl_hal_pwrseqcmdparsing(struct rtl_priv *rtlpriv, u8 cut_version,
 				break;
 
 			default:
-				RT_ASSERT(false,
+				WARN_ONCE(true,
 					  "rtl_hal_pwrseqcmdparsing(): Unknown CMD!!\n");
 				break;
 			}

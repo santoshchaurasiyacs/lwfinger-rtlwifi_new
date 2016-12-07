@@ -2245,7 +2245,7 @@ void rtl8821ae_set_qos(struct ieee80211_hw *hw, int aci)
 		rtl_write_dword(rtlpriv, REG_EDCA_VO_PARAM, 0x2f3222);
 		break;
 	default:
-		RT_ASSERT(false, "invalid aci: %d !\n", aci);
+		WARN_ONCE(true, "invalid aci: %d !\n", aci);
 		break;
 	}
 }
@@ -2597,11 +2597,9 @@ static u8 _rtl8821ae_get_chnl_group(u8 chnl)
 			group = 12;
 	else if (173 <= chnl && chnl <= 177)
 			group = 13;
-		else
-			/*RT_TRACE(rtlpriv, COMP_EFUSE,DBG_LOUD,
-				"5G, Channel %d in Group not found\n",chnl);*/
-			RT_ASSERT(!COMP_EFUSE,
-				"5G, Channel %d in Group not found\n", chnl);
+	else
+		WARN_ONCE(true,
+			  "5G, Channel %d in Group not found\n", chnl);
 	}
 	return group;
 }
@@ -4170,7 +4168,7 @@ void rtl8821ae_add_wowlan_pattern(struct ieee80211_hw *hw,
 			count++;
 		} while (tmp && count < 100);
 
-		RT_ASSERT((count < 100),
+		WARN_ONCE((count >= 100),
 			  "Write wake up frame mask FAIL %d value!\n", tmp);
 	}
 	/* Disable Rx packet buffer access. */

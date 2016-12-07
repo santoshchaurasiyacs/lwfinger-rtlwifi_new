@@ -2199,14 +2199,14 @@ int rtl_pci_probe(struct pci_dev *pdev,
 
 	err = pci_enable_device(pdev);
 	if (err) {
-		RT_ASSERT(false, "%s : Cannot enable new PCI device\n",
+		WARN_ONCE(true, "%s : Cannot enable new PCI device\n",
 			  pci_name(pdev));
 		return err;
 	}
 
 	if (!pci_set_dma_mask(pdev, DMA_BIT_MASK(32))) {
 		if (pci_set_consistent_dma_mask(pdev, DMA_BIT_MASK(32))) {
-			RT_ASSERT(false,
+			WARN_ONCE(true,
 				  "Unable to obtain 32bit DMA for consistent allocations\n");
 			err = -ENOMEM;
 			goto fail1;
@@ -2218,7 +2218,7 @@ int rtl_pci_probe(struct pci_dev *pdev,
 	hw = ieee80211_alloc_hw(sizeof(struct rtl_pci_priv) +
 				sizeof(struct rtl_priv), &rtl_ops);
 	if (!hw) {
-		RT_ASSERT(false,
+		WARN_ONCE(true,
 			  "%s : ieee80211 alloc failed\n", pci_name(pdev));
 		err = -ENOMEM;
 		goto fail1;
@@ -2257,7 +2257,7 @@ int rtl_pci_probe(struct pci_dev *pdev,
 	/* MEM map */
 	err = pci_request_regions(pdev, KBUILD_MODNAME);
 	if (err) {
-		RT_ASSERT(false, "Can't obtain PCI resources\n");
+		WARN_ONCE(true, "Can't obtain PCI resources\n");
 		goto fail1;
 	}
 
@@ -2270,7 +2270,7 @@ int rtl_pci_probe(struct pci_dev *pdev,
 			(unsigned long)pci_iomap(pdev,
 			rtlpriv->cfg->bar_id, pmem_len);
 	if (rtlpriv->io.pci_mem_start == 0) {
-		RT_ASSERT(false, "Can't map PCI mem\n");
+		WARN_ONCE(true, "Can't map PCI mem\n");
 		err = -ENOMEM;
 		goto fail2;
 	}

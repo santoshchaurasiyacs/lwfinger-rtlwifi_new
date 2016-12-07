@@ -2704,7 +2704,7 @@ static bool _rtl92d_phy_set_sw_chnl_cmdarray(struct swchnlcmd *cmdtable,
 	struct swchnlcmd *pcmd;
 
 	if (cmdtable == NULL) {
-		RT_ASSERT(false, "cmdtable cannot be NULL\n");
+		WARN_ONCE(true, "cmdtable cannot be NULL\n");
 		return false;
 	}
 	if (cmdtableidx >= cmdtablesz)
@@ -2897,17 +2897,17 @@ u8 rtl92d_phy_sw_chnl(struct ieee80211_hw *hw)
 		 * 5G and 2.4G band. */
 		if (channel <= 14)
 			return 0;
-		RT_ASSERT((channel > 14), "5G but channel<=14\n");
+		WARN_ONCE((channel <= 14), "5G but channel<=14\n");
 		break;
 	case BAND_ON_2_4G:
 		/* Get first channel error when change between
 		 * 5G and 2.4G band. */
 		if (channel > 14)
 			return 0;
-		RT_ASSERT((channel <= 14), "2G but channel>14\n");
+		WARN_ONCE((channel > 14), "2G but channel>14\n");
 		break;
 	default:
-		RT_ASSERT(false, "Invalid WirelessMode(%#x)!!\n",
+		WARN_ONCE(true, "Invalid WirelessMode(%#x)!!\n",
 			  rtlpriv->mac80211.mode);
 		break;
 	}
@@ -3340,7 +3340,7 @@ void rtl92d_phy_set_poweron(struct ieee80211_hw *hw)
 			}
 		}
 		if (i == 200)
-			RT_ASSERT(false, "Another mac power off over time\n");
+			WARN_ONCE(true, "Another mac power off over time\n");
 	}
 }
 
