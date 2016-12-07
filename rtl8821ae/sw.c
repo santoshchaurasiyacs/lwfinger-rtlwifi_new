@@ -192,14 +192,12 @@ int rtl8821ae_init_sw_vars(struct ieee80211_hw *hw)
 	/* for firmware buf */
 	rtlpriv->rtlhal.pfirmware = vzalloc(0x8000);
 	if (!rtlpriv->rtlhal.pfirmware) {
-		RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG,
-			 "Can't alloc buffer for fw.\n");
+		pr_err("rtl8821ae: Can't alloc buffer for fw.\n");
 		return 1;
 	}
 	rtlpriv->rtlhal.wowlan_firmware = vzalloc(0x8000);
 	if (!rtlpriv->rtlhal.wowlan_firmware) {
-		RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG,
-			 "Can't alloc buffer for wowlan fw.\n");
+		pr_err("rtl8821ae: Can't alloc buffer for wowlan fw.\n");
 		return 1;
 	}
 
@@ -225,8 +223,7 @@ int rtl8821ae_init_sw_vars(struct ieee80211_hw *hw)
 					      rtlpriv->io.dev, GFP_KERNEL, hw,
 					      rtl_fw_cb);
 		if (err) {
-			RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG,
-				 "Failed to request normal firmware!\n");
+			pr_err("irtl8821ae: Failed to request normal firmware!\n");
 			return 1;
 		}
 	}
@@ -237,8 +234,7 @@ int rtl8821ae_init_sw_vars(struct ieee80211_hw *hw)
 				      rtlpriv->io.dev, GFP_KERNEL, hw,
 				      rtl_wowlan_fw_cb);
 	if (err) {
-		RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG,
-			 "Failed to request wowlan firmware!\n");
+		pr_err("rtl8821ae: Failed to request wowlan firmware!\n");
 		return 1;
 	}
 	return 0;
@@ -322,7 +318,7 @@ static struct rtl_mod_params rtl8821ae_mod_params = {
 	.fwctrl_lps = true,
 	.msi_support = true,
 	.int_clear = true,
-	.debug = DBG_EMERG,
+	.debug = 0,
 	.disable_watchdog = 0,
 };
 

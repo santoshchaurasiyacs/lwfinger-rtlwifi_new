@@ -215,7 +215,6 @@ void rtl8821ae_phy_set_rf_reg(struct ieee80211_hw *hw,
 static u32 _rtl8821ae_phy_rf_serial_read(struct ieee80211_hw *hw,
 					 enum radio_path rfpath, u32 offset)
 {
-	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_hal *rtlhal = rtl_hal(rtl_priv(hw));
 	bool is_pi_mode = false;
 	u32 retvalue = 0;
@@ -223,7 +222,7 @@ static u32 _rtl8821ae_phy_rf_serial_read(struct ieee80211_hw *hw,
 	/* 2009/06/17 MH We can not execute IO for power
 	save or other accident mode.*/
 	if (RT_CANNOT_IO(hw)) {
-		RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG, "return all one\n");
+		pr_err("return all one\n");
 		return 0xFFFFFFFF;
 	}
 	/* <20120809, Kordan> CCA OFF(when entering),
@@ -284,7 +283,7 @@ static void _rtl8821ae_phy_rf_serial_write(struct ieee80211_hw *hw,
 	u32 newoffset;
 
 	if (RT_CANNOT_IO(hw)) {
-		RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG, "stop\n");
+		pr_err("stop\n");
 		return;
 	}
 	offset &= 0xff;
@@ -1747,7 +1746,7 @@ static bool _rtl8821ae_phy_bb8821a_config_parafile(struct ieee80211_hw *hw)
 	rtstatus = _rtl8821ae_phy_config_bb_with_headerfile(hw,
 						       BASEBAND_CONFIG_PHY_REG);
 	if (rtstatus != true) {
-		RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG, "Write BB Reg Fail!!\n");
+		pr_err("Write BB Reg Fail!!\n");
 		return false;
 	}
 	_rtl8821ae_phy_init_tx_power_by_rate(hw);
@@ -1756,7 +1755,7 @@ static bool _rtl8821ae_phy_bb8821a_config_parafile(struct ieee80211_hw *hw)
 						    BASEBAND_CONFIG_PHY_REG);
 	}
 	if (rtstatus != true) {
-		RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG, "BB_PG Reg Fail!!\n");
+		pr_err("BB_PG Reg Fail!!\n");
 		return false;
 	}
 
@@ -1770,7 +1769,7 @@ static bool _rtl8821ae_phy_bb8821a_config_parafile(struct ieee80211_hw *hw)
 						BASEBAND_CONFIG_AGC_TAB);
 
 	if (rtstatus != true) {
-		RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG, "AGC Table Fail\n");
+		pr_err("AGC Table Fail\n");
 		return false;
 	}
 	rtlphy->cck_high_power = (bool)(rtl_get_bbreg(hw,
@@ -2032,8 +2031,7 @@ bool rtl8812ae_phy_config_rf_with_headerfile(struct ieee80211_hw *hw,
 		break;
 	case RF90_PATH_C:
 	case RF90_PATH_D:
-		RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG,
-			 "switch case %#x not processed\n", rfpath);
+		pr_err("switch case %#x not processed\n", rfpath);
 		break;
 	}
 	return true;
@@ -2063,8 +2061,7 @@ bool rtl8821ae_phy_config_rf_with_headerfile(struct ieee80211_hw *hw,
 	case RF90_PATH_B:
 	case RF90_PATH_C:
 	case RF90_PATH_D:
-		RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG,
-			 "switch case %#x not processed\n", rfpath);
+		pr_err("switch case %#x not processed\n", rfpath);
 		break;
 	}
 	return true;
@@ -3267,8 +3264,7 @@ void rtl8821ae_phy_scan_operation_backup(struct ieee80211_hw *hw, u8 operation)
 						      (u8 *)&iotype);
 			break;
 		default:
-			RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG,
-				 "Unknown Scan Backup operation.\n");
+			pr_err("Unknown Scan Backup operation.\n");
 			break;
 		}
 	}
@@ -3309,8 +3305,7 @@ static u8 _rtl8821ae_phy_get_secondary_chnl(struct rtl_priv *rtlpriv)
 		else if (mac->cur_80_prime_sc == PRIME_CHNL_OFFSET_UPPER)
 			sc_set_40 = VHT_DATA_SC_40_UPPER_OF_80MHZ;
 		else
-			RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG,
-				"SCMapping: Not Correct Primary40MHz Setting\n");
+			pr_err("SCMapping: Not Correct Primary40MHz Setting\n");
 
 		if ((mac->cur_40_prime_sc == PRIME_CHNL_OFFSET_LOWER) &&
 			(mac->cur_80_prime_sc == HAL_PRIME_CHNL_OFFSET_LOWER))
@@ -3325,16 +3320,14 @@ static u8 _rtl8821ae_phy_get_secondary_chnl(struct rtl_priv *rtlpriv)
 			(mac->cur_80_prime_sc == HAL_PRIME_CHNL_OFFSET_UPPER))
 			sc_set_20 = VHT_DATA_SC_20_UPPERST_OF_80MHZ;
 		else
-			RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG,
-				"SCMapping: Not Correct Primary40MHz Setting\n");
+			pr_err("SCMapping: Not Correct Primary40MHz Setting\n");
 	} else if (rtlphy->current_chan_bw == HT_CHANNEL_WIDTH_20_40) {
 		if (mac->cur_40_prime_sc == PRIME_CHNL_OFFSET_UPPER)
 			sc_set_20 = VHT_DATA_SC_20_UPPER_OF_80MHZ;
 		else if (mac->cur_40_prime_sc == PRIME_CHNL_OFFSET_LOWER)
 			sc_set_20 = VHT_DATA_SC_20_LOWER_OF_80MHZ;
 		else
-			RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG,
-			 "SCMapping: Not Correct Primary40MHz Setting\n");
+			pr_err("SCMapping: Not Correct Primary40MHz Setting\n");
 	}
 	return (sc_set_40 << 4) | sc_set_20;
 }
@@ -3410,8 +3403,7 @@ void rtl8821ae_phy_set_bw_mode_callback(struct ieee80211_hw *hw)
 
 		break;
 	default:
-		RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG,
-			 "unknown bandwidth: %#X\n", rtlphy->current_chan_bw);
+		pr_err("unknown bandwidth: %#X\n", rtlphy->current_chan_bw);
 		break;
 	}
 
@@ -4591,8 +4583,7 @@ bool rtl8821ae_phy_set_io_cmd(struct ieee80211_hw *hw, enum io_type iotype)
 			postprocessing = true;
 			break;
 		default:
-			RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG,
-				 "switch case %#x not processed\n", iotype);
+			pr_err("switch case %#x not processed\n", iotype);
 			break;
 		}
 	} while (false);
@@ -4635,9 +4626,8 @@ static void rtl8821ae_phy_set_io(struct ieee80211_hw *hw)
 	case IO_CMD_PAUSE_BAND1_DM_BY_SCAN:
 		break;
 	default:
-		RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG,
-			 "switch case %#x not processed\n",
-			 rtlphy->current_io_type);
+		pr_err("switch case %#x not processed\n",
+		       rtlphy->current_io_type);
 		break;
 	}
 	rtlphy->set_io_inprogress = false;
@@ -4742,8 +4732,7 @@ static bool _rtl8821ae_phy_set_rf_power_state(struct ieee80211_hw *hw,
 		}
 		break;
 	default:
-		RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG,
-			 "switch case %#x not processed\n", rfpwr_state);
+		pr_err("switch case %#x not processed\n", rfpwr_state);
 		bresult = false;
 		break;
 	}
