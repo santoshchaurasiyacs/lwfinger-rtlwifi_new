@@ -124,9 +124,8 @@ static void _rtl8821ae_write_fw(struct ieee80211_hw *hw,
 	pagenums = size / FW_8821AE_PAGE_SIZE;
 	remainsize = size % FW_8821AE_PAGE_SIZE;
 
-	if (pagenums > 8) {
+	if (pagenums > 8)
 		pr_err("Page numbers should not greater then 8\n");
-	}
 
 	for (page = 0; page < pagenums; page++) {
 		offset = page * FW_8821AE_PAGE_SIZE;
@@ -160,9 +159,6 @@ static int _rtl8821ae_fw_free_to_go(struct ieee80211_hw *hw)
 			  value32);
 		goto exit;
 	}
-
-	pr_err("Checksum report OK ! REG_MCUFWDL:0x%08x .\n", value32);
-
 	value32 = rtl_read_dword(rtlpriv, REG_MCUFWDL);
 	value32 |= MCUFWDL_RDY;
 	value32 &= ~WINTINI_RDY;
@@ -174,9 +170,6 @@ static int _rtl8821ae_fw_free_to_go(struct ieee80211_hw *hw)
 	do {
 		value32 = rtl_read_dword(rtlpriv, REG_MCUFWDL);
 		if (value32 & WINTINI_RDY) {
-			RT_TRACE(rtlpriv, COMP_FW, DBG_LOUD,
-				 "Polling FW ready success!! REG_MCUFWDL:0x%08x .\n",
-				  value32);
 			err = 0;
 			goto exit;
 		}
