@@ -176,6 +176,10 @@ void _rtl_dbg_trace(struct rtl_priv *rtlpriv, u64 comp, int level,
 void _rtl_dbg_trace_string(struct rtl_priv *rtlpriv, u64 comp, int level,
 			   const char *modname, const char *string);
 
+void _rtl_dbg_print_data(struct rtl_priv *rtlpriv, u64 comp, int level,
+			 const char *modname, const char *titlestring,
+			 const void *hexdata, int hexdatalen);
+
 #define RT_TRACE(rtlpriv, comp, level, fmt, ...)			\
 	_rtl_dbg_trace(rtlpriv, comp, level,				\
 		       KBUILD_MODNAME, fmt, ##__VA_ARGS__)
@@ -194,17 +198,8 @@ do {									\
 
 #define RT_PRINT_DATA(rtlpriv, _comp, _level, _titlestring, _hexdata,	\
 		      _hexdatalen)					\
-do {									\
-	if (unlikely(((_comp) & rtlpriv->dbg.global_debug_mask) ||	\
-		     (_level <= rtlpriv->dbg.global_debuglevel))) {	\
-		printk(KERN_DEBUG "%s: In process \"%s\" (pid %i): %s\n", \
-		       KBUILD_MODNAME, current->comm, current->pid,	\
-		       _titlestring);					\
-		print_hex_dump_bytes("", DUMP_PREFIX_NONE,		\
-				     _hexdata, _hexdatalen);		\
-	}								\
-} while (0)
-
+	_rtl_dbg_print_data(rtlpriv, _comp, _level, KBUILD_MODNAME,	\
+			    _titlestring, _hexdata, _hexdatalen)
 #else
 
 struct rtl_priv;

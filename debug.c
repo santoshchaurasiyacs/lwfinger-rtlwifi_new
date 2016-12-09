@@ -75,6 +75,22 @@ void _rtl_dbg_trace_string(struct rtl_priv *rtlpriv, u64 comp, int level,
 	}
 }
 EXPORT_SYMBOL_GPL(_rtl_dbg_trace_string);
+
+void _rtl_dbg_print_data(struct rtl_priv *rtlpriv, u64 comp, int level,
+			 const char *modname, const char *titlestring,
+			 const void *hexdata, int hexdatalen)
+{
+	if (unlikely(((comp) & rtlpriv->dbg.global_debug_mask) ||
+		     ((level) <= rtlpriv->dbg.global_debuglevel))) {
+		printk(KERN_DEBUG "%s: In process \"%s\" (pid %i): %s\n",
+		       KBUILD_MODNAME, current->comm, current->pid,
+		       titlestring);
+		print_hex_dump_bytes("", DUMP_PREFIX_NONE,
+				     hexdata, hexdatalen);
+	}
+}
+EXPORT_SYMBOL_GPL(_rtl_dbg_print_data);
+
 #endif
 
 static struct dentry *debugfs_topdir;
