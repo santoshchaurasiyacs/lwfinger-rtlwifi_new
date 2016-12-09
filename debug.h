@@ -180,17 +180,16 @@ void _rtl_dbg_print_data(struct rtl_priv *rtlpriv, u64 comp, int level,
 			 const char *modname, const char *titlestring,
 			 const void *hexdata, int hexdatalen);
 
+void _rtl_dbg_print(struct rtl_priv *rtlpriv, u64 comp, int level,
+		    const char *modname, const char *fmt, ...);
+
 #define RT_TRACE(rtlpriv, comp, level, fmt, ...)			\
 	_rtl_dbg_trace(rtlpriv, comp, level,				\
 		       KBUILD_MODNAME, fmt, ##__VA_ARGS__)
 
 #define RTPRINT(rtlpriv, dbgtype, dbgflag, fmt, ...)			\
-do {									\
-	if (unlikely(rtlpriv->dbg.dbgp_type[dbgtype] & dbgflag)) {	\
-		printk(KERN_DEBUG KBUILD_MODNAME ": " fmt,		\
-		       ##__VA_ARGS__);					\
-	}								\
-} while (0)
+	_rtl_dbg_print(rtlpriv, dbgtype, dbgflag, KBUILD_MODNAME,	\
+		       fmt, ##__VA_ARGS__)
 
 #define RT_TRACE_STRING(__priv, comp, level, string)			\
 	_rtl_dbg_trace_string(__priv, comp, level,			\

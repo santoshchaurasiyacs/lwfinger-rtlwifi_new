@@ -91,6 +91,27 @@ void _rtl_dbg_print_data(struct rtl_priv *rtlpriv, u64 comp, int level,
 }
 EXPORT_SYMBOL_GPL(_rtl_dbg_print_data);
 
+void _rtl_dbg_print(struct rtl_priv *rtlpriv, u64 comp, int level,
+		    const char *modname, const char *fmt, ...)
+{
+	if (unlikely((comp & rtlpriv->dbg.global_debug_mask) ||
+		     (level <= rtlpriv->dbg.global_debuglevel))) {
+		struct va_format vaf;
+		va_list args;
+
+		va_start(args, fmt);
+
+		vaf.fmt = fmt;
+		vaf.va = &args;
+
+		printk(KERN_DEBUG "%s: %pV",
+		       modname, &vaf);
+
+		va_end(args);
+	}
+}
+EXPORT_SYMBOL_GPL(_rtl_dbg_print);
+
 #endif
 
 static struct dentry *debugfs_topdir;
