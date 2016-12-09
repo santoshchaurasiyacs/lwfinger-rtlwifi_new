@@ -64,6 +64,17 @@ void _rtl_dbg_trace(struct rtl_priv *rtlpriv, u64 comp, int level,
 	}
 }
 EXPORT_SYMBOL_GPL(_rtl_dbg_trace);
+
+void _rtl_dbg_trace_string(struct rtl_priv *rtlpriv, u64 comp, int level,
+			   const char *modname, const char *string)
+{
+	if (unlikely(((comp) & rtlpriv->dbg.global_debug_mask) ||
+		     ((level) <= rtlpriv->dbg.global_debuglevel))) {
+		printk(KBUILD_MODNAME ":%s():<%lx> %s",
+		       __func__, in_interrupt(), string);
+	}
+}
+EXPORT_SYMBOL_GPL(_rtl_dbg_trace_string);
 #endif
 
 static struct dentry *debugfs_topdir;

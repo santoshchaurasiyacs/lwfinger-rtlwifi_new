@@ -173,6 +173,8 @@ struct rtl_priv;
 __printf(5, 6)
 void _rtl_dbg_trace(struct rtl_priv *rtlpriv, u64 comp, int level,
 		    const char *modname, const char *fmt, ...);
+void _rtl_dbg_trace_string(struct rtl_priv *rtlpriv, u64 comp, int level,
+			   const char *modname, const char *string);
 
 #define RT_TRACE(rtlpriv, comp, level, fmt, ...)			\
 	_rtl_dbg_trace(rtlpriv, comp, level,				\
@@ -187,13 +189,8 @@ do {									\
 } while (0)
 
 #define RT_TRACE_STRING(__priv, comp, level, string)			\
-do {									\
-	if (unlikely(((comp) & __priv->dbg.global_debug_mask) ||	\
-		     ((level) <= __priv->dbg.global_debuglevel))) {	\
-		printk(KBUILD_MODNAME ":%s():<%lx> %s",			\
-		       __func__, in_interrupt(), string);		\
-	}								\
-} while (0)
+	_rtl_dbg_trace_string(__priv, comp, level,			\
+			      KBUILD_MODNAME, string)
 
 #define RT_PRINT_DATA(rtlpriv, _comp, _level, _titlestring, _hexdata,	\
 		      _hexdatalen)					\
