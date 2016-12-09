@@ -2399,7 +2399,7 @@ struct rtl_works {
 struct rtl_debug {
 	u32 dbgp_type[DBGP_TYPE_MAX];
 	int global_debuglevel;
-	u64 global_debugcomponents;
+	u64 global_debug_mask;
 
 	/* add for debug */
 	struct dentry *debugfs_dir;

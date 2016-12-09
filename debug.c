@@ -32,16 +32,7 @@ void rtl_dbgp_flag_init(struct ieee80211_hw *hw)
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	u8 i;
 
-	rtlpriv->dbg.global_debugcomponents =
-	    COMP_ERR | COMP_FW | COMP_INIT | COMP_RECV | COMP_SEND |
-	    COMP_MLME | COMP_SCAN | COMP_INTR | COMP_LED | COMP_SEC |
-	    COMP_BEACON | COMP_RATE | COMP_RXDESC | COMP_DIG | COMP_TXAGC |
-	    COMP_POWER | COMP_POWER_TRACKING | COMP_BB_POWERSAVING | COMP_SWAS |
-	    COMP_RF | COMP_TURBO | COMP_RATR | COMP_CMD |
-	    COMP_EFUSE | COMP_QOS | COMP_MAC80211 | COMP_REGD | COMP_CHAN |
-	    COMP_EASY_CONCURRENT | COMP_EFUSE | COMP_QOS | COMP_MAC80211 |
-	    COMP_REGD | COMP_CHAN | COMP_BT_COEXIST | COMP_TX_REPORT |
-	    COMP_VENDOR_CMD;
+	rtlpriv->dbg.global_debug_mask = 0;
 
 	for (i = 0; i < DBGP_TYPE_MAX; i++)
 		rtlpriv->dbg.dbgp_type[i] = 0;
@@ -54,7 +45,7 @@ EXPORT_SYMBOL_GPL(rtl_dbgp_flag_init);
 void _rtl_dbg_trace(struct rtl_priv *rtlpriv, u64 comp, int level,
 		    const char *modname, const char *fmt, ...)
 {
-	if (unlikely((comp & rtlpriv->dbg.global_debugcomponents) &&
+	if (unlikely((comp & rtlpriv->dbg.global_debug_mask) ||
 		     (level <= rtlpriv->dbg.global_debuglevel))) {
 		struct va_format vaf;
 		va_list args;

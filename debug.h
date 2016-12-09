@@ -188,7 +188,7 @@ do {									\
 
 #define RT_TRACE_STRING(__priv, comp, level, string)			\
 do {									\
-	if (unlikely(((comp) & __priv->dbg.global_debugcomponents) &&	\
+	if (unlikely(((comp) & __priv->dbg.global_debug_mask) ||	\
 		     ((level) <= __priv->dbg.global_debuglevel))) {	\
 		printk(KBUILD_MODNAME ":%s():<%lx> %s",			\
 		       __func__, in_interrupt(), string);		\
@@ -198,7 +198,7 @@ do {									\
 #define RT_PRINT_DATA(rtlpriv, _comp, _level, _titlestring, _hexdata,	\
 		      _hexdatalen)					\
 do {									\
-	if (unlikely(((_comp) & rtlpriv->dbg.global_debugcomponents) &&	\
+	if (unlikely(((_comp) & rtlpriv->dbg.global_debug_mask) ||	\
 		     (_level <= rtlpriv->dbg.global_debuglevel))) {	\
 		printk(KERN_DEBUG "%s: In process \"%s\" (pid %i): %s\n", \
 		       KBUILD_MODNAME, current->comm, current->pid,	\

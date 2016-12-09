@@ -2573,25 +2573,58 @@ static ssize_t rtl_store_debug_level(struct device *d,
 
 	ret = kstrtoul(buf, 0, &val);
 	if (ret) {
-		RT_TRACE(rtlpriv, COMP_ERR, DBG_DMESG,
-			 "%s is not in hex or decimal form.\n", buf);
+		pr_err("%s is not in hex or decimal form.\n", buf);
 	} else {
 		rtlpriv->dbg.global_debuglevel = val;
-		RT_TRACE(rtlpriv, COMP_ERR, DBG_DMESG,
-			 "debuglevel:%x\n",
-			 rtlpriv->dbg.global_debuglevel);
+		pr_info("debuglevel:%x\n",
+			rtlpriv->dbg.global_debuglevel);
 	}
 
 	return strnlen(buf, count);
 }
 
+static ssize_t rtl_show_debug_mask(struct device *d,
+				   struct device_attribute *attr, char *buf)
+{
+	struct ieee80211_hw *hw = dev_get_drvdata(d);
+	struct rtl_priv *rtlpriv = rtl_priv(hw);
+	u32 lower, upper;
+
+	upper = rtlpriv->dbg.global_debug_mask >> 32;	/* upper 32 bits */
+	lower = rtlpriv->dbg.global_debug_mask & 0xffffffff; /* lower 32 */
+	return sprintf(buf, "0x%08x%08x\n", upper, lower);
+}
+
+static ssize_t rtl_store_debug_mask(struct device *d,
+				    struct device_attribute *attr,
+				    const char *buf, size_t count)
+{
+	struct ieee80211_hw *hw = dev_get_drvdata(d);
+	struct rtl_priv *rtlpriv = rtl_priv(hw);
+	u64 val;
+	u32 upper, lower;
+	int ret;
+
+	ret = kstrtou64(buf, 0, &val);
+	if (ret) {
+		pr_err("%s is not in hex or decimal form.\n", buf);
+	} else {
+		rtlpriv->dbg.global_debug_mask = val;
+		upper = val >> 32;
+		lower = val & 0xffffffff;
+		pr_info("debug_mask: 0x%08x%08x\n", upper, lower);
+	}
+	return strnlen(buf, count);
+}
+
 static DEVICE_ATTR(debug_level, S_IWUSR | S_IRUGO,
 		   rtl_show_debug_level, rtl_store_debug_level);
+static DEVICE_ATTR(debug_mask, S_IWUSR | S_IRUGO,
+		   rtl_show_debug_mask, rtl_store_debug_mask);
 
 static struct attribute *rtl_sysfs_entries[] = {
-
 	&dev_attr_debug_level.attr,
-
+	&dev_attr_debug_mask.attr,
 	NULL
 };
 
