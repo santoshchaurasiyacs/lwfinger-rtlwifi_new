@@ -2379,6 +2379,7 @@ void rtl8723e_read_bt_coexist_info_from_hwpg(struct ieee80211_hw *hw,
 					     bool auto_load_fail, u8 *hwinfo)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
+	struct rtl_mod_params *mod_params = rtlpriv->cfg->mod_params;
 	u8 value;
 	u32 tmpu_32;
 
@@ -2403,6 +2404,14 @@ void rtl8723e_read_bt_coexist_info_from_hwpg(struct ieee80211_hw *hw,
 	}
 
 	rtl8723e_bt_var_init(hw);
+	/* override ant_num / ant_path */
+	if (mod_params->ant_sel) {
+		rtlpriv->btcoexist.eeprom_bt_ant_num =
+			(mod_params->ant_sel == 1 ? ANT_X2 : ANT_X1);
+
+		rtlpriv->btcoexist.btc_info.single_ant_path =
+			(mod_params->ant_sel == 1 ? 0 : 1);
+	}
 }
 
 void rtl8723e_bt_reg_init(struct ieee80211_hw *hw)

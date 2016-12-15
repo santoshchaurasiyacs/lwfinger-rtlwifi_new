@@ -271,6 +271,7 @@ static struct rtl_mod_params rtl8723e_mod_params = {
 	.debug = 0,
 	.msi_support = false,
 	.disable_watchdog = false,
+	.ant_sel = 0,
 };
 
 static const struct rtl_hal_cfg rtl8723e_hal_cfg = {
@@ -389,13 +390,16 @@ module_param_named(fwlps, rtl8723e_mod_params.fwctrl_lps, bool, 0444);
 module_param_named(msi, rtl8723e_mod_params.msi_support, bool, 0444);
 module_param_named(disable_watchdog, rtl8723e_mod_params.disable_watchdog,
 		   bool, 0444);
+module_param_named(ant_sel, rtl8723e_mod_params.ant_sel, int, 0444);
 MODULE_PARM_DESC(swenc, "Set to 1 for software crypto (default 0)\n");
 MODULE_PARM_DESC(ips, "Set to 0 to not use link power save (default 1)\n");
 MODULE_PARM_DESC(swlps, "Set to 1 to use SW control power save (default 0)\n");
 MODULE_PARM_DESC(fwlps, "Set to 1 to use FW control power save (default 1)\n");
 MODULE_PARM_DESC(msi, "Set to 1 to use MSI interrupts mode (default 0)\n");
 MODULE_PARM_DESC(debug, "Set debug level (0-5) (default 0)");
-MODULE_PARM_DESC(disable_watchdog, "Set to 1 to disable the watchdog (default 0)\n");
+MODULE_PARM_DESC(disable_watchdog,
+		 "Set to 1 to disable the watchdog (default 0)\n");
+MODULE_PARM_DESC(ant_sel, "Set to 1 or 2 to force antenna number (default 0)\n");
 
 static SIMPLE_DEV_PM_OPS(rtlwifi_pm_ops, rtl_pci_suspend, rtl_pci_resume);
 
