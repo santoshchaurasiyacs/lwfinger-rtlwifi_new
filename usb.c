@@ -1027,11 +1027,18 @@ static void rtl_fill_h2c_cmd_work_callback(struct work_struct *work)
 	rtlpriv->cfg->ops->fill_h2c_cmd(hw, H2C_RA_MASK, 5, rtlpriv->rate_mask);
 }
 
+/* Dummy enable/disable ASPM routine */
+static void rtl_usb_aspm_dummy(struct ieee80211_hw *hw)
+{
+}
+
 static const struct rtl_intf_ops rtl_usb_ops = {
 	.adapter_start = rtl_usb_start,
 	.adapter_stop = rtl_usb_stop,
 	.adapter_tx = rtl_usb_tx,
 	.waitq_insert = rtl_usb_tx_chk_waitq_insert,
+	.disable_aspm = rtl_usb_aspm_dummy,
+	.enable_aspm = rtl_usb_aspm_dummy,
 };
 
 int rtl_usb_probe(struct usb_interface *intf,
@@ -1051,6 +1058,7 @@ int rtl_usb_probe(struct usb_interface *intf,
 		return -ENOMEM;
 	}
 	rtlpriv = hw->priv;
+	rtlpriv->hw = hw;
 	rtlpriv->usb_data = kzalloc(RTL_USB_MAX_RX_COUNT * sizeof(u32),
 				    GFP_KERNEL);
 	if (!rtlpriv->usb_data)
