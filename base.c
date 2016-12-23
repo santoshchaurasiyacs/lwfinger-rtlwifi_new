@@ -2115,12 +2115,12 @@ void rtl_c2hcmd_enqueue(struct ieee80211_hw *hw, u8 tag, u8 len, u8 *val)
 	unsigned long flags;
 	struct rtl_c2hcmd *c2hcmd;
 
-	c2hcmd = kmalloc(sizeof(*c2hcmd), GFP_KERNEL);
+	c2hcmd = kmalloc(sizeof(*c2hcmd), GFP_ATOMIC);
 
 	if (!c2hcmd)
 		goto label_err;
 
-	c2hcmd->val = kmalloc(len, GFP_KERNEL);
+	c2hcmd->val = kmalloc(len, GFP_ATOMIC);
 
 	if (!c2hcmd->val)
 		goto label_err2;
