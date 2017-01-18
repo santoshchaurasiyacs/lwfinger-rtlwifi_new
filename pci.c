@@ -2324,12 +2324,6 @@ int rtl_pci_probe(struct pci_dev *pdev,
 	}
 	rtlpriv->mac80211.mac80211_registered = 1;
 
-	err = sysfs_create_group(&pdev->dev.kobj, &rtl_attribute_group);
-	if (err) {
-		pr_err("failed to create sysfs device attributes\n");
-		goto fail3;
-	}
-
 	/* add for debug */
 	rtl_debug_add_one(hw);
 
@@ -2381,8 +2375,6 @@ void rtl_pci_disconnect(struct pci_dev *pdev)
 	/* just in case driver is removed before firmware callback */
 	wait_for_completion(&rtlpriv->firmware_loading_complete);
 	clear_bit(RTL_STATUS_INTERFACE_START, &rtlpriv->status);
-
-	sysfs_remove_group(&pdev->dev.kobj, &rtl_attribute_group);
 
 	/* remove form debug */
 	rtl_debug_remove_one(hw);
