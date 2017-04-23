@@ -11,10 +11,6 @@
  * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
  * more details.
  *
- * You should have received a copy of the GNU General Public License along with
- * this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110, USA
- *
  * The full GNU General Public License is included in this distribution in the
  * file called LICENSE.
  *
@@ -101,7 +97,6 @@
 #define SET_TX_DESC_PKT_OFFSET(__pdesc, __val)		\
 	SET_BITS_TO_LE_4BYTE(__pdesc+4, 24, 5, __val)
 
-
 #define SET_TX_DESC_PAID(__pdesc, __val)			\
 	SET_BITS_TO_LE_4BYTE(__pdesc+8, 0, 9, __val)
 #define SET_TX_DESC_CCA_RTS(__pdesc, __val)		\
@@ -126,7 +121,6 @@
 	SET_BITS_TO_LE_4BYTE(__pdesc+8, 23, 1, __val)
 #define SET_TX_DESC_GID(__pdesc, __val)			\
 	SET_BITS_TO_LE_4BYTE(__pdesc+8, 24, 6, __val)
-
 
 #define SET_TX_DESC_WHEADER_LEN(__pdesc, __val)		\
 	SET_BITS_TO_LE_4BYTE(__pdesc+12, 0, 4, __val)
@@ -174,7 +168,6 @@
 #define SET_TX_DESC_RTS_RATE(__pdesc, __val)		\
 	SET_BITS_TO_LE_4BYTE(__pdesc+16, 24, 5, __val)
 
-
 #define SET_TX_DESC_TX_SUB_CARRIER(__pdesc, __val)		\
 	SET_BITS_TO_LE_4BYTE(__pdesc+20, 0, 4, __val)
 #define SET_TX_DESC_DATA_SHORTGI(__pdesc, __val)	\
@@ -192,6 +185,18 @@
 #define SET_TX_DESC_RTS_SC(__pdesc, __val)	\
 	SET_BITS_TO_LE_4BYTE(__pdesc+20, 13, 4, __val)
 
+#define SET_TX_DESC_SW_DEFINE(__pdesc, __val)	\
+	SET_BITS_TO_LE_4BYTE(__pdesc + 24, 0, 12, __val)
+#define SET_TX_DESC_ANTSEL_A(__pdesc, __val)	\
+	SET_BITS_TO_LE_4BYTE(__pdesc + 24, 16, 3, __val)
+#define SET_TX_DESC_ANTSEL_B(__pdesc, __val)	\
+	SET_BITS_TO_LE_4BYTE(__pdesc + 24, 19, 3, __val)
+#define SET_TX_DESC_ANTSEL_C(__pdesc, __val)	\
+	SET_BITS_TO_LE_4BYTE(__pdesc + 24, 22, 3, __val)
+#define SET_TX_DESC_ANTSEL_D(__pdesc, __val)	\
+	SET_BITS_TO_LE_4BYTE(__pdesc + 24, 25, 3, __val)
+#define SET_TX_DESC_MBSSID(__pdesc, __val)	\
+	SET_BITS_TO_LE_4BYTE(__pdesc + 24, 12, 4, __val)
 
 #define SET_TX_DESC_TX_BUFFER_SIZE(__pdesc, __val)	\
 	SET_BITS_TO_LE_4BYTE(__pdesc+28, 0, 16, __val)
@@ -210,7 +215,6 @@
 
 #define GET_TX_DESC_TX_BUFFER_ADDRESS(__pdesc)		\
 	LE_BITS_TO_4BYTE(__pdesc+40, 0, 32)
-
 
 #define SET_TX_DESC_NEXT_DESC_ADDRESS(__pdesc, __val)	\
 	SET_BITS_TO_LE_4BYTE(__pdesc+48, 0, 32, __val)
@@ -287,7 +291,6 @@
 #define GET_RX_DESC_BC(__pdesc)					\
 	LE_BITS_TO_4BYTE(__pdesc+4, 31, 1)
 
-
 #define GET_RX_DESC_SEQ(__pdesc)				\
 	LE_BITS_TO_4BYTE(__pdesc+8, 0, 12)
 #define GET_RX_DESC_FRAG(__pdesc)				\
@@ -298,7 +301,6 @@
 	LE_BITS_TO_4BYTE(__pdesc+8, 18, 6)
 #define GET_RX_STATUS_DESC_RPT_SEL(__pdesc)			\
 	LE_BITS_TO_4BYTE(__pdesc+8, 28, 1)
-
 
 #define GET_RX_DESC_RXMCS(__pdesc)				\
 	LE_BITS_TO_4BYTE(__pdesc+12, 0, 7)
@@ -338,15 +340,14 @@
 #define SET_RX_DESC_BUFF_ADDR64(__pdesc, __val) \
 	SET_BITS_TO_LE_4BYTE(__pdesc+28, 0, 32, __val)
 
-
 /* TX report 2 format in Rx desc*/
 
-#define GET_RX_RPT2_DESC_PKT_LEN(__pRxStatusDesc)	\
-	LE_BITS_TO_4BYTE(__pRxStatusDesc, 0, 9)
-#define GET_RX_RPT2_DESC_MACID_VALID_1(__pRxStatusDesc)	\
-	LE_BITS_TO_4BYTE(__pRxStatusDesc+16, 0, 32)
-#define GET_RX_RPT2_DESC_MACID_VALID_2(__pRxStatusDesc)	\
-	LE_BITS_TO_4BYTE(__pRxStatusDesc+20, 0, 32)
+#define GET_RX_RPT2_DESC_PKT_LEN(__status)	\
+	LE_BITS_TO_4BYTE(__status, 0, 9)
+#define GET_RX_RPT2_DESC_MACID_VALID_1(__status)	\
+	LE_BITS_TO_4BYTE(__status+16, 0, 32)
+#define GET_RX_RPT2_DESC_MACID_VALID_2(__status)	\
+	LE_BITS_TO_4BYTE(__status+20, 0, 32)
 
 #define SET_EARLYMODE_PKTNUM(__paddr, __value)	\
 	SET_BITS_TO_LE_4BYTE(__paddr, 0, 4, __value)
@@ -369,60 +370,26 @@ do {								\
 		memset(__pdesc, 0, TX_DESC_NEXT_DESC_OFFSET);	\
 	else							\
 		memset(__pdesc, 0, _size);			\
-} while (0);
+} while (0)
 
-#define IS_LITTLE_ENDIAN	1
+#define RTL8821AE_RX_HAL_IS_CCK_RATE(rxmcs)\
+	(rxmcs == DESC_RATE1M ||\
+	 rxmcs == DESC_RATE2M ||\
+	 rxmcs == DESC_RATE5_5M ||\
+	 rxmcs == DESC_RATE11M)
 
 struct phy_rx_agc_info_t {
-	#if IS_LITTLE_ENDIAN
+	#ifdef __LITTLE_ENDIAN
 		u8	gain:7, trsw:1;
 	#else
 		u8	trsw:1, gain:7;
 	#endif
 };
 
-#if 0
-struct phy_status_rpt {
-	struct phy_rx_agc_info_t path_agc[2];
-	u8	ch_corr[2];
-	u8	cck_sig_qual_ofdm_pwdb_all;
-	u8	cck_agc_rpt_ofdm_cfosho_a;
-	u8	cck_rpt_b_ofdm_cfosho_b;
-	u8	rsvd_1;/* ch_corr_msb; */
-	u8	noise_power_db_msb;
-	u8	path_cfotail[2];
-	u8	pcts_mask[2];
-	u8	stream_rxevm[2];
-	u8	path_rxsnr[2];
-	u8	noise_power_db_lsb;
-	u8	rsvd_2[3];
-	u8	stream_csi[2];
-	u8	stream_target_csi[2];
-	u8	sig_evm;
-	u8	rsvd_3;
-#if IS_LITTLE_ENDIAN
-	u8	antsel_rx_keep_2:1;	/*ex_intf_flg:1;*/
-	u8	sgi_en:1;
-	u8	rxsc:2;
-	u8	idle_long:1;
-	u8	r_ant_train_en:1;
-	u8	ant_sel_b:1;
-	u8	ant_sel:1;
-#else	/* _BIG_ENDIAN_	*/
-	u8	ant_sel:1;
-	u8	ant_sel_b:1;
-	u8	r_ant_train_en:1;
-	u8	idle_long:1;
-	u8	rxsc:2;
-	u8	sgi_en:1;
-	u8	antsel_rx_keep_2:1;	/*ex_intf_flg:1;*/
-#endif
-} __packed;
-#else
 struct phy_status_rpt {
 	/* DWORD 0 */
 	u8 gain_trsw[2];
-#if IS_LITTLE_ENDIAN
+#ifdef __LITTLE_ENDIAN
 	u16 chl_num:10;
 	u16 sub_chnl:4;
 	u16 r_rfmod:2;
@@ -436,11 +403,11 @@ struct phy_status_rpt {
 	u8 cfosho[4];	/* DW 1 byte 1 DW 2 byte 0 */
 
 	/* DWORD 2 */
-	char cfotail[4];	/* DW 2 byte 1 DW 3 byte 0 */
+	s8 cfotail[4];	/* DW 2 byte 1 DW 3 byte 0 */
 
 	/* DWORD 3 */
-	char rxevm[2];	/* DW 3 byte 1 DW 3 byte 2 */
-	char rxsnr[2];	/* DW 3 byte 3 DW 4 byte 0 */
+	s8 rxevm[2];	/* DW 3 byte 1 DW 3 byte 2 */
+	s8 rxsnr[2];	/* DW 3 byte 3 DW 4 byte 0 */
 
 	/* DWORD 4 */
 	u8 pcts_msk_rpt[2];
@@ -459,14 +426,13 @@ struct phy_status_rpt {
 	u8 resvd_1:2;
 } __packed;
 
-#endif
 struct rx_fwinfo_8821ae {
 	u8 gain_trsw[4];
 	u8 pwdb_all;
 	u8 cfosho[4];
 	u8 cfotail[4];
-	char rxevm[2];
-	char rxsnr[4];
+	s8 rxevm[2];
+	s8 rxsnr[4];
 	u8 pdsnr[2];
 	u8 csi_current[2];
 	u8 csi_target[2];
@@ -643,15 +609,15 @@ struct rx_desc_8821ae {
 } __packed;
 
 void rtl8821ae_tx_fill_desc(struct ieee80211_hw *hw,
-			  struct ieee80211_hdr *hdr, u8 *pdesc_tx, u8 *txbd,
-			  struct ieee80211_tx_info *info,
-			  struct ieee80211_sta *sta,
-			  struct sk_buff *skb,
-			  u8 hw_queue, struct rtl_tcb_desc *ptcb_desc);
+			    struct ieee80211_hdr *hdr, u8 *pdesc_tx, u8 *txbd,
+			    struct ieee80211_tx_info *info,
+			    struct ieee80211_sta *sta,
+			    struct sk_buff *skb,
+			    u8 hw_queue, struct rtl_tcb_desc *ptcb_desc);
 bool rtl8821ae_rx_query_desc(struct ieee80211_hw *hw,
-			   struct rtl_stats *status,
-			   struct ieee80211_rx_status *rx_status,
-			   u8 *pdesc, struct sk_buff *skb);
+			     struct rtl_stats *status,
+			     struct ieee80211_rx_status *rx_status,
+			     u8 *pdesc, struct sk_buff *skb);
 void rtl8821ae_set_desc(struct ieee80211_hw *hw, u8 *pdesc,
 			bool istx, u8 desc_name, u8 *val);
 u32 rtl8821ae_get_desc(u8 *pdesc, bool istx, u8 desc_name);
@@ -659,9 +625,9 @@ bool rtl8821ae_is_tx_desc_closed(struct ieee80211_hw *hw,
 				 u8 hw_queue, u16 index);
 void rtl8821ae_tx_polling(struct ieee80211_hw *hw, u8 hw_queue);
 void rtl8821ae_tx_fill_cmddesc(struct ieee80211_hw *hw, u8 *pdesc,
-			     bool firstseg, bool lastseg,
-			     struct sk_buff *skb);
+			       bool firstseg, bool lastseg,
+			       struct sk_buff *skb);
 u32 rtl8821ae_rx_command_packet(struct ieee80211_hw *hw,
-				struct rtl_stats status,
+				const struct rtl_stats *status,
 				struct sk_buff *skb);
 #endif

@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Copyright(c) 2009-2010  Realtek Corporation.
+ * Copyright(c) 2009-2012  Realtek Corporation.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of version 2 of the GNU General Public License as
@@ -10,10 +10,6 @@
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
  * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
  * more details.
- *
- * You should have received a copy of the GNU General Public License along with
- * this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110, USA
  *
  * The full GNU General Public License is included in this distribution in the
  * file called LICENSE.
@@ -30,28 +26,28 @@
 #ifndef __RTL8723E_PWRSEQ_H__
 #define __RTL8723E_PWRSEQ_H__
 
-#include "pwrseqcmd.h"
+#include "../pwrseqcmd.h"
 /*
-	Check document WM-20110607-Paul-RTL8723A_Power_Architecture-R02.vsd
-	There are 6 HW Power States:
-	0: POFF--Power Off
-	1: PDN--Power Down
-	2: CARDEMU--Card Emulation
-	3: ACT--Active Mode
-	4: LPS--Low Power State
-	5: SUS--Suspend
-
-	The transision from different states are defined below
-	TRANS_CARDEMU_TO_ACT
-	TRANS_ACT_TO_CARDEMU
-	TRANS_CARDEMU_TO_SUS
-	TRANS_SUS_TO_CARDEMU
-	TRANS_CARDEMU_TO_PDN
-	TRANS_ACT_TO_LPS
-	TRANS_LPS_TO_ACT
-
-	TRANS_END
-*/
+ *	Check document WM-20110607-Paul-RTL8723A_Power_Architecture-R02.vsd
+ *	There are 6 HW Power States:
+ *	0: POFF--Power Off
+ *	1: PDN--Power Down
+ *	2: CARDEMU--Card Emulation
+ *	3: ACT--Active Mode
+ *	4: LPS--Low Power State
+ *	5: SUS--Suspend
+ *
+ *	The transision from different states are defined below
+ *	TRANS_CARDEMU_TO_ACT
+ *	TRANS_ACT_TO_CARDEMU
+ *	TRANS_CARDEMU_TO_SUS
+ *	TRANS_SUS_TO_CARDEMU
+ *	TRANS_CARDEMU_TO_PDN
+ *	TRANS_ACT_TO_LPS
+ *	TRANS_LPS_TO_ACT
+ *
+ *	TRANS_END
+ */
 
 #define	RTL8723A_TRANS_CARDEMU_TO_ACT_STEPS	10
 #define	RTL8723A_TRANS_ACT_TO_CARDEMU_STEPS	10
@@ -86,8 +82,7 @@
 	{0x0005, PWR_CUT_ALL_MSK, PWR_FAB_ALL_MSK, PWR_INTF_ALL_MSK,\
 		PWR_BASEADDR_MAC, PWR_CMD_WRITE, BIT(0), BIT(0)},\
 	{0x0005, PWR_CUT_ALL_MSK, PWR_FAB_ALL_MSK, PWR_INTF_ALL_MSK,\
-		PWR_BASEADDR_MAC, PWR_CMD_POLLING, BIT(0), 0},\
-
+		PWR_BASEADDR_MAC, PWR_CMD_POLLING, BIT(0), 0},
 
 /* format */
 /* { offset, cut_msk, fab_msk|interface_msk, base|cmd, msk, value }, */
@@ -101,9 +96,7 @@
 	{0x0005, PWR_CUT_ALL_MSK, PWR_FAB_ALL_MSK, PWR_INTF_ALL_MSK,\
 		PWR_BASEADDR_MAC, PWR_CMD_WRITE, BIT(1), BIT(1)}, \
 	{0x0005, PWR_CUT_ALL_MSK, PWR_FAB_ALL_MSK, PWR_INTF_ALL_MSK,\
-		PWR_BASEADDR_MAC, PWR_CMD_POLLING, BIT(1), 0},	\
-
-
+		PWR_BASEADDR_MAC, PWR_CMD_POLLING, BIT(1), 0},
 
 /* format */
 /* { offset, cut_msk, fab_msk|interface_msk, base|cmd, msk, value },*/
@@ -132,8 +125,8 @@
 		PWR_INTF_SDIO_MSK, PWR_BASEADDR_SDIO,\
 		PWR_CMD_POLLING, BIT(1), 0},
 
-/* format */		\
-/* { offset, cut_msk, fab_msk|interface_msk, base|cmd, msk, value }, */	\
+/* format */
+/* { offset, cut_msk, fab_msk|interface_msk, base|cmd, msk, value }, */
 
 #define RTL8723A_TRANS_SUS_TO_CARDEMU	\
  /*Set SDIO suspend local register*/	\
@@ -146,10 +139,8 @@
 	{0x0005, PWR_CUT_ALL_MSK, PWR_FAB_ALL_MSK, PWR_INTF_ALL_MSK,\
 		PWR_BASEADDR_MAC, PWR_CMD_WRITE, BIT(3)|BIT(4), 0},
 
-
 /* format */
 /* { offset, cut_msk, fab_msk|interface_msk, base|cmd, msk, value }, */
-
 
 #define RTL8723A_TRANS_CARDEMU_TO_CARDDIS \
  /*0x04[12:11] = 2b'01 enable WL suspend*/	 \
@@ -168,7 +159,6 @@
 	{0x0086, PWR_CUT_ALL_MSK, PWR_FAB_ALL_MSK, \
 		PWR_INTF_SDIO_MSK, PWR_BASEADDR_SDIO,\
 		PWR_CMD_POLLING, BIT(1), 0},
-
 
 /* format */
 /* { offset, cut_msk, fab_msk|interface_msk, base|cmd, msk, value }, */
@@ -191,7 +181,6 @@
 		PWR_INTF_ALL_MSK, PWR_BASEADDR_MAC,\
 		PWR_CMD_WRITE, 0xFF, 0},
 
-
 /* format */
 /* { offset, cut_msk, fab_msk|interface_msk, base|cmd, msk, value }, */
 #define RTL8723A_TRANS_CARDEMU_TO_PDN	\
@@ -201,7 +190,6 @@
 	{0x0005, PWR_CUT_ALL_MSK, PWR_FAB_ALL_MSK, \
 		PWR_INTF_ALL_MSK, PWR_BASEADDR_MAC,\
 		PWR_CMD_WRITE, BIT(7), BIT(7)},/* 0x04[15] = 1*/
-
 
 /* format */
 /* { offset, cut_msk, fab_msk|interface_msk, base|cmd, msk, value }, */
@@ -300,7 +288,6 @@
 		PWR_INTF_ALL_MSK, PWR_BASEADDR_MAC,\
 		PWR_CMD_WRITE, 0xFF, 0}, /*.	0x522 = 0*/
 
-
 /* format */
 /* { offset, cut_msk, fab_msk|interface_msk, base|cmd, msk, value }, */
 
@@ -308,29 +295,36 @@
 	{0xFFFF, PWR_CUT_ALL_MSK, PWR_FAB_ALL_MSK, PWR_INTF_ALL_MSK,\
 	0, PWR_CMD_END, 0, 0}
 
-extern struct wlan_pwr_cfg rtl8723A_power_on_flow[RTL8723A_TRANS_CARDEMU_TO_ACT_STEPS
-						+ RTL8723A_TRANS_END_STEPS];
-extern struct wlan_pwr_cfg rtl8723A_radio_off_flow[RTL8723A_TRANS_ACT_TO_CARDEMU_STEPS
-						+ RTL8723A_TRANS_END_STEPS];
-extern struct wlan_pwr_cfg rtl8723A_card_disable_flow[RTL8723A_TRANS_ACT_TO_CARDEMU_STEPS
-						+ RTL8723A_TRANS_CARDEMU_TO_PDN_STEPS
-						+ RTL8723A_TRANS_END_STEPS];
-extern struct wlan_pwr_cfg rtl8723A_card_enable_flow[RTL8723A_TRANS_ACT_TO_CARDEMU_STEPS
-						+ RTL8723A_TRANS_CARDEMU_TO_PDN_STEPS
-						+ RTL8723A_TRANS_END_STEPS];
-extern struct wlan_pwr_cfg rtl8723A_suspend_flow[RTL8723A_TRANS_ACT_TO_CARDEMU_STEPS
-						+ RTL8723A_TRANS_CARDEMU_TO_SUS_STEPS
-						+ RTL8723A_TRANS_END_STEPS];
-extern struct wlan_pwr_cfg rtl8723A_resume_flow[RTL8723A_TRANS_ACT_TO_CARDEMU_STEPS
-						+ RTL8723A_TRANS_CARDEMU_TO_SUS_STEPS
-						+ RTL8723A_TRANS_END_STEPS];
-extern struct wlan_pwr_cfg rtl8723A_hwpdn_flow[RTL8723A_TRANS_ACT_TO_CARDEMU_STEPS
-						+ RTL8723A_TRANS_CARDEMU_TO_PDN_STEPS
-						+ RTL8723A_TRANS_END_STEPS];
-extern struct wlan_pwr_cfg rtl8723A_enter_lps_flow[RTL8723A_TRANS_ACT_TO_LPS_STEPS
-						+ RTL8723A_TRANS_END_STEPS];
-extern struct wlan_pwr_cfg rtl8723A_leave_lps_flow[RTL8723A_TRANS_LPS_TO_ACT_STEPS
-						+ RTL8723A_TRANS_END_STEPS];
+extern struct wlan_pwr_cfg rtl8723A_power_on_flow
+		[RTL8723A_TRANS_CARDEMU_TO_ACT_STEPS +
+		 RTL8723A_TRANS_END_STEPS];
+extern struct wlan_pwr_cfg rtl8723A_radio_off_flow
+		[RTL8723A_TRANS_ACT_TO_CARDEMU_STEPS +
+		 RTL8723A_TRANS_END_STEPS];
+extern struct wlan_pwr_cfg rtl8723A_card_disable_flow
+		[RTL8723A_TRANS_ACT_TO_CARDEMU_STEPS +
+		 RTL8723A_TRANS_CARDEMU_TO_PDN_STEPS +
+		 RTL8723A_TRANS_END_STEPS];
+extern struct wlan_pwr_cfg rtl8723A_card_enable_flow
+		[RTL8723A_TRANS_ACT_TO_CARDEMU_STEPS +
+		 RTL8723A_TRANS_CARDEMU_TO_PDN_STEPS +
+		 RTL8723A_TRANS_END_STEPS];
+extern struct wlan_pwr_cfg rtl8723A_suspend_flow
+		[RTL8723A_TRANS_ACT_TO_CARDEMU_STEPS +
+		 RTL8723A_TRANS_CARDEMU_TO_SUS_STEPS +
+		 RTL8723A_TRANS_END_STEPS];
+extern struct wlan_pwr_cfg rtl8723A_resume_flow
+		[RTL8723A_TRANS_ACT_TO_CARDEMU_STEPS +
+		 RTL8723A_TRANS_CARDEMU_TO_SUS_STEPS +
+		 RTL8723A_TRANS_END_STEPS];
+extern struct wlan_pwr_cfg rtl8723A_hwpdn_flow
+		[RTL8723A_TRANS_ACT_TO_CARDEMU_STEPS +
+		 RTL8723A_TRANS_CARDEMU_TO_PDN_STEPS +
+		 RTL8723A_TRANS_END_STEPS];
+extern struct wlan_pwr_cfg rtl8723A_enter_lps_flow
+		[RTL8723A_TRANS_ACT_TO_LPS_STEPS + RTL8723A_TRANS_END_STEPS];
+extern struct wlan_pwr_cfg rtl8723A_leave_lps_flow
+		[RTL8723A_TRANS_LPS_TO_ACT_STEPS + RTL8723A_TRANS_END_STEPS];
 
 /* RTL8723 Power Configuration CMDs for PCIe interface */
 #define Rtl8723_NIC_PWR_ON_FLOW		rtl8723A_power_on_flow
@@ -342,6 +336,5 @@ extern struct wlan_pwr_cfg rtl8723A_leave_lps_flow[RTL8723A_TRANS_LPS_TO_ACT_STE
 #define Rtl8723_NIC_PDN_FLOW		rtl8723A_hwpdn_flow
 #define Rtl8723_NIC_LPS_ENTER_FLOW	rtl8723A_enter_lps_flow
 #define Rtl8723_NIC_LPS_LEAVE_FLOW	rtl8723A_leave_lps_flow
-
 
 #endif

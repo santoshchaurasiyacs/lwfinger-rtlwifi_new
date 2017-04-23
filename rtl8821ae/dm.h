@@ -11,10 +11,6 @@
  * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
  * more details.
  *
- * You should have received a copy of the GNU General Public License along with
- * this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110, USA
- *
  * The full GNU General Public License is included in this distribution in the
  * file called LICENSE.
  *
@@ -52,8 +48,6 @@
 #define	DM_REG_RXRF_A3_11N				0x3C
 #define	DM_REG_T_METER_92D_11N			0x42
 #define	DM_REG_T_METER_88E_11N			0x42
-
-
 
 /*BB REG LIST*/
 /*PAGE 8 */
@@ -163,7 +157,6 @@
 #define	DM_REG_SLEEP_11N				0xEE0
 #define	DM_REG_PMPD_ANAEN_11N			0xEEC
 
-
 /*MAC REG LIST*/
 #define	DM_REG_BB_RST_11N				0x02
 #define	DM_REG_ANTSEL_PIN_11N			0x4C
@@ -178,12 +171,9 @@
 #define	DM_REG_ANT_TRAIN_PARA1_11N	0x7b0
 #define	DM_REG_ANT_TRAIN_PARA2_11N	0x7b4
 
-
 /*DIG Related*/
 #define	DM_BIT_IGI_11N					0x0000007F
 #define	DM_BIT_IGI_11AC					0xFFFFFFFF
-
-
 
 #define HAL_DM_DIG_DISABLE			BIT(0)
 #define HAL_DM_HIPWR_DISABLE		BIT(1)
@@ -197,29 +187,13 @@
 #define BW_AUTO_SWITCH_HIGH_LOW		25
 #define BW_AUTO_SWITCH_LOW_HIGH		30
 
-#define DM_DIG_THRESH_HIGH			40
-#define DM_DIG_THRESH_LOW			35
-
-#define DM_FALSEALARM_THRESH_LOW	400
-#define DM_FALSEALARM_THRESH_HIGH	1000
-
-#define DM_DIG_MAX					0x3e
-#define DM_DIG_MIN					0x1e
-
-#define DM_DIG_MAX_AP				0x32
-#define DM_DIG_MIN_AP				0x20
-
 #define DM_DIG_FA_UPPER				0x3e
 #define DM_DIG_FA_LOWER				0x1e
 #define DM_DIG_FA_TH0				200
 #define DM_DIG_FA_TH1				0x300
 #define DM_DIG_FA_TH2				0x400
 
-#define DM_DIG_BACKOFF_MAX			12
-#define DM_DIG_BACKOFF_MIN			-4
-#define DM_DIG_BACKOFF_DEFAULT		10
-
-#define RXPATHSELECTION_SS_TH_lOW	30
+#define RXPATHSELECTION_SS_TH_LOW	30
 #define RXPATHSELECTION_DIFF_TH		18
 
 #define DM_RATR_STA_INIT			0
@@ -230,7 +204,7 @@
 #define CTS2SELF_THVAL				30
 #define REGC38_TH					20
 
-#define WAIOTTHVal					25
+#define WAIOTTHVAL					25
 
 #define TXHIGHPWRLEVEL_NORMAL		0
 #define TXHIGHPWRLEVEL_LEVEL1		1
@@ -272,14 +246,6 @@ enum tag_dynamic_init_gain_operation_type_definition {
 	DIG_OP_TYPE_MAX
 };
 
-enum tag_cck_packet_detection_threshold_type_definition {
-	CCK_PD_STAGE_LowRssi = 0,
-	CCK_PD_STAGE_HighRssi = 1,
-	CCK_FA_STAGE_Low = 2,
-	CCK_FA_STAGE_High = 3,
-	CCK_PD_STAGE_MAX = 4,
-};
-
 enum dm_1r_cca_e {
 	CCA_1R = 0,
 	CCA_2R = 1,
@@ -298,23 +264,6 @@ enum dm_sw_ant_switch_e {
 	ANS_ANTENNA_MAX = 3,
 };
 
-enum dm_dig_ext_port_alg_e {
-	DIG_EXT_PORT_STAGE_0 = 0,
-	DIG_EXT_PORT_STAGE_1 = 1,
-	DIG_EXT_PORT_STAGE_2 = 2,
-	DIG_EXT_PORT_STAGE_3 = 3,
-	DIG_EXT_PORT_STAGE_MAX = 4,
-};
-
-enum dm_dig_connect_e {
-	DIG_STA_DISCONNECT = 0,
-	DIG_STA_CONNECT = 1,
-	DIG_STA_BEFORE_CONNECT = 2,
-	DIG_MULTISTA_DISCONNECT = 3,
-	DIG_MULTISTA_CONNECT = 4,
-	DIG_CONNECT_MAX
-};
-
 enum pwr_track_control_method {
 	BBSWING,
 	TXAGC,
@@ -327,15 +276,16 @@ enum pwr_track_control_method {
 #define BT_RSSI_STATE_BG_EDCA_LOW       BIT_OFFSET_LEN_MASK_32(3, 1)
 #define BT_RSSI_STATE_TXPOWER_LOW       BIT_OFFSET_LEN_MASK_32(4, 1)
 #define GET_UNDECORATED_AVERAGE_RSSI(_priv)     \
-	(((struct rtl_priv *)(_priv))->mac80211.opmode == NL80211_IFTYPE_ADHOC) ? \
+	((((struct rtl_priv *)(_priv))->mac80211.opmode ==	\
+			      NL80211_IFTYPE_ADHOC) ? \
 	(((struct rtl_priv *)(_priv))->dm.entry_min_undec_sm_pwdb) : \
-	(((struct rtl_priv *)(_priv))->dm.undec_sm_pwdb)
+	(((struct rtl_priv *)(_priv))->dm.undec_sm_pwdb))
 
 void rtl8821ae_dm_set_tx_ant_by_tx_info(struct ieee80211_hw *hw,
-						u8 *pdesc, u32 mac_id);
+					u8 *pdesc, u32 mac_id);
 void rtl8821ae_dm_ant_sel_statistics(struct ieee80211_hw *hw,
-					u8 antsel_tr_mux, u32 mac_id,
-					u32 rx_pwdb_all);
+				     u8 antsel_tr_mux, u32 mac_id,
+				     u32 rx_pwdb_all);
 void rtl8821ae_dm_fast_antenna_training_callback(unsigned long data);
 void rtl8821ae_dm_init(struct ieee80211_hw *hw);
 void rtl8821ae_dm_watchdog(struct ieee80211_hw *hw);
@@ -344,28 +294,22 @@ void rtl8821ae_dm_init_edca_turbo(struct ieee80211_hw *hw);
 void rtl8821ae_dm_check_txpower_tracking_thermalmeter(struct ieee80211_hw *hw);
 void rtl8821ae_dm_init_rate_adaptive_mask(struct ieee80211_hw *hw);
 void rtl8821ae_dm_txpower_track_adjust(struct ieee80211_hw *hw,
-						u8 type, u8 *pdirection,
-						u32 *poutwrite_val);
+				       u8 type, u8 *pdirection,
+				       u32 *poutwrite_val);
 void rtl8821ae_dm_clear_txpower_tracking_state(struct ieee80211_hw *hw);
 void rtl8821ae_dm_write_cck_cca_thres(struct ieee80211_hw *hw, u8 current_cca);
 void rtl8821ae_dm_initialize_txpower_tracking_thermalmeter(struct ieee80211_hw *hw);
-#if 0
-void rtl8812ae_dm_path_diversity(struct ieee80211_hw *hw);
-void rtl8812ae_dm_path_diversity_init(struct ieee80211_hw *hw);
-void rtl8812ae_dm_path_statistics(struct ieee80211_hw *hw,
-	u32 rssi_a, u32 rssi_b);
-void rtl812ae_dm_set_txpath_by_txinfo(struct ieee80211_hw *hw,
-	u8 *pdesc);
-#endif
 void rtl8812ae_dm_txpwr_track_set_pwr(struct ieee80211_hw *hw,
-					enum pwr_track_control_method method,
-					u8 rf_path,
-					u8 channel_mapped_index);
+				      enum pwr_track_control_method method,
+				      u8 rf_path,
+				      u8 channel_mapped_index);
 void rtl8821ae_dm_txpwr_track_set_pwr(struct ieee80211_hw *hw,
-	enum pwr_track_control_method method, u8 rf_path, u8 channel_mapped_index);
+				      enum pwr_track_control_method method,
+				      u8 rf_path, u8 channel_mapped_index);
 
 void rtl8821ae_dm_update_init_rate(struct ieee80211_hw *hw, u8 rate);
 u8 rtl8821ae_hw_rate_to_mrate(struct ieee80211_hw *hw, u8 rate);
 void rtl8812ae_dm_txpower_tracking_callback_thermalmeter(struct ieee80211_hw *hw);
 void rtl8821ae_dm_txpower_tracking_callback_thermalmeter(struct ieee80211_hw *hw);
+
 #endif

@@ -1,6 +1,6 @@
 SHELL := /bin/sh
 CC = gcc
-KVER  := $(shell uname -r)
+KVER  ?= $(shell uname -r)
 KSRC := /lib/modules/$(KVER)/build
 FIRMWAREDIR := /lib/firmware/
 PWD := $(shell pwd)
@@ -48,6 +48,7 @@ obj-m	+= rtl8192de/
 obj-m	+= rtl8192ee/
 obj-m	+= rtl8192se/
 obj-m	+= rtl8723ae/
+obj-m	+= rtl8723com/
 obj-m	+= rtl8723be/
 obj-m	+= rtl8821ae/
 
@@ -71,6 +72,7 @@ endif
 	@mkdir -p $(MODDESTDIR)/rtl8192se
 	@mkdir -p $(MODDESTDIR)/rtl8723ae
 	@mkdir -p $(MODDESTDIR)/rtl8723be
+	@mkdir -p $(MODDESTDIR)/rtl8723com
 	@mkdir -p $(MODDESTDIR)/rtl8821ae
 	@install -p -D -m 644 rtl_pci.ko $(MODDESTDIR)	
 	@install -p -D -m 644 rtl_usb.ko $(MODDESTDIR)	
@@ -85,6 +87,7 @@ endif
 	@install -p -D -m 644 ./rtl8192se/rtl8192se.ko $(MODDESTDIR)/rtl8192se
 	@install -p -D -m 644 ./rtl8723ae/rtl8723ae.ko $(MODDESTDIR)/rtl8723ae
 	@install -p -D -m 644 ./rtl8723be/rtl8723be.ko $(MODDESTDIR)/rtl8723be
+	@install -p -D -m 644 ./rtl8723com/rtl8723-common.ko $(MODDESTDIR)/rtl8723com
 	@install -p -D -m 644 ./rtl8821ae/rtl8821ae.ko $(MODDESTDIR)/rtl8821ae
 ifeq ($(COMPRESS_GZIP), y)
 	@gzip -f $(MODDESTDIR)/*.ko
@@ -97,7 +100,7 @@ ifeq ($(COMPRESS_XZ), y)
 	@xz -f $(MODDESTDIR)/rtl8*/*.ko
 endif
 
-	@depmod -a
+	@depmod -a $(KVER)
 
 	@#copy firmware images to target folder
 	@cp -fr firmware/rtlwifi/ $(FIRMWAREDIR)/
@@ -114,11 +117,11 @@ endif
 	@echo "Uninstall rtlwifi SUCCESS"
 
 clean:
-	@rm -fr *.mod.c *.mod *.o .*.cmd *.ko *~
-	@rm -fr rtl8*/*.mod.c rtl8*/*.mod rtl8*/*.o rtl8*/.*.cmd rtl8*/*.ko rtl8*/*~
-	@rm -fr bt*/*.mod.c bt*/*.mod bt*/*.o bt*/.*.cmd bt*/*.ko bt*/*~
+	@rm -fr *.mod.c *.mod *.o .*.cmd *.ko *~ .*.o.d
+	@rm -fr rtl8*/*.mod.c rtl8*/*.mod rtl8*/*.o rtl8*/.*.cmd rtl8*/*.ko rtl8*/*~ rtl8*/*.cmd rtl8*/.*.o.d
+	@rm -fr bt*/*.mod.c bt*/*.mod bt*/*.o bt*/.*.cmd bt*/*.ko bt*/*~ bt*/*.cmd bt*/.*.o.d
 	@rm -fr .tmp_versions
 	@rm -fr Modules.symvers
 	@rm -fr Module.symvers
 	@rm -fr Module.markers
-	@rm -fr modules.order
+	@rm -fr modules.order rtl8*/modules.order bt*/modules.order

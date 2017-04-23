@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Copyright(c) 2009-2010  Realtek Corporation.
+ * Copyright(c) 2009-2014  Realtek Corporation.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of version 2 of the GNU General Public License as
@@ -10,10 +10,6 @@
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
  * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
  * more details.
- *
- * You should have received a copy of the GNU General Public License along with
- * this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110, USA
  *
  * The full GNU General Public License is included in this distribution in the
  * file called LICENSE.
@@ -30,29 +26,29 @@
 #ifndef __RTL92E_PWRSEQ_H__
 #define __RTL92E_PWRSEQ_H__
 
-#include "pwrseqcmd.h"
-/*
-	Check document WM-20110607-Paul-RTL8192E_Power_Architecture-R02.vsd
-	There are 6 HW Power States:
-	0: POFF--Power Off
-	1: PDN--Power Down
-	2: CARDEMU--Card Emulation
-	3: ACT--Active Mode
-	4: LPS--Low Power State
-	5: SUS--Suspend
-
-	The transision from different states are defined below
-	TRANS_CARDEMU_TO_ACT
-	TRANS_ACT_TO_CARDEMU
-	TRANS_CARDEMU_TO_SUS
-	TRANS_SUS_TO_CARDEMU
-	TRANS_CARDEMU_TO_PDN
-	TRANS_ACT_TO_LPS
-	TRANS_LPS_TO_ACT
-
-	TRANS_END
-	PWR SEQ Version: rtl8192E_PwrSeq_V09.h
-*/
+#include "../pwrseqcmd.h"
+/**
+ *	Check document WM-20110607-Paul-RTL8192E_Power_Architecture-R02.vsd
+ *	There are 6 HW Power States:
+ *	0: POFF--Power Off
+ *	1: PDN--Power Down
+ *	2: CARDEMU--Card Emulation
+ *	3: ACT--Active Mode
+ *	4: LPS--Low Power State
+ *	5: SUS--Suspend
+ *
+ *	The transision from different states are defined below
+ *	TRANS_CARDEMU_TO_ACT
+ *	TRANS_ACT_TO_CARDEMU
+ *	TRANS_CARDEMU_TO_SUS
+ *	TRANS_SUS_TO_CARDEMU
+ *	TRANS_CARDEMU_TO_PDN
+ *	TRANS_ACT_TO_LPS
+ *	TRANS_LPS_TO_ACT
+ *
+ *	TRANS_END
+ *	PWR SEQ Version: rtl8192E_PwrSeq_V09.h
+ */
 
 #define	RTL8192E_TRANS_CARDEMU_TO_ACT_STEPS	18
 #define	RTL8192E_TRANS_ACT_TO_CARDEMU_STEPS	18
@@ -63,7 +59,6 @@
 #define	RTL8192E_TRANS_ACT_TO_LPS_STEPS		23
 #define	RTL8192E_TRANS_LPS_TO_ACT_STEPS		23
 #define	RTL8192E_TRANS_END_STEPS		1
-
 
 #define RTL8192E_TRANS_CARDEMU_TO_ACT					\
 	/* format */							\
@@ -91,7 +86,6 @@
 	{0x0005, PWR_CUT_ALL_MSK, PWR_FAB_ALL_MSK, PWR_INTF_ALL_MSK,	\
 	 PWR_BASEADDR_MAC , PWR_CMD_POLLING, BIT(0), 0},
 
-
 #define RTL8192E_TRANS_ACT_TO_CARDEMU					\
 	/* format */							\
 	/* comments here */						\
@@ -108,7 +102,6 @@
 	/*wait till 0x04[9] = 0 polling until return 0 to disable*/	\
 	{0x0005, PWR_CUT_ALL_MSK, PWR_FAB_ALL_MSK, PWR_INTF_ALL_MSK,	\
 	 PWR_BASEADDR_MAC , PWR_CMD_POLLING, BIT(1), 0},
-
 
 #define RTL8192E_TRANS_CARDEMU_TO_SUS					\
 	/* format */							\
@@ -131,7 +124,6 @@
 	{0x0086, PWR_CUT_ALL_MSK, PWR_FAB_ALL_MSK, PWR_INTF_SDIO_MSK,	\
 	 PWR_BASEADDR_SDIO , PWR_CMD_POLLING, BIT(1), 0},
 
-
 #define RTL8192E_TRANS_SUS_TO_CARDEMU					\
 	/* format */							\
 	/* comments here */						\
@@ -145,7 +137,6 @@
 	/*0x04[12:11] = 2b'01enable WL suspend*/			\
 	{0x0005, PWR_CUT_ALL_MSK, PWR_FAB_ALL_MSK, PWR_INTF_ALL_MSK,	\
 	 PWR_BASEADDR_MAC , PWR_CMD_WRITE, BIT(3) | BIT(4), 0},
-
 
 #define RTL8192E_TRANS_CARDEMU_TO_CARDDIS				\
 	/* format */							\
@@ -174,7 +165,6 @@
 	{0x0086, PWR_CUT_ALL_MSK, PWR_FAB_ALL_MSK, PWR_INTF_SDIO_MSK,	\
 	 PWR_BASEADDR_SDIO , PWR_CMD_POLLING, BIT(1), 0},
 
-
 #define RTL8192E_TRANS_CARDDIS_TO_CARDEMU				\
 	/* format */							\
 	/* comments here */						\
@@ -195,7 +185,6 @@
 	{0x0005, PWR_CUT_ALL_MSK, PWR_FAB_ALL_MSK, PWR_INTF_ALL_MSK,	\
 	 PWR_BASEADDR_MAC , PWR_CMD_WRITE, BIT(3) | BIT(4), 0},
 
-
 #define RTL8192E_TRANS_CARDEMU_TO_PDN					\
 	/* format */							\
 	/* comments here */						\
@@ -207,7 +196,6 @@
 	{0x0005, PWR_CUT_ALL_MSK, PWR_FAB_ALL_MSK, PWR_INTF_ALL_MSK,	\
 	 PWR_BASEADDR_MAC , PWR_CMD_WRITE, BIT(7), BIT(7)},
 
-
 #define RTL8192E_TRANS_PDN_TO_CARDEMU					\
 	/* format */							\
 	/* comments here */						\
@@ -215,7 +203,6 @@
 	/* 0x04[15] = 0*/						\
 	{0x0005, PWR_CUT_ALL_MSK, PWR_FAB_ALL_MSK, PWR_INTF_ALL_MSK,	\
 	 PWR_BASEADDR_MAC , PWR_CMD_WRITE, BIT(7), 0},
-
 
 #define RTL8192E_TRANS_ACT_TO_LPS					\
 	/* format */							\
@@ -261,7 +248,6 @@
 	{0x0553, PWR_CUT_ALL_MSK, PWR_FAB_ALL_MSK, PWR_INTF_ALL_MSK,	\
 	 PWR_BASEADDR_MAC , PWR_CMD_WRITE, BIT(5), BIT(5)},
 
-
 #define RTL8192E_TRANS_LPS_TO_ACT					\
 	/* format */							\
 	/* comments here */						\
@@ -299,7 +285,6 @@
 	/*Clear ISR*/							\
 	{0x013D, PWR_CUT_ALL_MSK, PWR_FAB_ALL_MSK, PWR_INTF_ALL_MSK,	\
 	 PWR_BASEADDR_MAC , PWR_CMD_WRITE, 0xFF, 0xFF},
-
 
 #define RTL8192E_TRANS_END						\
 	/* format */							\
@@ -341,15 +326,15 @@ extern struct wlan_pwr_cfg rtl8192E_leave_lps_flow
 					[RTL8192E_TRANS_LPS_TO_ACT_STEPS +
 					 RTL8192E_TRANS_END_STEPS];
 
-
 /* RTL8192EE Power Configuration CMDs for PCIe interface */
-#define Rtl8192E_NIC_PWR_ON_FLOW	rtl8192E_power_on_flow
-#define Rtl8192E_NIC_RF_OFF_FLOW	rtl8192E_radio_off_flow
-#define Rtl8192E_NIC_DISABLE_FLOW	rtl8192E_card_disable_flow
-#define Rtl8192E_NIC_ENABLE_FLOW	rtl8192E_card_enable_flow
-#define Rtl8192E_NIC_SUSPEND_FLOW	rtl8192E_suspend_flow
-#define Rtl8192E_NIC_RESUME_FLOW	rtl8192E_resume_flow
-#define Rtl8192E_NIC_PDN_FLOW		rtl8192E_hwpdn_flow
-#define Rtl8192E_NIC_LPS_ENTER_FLOW	rtl8192E_enter_lps_flow
-#define Rtl8192E_NIC_LPS_LEAVE_FLOW	rtl8192E_leave_lps_flow
+#define RTL8192E_NIC_PWR_ON_FLOW	rtl8192E_power_on_flow
+#define RTL8192E_NIC_RF_OFF_FLOW	rtl8192E_radio_off_flow
+#define RTL8192E_NIC_DISABLE_FLOW	rtl8192E_card_disable_flow
+#define RTL8192E_NIC_ENABLE_FLOW	rtl8192E_card_enable_flow
+#define RTL8192E_NIC_SUSPEND_FLOW	rtl8192E_suspend_flow
+#define RTL8192E_NIC_RESUME_FLOW	rtl8192E_resume_flow
+#define RTL8192E_NIC_PDN_FLOW		rtl8192E_hwpdn_flow
+#define RTL8192E_NIC_LPS_ENTER_FLOW	rtl8192E_enter_lps_flow
+#define RTL8192E_NIC_LPS_LEAVE_FLOW	rtl8192E_leave_lps_flow
+
 #endif

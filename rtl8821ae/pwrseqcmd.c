@@ -11,10 +11,6 @@
  * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
  * more details.
  *
- * You should have received a copy of the GNU General Public License along with
- * this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110, USA
- *
  * The full GNU General Public License is included in this distribution in the
  * file called LICENSE.
  *
@@ -131,8 +127,8 @@ bool rtl_hal_pwrseqcmdparsing(struct rtl_priv *rtlpriv, u8 cut_version,
 				break;
 
 			default:
-				RT_ASSERT(false,
-					"rtl_hal_pwrseqcmdparsing(): Unknown CMD!!\n");
+				WARN_ONCE(true,
+					  "rtl_hal_pwrseqcmdparsing(): Unknown CMD!!\n");
 				break;
 			}
 

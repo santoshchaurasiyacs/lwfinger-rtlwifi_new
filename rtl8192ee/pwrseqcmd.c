@@ -129,10 +129,9 @@ bool rtl_hal_pwrseqcmdparsing(struct rtl_priv *rtlpriv, u8 cut_version,
 				RT_TRACE(rtlpriv, COMP_INIT, DBG_TRACE,
 					 "PWR_CMD_END\n");
 				return true;
-				break;
 
 			default:
-				RT_ASSERT(false, "Unknown CMD!!\n");
+				WARN_ONCE(true, "Unknown CMD!!\n");
 				break;
 			}
 		}

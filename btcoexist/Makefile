@@ -1,6 +1,4 @@
-btcoexist-objs :=	halbtc8723b2ant.o	\
-			halbtcoutsrc.o		\
-			halbtc8192e2ant.o	\
+btcoexist-objs :=	halbtc8192e2ant.o	\
 			halbtc8723b1ant.o	\
 			halbtc8723b2ant.o	\
 			halbtc8821a1ant.o	\
@@ -9,3 +7,5 @@ btcoexist-objs :=	halbtc8723b2ant.o	\
 			rtl_btc.o
 
 obj-m += btcoexist.o
+
+ccflags-y += -D__CHECK_ENDIAN__

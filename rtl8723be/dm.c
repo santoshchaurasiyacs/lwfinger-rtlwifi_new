@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Copyright(c) 2009-2010  Realtek Corporation.
+ * Copyright(c) 2009-2014  Realtek Corporation.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of version 2 of the GNU General Public License as
@@ -10,10 +10,6 @@
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
  * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
  * more details.
- *
- * You should have received a copy of the GNU General Public License along with
- * this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110, USA
  *
  * The full GNU General Public License is included in this distribution in the
  * file called LICENSE.
@@ -30,10 +26,12 @@
 #include "../wifi.h"
 #include "../base.h"
 #include "../pci.h"
+#include "../core.h"
 #include "reg.h"
 #include "def.h"
 #include "phy.h"
 #include "dm.h"
+#include "../rtl8723com/dm_common.h"
 #include "fw.h"
 #include "trx.h"
 #include "../btcoexist/rtl_btc.h"
@@ -184,10 +182,10 @@ void rtl8723be_dm_txpower_track_adjust(struct ieee80211_hw *hw, u8 type,
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_dm *rtldm = rtl_dm(rtl_priv(hw));
 	u8 pwr_val = 0;
-	u8 ofdm_base = rtlpriv->dm.bb_swing_idx_ofdm_base[RF90_PATH_A];
-	u8 ofdm_val = rtlpriv->dm.bb_swing_idx_ofdm[RF90_PATH_A];
-	u8 cck_base = rtldm->bb_swing_idx_cck_base;
-	u8 cck_val = rtldm->bb_swing_idx_cck;
+	u8 ofdm_base = rtlpriv->dm.swing_idx_ofdm_base[RF90_PATH_A];
+	u8 ofdm_val = rtlpriv->dm.swing_idx_ofdm[RF90_PATH_A];
+	u8 cck_base = rtldm->swing_idx_cck_base;
+	u8 cck_val = rtldm->swing_idx_cck;
 
 	if (type == 0) {
 		if (ofdm_val <= ofdm_base) {
@@ -214,74 +212,10 @@ void rtl8723be_dm_txpower_track_adjust(struct ieee80211_hw *hw, u8 type,
 		(pwr_val << 16) | (pwr_val << 24);
 }
 
-
-static void rtl8723be_dm_init_dynamic_bb_powersaving(struct ieee80211_hw *hw)
-{
-	struct rtl_priv *rtlpriv = rtl_priv(hw);
-	struct ps_t *dm_pstable = &rtlpriv->dm_pstable;
-
-	dm_pstable->pre_ccastate = CCA_MAX;
-	dm_pstable->cur_ccasate = CCA_MAX;
-	dm_pstable->pre_rfstate = RF_MAX;
-	dm_pstable->cur_rfstate = RF_MAX;
-	dm_pstable->rssi_val_min = 0;
-	dm_pstable->initialize = 0;
-}
-
-
-static void rtl8723be_dm_diginit(struct ieee80211_hw *hw)
-{
-	struct rtl_priv *rtlpriv = rtl_priv(hw);
-	struct dig_t *dm_digtable = &rtlpriv->dm_digtable;
-
-	dm_digtable->dig_enable_flag = true;
-	dm_digtable->cur_igvalue = rtl_get_bbreg(hw, ROFDM0_XAAGCCORE1, 0x7f);
-	dm_digtable->rssi_lowthresh = DM_DIG_THRESH_LOW;
-	dm_digtable->rssi_highthresh = DM_DIG_THRESH_HIGH;
-	dm_digtable->fa_lowthresh = DM_FALSEALARM_THRESH_LOW;
-	dm_digtable->fa_highthresh = DM_FALSEALARM_THRESH_HIGH;
-	dm_digtable->rx_gain_max = DM_DIG_MAX;
-	dm_digtable->rx_gain_min = DM_DIG_MIN;
-	dm_digtable->back_val = DM_DIG_BACKOFF_DEFAULT;
-	dm_digtable->back_range_max = DM_DIG_BACKOFF_MAX;
-	dm_digtable->back_range_min = DM_DIG_BACKOFF_MIN;
-	dm_digtable->pre_cck_cca_thres = 0xff;
-	dm_digtable->cur_cck_cca_thres = 0x83;
-	dm_digtable->forbidden_igi = DM_DIG_MIN;
-	dm_digtable->large_fa_hit = 0;
-	dm_digtable->recover_cnt = 0;
-	dm_digtable->dig_dynamic_min_0 = DM_DIG_MIN;
-	dm_digtable->dig_dynamic_min_1 = DM_DIG_MIN;
-	dm_digtable->media_connect_0 = false;
-	dm_digtable->media_connect_1 = false;
-	rtlpriv->dm.dm_initialgain_enable = true;
-	dm_digtable->bt30_cur_igi = 0x32;
-}
-
-static void rtl8723be_dm_init_dynamic_txpower(struct ieee80211_hw *hw)
-{
-	struct rtl_priv *rtlpriv = rtl_priv(hw);
-
-	rtlpriv->dm.dynamic_txpower_enable = false;
-
-	rtlpriv->dm.last_dtp_lvl = TXHIGHPWRLEVEL_NORMAL;
-	rtlpriv->dm.dynamic_txhighpower_lvl = TXHIGHPWRLEVEL_NORMAL;
-}
-
-
-void rtl8723be_dm_init_edca_turbo(struct ieee80211_hw *hw)
-{
-	struct rtl_priv *rtlpriv = rtl_priv(hw);
-	rtlpriv->dm.bcurrent_turbo_edca = false;
-	rtlpriv->dm.is_any_nonbepkts = false;
-	rtlpriv->dm.is_cur_rdlstate = false;
-}
-
-
 void rtl8723be_dm_init_rate_adaptive_mask(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
-	struct rate_adaptive *p_ra = &(rtlpriv->ra);
+	struct rate_adaptive *p_ra = &rtlpriv->ra;
 
 	p_ra->ratr_state = DM_RATR_STA_INIT;
 	p_ra->pre_ratr_state = DM_RATR_STA_INIT;
@@ -292,9 +226,8 @@ void rtl8723be_dm_init_rate_adaptive_mask(struct ieee80211_hw *hw)
 		rtlpriv->dm.useramask = false;
 
 	p_ra->high_rssi_thresh_for_ra = 50;
-	p_ra->low_rssi_thresh_for_ra = 20;
+	p_ra->low_rssi_thresh_for_ra40m = 20;
 }
-
 
 static void rtl8723be_dm_init_txpower_tracking(struct ieee80211_hw *hw)
 {
@@ -307,10 +240,9 @@ static void rtl8723be_dm_init_txpower_tracking(struct ieee80211_hw *hw)
 	rtlpriv->dm.ofdm_index[0] = 30;
 	rtlpriv->dm.cck_index = 20;
 
-	rtlpriv->dm.bb_swing_idx_cck_base = rtlpriv->dm.cck_index;
+	rtlpriv->dm.swing_idx_cck_base = rtlpriv->dm.cck_index;
 
-
-	rtlpriv->dm.bb_swing_idx_ofdm_base[0] = rtlpriv->dm.ofdm_index[0];
+	rtlpriv->dm.swing_idx_ofdm_base[0] = rtlpriv->dm.ofdm_index[0];
 	rtlpriv->dm.delta_power_index[RF90_PATH_A] = 0;
 	rtlpriv->dm.delta_power_index_last[RF90_PATH_A] = 0;
 	rtlpriv->dm.power_index_offset[RF90_PATH_A] = 0;
@@ -319,7 +251,6 @@ static void rtl8723be_dm_init_txpower_tracking(struct ieee80211_hw *hw)
 		 "  rtlpriv->dm.txpower_tracking = %d\n",
 		  rtlpriv->dm.txpower_tracking);
 }
-
 
 static void rtl8723be_dm_init_dynamic_atc_switch(struct ieee80211_hw *hw)
 {
@@ -331,17 +262,17 @@ static void rtl8723be_dm_init_dynamic_atc_switch(struct ieee80211_hw *hw)
 	rtlpriv->dm.cfo_threshold = CFO_THRESHOLD_XTAL;
 }
 
-
 void rtl8723be_dm_init(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
+	u32 cur_igvalue = rtl_get_bbreg(hw, ROFDM0_XAAGCCORE1, 0x7f);
 
 	rtlpriv->dm.dm_type = DM_TYPE_BYDRIVER;
-	rtl8723be_dm_diginit(hw);
+	rtl_dm_diginit(hw, cur_igvalue);
 	rtl8723be_dm_init_rate_adaptive_mask(hw);
-	rtl8723be_dm_init_edca_turbo(hw);
-	rtl8723be_dm_init_dynamic_bb_powersaving(hw);
-	rtl8723be_dm_init_dynamic_txpower(hw);
+	rtl8723_dm_init_edca_turbo(hw);
+	rtl8723_dm_init_dynamic_bb_powersaving(hw);
+	rtl8723_dm_init_dynamic_txpower(hw);
 	rtl8723be_dm_init_txpower_tracking(hw);
 	rtl8723be_dm_init_dynamic_atc_switch(hw);
 }
@@ -349,40 +280,40 @@ void rtl8723be_dm_init(struct ieee80211_hw *hw)
 static void rtl8723be_dm_find_minimum_rssi(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
-	struct rtl_dig *rtl_dm_dig = &(rtlpriv->dm.dm_digtable);
+	struct dig_t *rtl_dm_dig = &rtlpriv->dm_digtable;
 	struct rtl_mac *mac = rtl_mac(rtlpriv);
 
 	/* Determine the minimum RSSI  */
 	if ((mac->link_state < MAC80211_LINKED) &&
 	    (rtlpriv->dm.entry_min_undec_sm_pwdb == 0)) {
-		rtl_dm_dig->min_undecorated_pwdb_for_dm = 0;
+		rtl_dm_dig->min_undec_pwdb_for_dm = 0;
 		RT_TRACE(rtlpriv, COMP_BB_POWERSAVING, DBG_LOUD,
 			 "Not connected to any\n");
 	}
 	if (mac->link_state >= MAC80211_LINKED) {
 		if (mac->opmode == NL80211_IFTYPE_AP ||
 		    mac->opmode == NL80211_IFTYPE_ADHOC) {
-			rtl_dm_dig->min_undecorated_pwdb_for_dm =
+			rtl_dm_dig->min_undec_pwdb_for_dm =
 			    rtlpriv->dm.entry_min_undec_sm_pwdb;
 			RT_TRACE(rtlpriv, COMP_BB_POWERSAVING, DBG_LOUD,
 				 "AP Client PWDB = 0x%lx\n",
 			       rtlpriv->dm.entry_min_undec_sm_pwdb);
 		} else {
-			rtl_dm_dig->min_undecorated_pwdb_for_dm =
+			rtl_dm_dig->min_undec_pwdb_for_dm =
 			    rtlpriv->dm.undec_sm_pwdb;
 			RT_TRACE(rtlpriv, COMP_BB_POWERSAVING, DBG_LOUD,
 				 "STA Default Port PWDB = 0x%x\n",
-				  rtl_dm_dig->min_undecorated_pwdb_for_dm);
+				  rtl_dm_dig->min_undec_pwdb_for_dm);
 		}
 	} else {
-		rtl_dm_dig->min_undecorated_pwdb_for_dm =
+		rtl_dm_dig->min_undec_pwdb_for_dm =
 				rtlpriv->dm.entry_min_undec_sm_pwdb;
 		RT_TRACE(rtlpriv, COMP_BB_POWERSAVING, DBG_LOUD,
-			 "AP Ext Port or disconnet PWDB = 0x%x\n",
-			  rtl_dm_dig->min_undecorated_pwdb_for_dm);
+			 "AP Ext Port or disconnect PWDB = 0x%x\n",
+			  rtl_dm_dig->min_undec_pwdb_for_dm);
 	}
 	RT_TRACE(rtlpriv, COMP_DIG, DBG_LOUD, "MinUndecoratedPWDBForDM =%d\n",
-		 rtl_dm_dig->min_undecorated_pwdb_for_dm);
+		 rtl_dm_dig->min_undec_pwdb_for_dm);
 }
 
 static void rtl8723be_dm_check_rssi_monitor(struct ieee80211_hw *hw)
@@ -392,7 +323,6 @@ static void rtl8723be_dm_check_rssi_monitor(struct ieee80211_hw *hw)
 	struct rtl_sta_info *drv_priv;
 	u8 h2c_parameter[3] = { 0 };
 	long tmp_entry_max_pwdb = 0, tmp_entry_min_pwdb = 0xff;
-
 
 	/* AP & ADHOC & MESH */
 	spin_lock_bh(&rtlpriv->locks.entry_list_lock);
@@ -405,13 +335,6 @@ static void rtl8723be_dm_check_rssi_monitor(struct ieee80211_hw *hw)
 						tmp_entry_max_pwdb)
 			tmp_entry_max_pwdb =
 				drv_priv->rssi_stat.undec_sm_pwdb;
-		/*
-		h2c_parameter[2] = (u8) (rtlpriv->dm.undec_sm_pwdb
-					& 0xFF);
-		h2c_parameter[1] = 0x20;
-		h2c_parameter[0] = drv_priv->rss;
-		rtl8723be_fill_h2c_cmd(hw,
-			H2C_RSSIBE_REPORT, 3, h2c_parameter);*/
 	}
 	spin_unlock_bh(&rtlpriv->locks.entry_list_lock);
 
@@ -438,7 +361,7 @@ static void rtl8723be_dm_check_rssi_monitor(struct ieee80211_hw *hw)
 	/* Indicate Rx signal strength to FW. */
 	if (rtlpriv->dm.useramask) {
 		h2c_parameter[2] =
-			(u8) (rtlpriv->dm.undec_sm_pwdb & 0xFF);
+			(u8)(rtlpriv->dm.undec_sm_pwdb & 0xFF);
 		h2c_parameter[1] = 0x20;
 		h2c_parameter[0] = 0;
 		rtl8723be_fill_h2c_cmd(hw, H2C_RSSIBE_REPORT, 3, h2c_parameter);
@@ -448,9 +371,8 @@ static void rtl8723be_dm_check_rssi_monitor(struct ieee80211_hw *hw)
 	}
 	rtl8723be_dm_find_minimum_rssi(hw);
 	dm_digtable->rssi_val_min =
-			rtlpriv->dm.dm_digtable.min_undecorated_pwdb_for_dm;
+			rtlpriv->dm_digtable.min_undec_pwdb_for_dm;
 }
-
 
 void rtl8723be_dm_write_dig(struct ieee80211_hw *hw, u8 current_igi)
 {
@@ -463,8 +385,8 @@ void rtl8723be_dm_write_dig(struct ieee80211_hw *hw, u8 current_igi)
 	if (dm_digtable->cur_igvalue != current_igi) {
 		rtl_set_bbreg(hw, ROFDM0_XAAGCCORE1, 0x7f, current_igi);
 		if (rtlpriv->phy.rf_type != RF_1T1R)
-			rtl_set_bbreg(hw,
-				ROFDM0_XBAGCCORE1, 0x7f, current_igi);
+			rtl_set_bbreg(hw, ROFDM0_XBAGCCORE1,
+				      0x7f, current_igi);
 	}
 	dm_digtable->pre_igvalue = dm_digtable->cur_igvalue;
 	dm_digtable->cur_igvalue = current_igi;
@@ -475,21 +397,21 @@ static void rtl8723be_dm_dig(struct ieee80211_hw *hw)
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct dig_t *dm_digtable = &rtlpriv->dm_digtable;
 	struct rtl_mac *mac = rtl_mac(rtl_priv(hw));
-	u8 dig_dynamic_min, dig_maxofmin;
+	u8 dig_min_0, dig_maxofmin;
 	bool bfirstconnect, bfirstdisconnect;
 	u8 dm_dig_max, dm_dig_min;
 	u8 current_igi = dm_digtable->cur_igvalue;
 	u8 offset;
 
 	/* AP,BT */
-	if (mac->act_scanning == true)
+	if (mac->act_scanning)
 		return;
 
-	dig_dynamic_min = dm_digtable->dig_dynamic_min_0;
+	dig_min_0 = dm_digtable->dig_min_0;
 	bfirstconnect = (mac->link_state >= MAC80211_LINKED) &&
-			(dm_digtable->media_connect_0 == false);
+			!dm_digtable->media_connect_0;
 	bfirstdisconnect = (mac->link_state < MAC80211_LINKED) &&
-			(dm_digtable->media_connect_0 == true);
+			(dm_digtable->media_connect_0);
 
 	dm_dig_max = 0x5a;
 	dm_dig_min = DM_DIG_MIN;
@@ -504,24 +426,23 @@ static void rtl8723be_dm_dig(struct ieee80211_hw *hw)
 			dm_digtable->rx_gain_max =
 				dm_digtable->rssi_val_min + 10;
 
-
 		if (rtlpriv->dm.one_entry_only) {
 			offset = 12;
 			if (dm_digtable->rssi_val_min - offset < dm_dig_min)
-				dig_dynamic_min = dm_dig_min;
+				dig_min_0 = dm_dig_min;
 			else if (dm_digtable->rssi_val_min - offset >
 							dig_maxofmin)
-				dig_dynamic_min = dig_maxofmin;
+				dig_min_0 = dig_maxofmin;
 			else
-				dig_dynamic_min =
+				dig_min_0 =
 					dm_digtable->rssi_val_min - offset;
 		} else {
-			dig_dynamic_min = dm_dig_min;
+			dig_min_0 = dm_dig_min;
 		}
 
 	} else {
 		dm_digtable->rx_gain_max = dm_dig_max;
-		dig_dynamic_min = dm_dig_min;
+		dig_min_0 = dm_dig_min;
 		RT_TRACE(rtlpriv, COMP_DIG, DBG_LOUD, "no link\n");
 	}
 
@@ -549,11 +470,11 @@ static void rtl8723be_dm_dig(struct ieee80211_hw *hw)
 		} else {
 			if (dm_digtable->large_fa_hit < 3) {
 				if ((dm_digtable->forbidden_igi - 1) <
-				     dig_dynamic_min) {
+				     dig_min_0) {
 					dm_digtable->forbidden_igi =
-							dig_dynamic_min;
+							dig_min_0;
 					dm_digtable->rx_gain_min =
-							dig_dynamic_min;
+							dig_min_0;
 				} else {
 					dm_digtable->forbidden_igi--;
 					dm_digtable->rx_gain_min =
@@ -564,10 +485,6 @@ static void rtl8723be_dm_dig(struct ieee80211_hw *hw)
 			}
 		}
 	}
-
-/*	if(rtlpriv->dm.dbginfo.num_qry_beacon_pkt < 5)
-		dm_digtable->rx_gain_min = dm_dig_min;
-*/
 	if (dm_digtable->rx_gain_min > dm_digtable->rx_gain_max)
 		dm_digtable->rx_gain_min = dm_digtable->rx_gain_max;
 
@@ -586,12 +503,7 @@ static void rtl8723be_dm_dig(struct ieee80211_hw *hw)
 				current_igi += 2;
 			else if (rtlpriv->falsealm_cnt.cnt_all < DM_DIG_FA_TH0)
 				current_igi -= 2;
-
-/*			if(rtlpriv->dm.dbginfo.num_qry_beacon_pkt < 5 &&
-			   rtlpriv->falsealm_cnt.cnt_all < DM_DIG_FA_TH1)
-				current_igi = dm_digtable->rx_gain_min;
-*/		}
-
+		}
 	} else {
 		if (bfirstdisconnect) {
 			current_igi = dm_digtable->rx_gain_min;
@@ -613,7 +525,7 @@ static void rtl8723be_dm_dig(struct ieee80211_hw *hw)
 	rtl8723be_dm_write_dig(hw, current_igi);
 	dm_digtable->media_connect_0 =
 		((mac->link_state >= MAC80211_LINKED) ? true : false);
-	dm_digtable->dig_dynamic_min_0 = dig_dynamic_min;
+	dm_digtable->dig_min_0 = dig_min_0;
 }
 
 static void rtl8723be_dm_false_alarm_counter_statistics(
@@ -621,7 +533,7 @@ static void rtl8723be_dm_false_alarm_counter_statistics(
 {
 	u32 ret_value;
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
-	struct false_alarm_statistics *falsealm_cnt = &(rtlpriv->falsealm_cnt);
+	struct false_alarm_statistics *falsealm_cnt = &rtlpriv->falsealm_cnt;
 
 	rtl_set_bbreg(hw, DM_REG_OFDM_FA_HOLDC_11N, BIT(31), 1);
 	rtl_set_bbreg(hw, DM_REG_OFDM_FA_RSTD_11N, BIT(31), 1);
@@ -686,7 +598,6 @@ static void rtl8723be_dm_false_alarm_counter_statistics(
 	rtl_set_bbreg(hw, DM_REG_CCK_FA_RST_11N, BIT(15) | BIT(14), 0);
 	rtl_set_bbreg(hw, DM_REG_CCK_FA_RST_11N, BIT(15) | BIT(14), 2);
 
-
 	RT_TRACE(rtlpriv, COMP_DIG, DBG_TRACE,
 		 "cnt_parity_fail = %d, cnt_rate_illegal = %d, cnt_crc8_fail = %d, cnt_mcs_fail = %d\n",
 		 falsealm_cnt->cnt_parity_fail,
@@ -701,13 +612,11 @@ static void rtl8723be_dm_false_alarm_counter_statistics(
 		 falsealm_cnt->cnt_all);
 }
 
-
 static void rtl8723be_dm_dynamic_txpower(struct ieee80211_hw *hw)
 {
 	/* 8723BE does not support ODM_BB_DYNAMIC_TXPWR*/
 	return;
 }
-
 
 static void rtl8723be_set_iqk_matrix(struct ieee80211_hw *hw, u8 ofdm_index,
 				     u8 rfpath, long iqk_result_x,
@@ -717,8 +626,6 @@ static void rtl8723be_set_iqk_matrix(struct ieee80211_hw *hw, u8 ofdm_index,
 
 	if (ofdm_index >= 43)
 		ofdm_index = 43 - 1;
-	/*else if (ofdm_index < 0)
-		ofdm_index = 0;*/
 
 	ele_d = (ofdmswing_table[ofdm_index] & 0xFFC00000) >> 22;
 
@@ -760,86 +667,82 @@ static void rtl8723be_set_iqk_matrix(struct ieee80211_hw *hw, u8 ofdm_index,
 	}
 }
 
-
 static void rtl8723be_dm_tx_power_track_set_power(struct ieee80211_hw *hw,
 					enum pwr_track_control_method method,
 					u8 rfpath, u8 idx)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
-	struct rtl_phy *rtlphy = &(rtlpriv->phy);
+	struct rtl_phy *rtlphy = &rtlpriv->phy;
 	struct rtl_dm *rtldm = rtl_dm(rtl_priv(hw));
-	u8 bb_swing_idx_ofdm_limit = 36;
+	u8 swing_idx_ofdm_limit = 36;
 
 	if (method == TXAGC) {
 		rtl8723be_phy_set_txpower_level(hw, rtlphy->current_channel);
 	} else if (method == BBSWING) {
-		if (rtldm->bb_swing_idx_cck >= CCK_TABLE_SIZE)
-			rtldm->bb_swing_idx_cck = CCK_TABLE_SIZE - 1;
-		/*else if (rtldm->bb_swing_idx_cck < 0)
-			rtldm->bb_swing_idx_cck = 0;*/
+		if (rtldm->swing_idx_cck >= CCK_TABLE_SIZE)
+			rtldm->swing_idx_cck = CCK_TABLE_SIZE - 1;
 
 		if (!rtldm->cck_inch14) {
 			rtl_write_byte(rtlpriv, 0xa22,
-			    cckswing_table_ch1ch13[rtldm->bb_swing_idx_cck][0]);
+			    cckswing_table_ch1ch13[rtldm->swing_idx_cck][0]);
 			rtl_write_byte(rtlpriv, 0xa23,
-			    cckswing_table_ch1ch13[rtldm->bb_swing_idx_cck][1]);
+			    cckswing_table_ch1ch13[rtldm->swing_idx_cck][1]);
 			rtl_write_byte(rtlpriv, 0xa24,
-			    cckswing_table_ch1ch13[rtldm->bb_swing_idx_cck][2]);
+			    cckswing_table_ch1ch13[rtldm->swing_idx_cck][2]);
 			rtl_write_byte(rtlpriv, 0xa25,
-			    cckswing_table_ch1ch13[rtldm->bb_swing_idx_cck][3]);
+			    cckswing_table_ch1ch13[rtldm->swing_idx_cck][3]);
 			rtl_write_byte(rtlpriv, 0xa26,
-			    cckswing_table_ch1ch13[rtldm->bb_swing_idx_cck][4]);
+			    cckswing_table_ch1ch13[rtldm->swing_idx_cck][4]);
 			rtl_write_byte(rtlpriv, 0xa27,
-			    cckswing_table_ch1ch13[rtldm->bb_swing_idx_cck][5]);
+			    cckswing_table_ch1ch13[rtldm->swing_idx_cck][5]);
 			rtl_write_byte(rtlpriv, 0xa28,
-			    cckswing_table_ch1ch13[rtldm->bb_swing_idx_cck][6]);
+			    cckswing_table_ch1ch13[rtldm->swing_idx_cck][6]);
 			rtl_write_byte(rtlpriv, 0xa29,
-			    cckswing_table_ch1ch13[rtldm->bb_swing_idx_cck][7]);
+			    cckswing_table_ch1ch13[rtldm->swing_idx_cck][7]);
 		} else {
 			rtl_write_byte(rtlpriv, 0xa22,
-			    cckswing_table_ch14[rtldm->bb_swing_idx_cck][0]);
+			    cckswing_table_ch14[rtldm->swing_idx_cck][0]);
 			rtl_write_byte(rtlpriv, 0xa23,
-			    cckswing_table_ch14[rtldm->bb_swing_idx_cck][1]);
+			    cckswing_table_ch14[rtldm->swing_idx_cck][1]);
 			rtl_write_byte(rtlpriv, 0xa24,
-			    cckswing_table_ch14[rtldm->bb_swing_idx_cck][2]);
+			    cckswing_table_ch14[rtldm->swing_idx_cck][2]);
 			rtl_write_byte(rtlpriv, 0xa25,
-			    cckswing_table_ch14[rtldm->bb_swing_idx_cck][3]);
+			    cckswing_table_ch14[rtldm->swing_idx_cck][3]);
 			rtl_write_byte(rtlpriv, 0xa26,
-			    cckswing_table_ch14[rtldm->bb_swing_idx_cck][4]);
+			    cckswing_table_ch14[rtldm->swing_idx_cck][4]);
 			rtl_write_byte(rtlpriv, 0xa27,
-			    cckswing_table_ch14[rtldm->bb_swing_idx_cck][5]);
+			    cckswing_table_ch14[rtldm->swing_idx_cck][5]);
 			rtl_write_byte(rtlpriv, 0xa28,
-			    cckswing_table_ch14[rtldm->bb_swing_idx_cck][6]);
+			    cckswing_table_ch14[rtldm->swing_idx_cck][6]);
 			rtl_write_byte(rtlpriv, 0xa29,
-			    cckswing_table_ch14[rtldm->bb_swing_idx_cck][7]);
+			    cckswing_table_ch14[rtldm->swing_idx_cck][7]);
 		}
 
 		if (rfpath == RF90_PATH_A) {
-			if (rtldm->bb_swing_idx_ofdm[RF90_PATH_A] <
-			    bb_swing_idx_ofdm_limit)
-				bb_swing_idx_ofdm_limit =
-					rtldm->bb_swing_idx_ofdm[RF90_PATH_A];
+			if (rtldm->swing_idx_ofdm[RF90_PATH_A] <
+			    swing_idx_ofdm_limit)
+				swing_idx_ofdm_limit =
+					rtldm->swing_idx_ofdm[RF90_PATH_A];
 
 			rtl8723be_set_iqk_matrix(hw,
-				rtldm->bb_swing_idx_ofdm[rfpath], rfpath,
-				rtlphy->iqk_matrix_regsetting[idx].value[0][0],
-				rtlphy->iqk_matrix_regsetting[idx].value[0][1]);
+				rtldm->swing_idx_ofdm[rfpath], rfpath,
+				rtlphy->iqk_matrix[idx].value[0][0],
+				rtlphy->iqk_matrix[idx].value[0][1]);
 		} else if (rfpath == RF90_PATH_B) {
-			if (rtldm->bb_swing_idx_ofdm[RF90_PATH_B] <
-			    bb_swing_idx_ofdm_limit)
-				bb_swing_idx_ofdm_limit =
-					rtldm->bb_swing_idx_ofdm[RF90_PATH_B];
+			if (rtldm->swing_idx_ofdm[RF90_PATH_B] <
+			    swing_idx_ofdm_limit)
+				swing_idx_ofdm_limit =
+					rtldm->swing_idx_ofdm[RF90_PATH_B];
 
 			rtl8723be_set_iqk_matrix(hw,
-				rtldm->bb_swing_idx_ofdm[rfpath], rfpath,
-				rtlphy->iqk_matrix_regsetting[idx].value[0][4],
-				rtlphy->iqk_matrix_regsetting[idx].value[0][5]);
+				rtldm->swing_idx_ofdm[rfpath], rfpath,
+				rtlphy->iqk_matrix[idx].value[0][4],
+				rtlphy->iqk_matrix[idx].value[0][5]);
 		}
 	} else {
 		return;
 	}
 }
-
 
 static void rtl8723be_dm_txpower_tracking_callback_thermalmeter(
 							struct ieee80211_hw *hw)
@@ -855,11 +758,11 @@ static void rtl8723be_dm_txpower_tracking_callback_thermalmeter(
 	u8 ofdm_min_index = 6;
 	u8 index_for_channel = 0;
 
-	char delta_swing_table_idx_tup_a[TXSCALE_TABLE_SIZE] = {
+	s8 delta_swing_table_idx_tup_a[TXSCALE_TABLE_SIZE] = {
 		0, 0, 1, 2, 2, 2, 3, 3, 3, 4,  5,
 		5, 6, 6, 7, 7, 8, 8, 9, 9, 9, 10,
 		10, 11, 11, 12, 12, 13, 14, 15};
-	char delta_swing_table_idx_tdown_a[TXSCALE_TABLE_SIZE] = {
+	s8 delta_swing_table_idx_tdown_a[TXSCALE_TABLE_SIZE] = {
 		0, 0, 1, 2, 2, 2, 3, 3, 3, 4,  5,
 		5, 6, 6, 6, 6, 7, 7, 7, 8, 8,  9,
 		9, 10, 10, 11, 12, 13, 14, 15};
@@ -869,7 +772,7 @@ static void rtl8723be_dm_txpower_tracking_callback_thermalmeter(
 	RT_TRACE(rtlpriv, COMP_POWER_TRACKING, DBG_LOUD,
 		 "rtl8723be_dm_txpower_tracking_callback_thermalmeter\n");
 
-	thermalvalue = (u8) rtl_get_rfreg(hw,
+	thermalvalue = (u8)rtl_get_rfreg(hw,
 		RF90_PATH_A, RF_T_METER, 0xfc00);
 	if (!rtlpriv->dm.txpower_track_control || thermalvalue == 0 ||
 	    rtlefuse->eeprom_thermalmeter == 0xFF)
@@ -922,7 +825,8 @@ static void rtl8723be_dm_txpower_tracking_callback_thermalmeter(
 	}
 
 	/* 7 If necessary, move the index of
-	 * swing table to adjust Tx power. */
+	 * swing table to adjust Tx power.
+	 */
 	if (delta > 0 && rtlpriv->dm.txpower_track_control) {
 		delta = (thermalvalue > rtlefuse->eeprom_thermalmeter) ?
 			(thermalvalue - rtlefuse->eeprom_thermalmeter) :
@@ -931,7 +835,8 @@ static void rtl8723be_dm_txpower_tracking_callback_thermalmeter(
 		if (delta >= TXSCALE_TABLE_SIZE)
 			delta = TXSCALE_TABLE_SIZE - 1;
 		/* 7.1 Get the final CCK_index and
-		 * OFDM_index for each swing table.*/
+		 * OFDM_index for each swing table.
+		 */
 		if (thermalvalue > rtlefuse->eeprom_thermalmeter) {
 			rtldm->delta_power_index_last[RF90_PATH_A] =
 					rtldm->delta_power_index[RF90_PATH_A];
@@ -954,13 +859,13 @@ static void rtl8723be_dm_txpower_tracking_callback_thermalmeter(
 				rtldm->delta_power_index_last[RF90_PATH_A];
 
 		rtldm->ofdm_index[0] =
-			rtldm->bb_swing_idx_ofdm_base[RF90_PATH_A] +
+			rtldm->swing_idx_ofdm_base[RF90_PATH_A] +
 			rtldm->power_index_offset[RF90_PATH_A];
-		rtldm->cck_index = rtldm->bb_swing_idx_cck_base +
+		rtldm->cck_index = rtldm->swing_idx_cck_base +
 				   rtldm->power_index_offset[RF90_PATH_A];
 
-		rtldm->bb_swing_idx_cck = rtldm->cck_index;
-		rtldm->bb_swing_idx_ofdm[0] = rtldm->ofdm_index[0];
+		rtldm->swing_idx_cck = rtldm->cck_index;
+		rtldm->swing_idx_ofdm[0] = rtldm->ofdm_index[0];
 
 		if (rtldm->ofdm_index[0] > OFDM_TABLE_SIZE - 1)
 			rtldm->ofdm_index[0] = OFDM_TABLE_SIZE - 1;
@@ -985,9 +890,9 @@ static void rtl8723be_dm_txpower_tracking_callback_thermalmeter(
 			rtl8723be_dm_tx_power_track_set_power(hw, BBSWING, 0,
 							     index_for_channel);
 
-		rtldm->bb_swing_idx_cck_base = rtldm->bb_swing_idx_cck;
-		rtldm->bb_swing_idx_ofdm_base[RF90_PATH_A] =
-						rtldm->bb_swing_idx_ofdm[0];
+		rtldm->swing_idx_cck_base = rtldm->swing_idx_cck;
+		rtldm->swing_idx_ofdm_base[RF90_PATH_A] =
+						rtldm->swing_idx_ofdm[0];
 		rtldm->thermalvalue = thermalvalue;
 	}
 
@@ -1001,45 +906,42 @@ static void rtl8723be_dm_txpower_tracking_callback_thermalmeter(
 
 }
 
-
-
 void rtl8723be_dm_check_txpower_tracking(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
-	static u8 tm_trigger;
 
 	if (!rtlpriv->dm.txpower_tracking)
 		return;
 
-	if (!tm_trigger) {
+	if (!rtlpriv->dm.tm_trigger) {
 		rtl_set_rfreg(hw, RF90_PATH_A, RF_T_METER, BIT(17) | BIT(16),
 			      0x03);
 		RT_TRACE(rtlpriv, COMP_POWER_TRACKING, DBG_LOUD,
 			 "Trigger 8723be Thermal Meter!!\n");
-		tm_trigger = 1;
+		rtlpriv->dm.tm_trigger = 1;
 		return;
 	} else {
 		RT_TRACE(rtlpriv, COMP_POWER_TRACKING, DBG_LOUD,
 			 "Schedule TxPowerTracking !!\n");
 		rtl8723be_dm_txpower_tracking_callback_thermalmeter(hw);
-		tm_trigger = 0;
+		rtlpriv->dm.tm_trigger = 0;
 	}
 }
-
 
 static void rtl8723be_dm_refresh_rate_adaptive_mask(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_hal *rtlhal = rtl_hal(rtl_priv(hw));
 	struct rtl_mac *mac = rtl_mac(rtl_priv(hw));
-	struct rate_adaptive *p_ra = &(rtlpriv->ra);
-	u32 low_rssithresh_for_ra = p_ra->low2high_rssi_thresh_for_ra;
+	struct rate_adaptive *p_ra = &rtlpriv->ra;
+	u32 low_rssithresh_for_ra = p_ra->low2high_rssi_thresh_for_ra40m;
 	u32 high_rssithresh_for_ra = p_ra->high_rssi_thresh_for_ra;
 	u8 go_up_gap = 5;
 	struct ieee80211_sta *sta = NULL;
 
 	if (is_hal_stop(rtlhal)) {
-		RT_TRACE(rtlpriv, COMP_RATE, DBG_LOUD, "driver is going to unload\n");
+		RT_TRACE(rtlpriv, COMP_RATE, DBG_LOUD,
+			 "driver is going to unload\n");
 		return;
 	}
 
@@ -1051,7 +953,6 @@ static void rtl8723be_dm_refresh_rate_adaptive_mask(struct ieee80211_hw *hw)
 
 	if (mac->link_state == MAC80211_LINKED &&
 		mac->opmode == NL80211_IFTYPE_STATION) {
-
 		switch (p_ra->pre_ratr_state) {
 		case DM_RATR_STA_MIDDLE:
 			high_rssithresh_for_ra += go_up_gap;
@@ -1065,7 +966,7 @@ static void rtl8723be_dm_refresh_rate_adaptive_mask(struct ieee80211_hw *hw)
 		}
 
 		if (rtlpriv->dm.undec_sm_pwdb >
-		    (long) high_rssithresh_for_ra)
+		    (long)high_rssithresh_for_ra)
 			p_ra->ratr_state = DM_RATR_STA_HIGH;
 		else if (rtlpriv->dm.undec_sm_pwdb >
 			 (long)low_rssithresh_for_ra)
@@ -1105,7 +1006,6 @@ static bool rtl8723be_dm_is_edca_turbo_disable(struct ieee80211_hw *hw)
 	return false;
 }
 
-
 static void rtl8723be_dm_check_edca_turbo(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
@@ -1142,7 +1042,7 @@ static void rtl8723be_dm_check_edca_turbo(struct ieee80211_hw *hw)
 		edca_be_ul = edca_setting_ul[iot_peer];
 	}
 	if (rtl8723be_dm_is_edca_turbo_disable(hw))
-		goto dm_CheckEdcaTurbo_EXIT;
+		goto exit;
 
 	if (b_edca_turbo_on) {
 		if (b_bias_on_rx)
@@ -1155,17 +1055,17 @@ static void rtl8723be_dm_check_edca_turbo(struct ieee80211_hw *hw)
 		edca_be = (b_is_cur_rdlstate) ? edca_be_dl : edca_be_ul;
 		rtl_write_dword(rtlpriv, REG_EDCA_BE_PARAM, edca_be);
 		rtlpriv->dm.is_cur_rdlstate = b_is_cur_rdlstate;
-		rtlpriv->dm.bcurrent_turbo_edca = true;
+		rtlpriv->dm.current_turbo_edca = true;
 	} else {
-		if (rtlpriv->dm.bcurrent_turbo_edca) {
+		if (rtlpriv->dm.current_turbo_edca) {
 			u8 tmp = AC0_BE;
 			rtlpriv->cfg->ops->set_hw_reg(hw, HW_VAR_AC_PARAM,
-						      (u8 *) (&tmp));
+						      (u8 *)(&tmp));
 		}
-		rtlpriv->dm.bcurrent_turbo_edca = false;
+		rtlpriv->dm.current_turbo_edca = false;
 	}
 
-dm_CheckEdcaTurbo_EXIT:
+exit:
 	rtlpriv->dm.is_any_nonbepkts = false;
 	last_txok_cnt = rtlpriv->stats.txbytesunicast;
 	last_rxok_cnt = rtlpriv->stats.rxbytesunicast;
@@ -1198,7 +1098,6 @@ static void rtl8723be_dm_cck_packet_detection_thresh(struct ieee80211_hw *hw)
 
 	if (dm_digtable->cur_cck_cca_thres != cur_cck_cca_thresh)
 		rtl_set_bbreg(hw, RCCK0_CCA, MASKBYTE2, cur_cck_cca_thresh);
-
 
 	dm_digtable->pre_cck_cca_thres = dm_digtable->cur_cck_cca_thres;
 	dm_digtable->cur_cck_cca_thres = cur_cck_cca_thresh;
@@ -1372,14 +1271,15 @@ void rtl8723be_dm_watchdog(struct ieee80211_hw *hw)
 	bool fw_ps_awake = true;
 
 	rtlpriv->cfg->ops->get_hw_reg(hw, HW_VAR_FW_PSMODE_STATUS,
-				      (u8 *) (&fw_current_inpsmode));
+				      (u8 *)(&fw_current_inpsmode));
 
 	rtlpriv->cfg->ops->get_hw_reg(hw, HW_VAR_FWLPS_RF_ON,
-				      (u8 *) (&fw_ps_awake));
+				      (u8 *)(&fw_ps_awake));
 
 	if (ppsc->p2p_ps_info.p2p_ps_mode)
 		fw_ps_awake = false;
 
+	spin_lock(&rtlpriv->locks.rf_ps_lock);
 	if ((ppsc->rfpwr_state == ERFON) &&
 		((!fw_current_inpsmode) && fw_ps_awake) &&
 		(!ppsc->rfchange_inprogress)) {
@@ -1395,5 +1295,6 @@ void rtl8723be_dm_watchdog(struct ieee80211_hw *hw)
 		rtl8723be_dm_check_txpower_tracking(hw);
 		rtl8723be_dm_dynamic_txpower(hw);
 	}
+	spin_unlock(&rtlpriv->locks.rf_ps_lock);
 	rtlpriv->dm.dbginfo.num_qry_beacon_pkt = 0;
 }

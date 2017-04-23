@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Copyright(c) 2009-2010  Realtek Corporation.
+ * Copyright(c) 2009-2014  Realtek Corporation.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of version 2 of the GNU General Public License as
@@ -10,10 +10,6 @@
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
  * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
  * more details.
- *
- * You should have received a copy of the GNU General Public License along with
- * this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110, USA
  *
  * The full GNU General Public License is included in this distribution in the
  * file called LICENSE.
@@ -57,8 +53,6 @@
 #define	DM_REG_RXRF_A3_11N			0x3C
 #define	DM_REG_T_METER_92D_11N			0x42
 #define	DM_REG_T_METER_92E_11N			0x42
-
-
 
 /*BB REG LIST*/
 /*PAGE 8 */
@@ -166,7 +160,6 @@
 #define	DM_REG_SLEEP_11N			0xEE0
 #define	DM_REG_PMPD_ANAEN_11N			0xEEC
 
-
 /*MAC REG LIST*/
 #define	DM_REG_BB_RST_11N			0x02
 #define	DM_REG_ANTSEL_PIN_11N			0x4C
@@ -181,11 +174,8 @@
 #define	DM_REG_ANT_TRAIN_PARA1_11N		0x7b0
 #define	DM_REG_ANT_TRAIN_PARA2_11N		0x7b4
 
-
 /*DIG Related*/
 #define	DM_BIT_IGI_11N				0x0000007F
-
-
 
 #define HAL_DM_DIG_DISABLE			BIT(0)
 #define HAL_DM_HIPWR_DISABLE			BIT(1)
@@ -199,29 +189,13 @@
 #define BW_AUTO_SWITCH_HIGH_LOW			25
 #define BW_AUTO_SWITCH_LOW_HIGH			30
 
-#define DM_DIG_THRESH_HIGH			40
-#define DM_DIG_THRESH_LOW			35
-
-#define DM_FALSEALARM_THRESH_LOW		400
-#define DM_FALSEALARM_THRESH_HIGH		1000
-
-#define DM_DIG_MAX				0x3e
-#define DM_DIG_MIN				0x1e
-
-#define DM_DIG_MAX_AP				0x32
-#define DM_DIG_MIN_AP				0x20
-
 #define DM_DIG_FA_UPPER				0x3e
 #define DM_DIG_FA_LOWER				0x1e
 #define DM_DIG_FA_TH0				0x200
 #define DM_DIG_FA_TH1				0x300
 #define DM_DIG_FA_TH2				0x400
 
-#define DM_DIG_BACKOFF_MAX			12
-#define DM_DIG_BACKOFF_MIN			-4
-#define DM_DIG_BACKOFF_DEFAULT			10
-
-#define RXPATHSELECTION_SS_TH_lOW		30
+#define RXPATHSELECTION_SS_TH_LOW		30
 #define RXPATHSELECTION_DIFF_TH			18
 
 #define DM_RATR_STA_INIT			0
@@ -232,7 +206,7 @@
 #define CTS2SELF_THVAL				30
 #define REGC38_TH				20
 
-#define WAIOTTHVal				25
+#define WAIOTTHVAL				25
 
 #define TXHIGHPWRLEVEL_NORMAL			0
 #define TXHIGHPWRLEVEL_LEVEL1			1

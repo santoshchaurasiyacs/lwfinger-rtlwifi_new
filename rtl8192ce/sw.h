@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Copyright(c) 2009-2010  Realtek Corporation.
+ * Copyright(c) 2009-2012  Realtek Corporation.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of version 2 of the GNU General Public License as
@@ -33,7 +33,9 @@
 int rtl92c_init_sw_vars(struct ieee80211_hw *hw);
 void rtl92c_deinit_sw_vars(struct ieee80211_hw *hw);
 void rtl92c_init_var_map(struct ieee80211_hw *hw);
-bool rtl92c_get_btc_status(void);
-
+bool _rtl92ce_phy_config_bb_with_headerfile(struct ieee80211_hw *hw,
+					    u8 configtype);
+bool _rtl92ce_phy_config_bb_with_pgheaderfile(struct ieee80211_hw *hw,
+					      u8 configtype);
 
 #endif

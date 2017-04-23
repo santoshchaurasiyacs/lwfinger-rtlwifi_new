@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Copyright(c) 2009-2010  Realtek Corporation.
+ * Copyright(c) 2009-2013  Realtek Corporation.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of version 2 of the GNU General Public License as
@@ -10,10 +10,6 @@
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
  * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
  * more details.
- *
- * You should have received a copy of the GNU General Public License along with
- * this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110, USA
  *
  * The full GNU General Public License is included in this distribution in the
  * file called LICENSE.
@@ -26,6 +22,7 @@
  * Larry Finger <Larry.Finger@lwfinger.net>
  *
  *****************************************************************************/
+#include "../wifi.h"
 #include <linux/vmalloc.h>
 #include <linux/module.h>
 
@@ -35,6 +32,7 @@
 static struct rtl_btc_ops rtl_btc_operation = {
 	.btc_init_variables = rtl_btc_init_variables,
 	.btc_init_hal_vars = rtl_btc_init_hal_vars,
+	.btc_power_on_setting = rtl_btc_power_on_setting,
 	.btc_init_hw_config = rtl_btc_init_hw_config,
 	.btc_ips_notify = rtl_btc_ips_notify,
 	.btc_lps_notify = rtl_btc_lps_notify,
@@ -44,49 +42,102 @@ static struct rtl_btc_ops rtl_btc_operation = {
 	.btc_periodical = rtl_btc_periodical,
 	.btc_halt_notify = rtl_btc_halt_notify,
 	.btc_btinfo_notify = rtl_btc_btinfo_notify,
+	.btc_btmpinfo_notify = rtl_btc_btmpinfo_notify,
 	.btc_is_limited_dig = rtl_btc_is_limited_dig,
 	.btc_is_disable_edca_turbo = rtl_btc_is_disable_edca_turbo,
 	.btc_is_bt_disabled = rtl_btc_is_bt_disabled,
 	.btc_special_packet_notify = rtl_btc_special_packet_notify,
+	.btc_record_pwr_mode = rtl_btc_record_pwr_mode,
+	.btc_get_lps_val = rtl_btc_get_lps_val,
+	.btc_get_rpwm_val = rtl_btc_get_rpwm_val,
+	.btc_is_bt_ctrl_lps = rtl_btc_is_bt_ctrl_lps,
+	.btc_is_bt_lps_on = rtl_btc_is_bt_lps_on,
+	.btc_get_ampdu_cfg = rtl_btc_get_ampdu_cfg,
+	.btc_display_bt_coex_info = rtl_btc_display_bt_coex_info,
 };
 
+void rtl_btc_display_bt_coex_info(u8 *buff, u32 size)
+{
+	struct btc_coexist *btcoexist = &gl_bt_coexist;
+
+	halbtc_dbg_info_init(btcoexist, buff, size);
+	exhalbtc_display_bt_coex_info(&gl_bt_coexist);
+	halbtc_dbg_info_init(btcoexist, NULL, 0);
+}
+
+void rtl_btc_record_pwr_mode(struct rtl_priv *rtlpriv, u8 *buf, u8 len)
+{
+	u8 safe_len;
+
+	safe_len = sizeof(gl_bt_coexist.pwr_mode_val);
+
+	if (safe_len > len)
+		safe_len = len;
+
+	memcpy(gl_bt_coexist.pwr_mode_val, buf, safe_len);
+}
+
+u8 rtl_btc_get_lps_val(struct rtl_priv *rtlpriv)
+{
+	return gl_bt_coexist.bt_info.lps_val;
+}
+
+u8 rtl_btc_get_rpwm_val(struct rtl_priv *rtlpriv)
+{
+	return gl_bt_coexist.bt_info.rpwm_val;
+}
+
+bool rtl_btc_is_bt_ctrl_lps(struct rtl_priv *rtlpriv)
+{
+	return gl_bt_coexist.bt_info.bt_ctrl_lps;
+}
+
+bool rtl_btc_is_bt_lps_on(struct rtl_priv *rtlpriv)
+{
+	return gl_bt_coexist.bt_info.bt_lps_on;
+}
+
+void rtl_btc_get_ampdu_cfg(struct rtl_priv *rtlpriv, u8 *reject_agg,
+			   u8 *ctrl_agg_size, u8 *agg_size)
+{
+	if (reject_agg)
+		*reject_agg = gl_bt_coexist.bt_info.reject_agg_pkt;
+	if (ctrl_agg_size)
+		*ctrl_agg_size = gl_bt_coexist.bt_info.bt_ctrl_agg_buf_size;
+	if (agg_size)
+		*agg_size = gl_bt_coexist.bt_info.agg_buf_size;
+}
 
 void rtl_btc_init_variables(struct rtl_priv *rtlpriv)
 {
+	exhalbtc_initlize_variables();
+	exhalbtc_bind_bt_coex_withadapter(rtlpriv);
+}
 
-	exhalbtc_initlize_variables(rtlpriv);
+void rtl_btc_power_on_setting(struct rtl_priv *rtlpriv)
+{
+	exhalbtc_power_on_setting(&gl_bt_coexist);
 }
 
 void rtl_btc_init_hal_vars(struct rtl_priv *rtlpriv)
 {
-	u8 ant_num;
+	/* move ant_num, bt_type and single_ant_path to
+	 * exhalbtc_bind_bt_coex_withadapter()
+	 */
+}
+
+void rtl_btc_init_hw_config(struct rtl_priv *rtlpriv)
+{
 	u8 bt_exist;
-	u8 bt_type;
-	ant_num = rtl_get_hwpg_ant_num(rtlpriv);
-	RT_TRACE(rtlpriv, COMP_INIT, DBG_DMESG,
-		"%s, antNum is %d\n", __func__, ant_num);
 
 	bt_exist = rtl_get_hwpg_bt_exist(rtlpriv);
 	RT_TRACE(rtlpriv, COMP_INIT, DBG_DMESG,
 		"%s, bt_exist is %d\n", __func__, bt_exist);
-	exhalbtc_set_bt_exist(bt_exist);
+	/*exhalbtc_set_bt_exist(bt_exist);*/
 
-	bt_type = rtl_get_hwpg_bt_type(rtlpriv);
-	RT_TRACE(rtlpriv, COMP_INIT, DBG_DMESG,
-		"%s, bt_type is %d\n", __func__, bt_type);
-	exhalbtc_set_chip_type(bt_type);
-
-	exhalbtc_set_ant_num(BT_COEX_ANT_TYPE_PG, ant_num);
-
-}
-
-
-void rtl_btc_init_hw_config(struct rtl_priv *rtlpriv)
-{
-	exhalbtc_init_hw_config(&gl_bt_coexist);
+	exhalbtc_init_hw_config(&gl_bt_coexist, !bt_exist);
 	exhalbtc_init_coex_dm(&gl_bt_coexist);
 }
-
 
 void rtl_btc_ips_notify(struct rtl_priv *rtlpriv, u8 type)
 {
@@ -98,21 +149,18 @@ void rtl_btc_lps_notify(struct rtl_priv *rtlpriv, u8 type)
 	exhalbtc_lps_notify(&gl_bt_coexist, type);
 }
 
-
 void rtl_btc_scan_notify(struct rtl_priv *rtlpriv, u8 scantype)
 {
 	exhalbtc_scan_notify(&gl_bt_coexist, scantype);
 }
-
 
 void rtl_btc_connect_notify(struct rtl_priv *rtlpriv, u8 action)
 {
 	exhalbtc_connect_notify(&gl_bt_coexist, action);
 }
 
-
 void rtl_btc_mediastatus_notify(struct rtl_priv *rtlpriv,
-	enum rt_media_status mstatus)
+				enum rt_media_status mstatus)
 {
 	exhalbtc_mediastatus_notify(&gl_bt_coexist, mstatus);
 }
@@ -125,12 +173,41 @@ void rtl_btc_periodical(struct rtl_priv *rtlpriv)
 
 void rtl_btc_halt_notify(void)
 {
-	exhalbtc_halt_notify(&gl_bt_coexist);
+	struct btc_coexist *btcoexist = &gl_bt_coexist;
+
+	exhalbtc_halt_notify(btcoexist);
 }
 
 void rtl_btc_btinfo_notify(struct rtl_priv *rtlpriv, u8 *tmp_buf, u8 length)
 {
 	exhalbtc_bt_info_notify(&gl_bt_coexist, tmp_buf, length);
+}
+
+void rtl_btc_btmpinfo_notify(struct rtl_priv *rtlpriv, u8 *tmp_buf, u8 length)
+{
+	u8 extid, seq, len;
+	u16 bt_real_fw_ver;
+	u8 bt_fw_ver;
+
+	if ((length < 4) || (!tmp_buf))
+		return;
+
+	extid = tmp_buf[0];
+	/* not response from BT FW then exit*/
+	if (extid != 1) /* C2H_TRIG_BY_BT_FW = 1 */
+		return;
+
+	len = tmp_buf[1] >> 4;
+	seq = tmp_buf[2] >> 4;
+
+	/* BT Firmware version response */
+	if (seq == 0x0E) {
+		bt_real_fw_ver = tmp_buf[3] | (tmp_buf[4] << 8);
+		bt_fw_ver = tmp_buf[5];
+
+		gl_bt_coexist.bt_info.bt_real_fw_ver = bt_real_fw_ver;
+		gl_bt_coexist.bt_info.bt_fw_ver = bt_fw_ver;
+	}
 }
 
 bool rtl_btc_is_limited_dig(struct rtl_priv *rtlpriv)
@@ -185,17 +262,6 @@ struct rtl_btc_ops *rtl_btc_get_ops_pointer(void)
 }
 EXPORT_SYMBOL(rtl_btc_get_ops_pointer);
 
-u8 rtl_get_hwpg_ant_num(struct rtl_priv *rtlpriv)
-{
-	u8 num;
-
-	if (rtlpriv->btcoexist.btc_info.ant_num == ANT_X2)
-		num = 2;
-	else
-		num = 1;
-
-	return num;
-}
 
 enum rt_media_status mgnt_link_status_query(struct ieee80211_hw *hw)
 {
@@ -215,13 +281,6 @@ u8 rtl_get_hwpg_bt_exist(struct rtl_priv *rtlpriv)
 {
 	return rtlpriv->btcoexist.btc_info.btcoexist;
 }
-
-u8 rtl_get_hwpg_bt_type(struct rtl_priv *rtlpriv)
-{
-	return rtlpriv->btcoexist.btc_info.bt_type;
-}
-
-
 
 MODULE_AUTHOR("Page He	<page_he@realsil.com.cn>");
 MODULE_AUTHOR("Realtek WlanFAE	<wlanfae@realtek.com>");

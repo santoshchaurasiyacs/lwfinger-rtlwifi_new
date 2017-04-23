@@ -11,10 +11,6 @@
  * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
  * more details.
  *
- * You should have received a copy of the GNU General Public License along with
- * this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110, USA
- *
  * The full GNU General Public License is included in this distribution in the
  * file called LICENSE.
  *
@@ -30,40 +26,41 @@
 #ifndef __RTL8821AE_PHY_H__
 #define __RTL8821AE_PHY_H__
 
-/*It must always set to 4, otherwise read
-efuse table secquence will be wrong.*/
-#define MAX_TX_COUNT	4
-#define	TX_1S			0
-#define	TX_2S			1
-#define	TX_3S			2
-#define	TX_4S			3
+/* MAX_TX_COUNT must always be set to 4, otherwise read
+ * efuse table sequence will be wrong.
+ */
+#define MAX_TX_COUNT				4
+#define	TX_1S					0
+#define	TX_2S					1
+#define	TX_3S					2
+#define	TX_4S					3
 
-#define	MAX_POWER_INDEX	0x3F
+#define	MAX_POWER_INDEX				0x3F
 
 #define MAX_PRECMD_CNT				16
-#define MAX_RFDEPENDCMD_CNT		16
+#define MAX_RFDEPENDCMD_CNT			16
 #define MAX_POSTCMD_CNT				16
 
-#define MAX_DOZE_WAITING_TIMES_9x	64
+#define MAX_DOZE_WAITING_TIMES_9x		64
 
 #define RT_CANNOT_IO(hw)			false
-#define HIGHPOWER_RADIOA_ARRAYLEN	22
+#define HIGHPOWER_RADIOA_ARRAYLEN		22
 
 #define IQK_ADDA_REG_NUM			16
 #define IQK_BB_REG_NUM				9
 #define MAX_TOLERANCE				5
 #define	IQK_DELAY_TIME				10
-#define	index_mapping_NUM	15
+#define	index_mapping_NUM			15
 
 #define	APK_BB_REG_NUM				5
 #define	APK_AFE_REG_NUM				16
 #define	APK_CURVE_REG_NUM			4
-#define	PATH_NUM					2
+#define	PATH_NUM				2
 
-#define LOOP_LIMIT					5
+#define LOOP_LIMIT				5
 #define MAX_STALL_TIME				50
-#define AntennaDiversityValue		0x80
-#define MAX_TXPWR_IDX_NMODE_92S		63
+#define AntennaDiversityValue			0x80
+#define MAX_TXPWR_IDX_NMODE_92S			63
 #define Reset_Cnt_Limit				3
 
 #define IQK_ADDA_REG_NUM			16
@@ -73,8 +70,8 @@ efuse table secquence will be wrong.*/
 
 #define CT_OFFSET_MAC_ADDR			0X16
 
-#define CT_OFFSET_CCK_TX_PWR_IDX			0x5A
-#define CT_OFFSET_HT401S_TX_PWR_IDX			0x60
+#define CT_OFFSET_CCK_TX_PWR_IDX		0x5A
+#define CT_OFFSET_HT401S_TX_PWR_IDX		0x60
 #define CT_OFFSET_HT402S_TX_PWR_IDX_DIFF	0x66
 #define CT_OFFSET_HT20_TX_PWR_IDX_DIFF		0x69
 #define CT_OFFSET_OFDM_TX_PWR_IDX_DIFF		0x6C
@@ -82,15 +79,15 @@ efuse table secquence will be wrong.*/
 #define CT_OFFSET_HT40_MAX_PWR_OFFSET		0x6F
 #define CT_OFFSET_HT20_MAX_PWR_OFFSET		0x72
 
-#define CT_OFFSET_CHANNEL_PLAH				0x75
-#define CT_OFFSET_THERMAL_METER				0x78
-#define CT_OFFSET_RF_OPTION					0x79
-#define CT_OFFSET_VERSION					0x7E
-#define CT_OFFSET_CUSTOMER_ID				0x7F
+#define CT_OFFSET_CHANNEL_PLAH			0x75
+#define CT_OFFSET_THERMAL_METER			0x78
+#define CT_OFFSET_RF_OPTION			0x79
+#define CT_OFFSET_VERSION			0x7E
+#define CT_OFFSET_CUSTOMER_ID			0x7F
 
-#define RTL8821AE_MAX_PATH_NUM					2
+#define RTL8821AE_MAX_PATH_NUM			2
 
-#define TARGET_CHNL_NUM_2G_5G_8812	59
+#define TARGET_CHNL_NUM_2G_5G_8812		59
 
 enum swchnlcmd_id {
 	CMDID_END,
@@ -169,7 +166,6 @@ struct r_antenna_select_cck {
 	u8 r_ccktx_enable:4;
 };
 
-
 struct efuse_contents {
 	u8 mac_addr[ETH_ALEN];
 	u8 cck_tx_power_idx[6];
@@ -200,64 +196,64 @@ struct tx_power_struct {
 	u32 mcs_original_offset[4][16];
 };
 enum _ANT_DIV_TYPE {
-	NO_ANTDIV				= 0xFF,
+	NO_ANTDIV			= 0xFF,
 	CG_TRX_HW_ANTDIV		= 0x01,
 	CGCS_RX_HW_ANTDIV		= 0x02,
-	FIXED_HW_ANTDIV         = 0x03,
+	FIXED_HW_ANTDIV     		= 0x03,
 	CG_TRX_SMART_ANTDIV		= 0x04,
 	CGCS_RX_SW_ANTDIV		= 0x05,
 
 };
 
-extern u32 rtl8821ae_phy_query_bb_reg(struct ieee80211_hw *hw,
-				   u32 regaddr, u32 bitmask);
-extern void rtl8821ae_phy_set_bb_reg(struct ieee80211_hw *hw,
-				  u32 regaddr, u32 bitmask, u32 data);
-extern u32 rtl8821ae_phy_query_rf_reg(struct ieee80211_hw *hw,
-				   enum radio_path rfpath, u32 regaddr,
-				   u32 bitmask);
-extern void rtl8821ae_phy_set_rf_reg(struct ieee80211_hw *hw,
-				  enum radio_path rfpath, u32 regaddr,
-				  u32 bitmask, u32 data);
-extern bool rtl8821ae_phy_mac_config(struct ieee80211_hw *hw);
-extern bool rtl8821ae_phy_bb_config(struct ieee80211_hw *hw);
-extern bool rtl8821ae_phy_rf_config(struct ieee80211_hw *hw);
-extern void rtl8821ae_phy_switch_wirelessband(struct ieee80211_hw *hw,
-						u8 band);
-extern void rtl8821ae_phy_get_hw_reg_originalvalue(struct ieee80211_hw *hw);
-extern void rtl8821ae_phy_get_txpower_level(struct ieee80211_hw *hw,
-					 long *powerlevel);
-extern void rtl8821ae_phy_set_txpower_level(struct ieee80211_hw *hw,
-						u8 channel);
-extern void rtl8821ae_phy_scan_operation_backup(struct ieee80211_hw *hw,
-					     u8 operation);
-extern void rtl8821ae_phy_set_bw_mode_callback(struct ieee80211_hw *hw);
-extern void rtl8821ae_phy_set_bw_mode(struct ieee80211_hw *hw,
-				   enum nl80211_channel_type ch_type);
-extern void rtl8821ae_phy_sw_chnl_callback(struct ieee80211_hw *hw);
-extern u8 rtl8821ae_phy_sw_chnl(struct ieee80211_hw *hw);
-extern void rtl8821ae_phy_iq_calibrate(struct ieee80211_hw *hw,
-					bool b_recovery);
-extern void rtl8812ae_phy_iq_calibrate(struct ieee80211_hw *hw,
-					bool b_recovery);
-void rtl8821ae_phy_ap_calibrate(struct ieee80211_hw *hw, char delta);
+u32 rtl8821ae_phy_query_bb_reg(struct ieee80211_hw *hw,
+			       u32 regaddr, u32 bitmask);
+void rtl8821ae_phy_set_bb_reg(struct ieee80211_hw *hw,
+			      u32 regaddr, u32 bitmask, u32 data);
+u32 rtl8821ae_phy_query_rf_reg(struct ieee80211_hw *hw,
+			       enum radio_path rfpath, u32 regaddr,
+			       u32 bitmask);
+void rtl8821ae_phy_set_rf_reg(struct ieee80211_hw *hw,
+			      enum radio_path rfpath, u32 regaddr,
+			      u32 bitmask, u32 data);
+bool rtl8821ae_phy_mac_config(struct ieee80211_hw *hw);
+bool rtl8821ae_phy_bb_config(struct ieee80211_hw *hw);
+bool rtl8821ae_phy_rf_config(struct ieee80211_hw *hw);
+void rtl8821ae_phy_switch_wirelessband(struct ieee80211_hw *hw,
+				       u8 band);
+void rtl8821ae_phy_get_hw_reg_originalvalue(struct ieee80211_hw *hw);
+void rtl8821ae_phy_get_txpower_level(struct ieee80211_hw *hw,
+				     long *powerlevel);
+void rtl8821ae_phy_set_txpower_level(struct ieee80211_hw *hw,
+				     u8 channel);
+void rtl8821ae_phy_scan_operation_backup(struct ieee80211_hw *hw,
+					 u8 operation);
+void rtl8821ae_phy_set_bw_mode_callback(struct ieee80211_hw *hw);
+void rtl8821ae_phy_set_bw_mode(struct ieee80211_hw *hw,
+			       enum nl80211_channel_type ch_type);
+void rtl8821ae_phy_sw_chnl_callback(struct ieee80211_hw *hw);
+u8 rtl8821ae_phy_sw_chnl(struct ieee80211_hw *hw);
+void rtl8821ae_phy_iq_calibrate(struct ieee80211_hw *hw,
+				bool b_recovery);
+void rtl8812ae_phy_iq_calibrate(struct ieee80211_hw *hw,
+				bool b_recovery);
+void rtl8821ae_phy_ap_calibrate(struct ieee80211_hw *hw, s8 delta);
 void rtl8821ae_phy_lc_calibrate(struct ieee80211_hw *hw);
 void rtl8821ae_phy_set_rfpath_switch(struct ieee80211_hw *hw, bool bmain);
 bool rtl8812ae_phy_config_rf_with_headerfile(struct ieee80211_hw *hw,
-					  enum radio_path rfpath);
+					     enum radio_path rfpath);
 bool rtl8821ae_phy_config_rf_with_headerfile(struct ieee80211_hw *hw,
-					  enum radio_path rfpath);
+					     enum radio_path rfpath);
 bool rtl8821ae_phy_set_io_cmd(struct ieee80211_hw *hw, enum io_type iotype);
-extern bool rtl8821ae_phy_set_rf_power_state(struct ieee80211_hw *hw,
-					  enum rf_pwrstate rfpwr_state);
+bool rtl8821ae_phy_set_rf_power_state(struct ieee80211_hw *hw,
+				      enum rf_pwrstate rfpwr_state);
 u8 _rtl8812ae_get_right_chnl_place_for_iqk(u8 chnl);
 void rtl8821ae_phy_set_txpower_level_by_path(struct ieee80211_hw *hw,
-						u8 channel, u8 path);
+					     u8 channel, u8 path);
 void rtl8812ae_do_iqk(struct ieee80211_hw *hw, u8 delta_thermal_index,
 	u8 thermal_value, u8 threshold);
 void rtl8821ae_do_iqk(struct ieee80211_hw *hw, u8 delta_thermal_index,
-	u8 thermal_value, u8 threshold);
+		      u8 thermal_value, u8 threshold);
 void rtl8821ae_reset_iqk_result(struct ieee80211_hw *hw);
-u32 phy_get_tx_bb_swing_8812A(struct ieee80211_hw *hw, u8 band, u8 rf_path);
+u32 phy_get_tx_swing_8812A(struct ieee80211_hw *hw, u8 band, u8 rf_path);
 
 #endif

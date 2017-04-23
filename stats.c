@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Copyright(c) 2009-2010  Realtek Corporation.
+ * Copyright(c) 2009-2012  Realtek Corporation.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of version 2 of the GNU General Public License as
@@ -10,10 +10,6 @@
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
  * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
  * more details.
- *
- * You should have received a copy of the GNU General Public License along with
- * this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110, USA
  *
  * The full GNU General Public License is included in this distribution in the
  * file called LICENSE.
@@ -28,11 +24,9 @@
  *****************************************************************************/
 #include "wifi.h"
 #include "stats.h"
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,2,0))
 #include <linux/export.h>
-#endif
 
-u8 rtl_query_rxpwrpercentage(char antpower)
+u8 rtl_query_rxpwrpercentage(s8 antpower)
 {
 	if ((antpower <= -100) || (antpower >= 20))
 		return 0;
@@ -43,39 +37,16 @@ u8 rtl_query_rxpwrpercentage(char antpower)
 }
 EXPORT_SYMBOL(rtl_query_rxpwrpercentage);
 
-u8 rtl_evm_db_to_percentage(char value)
+u8 rtl_evm_db_to_percentage(s8 value)
 {
-	char ret_val;
-	ret_val = value;
+	s8 ret_val = clamp(-value, 0, 33) * 3;
 
-	if (ret_val >= 0)
-		ret_val = 0;
-	if (ret_val <= -33)
-		ret_val = -33;
-	ret_val = 0 - ret_val;
-	ret_val *= 3;
 	if (ret_val == 99)
 		ret_val = 100;
 
 	return ret_val;
 }
 EXPORT_SYMBOL(rtl_evm_db_to_percentage);
-
-u8 rtl_evm_dbm_jaguar(char value)
-{
-	char ret_val;
-	ret_val = value;
-
-	/* -33dB~0dB to 33dB ~ 0dB*/
-	if (ret_val == -128)
-		ret_val = 127;
-	else if (ret_val < 0)
-		ret_val = 0 - ret_val;
-
-	ret_val  = ret_val >> 1;
-	return ret_val;
-}
-EXPORT_SYMBOL(rtl_evm_dbm_jaguar);
 
 static long rtl_translate_todbm(struct ieee80211_hw *hw,
 			 u8 signal_strength_index)
@@ -116,7 +87,8 @@ long rtl_signal_scale_mapping(struct ieee80211_hw *hw, long currsig)
 }
 EXPORT_SYMBOL(rtl_signal_scale_mapping);
 
-static void rtl_process_ui_rssi(struct ieee80211_hw *hw, struct rtl_stats *pstatus)
+static void rtl_process_ui_rssi(struct ieee80211_hw *hw,
+				struct rtl_stats *pstatus)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_phy *rtlphy = &(rtlpriv->phy);
@@ -268,15 +240,15 @@ static void rtl_process_ui_link_quality(struct ieee80211_hw *hw,
 	rtlpriv->stats.signal_quality = tmpval;
 	rtlpriv->stats.last_sigstrength_inpercent = tmpval;
 	for (n_stream = 0; n_stream < 2; n_stream++) {
-		if (pstatus->rx_mimo_signalquality[n_stream] != -1) {
+		if (pstatus->rx_mimo_sig_qual[n_stream] != -1) {
 			if (rtlpriv->stats.rx_evm_percentage[n_stream] == 0) {
 				rtlpriv->stats.rx_evm_percentage[n_stream] =
-				    pstatus->rx_mimo_signalquality[n_stream];
+				    pstatus->rx_mimo_sig_qual[n_stream];
 			}
 			rtlpriv->stats.rx_evm_percentage[n_stream] =
 			    ((rtlpriv->stats.rx_evm_percentage[n_stream]
 			      * (RX_SMOOTH_FACTOR - 1)) +
-			     (pstatus->rx_mimo_signalquality[n_stream] * 1)) /
+			     (pstatus->rx_mimo_sig_qual[n_stream] * 1)) /
 			    (RX_SMOOTH_FACTOR);
 		}
 	}

@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Copyright(c) 2009-2010  Realtek Corporation.
+ * Copyright(c) 2009-2012  Realtek Corporation.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of version 2 of the GNU General Public License as
@@ -10,10 +10,6 @@
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
  * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
  * more details.
- *
- * You should have received a copy of the GNU General Public License along with
- * this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110, USA
  *
  * The full GNU General Public License is included in this distribution in the
  * file called LICENSE.
@@ -37,9 +33,8 @@
 /* Rx smooth factor */
 #define	RX_SMOOTH_FACTOR			20
 
-u8 rtl_query_rxpwrpercentage(char antpower);
-u8 rtl_evm_db_to_percentage(char value);
-u8 rtl_evm_dbm_jaguar(char value);
+u8 rtl_query_rxpwrpercentage(s8 antpower);
+u8 rtl_evm_db_to_percentage(s8 value);
 long rtl_signal_scale_mapping(struct ieee80211_hw *hw, long currsig);
 void rtl_process_phyinfo(struct ieee80211_hw *hw, u8 *buffer,
 			 struct rtl_stats *pstatus);

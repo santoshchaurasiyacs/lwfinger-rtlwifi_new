@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Copyright(c) 2009-2010  Realtek Corporation.
+ * Copyright(c) 2009-2012  Realtek Corporation.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of version 2 of the GNU General Public License as
@@ -22,6 +22,8 @@
  * wlanfae <wlanfae@realtek.com>
  * Realtek Corporation, No. 2, Innovation Road II, Hsinchu Science Park,
  * Hsinchu 300, Taiwan.
+ *
+ * Larry Finger <Larry.Finger@lwfinger.net>
  *
  *****************************************************************************/
 
@@ -50,8 +52,8 @@ void rtl92se_sw_led_on(struct ieee80211_hw *hw, struct rtl_led *pled)
 	u8 ledcfg;
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 
-	RT_TRACE(rtlpriv, COMP_LED, DBG_LOUD,
-		 "LedAddr:%X ledpin=%d\n", LEDCFG, pled->ledpin);
+	RT_TRACE(rtlpriv, COMP_LED, DBG_LOUD, "LedAddr:%X ledpin=%d\n",
+		 LEDCFG, pled->ledpin);
 
 	ledcfg = rtl_read_byte(rtlpriv, LEDCFG);
 
@@ -65,8 +67,7 @@ void rtl92se_sw_led_on(struct ieee80211_hw *hw, struct rtl_led *pled)
 		rtl_write_byte(rtlpriv, LEDCFG, ledcfg & 0x0f);
 		break;
 	default:
-		RT_TRACE(rtlpriv, COMP_ERR, DBG_LOUD,
-			 "switch case not process\n");
+		pr_err("switch case %#x not processed\n", pled->ledpin);
 		break;
 	}
 	pled->ledon = true;
@@ -74,12 +75,15 @@ void rtl92se_sw_led_on(struct ieee80211_hw *hw, struct rtl_led *pled)
 
 void rtl92se_sw_led_off(struct ieee80211_hw *hw, struct rtl_led *pled)
 {
-	struct rtl_priv *rtlpriv = rtl_priv(hw);
+	struct rtl_priv *rtlpriv;
 	struct rtl_pci_priv *pcipriv = rtl_pcipriv(hw);
 	u8 ledcfg;
 
-	RT_TRACE(rtlpriv, COMP_LED, DBG_LOUD,
-		 "LedAddr:%X ledpin=%d\n", LEDCFG, pled->ledpin);
+	rtlpriv = rtl_priv(hw);
+	if (!rtlpriv || rtlpriv->max_fw_size)
+		return;
+	RT_TRACE(rtlpriv, COMP_LED, DBG_LOUD, "LedAddr:%X ledpin=%d\n",
+		 LEDCFG, pled->ledpin);
 
 	ledcfg = rtl_read_byte(rtlpriv, LEDCFG);
 
@@ -88,7 +92,7 @@ void rtl92se_sw_led_off(struct ieee80211_hw *hw, struct rtl_led *pled)
 		break;
 	case LED_PIN_LED0:
 		ledcfg &= 0xf0;
-		if (pcipriv->ledctl.led_opendrain == true)
+		if (pcipriv->ledctl.led_opendrain)
 			rtl_write_byte(rtlpriv, LEDCFG, (ledcfg | BIT(1)));
 		else
 			rtl_write_byte(rtlpriv, LEDCFG, (ledcfg | BIT(3)));
@@ -98,8 +102,7 @@ void rtl92se_sw_led_off(struct ieee80211_hw *hw, struct rtl_led *pled)
 		rtl_write_byte(rtlpriv, LEDCFG, (ledcfg | BIT(3)));
 		break;
 	default:
-		RT_TRACE(rtlpriv, COMP_ERR, DBG_LOUD,
-			 "switch case not process\n");
+		pr_err("switch case %#x not processed\n", pled->ledpin);
 		break;
 	}
 	pled->ledon = false;
@@ -131,16 +134,16 @@ void rtl92se_led_control(struct ieee80211_hw *hw, enum led_ctl_mode ledaction)
 
 	if ((ppsc->rfoff_reason > RF_CHANGE_BY_PS) &&
 	    (ledaction == LED_CTL_TX ||
-	     ledaction == LED_CTL_RX ||
-	     ledaction == LED_CTL_SITE_SURVEY ||
-	     ledaction == LED_CTL_LINK ||
-	     ledaction == LED_CTL_NO_LINK ||
-	     ledaction == LED_CTL_START_TO_LINK ||
-	     ledaction == LED_CTL_POWER_ON)) {
+	    ledaction == LED_CTL_RX ||
+	    ledaction == LED_CTL_SITE_SURVEY ||
+	    ledaction == LED_CTL_LINK ||
+	    ledaction == LED_CTL_NO_LINK ||
+	    ledaction == LED_CTL_START_TO_LINK ||
+	    ledaction == LED_CTL_POWER_ON)) {
 		return;
 	}
-	RT_TRACE(rtlpriv, COMP_LED, DBG_LOUD, "ledaction %d,\n",
-				ledaction);
+	RT_TRACE(rtlpriv, COMP_LED, DBG_LOUD, "ledaction %d\n", ledaction);
 
 	_rtl92se_sw_led_control(hw, ledaction);
 }
+

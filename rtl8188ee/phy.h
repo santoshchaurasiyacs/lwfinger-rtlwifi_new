@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Copyright(c) 2009-2010  Realtek Corporation.
+ * Copyright(c) 2009-2013  Realtek Corporation.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of version 2 of the GNU General Public License as
@@ -10,10 +10,6 @@
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
  * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
  * more details.
- *
- * You should have received a copy of the GNU General Public License along with
- * this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110, USA
  *
  * The full GNU General Public License is included in this distribution in the
  * file called LICENSE.
@@ -30,7 +26,9 @@
 #ifndef __RTL92C_PHY_H__
 #define __RTL92C_PHY_H__
 
-/*It must always set to 4, otherwise read efuse table secquence will be wrong.*/
+/* MAX_TX_COUNT must always set to 4, otherwise read efuse
+ * table secquence will be wrong.
+ */
 #define		MAX_TX_COUNT				4
 
 #define MAX_PRECMD_CNT				16
@@ -46,7 +44,7 @@
 #define IQK_BB_REG_NUM				9
 #define MAX_TOLERANCE				5
 #define	IQK_DELAY_TIME				10
-#define	index_mapping_NUM	15
+#define	INDEX_MAPPING_NUM	15
 
 #define	APK_BB_REG_NUM				5
 #define	APK_AFE_REG_NUM				16
@@ -55,9 +53,9 @@
 
 #define LOOP_LIMIT					5
 #define MAX_STALL_TIME				50
-#define AntennaDiversityValue		0x80
+#define ANTENNADIVERSITYVALUE		0x80
 #define MAX_TXPWR_IDX_NMODE_92S		63
-#define Reset_Cnt_Limit				3
+#define RESET_CNT_LIMIT				3
 
 #define IQK_ADDA_REG_NUM			16
 #define IQK_MAC_REG_NUM				4
@@ -160,7 +158,6 @@ struct r_antenna_select_cck {
 	u8 r_ccktx_enable:4;
 };
 
-
 struct efuse_contents {
 	u8 mac_addr[ETH_ALEN];
 	u8 cck_tx_power_idx[6];
@@ -190,6 +187,7 @@ struct tx_power_struct {
 	u8 pwrgroup_cnt;
 	u32 mcs_original_offset[4][16];
 };
+
 enum _ANT_DIV_TYPE {
 	NO_ANTDIV				= 0xFF,
 	CG_TRX_HW_ANTDIV		= 0x01,
@@ -197,39 +195,39 @@ enum _ANT_DIV_TYPE {
 	FIXED_HW_ANTDIV         = 0x03,
 	CG_TRX_SMART_ANTDIV		= 0x04,
 	CGCS_RX_SW_ANTDIV		= 0x05,
-
 };
-extern u32 rtl88e_phy_query_bb_reg(struct ieee80211_hw *hw,
-				   u32 regaddr, u32 bitmask);
-extern void rtl88e_phy_set_bb_reg(struct ieee80211_hw *hw,
-				  u32 regaddr, u32 bitmask, u32 data);
-extern u32 rtl88e_phy_query_rf_reg(struct ieee80211_hw *hw,
-				   enum radio_path rfpath, u32 regaddr,
-				   u32 bitmask);
-extern void rtl88e_phy_set_rf_reg(struct ieee80211_hw *hw,
-				  enum radio_path rfpath, u32 regaddr,
-				  u32 bitmask, u32 data);
-extern bool rtl88e_phy_mac_config(struct ieee80211_hw *hw);
-extern bool rtl88e_phy_bb_config(struct ieee80211_hw *hw);
-extern bool rtl88e_phy_rf_config(struct ieee80211_hw *hw);
-extern void rtl88e_phy_get_hw_reg_originalvalue(struct ieee80211_hw *hw);
-extern void rtl88e_phy_get_txpower_level(struct ieee80211_hw *hw,
-					 long *powerlevel);
-extern void rtl88e_phy_set_txpower_level(struct ieee80211_hw *hw, u8 channel);
-extern void rtl88e_phy_scan_operation_backup(struct ieee80211_hw *hw,
-					     u8 operation);
-extern void rtl88e_phy_set_bw_mode_callback(struct ieee80211_hw *hw);
-extern void rtl88e_phy_set_bw_mode(struct ieee80211_hw *hw,
-				   enum nl80211_channel_type ch_type);
-extern void rtl88e_phy_sw_chnl_callback(struct ieee80211_hw *hw);
-extern u8 rtl88e_phy_sw_chnl(struct ieee80211_hw *hw);
-extern void rtl88e_phy_iq_calibrate(struct ieee80211_hw *hw, bool b_recovery);
-void rtl92c_phy_ap_calibrate(struct ieee80211_hw *hw, char delta);
+
+u32 rtl88e_phy_query_bb_reg(struct ieee80211_hw *hw,
+			    u32 regaddr, u32 bitmask);
+void rtl88e_phy_set_bb_reg(struct ieee80211_hw *hw,
+			   u32 regaddr, u32 bitmask, u32 data);
+u32 rtl88e_phy_query_rf_reg(struct ieee80211_hw *hw,
+			    enum radio_path rfpath, u32 regaddr,
+			    u32 bitmask);
+void rtl88e_phy_set_rf_reg(struct ieee80211_hw *hw,
+			   enum radio_path rfpath, u32 regaddr,
+			   u32 bitmask, u32 data);
+bool rtl88e_phy_mac_config(struct ieee80211_hw *hw);
+bool rtl88e_phy_bb_config(struct ieee80211_hw *hw);
+bool rtl88e_phy_rf_config(struct ieee80211_hw *hw);
+void rtl88e_phy_get_hw_reg_originalvalue(struct ieee80211_hw *hw);
+void rtl88e_phy_get_txpower_level(struct ieee80211_hw *hw,
+				  long *powerlevel);
+void rtl88e_phy_set_txpower_level(struct ieee80211_hw *hw, u8 channel);
+void rtl88e_phy_scan_operation_backup(struct ieee80211_hw *hw,
+				      u8 operation);
+void rtl88e_phy_set_bw_mode_callback(struct ieee80211_hw *hw);
+void rtl88e_phy_set_bw_mode(struct ieee80211_hw *hw,
+			    enum nl80211_channel_type ch_type);
+void rtl88e_phy_sw_chnl_callback(struct ieee80211_hw *hw);
+u8 rtl88e_phy_sw_chnl(struct ieee80211_hw *hw);
+void rtl88e_phy_iq_calibrate(struct ieee80211_hw *hw, bool b_recovery);
 void rtl88e_phy_lc_calibrate(struct ieee80211_hw *hw);
 void rtl88e_phy_set_rfpath_switch(struct ieee80211_hw *hw, bool bmain);
 bool rtl88e_phy_config_rf_with_headerfile(struct ieee80211_hw *hw,
 					  enum radio_path rfpath);
 bool rtl88e_phy_set_io_cmd(struct ieee80211_hw *hw, enum io_type iotype);
-extern bool rtl88e_phy_set_rf_power_state(struct ieee80211_hw *hw,
-					  enum rf_pwrstate rfpwr_state);
+bool rtl88e_phy_set_rf_power_state(struct ieee80211_hw *hw,
+				   enum rf_pwrstate rfpwr_state);
+
 #endif

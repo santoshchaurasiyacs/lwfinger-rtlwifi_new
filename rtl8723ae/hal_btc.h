@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Copyright(c) 2009-2010  Realtek Corporation.
+ * Copyright(c) 2009-2012  Realtek Corporation.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of version 2 of the GNU General Public License as
@@ -10,10 +10,6 @@
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
  * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
  * more details.
- *
- * You should have received a copy of the GNU General Public License along with
- * this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110, USA
  *
  * The full GNU General Public License is included in this distribution in the
  * file called LICENSE.
@@ -33,33 +29,31 @@
 #include "btc.h"
 #include "hal_bt_coexist.h"
 
-#define	BT_TXRX_CNT_THRES_1				1200
-#define	BT_TXRX_CNT_THRES_2				1400
-#define	BT_TXRX_CNT_THRES_3				3000
+#define	BT_TXRX_CNT_THRES_1			1200
+#define	BT_TXRX_CNT_THRES_2			1400
+#define	BT_TXRX_CNT_THRES_3			3000
 /* < 1200 */
-#define	BT_TXRX_CNT_LEVEL_0				0
+#define	BT_TXRX_CNT_LEVEL_0			0
 /* >= 1200 && < 1400 */
-#define	BT_TXRX_CNT_LEVEL_1				1
+#define	BT_TXRX_CNT_LEVEL_1			1
 /* >= 1400 */
-#define	BT_TXRX_CNT_LEVEL_2				2
-#define	BT_TXRX_CNT_LEVEL_3				3
+#define	BT_TXRX_CNT_LEVEL_2			2
+#define	BT_TXRX_CNT_LEVEL_3			3
 
-
-
-#define	BT_COEX_DISABLE		0
-#define	BT_Q_PKT_OFF		0
+#define	BT_COEX_DISABLE			0
+#define	BT_Q_PKT_OFF			0
 #define	BT_Q_PKT_ON			1
 
-#define	BT_TX_PWR_OFF		0
-#define	BT_TX_PWR_ON		1
+#define	BT_TX_PWR_OFF			0
+#define	BT_TX_PWR_ON			1
 
 /* TDMA mode definition */
 #define	TDMA_2ANT			0
 #define	TDMA_1ANT			1
-#define	TDMA_NAV_OFF		0
+#define	TDMA_NAV_OFF			0
 #define	TDMA_NAV_ON			1
-#define	TDMA_DAC_SWING_OFF	0
-#define	TDMA_DAC_SWING_ON	1
+#define	TDMA_DAC_SWING_OFF		0
+#define	TDMA_DAC_SWING_ON		1
 
 /* PTA mode related definition */
 #define	BT_PTA_MODE_OFF		0
@@ -155,12 +149,11 @@ void rtl8723e_dm_bt_sw_coex_all_off_8723a(struct ieee80211_hw *hw);
 void rtl8723e_dm_bt_hw_coex_all_off_8723a(struct ieee80211_hw *hw);
 void rtl8723e_dm_bt_coexist_8723(struct ieee80211_hw *hw);
 void rtl8723e_dm_bt_set_bt_dm(struct ieee80211_hw *hw,
-				struct btdm_8723 *p_btdm);
+			      struct btdm_8723 *p_btdm);
 void rtl_8723e_c2h_command_handle(struct ieee80211_hw *hw);
 void rtl_8723e_bt_wifi_media_status_notify(struct ieee80211_hw *hw,
 					bool mstatus);
-void rtl8723e_dm_bt_turn_off_bt_coexist_before_enter_lps(struct ieee80211_hw *hw);
-
-
+void rtl8723e_dm_bt_turn_off_bt_coexist_before_enter_lps(
+				struct ieee80211_hw *hw);
 
 #endif

@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Copyright(c) 2009-2010  Realtek Corporation.
+ * Copyright(c) 2009-2012  Realtek Corporation.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of version 2 of the GNU General Public License as
@@ -33,7 +33,7 @@
 #include "led.h"
 
 static void _rtl8723e_init_led(struct ieee80211_hw *hw,
-			      struct rtl_led *pled, enum rtl_led_pin ledpin)
+			       struct rtl_led *pled, enum rtl_led_pin ledpin)
 {
 	pled->hw = hw;
 	pled->ledpin = ledpin;
@@ -62,8 +62,7 @@ void rtl8723e_sw_led_on(struct ieee80211_hw *hw, struct rtl_led *pled)
 		rtl_write_byte(rtlpriv, REG_LEDCFG1, ledcfg & 0x10);
 		break;
 	default:
-		RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG,
-			 "switch case not process\n");
+		pr_err("switch case %#x not processed\n", pled->ledpin);
 		break;
 	}
 	pled->ledon = true;
@@ -85,7 +84,7 @@ void rtl8723e_sw_led_off(struct ieee80211_hw *hw, struct rtl_led *pled)
 		break;
 	case LED_PIN_LED0:
 		ledcfg &= 0xf0;
-		if (pcipriv->ledctl.led_opendrain == true) {
+		if (pcipriv->ledctl.led_opendrain) {
 			ledcfg &= 0x90; /* Set to software control. */
 			rtl_write_byte(rtlpriv, REG_LEDCFG2, (ledcfg|BIT(3)));
 			ledcfg = rtl_read_byte(rtlpriv, REG_MAC_PINMUX_CFG);
@@ -104,8 +103,7 @@ void rtl8723e_sw_led_off(struct ieee80211_hw *hw, struct rtl_led *pled)
 
 		break;
 	default:
-		RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG,
-			 "switch case not process\n");
+		pr_err("switch case %#x not processed\n", pled->ledpin);
 		break;
 	}
 	pled->ledon = false;
@@ -114,12 +112,12 @@ void rtl8723e_sw_led_off(struct ieee80211_hw *hw, struct rtl_led *pled)
 void rtl8723e_init_sw_leds(struct ieee80211_hw *hw)
 {
 	struct rtl_pci_priv *pcipriv = rtl_pcipriv(hw);
-	_rtl8723e_init_led(hw, &(pcipriv->ledctl.sw_led0), LED_PIN_LED0);
-	_rtl8723e_init_led(hw, &(pcipriv->ledctl.sw_led1), LED_PIN_LED1);
+	_rtl8723e_init_led(hw, &pcipriv->ledctl.sw_led0, LED_PIN_LED0);
+	_rtl8723e_init_led(hw, &pcipriv->ledctl.sw_led1, LED_PIN_LED1);
 }
 
 static void _rtl8723e_sw_led_control(struct ieee80211_hw *hw,
-				    enum led_ctl_mode ledaction)
+				     enum led_ctl_mode ledaction)
 {
 	struct rtl_pci_priv *pcipriv = rtl_pcipriv(hw);
 	struct rtl_led *pLed0 = &(pcipriv->ledctl.sw_led0);
@@ -138,7 +136,7 @@ static void _rtl8723e_sw_led_control(struct ieee80211_hw *hw,
 }
 
 void rtl8723e_led_control(struct ieee80211_hw *hw,
-			enum led_ctl_mode ledaction)
+			  enum led_ctl_mode ledaction)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_ps_ctl *ppsc = rtl_psc(rtl_priv(hw));
@@ -154,6 +152,6 @@ void rtl8723e_led_control(struct ieee80211_hw *hw,
 		return;
 	}
 	RT_TRACE(rtlpriv, COMP_LED, DBG_LOUD, "ledaction %d,\n",
-				ledaction);
+		 ledaction);
 	_rtl8723e_sw_led_control(hw, ledaction);
 }
