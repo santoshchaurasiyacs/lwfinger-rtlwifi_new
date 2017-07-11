@@ -41,6 +41,8 @@
 #include "btcoexist/halbtc8812a_ext.h"
 /*#define ERROR_RESUME*/
 
+#error "This branch is abandoned. Please do not use"
+
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 8, 0))
 #define CONFIG_HAVE_ARCH_WITHIN_STACK_FRAMES 1
 #endif
