@@ -49,6 +49,11 @@
 #define _ieee80211_is_robust_mgmt_frame ieee80211_is_robust_mgmt_frame
 #endif
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 12, 0))
+#define RX_FLAG_40MHZ RATE_INFO_BW_40
+#define RX_FLAG_HT RX_ENC_HT
+#endif
+
 #define	MASKBYTE0				0xff
 #define	MASKBYTE1				0xff00
 #define	MASKBYTE2				0xff0000
