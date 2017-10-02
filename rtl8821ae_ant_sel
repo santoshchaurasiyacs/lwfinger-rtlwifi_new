@@ -1,0 +1,56 @@
+diff --git a/rtl8821ae/hw.c b/rtl8821ae/hw.c
+index 1b18c7b..b9d44ea 100644
+--- a/rtl8821ae/hw.c
++++ b/rtl8821ae/hw.c
+@@ -3081,6 +3081,7 @@ static void _rtl8812ae_read_bt_coexist_info_from_hwpg(struct ieee80211_hw *hw,
+ 					      bool auto_load_fail, u8 *hwinfo)
+ {
+ 	struct rtl_priv *rtlpriv = rtl_priv(hw);
++	struct rtl_mod_params *mod_params = rtlpriv->cfg->mod_params;
+ 	u8 value;
+ 
+ 	if (!auto_load_fail) {
+@@ -3098,7 +3099,14 @@ static void _rtl8812ae_read_bt_coexist_info_from_hwpg(struct ieee80211_hw *hw,
+ 		rtlpriv->btcoexist.btc_info.bt_type = BT_RTL8812A;
+ 		rtlpriv->btcoexist.btc_info.ant_num = ANT_X2;
+ 	}
+-	/*move BT_InitHalVars() to init_sw_vars*/
++	/* override ant_num / ant_path */
++	if (mod_params->ant_sel) {
++		rtlpriv->btcoexist.btc_info.ant_num =
++			(mod_params->ant_sel == 1 ? ANT_X2 : ANT_X1);
++
++		rtlpriv->btcoexist.btc_info.single_ant_path =
++			(mod_params->ant_sel == 1 ? 0 : 1);
++	}
+ }
+ 
+ static void _rtl8821ae_read_bt_coexist_info_from_hwpg(struct ieee80211_hw *hw,
+diff --git a/rtl8821ae/sw.c b/rtl8821ae/sw.c
+index ac5534e..bb7d856 100644
+--- a/rtl8821ae/sw.c
++++ b/rtl8821ae/sw.c
+@@ -320,6 +320,7 @@ static struct rtl_mod_params rtl8821ae_mod_params = {
+ 	.int_clear = true,
+ 	.debug = 0,
+ 	.disable_watchdog = 0,
++	.ant_sel = 0,
+ };
+ 
+ static const struct rtl_hal_cfg rtl8821ae_hal_cfg = {
+@@ -447,6 +448,7 @@ module_param_named(fwlps, rtl8821ae_mod_params.fwctrl_lps, bool, 0444);
+ module_param_named(msi, rtl8821ae_mod_params.msi_support, bool, 0444);
+ module_param_named(disable_watchdog, rtl8821ae_mod_params.disable_watchdog,
+ 		   bool, 0444);
++module_param_named(ant_sel, rtl8821ae_mod_params.ant_sel, int, 0444);
+ module_param_named(int_clear, rtl8821ae_mod_params.int_clear, bool, 0444);
+ MODULE_PARM_DESC(swenc, "Set to 1 for software crypto (default 0)\n");
+ MODULE_PARM_DESC(ips, "Set to 0 to not use link power save (default 1)\n");
+@@ -455,6 +457,7 @@ MODULE_PARM_DESC(fwlps, "Set to 1 to use FW control power save (default 1)\n");
+ MODULE_PARM_DESC(msi, "Set to 1 to use MSI interrupts mode (default 1)\n");
+ MODULE_PARM_DESC(debug, "Set debug level (0-5) (default 0)");
+ MODULE_PARM_DESC(disable_watchdog, "Set to 1 to disable the watchdog (default 0)\n");
++MODULE_PARM_DESC(ant_sel, "Set to 1 or 2 to force antenna number (default 0)\n");
+ MODULE_PARM_DESC(int_clear, "Set to 0 to disable interrupt clear before set (default 1)\n");
+ 
+ static SIMPLE_DEV_PM_OPS(rtlwifi_pm_ops, rtl_pci_suspend, rtl_pci_resume);

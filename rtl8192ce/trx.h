@@ -11,10 +11,6 @@
  * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
  * more details.
  *
- * You should have received a copy of the GNU General Public License along with
- * this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110, USA
- *
  * The full GNU General Public License is included in this distribution in the
  * file called LICENSE.
  *
@@ -30,15 +26,15 @@
 #ifndef __RTL92CE_TRX_H__
 #define __RTL92CE_TRX_H__
 
-#define TX_DESC_SIZE					64
+#define TX_DESC_SIZE				64
 #define TX_DESC_AGGR_SUBFRAME_SIZE		32
 
-#define RX_DESC_SIZE					32
+#define RX_DESC_SIZE				32
 #define RX_DRV_INFO_SIZE_UNIT			8
 
 #define	TX_DESC_NEXT_DESC_OFFSET		40
 #define USB_HWDESC_HEADER_LEN			32
-#define CRCLENGTH						4
+#define CRCLENGTH				4
 
 /* Define a macro that takes a le32 word, converts it to host ordering,
  * right shifts by a specified count, creates a mask of the specified
@@ -532,19 +528,13 @@
 #define CLEAR_PCI_TX_DESC_CONTENT(__pdesc, _size)	\
 	memset(__pdesc, 0, min_t(size_t, _size, TX_DESC_NEXT_DESC_OFFSET))
 
-#define RX_HAL_IS_CCK_RATE(rxmcs)\
-	(rxmcs == DESC_RATE1M ||\
-	 rxmcs == DESC_RATE2M ||\
-	 rxmcs == DESC_RATE5_5M ||\
-	 rxmcs == DESC_RATE11M)
-
 struct rx_fwinfo_92c {
 	u8 gain_trsw[4];
 	u8 pwdb_all;
 	u8 cfosho[4];
 	u8 cfotail[4];
-	char rxevm[2];
-	char rxsnr[4];
+	s8 rxevm[2];
+	s8 rxsnr[4];
 	u8 pdsnr[2];
 	u8 csi_current[2];
 	u8 csi_target[2];
@@ -717,23 +707,22 @@ struct rx_desc_92c {
 } __packed;
 
 void rtl92ce_tx_fill_desc(struct ieee80211_hw *hw,
-			  struct ieee80211_hdr *hdr,
-			  u8 *pdesc, u8 *txbd,
-			  struct ieee80211_tx_info *info,
+			  struct ieee80211_hdr *hdr, u8 *pdesc,
+			  u8 *pbd_desc_tx, struct ieee80211_tx_info *info,
 			  struct ieee80211_sta *sta,
 			  struct sk_buff *skb, u8 hw_queue,
 			  struct rtl_tcb_desc *ptcb_desc);
 bool rtl92ce_rx_query_desc(struct ieee80211_hw *hw,
-			   struct rtl_stats *status,
+			   struct rtl_stats *stats,
 			   struct ieee80211_rx_status *rx_status,
 			   u8 *pdesc, struct sk_buff *skb);
-void rtl92ce_set_desc(struct ieee80211_hw *hw, u8 *pdesc,
-						bool istx, u8 desc_name, u8 *val);
+void rtl92ce_set_desc(struct ieee80211_hw *hw, u8 *pdesc, bool istx,
+		      u8 desc_name, u8 *val);
 u32 rtl92ce_get_desc(u8 *pdesc, bool istx, u8 desc_name);
 bool rtl92ce_is_tx_desc_closed(struct ieee80211_hw *hw,
-								u8 hw_queue, u16 index);
+			       u8 hw_queue, u16 index);
 void rtl92ce_tx_polling(struct ieee80211_hw *hw, u8 hw_queue);
 void rtl92ce_tx_fill_cmddesc(struct ieee80211_hw *hw, u8 *pdesc,
-			     bool firstseg, bool lastseg,
+			     bool b_firstseg, bool b_lastseg,
 			     struct sk_buff *skb);
 #endif

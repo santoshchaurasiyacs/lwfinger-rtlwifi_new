@@ -11,10 +11,6 @@
  * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
  * more details.
  *
- * You should have received a copy of the GNU General Public License along with
- * this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110, USA
- *
  * The full GNU General Public License is included in this distribution in the
  * file called LICENSE.
  *
@@ -28,8 +24,3 @@
  *****************************************************************************/
 
 #include "../rtl8192ce/reg.h"
-
-#define REG_HSISR			0x005c
-#define AC_PARAM_TXOP_OFFSET		16
-#define MSR_MASK			0x03
-#define RCR_APP_PHYSTS			BIT(28)

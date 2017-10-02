@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Copyright(c) 2009-2010  Realtek Corporation.
+ * Copyright(c) 2009-2014  Realtek Corporation.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of version 2 of the GNU General Public License as
@@ -10,10 +10,6 @@
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
  * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
  * more details.
- *
- * You should have received a copy of the GNU General Public License along with
- * this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110, USA
  *
  * The full GNU General Public License is included in this distribution in the
  * file called LICENSE.
@@ -39,7 +35,7 @@ static bool _rtl92ee_phy_rf6052_config_parafile(struct ieee80211_hw *hw);
 void rtl92ee_phy_rf6052_set_bandwidth(struct ieee80211_hw *hw, u8 bandwidth)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
-	struct rtl_phy *rtlphy = &(rtlpriv->phy);
+	struct rtl_phy *rtlphy = &rtlpriv->phy;
 
 	switch (bandwidth) {
 	case HT_CHANNEL_WIDTH_20:
@@ -59,8 +55,7 @@ void rtl92ee_phy_rf6052_set_bandwidth(struct ieee80211_hw *hw, u8 bandwidth)
 			      rtlphy->rfreg_chnlval[0]);
 		break;
 	default:
-		RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG,
-			 "unknown bandwidth: %#X\n", bandwidth);
+		pr_err("unknown bandwidth: %#X\n", bandwidth);
 		break;
 	}
 }
@@ -68,7 +63,7 @@ void rtl92ee_phy_rf6052_set_bandwidth(struct ieee80211_hw *hw, u8 bandwidth)
 bool rtl92ee_phy_rf6052_config(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
-	struct rtl_phy *rtlphy = &(rtlpriv->phy);
+	struct rtl_phy *rtlphy = &rtlpriv->phy;
 
 	if (rtlphy->rf_type == RF_1T1R)
 		rtlphy->num_total_rfpath = 1;
@@ -76,20 +71,18 @@ bool rtl92ee_phy_rf6052_config(struct ieee80211_hw *hw)
 		rtlphy->num_total_rfpath = 2;
 
 	return _rtl92ee_phy_rf6052_config_parafile(hw);
-
 }
 
 static bool _rtl92ee_phy_rf6052_config_parafile(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
-	struct rtl_phy *rtlphy = &(rtlpriv->phy);
+	struct rtl_phy *rtlphy = &rtlpriv->phy;
 	u32 u4_regvalue = 0;
 	u8 rfpath;
 	bool rtstatus = true;
 	struct bb_reg_def *pphyreg;
 
 	for (rfpath = 0; rfpath < rtlphy->num_total_rfpath; rfpath++) {
-
 		pphyreg = &rtlphy->phyreg_def[rfpath];
 
 		switch (rfpath) {
@@ -146,9 +139,9 @@ static bool _rtl92ee_phy_rf6052_config_parafile(struct ieee80211_hw *hw)
 			break;
 		}
 
-		if (rtstatus != true) {
+		if (!rtstatus) {
 			RT_TRACE(rtlpriv, COMP_INIT, DBG_TRACE,
-				 "Radio[%d] Fail!!", rfpath);
+				 "Radio[%d] Fail!!\n", rfpath);
 			return false;
 		}
 	}

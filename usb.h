@@ -11,10 +11,6 @@
  * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
  * more details.
  *
- * You should have received a copy of the GNU General Public License along with
- * this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110, USA
- *
  * The full GNU General Public License is included in this distribution in the
  * file called LICENSE.
  *
@@ -40,6 +36,7 @@
 
 #define USB_HIGH_SPEED_BULK_SIZE	512
 #define USB_FULL_SPEED_BULK_SIZE	64
+
 
 #define RTL_USB_MAX_TXQ_NUM		4		/* max tx queue */
 #define RTL_USB_MAX_EP_NUM		6		/* max ep number */
@@ -79,6 +76,7 @@ static inline void _rtl_install_trx_info(struct rtl_usb *rtlusb,
 	info->rate_driver_data[0] = rtlusb;
 	info->rate_driver_data[1] = (void *)(__kernel_size_t)ep_num;
 }
+
 
 /*  Add suspend/resume later */
 enum rtl_usb_state {
@@ -148,12 +146,14 @@ struct rtl_usb {
 };
 
 struct rtl_usb_priv {
+	struct bt_coexist_info bt_coexist;
 	struct rtl_usb dev;
-	struct rtl_led_ctl ledctl;
 };
 
 #define rtl_usbpriv(hw)	 (((struct rtl_usb_priv *)(rtl_priv(hw))->priv))
 #define rtl_usbdev(usbpriv)	(&((usbpriv)->dev))
+
+
 
 int rtl_usb_probe(struct usb_interface *intf,
 		  const struct usb_device_id *id,

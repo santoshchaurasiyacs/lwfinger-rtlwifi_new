@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Copyright(c) 2009-2010  Realtek Corporation.
+ * Copyright(c) 2009-2014  Realtek Corporation.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of version 2 of the GNU General Public License as
@@ -10,10 +10,6 @@
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
  * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
  * more details.
- *
- * You should have received a copy of the GNU General Public License along with
- * this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110, USA
  *
  * The full GNU General Public License is included in this distribution in the
  * file called LICENSE.
@@ -30,7 +26,9 @@
 #ifndef __RTL8723BE_PHY_H__
 #define __RTL8723BE_PHY_H__
 
-/*It must always set to 4, otherwise read efuse table secquence will be wrong.*/
+/* MAX_TX_COUNT must always set to 4, otherwise read efuse table sequence
+ * will be wrong.
+ */
 #define MAX_TX_COUNT		4
 #define	TX_1S			0
 #define	TX_2S			1
@@ -63,9 +61,9 @@
 
 #define LOOP_LIMIT			5
 #define MAX_STALL_TIME			50
-#define AntennaDiversityValue		0x80
+#define ANTENNADIVERSITYVALUE		0x80
 #define MAX_TXPWR_IDX_NMODE_92S		63
-#define Reset_Cnt_Limit			3
+#define RESET_CNT_LIMIT			3
 
 #define IQK_ADDA_REG_NUM		16
 #define IQK_MAC_REG_NUM			4
@@ -91,23 +89,6 @@
 
 #define RTL92C_MAX_PATH_NUM			2
 
-enum swchnlcmd_id {
-	CMDID_END,
-	CMDID_SET_TXPOWEROWER_LEVEL,
-	CMDID_BBREGWRITE10,
-	CMDID_WRITEPORT_ULONG,
-	CMDID_WRITEPORT_USHORT,
-	CMDID_WRITEPORT_UCHAR,
-	CMDID_RF_WRITEREG,
-};
-
-struct swchnlcmd {
-	enum swchnlcmd_id cmdid;
-	u32 para1;
-	u32 para2;
-	u32 msdelay;
-};
-
 enum baseband_config_type {
 	BASEBAND_CONFIG_PHY_REG = 0,
 	BASEBAND_CONFIG_AGC_TAB = 1,
@@ -122,39 +103,33 @@ enum ant_div_type {
 	CGCS_RX_SW_ANTDIV	= 0x05,
 
 };
-extern u32 rtl8723be_phy_query_bb_reg(struct ieee80211_hw *hw,
-				      u32 regaddr, u32 bitmask);
-extern void rtl8723be_phy_set_bb_reg(struct ieee80211_hw *hw,
-				     u32 regaddr, u32 bitmask, u32 data);
-extern u32 rtl8723be_phy_query_rf_reg(struct ieee80211_hw *hw,
-				      enum radio_path rfpath,
-				      u32 regaddr, u32 bitmask);
-extern void rtl8723be_phy_set_rf_reg(struct ieee80211_hw *hw,
-				     enum radio_path rfpath,
-				     u32 regaddr, u32 bitmask, u32 data);
-extern bool rtl8723be_phy_mac_config(struct ieee80211_hw *hw);
-extern bool rtl8723be_phy_bb_config(struct ieee80211_hw *hw);
-extern bool rtl8723be_phy_rf_config(struct ieee80211_hw *hw);
-extern void rtl8723be_phy_get_hw_reg_originalvalue(struct ieee80211_hw *hw);
-extern void rtl8723be_phy_get_txpower_level(struct ieee80211_hw *hw,
-					    long *powerlevel);
-extern void rtl8723be_phy_set_txpower_level(struct ieee80211_hw *hw,
-					    u8 channel);
-extern void rtl8723be_phy_scan_operation_backup(struct ieee80211_hw *hw,
-						u8 operation);
-extern void rtl8723be_phy_set_bw_mode_callback(struct ieee80211_hw *hw);
-extern void rtl8723be_phy_set_bw_mode(struct ieee80211_hw *hw,
-				      enum nl80211_channel_type ch_type);
-extern void rtl8723be_phy_sw_chnl_callback(struct ieee80211_hw *hw);
-extern u8 rtl8723be_phy_sw_chnl(struct ieee80211_hw *hw);
-extern void rtl8723be_phy_iq_calibrate(struct ieee80211_hw *hw,
-				       bool b_recovery);
-void rtl92c_phy_ap_calibrate(struct ieee80211_hw *hw, char delta);
+
+u32 rtl8723be_phy_query_rf_reg(struct ieee80211_hw *hw,
+			       enum radio_path rfpath,
+			       u32 regaddr, u32 bitmask);
+void rtl8723be_phy_set_rf_reg(struct ieee80211_hw *hw,
+			      enum radio_path rfpath,
+			      u32 regaddr, u32 bitmask, u32 data);
+bool rtl8723be_phy_mac_config(struct ieee80211_hw *hw);
+bool rtl8723be_phy_bb_config(struct ieee80211_hw *hw);
+bool rtl8723be_phy_rf_config(struct ieee80211_hw *hw);
+void rtl8723be_phy_get_hw_reg_originalvalue(struct ieee80211_hw *hw);
+void rtl8723be_phy_set_txpower_level(struct ieee80211_hw *hw,
+				     u8 channel);
+void rtl8723be_phy_scan_operation_backup(struct ieee80211_hw *hw,
+					 u8 operation);
+void rtl8723be_phy_set_bw_mode_callback(struct ieee80211_hw *hw);
+void rtl8723be_phy_set_bw_mode(struct ieee80211_hw *hw,
+			       enum nl80211_channel_type ch_type);
+void rtl8723be_phy_sw_chnl_callback(struct ieee80211_hw *hw);
+u8 rtl8723be_phy_sw_chnl(struct ieee80211_hw *hw);
+void rtl8723be_phy_iq_calibrate(struct ieee80211_hw *hw,
+				bool b_recovery);
 void rtl8723be_phy_lc_calibrate(struct ieee80211_hw *hw);
 void rtl8723be_phy_set_rfpath_switch(struct ieee80211_hw *hw, bool bmain);
 bool rtl8723be_phy_config_rf_with_headerfile(struct ieee80211_hw *hw,
 					     enum radio_path rfpath);
 bool rtl8723be_phy_set_io_cmd(struct ieee80211_hw *hw, enum io_type iotype);
-extern bool rtl8723be_phy_set_rf_power_state(struct ieee80211_hw *hw,
-					     enum rf_pwrstate rfpwr_state);
+bool rtl8723be_phy_set_rf_power_state(struct ieee80211_hw *hw,
+				      enum rf_pwrstate rfpwr_state);
 #endif

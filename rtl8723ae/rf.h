@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Copyright(c) 2009-2010  Realtek Corporation.
+ * Copyright(c) 2009-2012  Realtek Corporation.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of version 2 of the GNU General Public License as
@@ -10,10 +10,6 @@
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
  * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
  * more details.
- *
- * You should have received a copy of the GNU General Public License along with
- * this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110, USA
  *
  * The full GNU General Public License is included in this distribution in the
  * file called LICENSE.
@@ -31,13 +27,13 @@
 #define __RTL8723E_RF_H__
 
 #define RF6052_MAX_TX_PWR		0x3F
-#define RF6052_MAX_REG			0x3F
 
-extern void rtl8723e_phy_rf6052_set_bandwidth(struct ieee80211_hw *hw,
-					    u8 bandwidth);
-extern void rtl8723e_phy_rf6052_set_cck_txpower(struct ieee80211_hw *hw,
-					      u8 *ppowerlevel);
-extern void rtl8723e_phy_rf6052_set_ofdm_txpower(struct ieee80211_hw *hw,
-					       u8 *ppowerlevel, u8 channel);
-extern bool rtl8723e_phy_rf6052_config(struct ieee80211_hw *hw);
+void rtl8723e_phy_rf6052_set_bandwidth(struct ieee80211_hw *hw,
+				       u8 bandwidth);
+void rtl8723e_phy_rf6052_set_cck_txpower(struct ieee80211_hw *hw,
+					 u8 *ppowerlevel);
+void rtl8723e_phy_rf6052_set_ofdm_txpower(struct ieee80211_hw *hw,
+					  u8 *ppowerlevel, u8 channel);
+bool rtl8723e_phy_rf6052_config(struct ieee80211_hw *hw);
+
 #endif

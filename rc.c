@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Copyright(c) 2009-2010  Realtek Corporation.
+ * Copyright(c) 2009-2012  Realtek Corporation.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of version 2 of the GNU General Public License as
@@ -10,10 +10,6 @@
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
  * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
  * more details.
- *
- * You should have received a copy of the GNU General Public License along with
- * this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110, USA
  *
  * The full GNU General Public License is included in this distribution in the
  * file called LICENSE.
@@ -45,7 +41,7 @@ static u8 _rtl_rc_get_highest_rix(struct rtl_priv *rtlpriv,
 	struct rtl_hal *rtlhal = rtl_hal(rtlpriv);
 	struct rtl_phy *rtlphy = &(rtlpriv->phy);
 	struct rtl_sta_info *sta_entry = NULL;
-	u8 wireless_mode = 0;
+	u16 wireless_mode = 0;
 
 	/*
 	 *this rate is no use for true rate, firmware
@@ -60,9 +56,8 @@ static u8 _rtl_rc_get_highest_rix(struct rtl_priv *rtlpriv,
 		wireless_mode = sta_entry->wireless_mode;
 	}
 
-	if (rtl_is_special_data(rtlpriv->mac80211.hw, skb, true, false) || not_data) {
-		RT_TRACE(rtlpriv, (COMP_SEND | COMP_RECV),
-				 DBG_LOUD, "set it to lowest rate CCK_1M\n");
+	if (rtl_is_special_data(rtlpriv->mac80211.hw, skb, true, false) ||
+	    not_data) {
 		return 0;
 	} else {
 		if (rtlhal->current_bandtype == BAND_ON_2_4G) {
@@ -77,9 +72,8 @@ static u8 _rtl_rc_get_highest_rix(struct rtl_priv *rtlpriv,
 					return N_MODE_MCS15_RIX;
 			} else if (wireless_mode == WIRELESS_MODE_AC_24G) {
 				return AC_MODE_MCS9_RIX;
-			} else {
-				return 0;
 			}
+			return 0;
 		} else {
 			if (wireless_mode == WIRELESS_MODE_A) {
 				return A_MODE_MAX_RIX;
@@ -90,9 +84,8 @@ static u8 _rtl_rc_get_highest_rix(struct rtl_priv *rtlpriv,
 					return N_MODE_MCS15_RIX;
 			} else if (wireless_mode == WIRELESS_MODE_AC_5G) {
 				return AC_MODE_MCS9_RIX;
-			} else {
-				return 0;
 			}
+			return 0;
 		}
 	}
 }
@@ -101,12 +94,12 @@ static void _rtl_rc_rate_set_series(struct rtl_priv *rtlpriv,
 				    struct ieee80211_sta *sta,
 				    struct ieee80211_tx_rate *rate,
 				    struct ieee80211_tx_rate_control *txrc,
-				    u8 tries, char rix, int rtsctsenable,
+				    u8 tries, s8 rix, int rtsctsenable,
 				    bool not_data)
 {
 	struct rtl_mac *mac = rtl_mac(rtlpriv);
 	struct rtl_sta_info *sta_entry = NULL;
-	u8 wireless_mode = 0;
+	u16 wireless_mode = 0;
 	u8 sgi_20 = 0, sgi_40 = 0, sgi_80 = 0;
 
 	if (sta) {
@@ -119,7 +112,7 @@ static void _rtl_rc_rate_set_series(struct rtl_priv *rtlpriv,
 	rate->count = tries;
 	rate->idx = rix >= 0x00 ? rix : 0x00;
 	if (rtlpriv->rtlhal.hw_type == HARDWARE_TYPE_RTL8812AE &&
-	    wireless_mode == WIRELESS_MODE_AC_5G) 
+	    wireless_mode == WIRELESS_MODE_AC_5G)
 		rate->idx += 0x10;/*2NSS for 8812AE*/
 
 	if (!not_data) {
@@ -145,6 +138,11 @@ static void _rtl_rc_rate_set_series(struct rtl_priv *rtlpriv,
 		    ((wireless_mode == WIRELESS_MODE_N_5G) ||
 		     (wireless_mode == WIRELESS_MODE_N_24G)))
 			rate->flags |= IEEE80211_TX_RC_MCS;
+		if (sta && sta->vht_cap.vht_supported &&
+		    (wireless_mode == WIRELESS_MODE_AC_5G ||
+		     wireless_mode == WIRELESS_MODE_AC_24G ||
+		     wireless_mode == WIRELESS_MODE_AC_ONLY))
+			rate->flags |= IEEE80211_TX_RC_VHT_MCS;
 	}
 }
 
@@ -218,9 +216,9 @@ static void rtl_tx_status(void *ppriv,
 
 	if (sta) {
 		/* Check if aggregation has to be enabled for this tid */
-		sta_entry = (struct rtl_sta_info *)sta->drv_priv;
-		if ((sta->ht_cap.ht_supported == true) &&
-				!(skb->protocol == cpu_to_be16(ETH_P_PAE))) {
+		sta_entry = (struct rtl_sta_info *) sta->drv_priv;
+		if ((sta->ht_cap.ht_supported) &&
+		    !(skb->protocol == cpu_to_be16(ETH_P_PAE))) {
 			if (ieee80211_is_data_qos(fc)) {
 				u8 tid = rtl_get_tid(skb);
 				if (_rtl_tx_aggr_check(rtlpriv, sta_entry,
@@ -269,8 +267,7 @@ static void *rtl_rate_alloc_sta(void *ppriv,
 
 	rate_priv = kzalloc(sizeof(struct rtl_rate_priv), gfp);
 	if (!rate_priv) {
-		RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG,
-			 "Unable to allocate private rc structure\n");
+		pr_err("Unable to allocate private rc structure\n");
 		return NULL;
 	}
 
@@ -286,7 +283,7 @@ static void rtl_rate_free_sta(void *rtlpriv,
 	kfree(rate_priv);
 }
 
-static struct rate_control_ops rtl_rate_ops = {
+static const struct rate_control_ops rtl_rate_ops = {
 	.name = "rtl_rc",
 	.alloc = rtl_rate_alloc,
 	.free = rtl_rate_free,

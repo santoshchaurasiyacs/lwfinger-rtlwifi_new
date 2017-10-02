@@ -1,0 +1,304 @@
+diff -upr /home/finger/rtlwifi_sync/Makefile ./Makefile
+--- /home/finger/rtlwifi_sync/Makefile	2016-11-25 19:35:47.604570960 -0600
++++ ./Makefile	2016-11-30 14:52:45.050206759 -0600
+@@ -1,6 +1,6 @@
+ SHELL := /bin/sh
+ CC = gcc
+-KVER  := $(shell uname -r)
++KVER  ?= $(shell uname -r)
+ KSRC := /lib/modules/$(KVER)/build
+ FIRMWAREDIR := /lib/firmware/
+ PWD := $(shell pwd)
+@@ -97,7 +97,7 @@ ifeq ($(COMPRESS_XZ), y)
+ 	@xz -f $(MODDESTDIR)/rtl8*/*.ko
+ endif
+ 
+-	@depmod -a
++	@depmod -a $(KVER)
+ 
+ 	@#copy firmware images to target folder
+ 	@cp -fr firmware/rtlwifi/ $(FIRMWAREDIR)/
+@@ -114,11 +114,11 @@ endif
+ 	@echo "Uninstall rtlwifi SUCCESS"
+ 
+ clean:
+-	@rm -fr *.mod.c *.mod *.o .*.cmd *.ko *~ .*.o.d
+-	@rm -fr rtl8*/*.mod.c rtl8*/*.mod rtl8*/*.o rtl8*/.*.cmd rtl8*/*.ko rtl8*/*~ rtl8*/*.cmd rtl8*/.*.o.d
+-	@rm -fr bt*/*.mod.c bt*/*.mod bt*/*.o bt*/.*.cmd bt*/*.ko bt*/*~ bt*/*.cmd bt*/.*.o.d
++	@rm -fr *.mod.c *.mod *.o .*.cmd *.ko *~
++	@rm -fr rtl8*/*.mod.c rtl8*/*.mod rtl8*/*.o rtl8*/.*.cmd rtl8*/*.ko rtl8*/*~
++	@rm -fr bt*/*.mod.c bt*/*.mod bt*/*.o bt*/.*.cmd bt*/*.ko bt*/*~
+ 	@rm -fr .tmp_versions
+ 	@rm -fr Modules.symvers
+ 	@rm -fr Module.symvers
+ 	@rm -fr Module.markers
+-	@rm -fr modules.order rtl8*/modules.order bt*/modules.order
++	@rm -fr modules.order
+Only in ./patches: 0001-rtlwifi-8723be-fix-bug-of-ant_sel-code.patch
+Only in ./patches: 0001-rtlwifi-8723be-fix-bug-of-ant_sel-code.patch~
+Only in ./patches: 0001-rtlwifi_new-Remove-8812-btc-and-udp-socket.patch
+Only in ./patches: 0001-rtlwifi_new-Remove-8812-btc-and-udp-socket.patch~
+Only in /home/finger/rtlwifi_sync/patches: 0015-rtlwifi-Update-new-btcoex.patch
+Only in /home/finger/rtlwifi_sync/patches: 0015-rtlwifi-Update-new-btcoex.patch~
+Only in /home/finger/rtlwifi_sync/patches: fix_errors_in_btcoexist
+Only in /home/finger/rtlwifi_sync/patches: fixes_for_halbtc8192e2ant.c
+Only in /home/finger/rtlwifi_sync/patches: fixes_for_halbtc8192e2ant.c~
+diff -upr /home/finger/rtlwifi_sync/patches/series ./patches/series
+--- /home/finger/rtlwifi_sync/patches/series	2016-11-19 13:25:49.274526119 -0600
++++ ./patches/series	2016-11-17 12:35:30.390959108 -0600
+@@ -1,9 +1,2 @@
+-fixes_for_halbtc8192e2ant.c
+-fix_errors_in_btcoexist/fixes_for_halbtc8723b1ant.c
+-fix_errors_in_btcoexist/fixes_for_halbtc8723b1ant.h
+-fix_errors_in_btcoexist/fixes_for_halbtc8723b2ant.c
+-fix_errors_in_btcoexist/fixes_for_halbtc8821a1ant.c
+-fix_errors_in_btcoexist/fixes_for_halbtc8821a2ant.c
+-fix_errors_in_btcoexist/fixes_for_halbtcoutsrc.c
+-fix_errors_in_btcoexist/fixes_for_halbtcoutsrc.h
+-fix_errors_in_btcoexist/fixes_for_rtl_btc.c
++0001-rtlwifi-8723be-fix-bug-of-ant_sel-code.patch
++0001-rtlwifi_new-Remove-8812-btc-and-udp-socket.patch
+Only in /home/finger/rtlwifi_sync/: patch_skb
+Only in /home/finger/rtlwifi_sync/.pc: fix_errors_in_btcoexist
+Only in .: .pci.o.d
+Only in .: .ps.o.d
+Only in .: README.md
+Only in /home/finger/rtlwifi_sync/: remove_instance_of_if.tar.gz
+diff -upr /home/finger/rtlwifi_sync/rtl8188ee/Makefile ./rtl8188ee/Makefile
+--- /home/finger/rtlwifi_sync/rtl8188ee/Makefile	2016-11-17 20:56:56.187740287 -0600
++++ ./rtl8188ee/Makefile	2016-09-12 10:34:31.836318058 -0500
+@@ -1,15 +1,17 @@
+-rtl8188ee-objs :=		\
+-		dm.o		\
+-		fw.o		\
+-		hw.o		\
+-		led.o		\
+-		phy.o		\
+-		pwrseq.o	\
+-		rf.o		\
+-		sw.o		\
+-		table.o		\
+-		trx.o
+-
+-obj-$(CONFIG_RTL8188EE) += rtl8188ee.o
+-
+-ccflags-y += -D__CHECK_ENDIAN__
++rtl8188ee-objs :=		\
++		dm.o		\
++		fw.o		\
++		hw.o		\
++		led.o		\
++		phy.o		\
++		pwrseq.o	\
++		pwrseqcmd.o	\
++		rf.o		\
++		sw.o		\
++		table.o		\
++		trx.o
++
++obj-m += rtl8188ee.o
++
++ccflags-y += -Idrivers/net/wireless/rtlwifi -D__CHECK_ENDIAN__
++
+Only in ./rtl8188ee: modules.order
+Only in ./rtl8188ee: pwrseqcmd.c
+Only in ./rtl8188ee: pwrseqcmd.h
+Only in ./rtl8192c: .dm_common.o.d
+Only in ./rtl8192c: .fw_common.o.d
+diff -upr /home/finger/rtlwifi_sync/rtl8192c/Makefile ./rtl8192c/Makefile
+--- /home/finger/rtlwifi_sync/rtl8192c/Makefile	2016-11-17 20:56:56.191740300 -0600
++++ ./rtl8192c/Makefile	2016-09-12 10:34:31.844318076 -0500
+@@ -4,6 +4,6 @@ rtl8192c-common-objs :=		\
+ 		fw_common.o	\
+ 		phy_common.o
+ 
+-obj-$(CONFIG_RTL8192C_COMMON) += rtl8192c-common.o
++obj-m += rtl8192c-common.o
+ 
+ ccflags-y += -D__CHECK_ENDIAN__
+Only in ./rtl8192c: modules.order
+Only in ./rtl8192c: .phy_common.o.d
+Only in ./rtl8192ce: fw.c
+Only in ./rtl8192ce: fw.h
+diff -upr /home/finger/rtlwifi_sync/rtl8192ce/Makefile ./rtl8192ce/Makefile
+--- /home/finger/rtlwifi_sync/rtl8192ce/Makefile	2016-11-17 20:56:56.191740300 -0600
++++ ./rtl8192ce/Makefile	2016-09-12 10:34:31.844318076 -0500
+@@ -1,5 +1,6 @@
+ rtl8192ce-objs :=		\
+ 		dm.o		\
++		fw.o		\
+ 		hw.o		\
+ 		led.o		\
+ 		phy.o		\
+@@ -8,6 +9,7 @@ rtl8192ce-objs :=		\
+ 		table.o		\
+ 		trx.o
+ 
+-obj-$(CONFIG_RTL8192CE) += rtl8192ce.o
++obj-m += rtl8192ce.o
++
++ccflags-y += -Idrivers/net/wireless/rtlwifi -D__CHECK_ENDIAN__
+ 
+-ccflags-y += -D__CHECK_ENDIAN__
+Only in ./rtl8192ce: modules.order
+diff -upr /home/finger/rtlwifi_sync/rtl8192cu/Makefile ./rtl8192cu/Makefile
+--- /home/finger/rtlwifi_sync/rtl8192cu/Makefile	2016-11-17 20:56:56.191740300 -0600
++++ ./rtl8192cu/Makefile	2016-09-12 10:34:31.868318134 -0500
+@@ -9,6 +9,8 @@ rtl8192cu-objs :=		\
+ 		table.o		\
+ 		trx.o
+ 
+-obj-$(CONFIG_RTL8192CU) += rtl8192cu.o
++obj-m += rtl8192cu.o
++
++ccflags-y += -Idrivers/net/wireless/rtlwifi -D__CHECK_ENDIAN__
++
+ 
+-ccflags-y += -D__CHECK_ENDIAN__
+Only in ./rtl8192cu: modules.order
+diff -upr /home/finger/rtlwifi_sync/rtl8192de/Makefile ./rtl8192de/Makefile
+--- /home/finger/rtlwifi_sync/rtl8192de/Makefile	2016-11-17 20:56:56.195740312 -0600
++++ ./rtl8192de/Makefile	2016-09-12 10:34:31.876318154 -0500
+@@ -9,6 +9,8 @@ rtl8192de-objs :=		\
+ 		table.o		\
+ 		trx.o
+ 
+-obj-$(CONFIG_RTL8192DE) += rtl8192de.o
++obj-m += rtl8192de.o
++
++ccflags-y += -Idrivers/net/wireless/rtlwifi -D__CHECK_ENDIAN__
++
+ 
+-ccflags-y += -D__CHECK_ENDIAN__
+Only in ./rtl8192de: modules.order
+diff -upr /home/finger/rtlwifi_sync/rtl8192ee/Makefile ./rtl8192ee/Makefile
+--- /home/finger/rtlwifi_sync/rtl8192ee/Makefile	2016-11-17 20:56:56.195740312 -0600
++++ ./rtl8192ee/Makefile	2016-09-12 10:34:31.892318191 -0500
+@@ -1,16 +1,18 @@
+-rtl8192ee-objs :=		\
+-		dm.o		\
+-		fw.o		\
+-		hw.o		\
+-		led.o		\
+-		phy.o		\
+-		pwrseq.o	\
+-		rf.o		\
+-		sw.o		\
+-		table.o		\
+-		trx.o		\
+-
+-
+-obj-$(CONFIG_RTL8192EE) += rtl8192ee.o
+-
+-ccflags-y += -D__CHECK_ENDIAN__
++rtl8192ee-objs :=		\
++		dm.o		\
++		fw.o		\
++		hw.o		\
++		led.o		\
++		phy.o		\
++		pwrseq.o	\
++		pwrseqcmd.o	\
++		rf.o		\
++		sw.o		\
++		table.o		\
++		trx.o
++
++obj-m += rtl8192ee.o
++
++ccflags-y += -Idrivers/net/wireless/rtlwifi -D__CHECK_ENDIAN__
++
++
+Only in ./rtl8192ee: modules.order
+Only in ./rtl8192ee: pwrseqcmd.c
+Only in ./rtl8192ee: pwrseqcmd.h
+diff -upr /home/finger/rtlwifi_sync/rtl8192se/Makefile ./rtl8192se/Makefile
+--- /home/finger/rtlwifi_sync/rtl8192se/Makefile	2016-11-17 20:56:56.199740324 -0600
++++ ./rtl8192se/Makefile	2016-09-12 10:34:31.900318212 -0500
+@@ -9,7 +9,8 @@ rtl8192se-objs :=		\
+ 		table.o		\
+ 		trx.o
+ 
+-obj-$(CONFIG_RTL8192SE) += rtl8192se.o
++obj-m += rtl8192se.o
++
++ccflags-y += -Idrivers/net/wireless/rtlwifi -D__CHECK_ENDIAN__
+ 
+-ccflags-y += -D__CHECK_ENDIAN__
+ 
+Only in ./rtl8192se: modules.order
+diff -upr /home/finger/rtlwifi_sync/rtl8723ae/Makefile ./rtl8723ae/Makefile
+--- /home/finger/rtlwifi_sync/rtl8723ae/Makefile	2016-11-17 20:56:56.199740324 -0600
++++ ./rtl8723ae/Makefile	2016-09-12 10:34:31.916318249 -0500
+@@ -7,12 +7,14 @@ rtl8723ae-objs :=		\
+ 		led.o		\
+ 		phy.o		\
+ 		pwrseq.o	\
++		pwrseqcmd.o	\
+ 		rf.o		\
+ 		sw.o		\
+ 		table.o		\
+ 		trx.o		\
+ 
++obj-m += rtl8723ae.o
++
++ccflags-y += -Idrivers/net/wireless/rtlwifi -D__CHECK_ENDIAN__
+ 
+-obj-$(CONFIG_RTL8723AE) += rtl8723ae.o
+ 
+-ccflags-y += -D__CHECK_ENDIAN__
+Only in ./rtl8723ae: modules.order
+Only in ./rtl8723ae: pwrseqcmd.c
+Only in ./rtl8723ae: pwrseqcmd.h
+diff -upr /home/finger/rtlwifi_sync/rtl8723be/Makefile ./rtl8723be/Makefile
+--- /home/finger/rtlwifi_sync/rtl8723be/Makefile	2016-11-17 20:56:56.203740336 -0600
++++ ./rtl8723be/Makefile	2016-09-12 10:34:31.940318308 -0500
+@@ -5,12 +5,13 @@ rtl8723be-objs :=		\
+ 		led.o		\
+ 		phy.o		\
+ 		pwrseq.o	\
++		pwrseqcmd.o	\
+ 		rf.o		\
+ 		sw.o		\
+ 		table.o		\
+ 		trx.o		\
+ 
+ 
+-obj-$(CONFIG_RTL8723BE) += rtl8723be.o
++obj-m += rtl8723be.o
+ 
+ ccflags-y += -D__CHECK_ENDIAN__
+Only in ./rtl8723be: modules.order
+Only in /home/finger/rtlwifi_sync/rtl8723be: phy.c.orig
+Only in ./rtl8723be: pwrseqcmd.c
+Only in ./rtl8723be: pwrseqcmd.h
+Only in /home/finger/rtlwifi_sync/: rtl8723com
+diff -upr /home/finger/rtlwifi_sync/rtl8821ae/Makefile ./rtl8821ae/Makefile
+--- /home/finger/rtlwifi_sync/rtl8821ae/Makefile	2016-11-17 20:56:56.203740336 -0600
++++ ./rtl8821ae/Makefile	2016-09-12 10:34:31.948318326 -0500
+@@ -5,12 +5,13 @@ rtl8821ae-objs :=		\
+ 		led.o		\
+ 		phy.o		\
+ 		pwrseq.o	\
++		pwrseqcmd.o	\
+ 		rf.o		\
+ 		sw.o		\
+ 		table.o		\
+ 		trx.o		\
+ 
+ 
+-obj-$(CONFIG_RTL8821AE) += rtl8821ae.o
++obj-m += rtl8821ae.o
+ 
+ ccflags-y += -D__CHECK_ENDIAN__
+Only in ./rtl8821ae: modules.order
+Only in ./rtl8821ae: pwrseqcmd.c
+Only in ./rtl8821ae: pwrseqcmd.h
+Only in .: rtlwifi.diff
+Only in /home/finger/rtlwifi_sync/: rtlwifi-Fix-enter-exit-power_save.patch
+Only in /home/finger/rtlwifi_sync/: sparse.err
+Only in .: .stats.o.d
+Only in .: temperatures
+Only in .: tools
+Only in .: turbostat.out
+Only in .: .usb.o.d

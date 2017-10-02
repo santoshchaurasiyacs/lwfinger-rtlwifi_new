@@ -11,10 +11,6 @@
  * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
  * more details.
  *
- * You should have received a copy of the GNU General Public License along with
- * this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110, USA
- *
  * The full GNU General Public License is included in this distribution in the
  * file called LICENSE.
  *
@@ -40,7 +36,7 @@
 #include "dm.h"
 #include "mac.h"
 #include "trx.h"
-#include "../rtl8192c/phy_common.h"
+#include "../rtl8192c/fw_common.h"
 
 #include <linux/module.h>
 
@@ -69,8 +65,6 @@ void rtl92c_read_chip_version(struct ieee80211_hw *hw)
 		chip_version = NORMAL_CHIP;
 		chip_version |= ((value32 & TYPE_ID) ? CHIP_92C : 0);
 		chip_version |= ((value32 & VENDOR_ID) ? CHIP_VENDOR_UMC : 0);
-		/* RTL8723 with BT function. */
-		chip_version |= ((value32 & BT_FUNC) ? CHIP_8723 : 0);
 		if (IS_VENDOR_UMC(chip_version))
 			chip_version |= ((value32 & CHIP_VER_RTL_MASK) ?
 					 CHIP_VENDOR_UMC_B_CUT : 0);
@@ -78,10 +72,6 @@ void rtl92c_read_chip_version(struct ieee80211_hw *hw)
 			value32 = rtl_read_dword(rtlpriv, REG_HPON_FSM);
 			chip_version |= ((CHIP_BONDING_IDENTIFIER(value32) ==
 				 CHIP_BONDING_92C_1T2R) ? CHIP_92C_1T2R : 0);
-		} else if (IS_8723_SERIES(chip_version)) {
-			value32 = rtl_read_dword(rtlpriv, REG_GPIO_OUTSTS);
-			chip_version |= ((value32 & RF_RL_ID) ?
-					  CHIP_8723_DRV_REV : 0);
 		}
 	}
 	rtlhal->version  = (enum version_8192c)chip_version;
@@ -113,12 +103,6 @@ void rtl92c_read_chip_version(struct ieee80211_hw *hw)
 		break;
 	case VERSION_NORMAL_UMC_CHIP_88C_B_CUT:
 		versionid = "NORMAL_UMC_CHIP_88C_B_CUT";
-		break;
-	case VERSION_NORMA_UMC_CHIP_8723_1T1R_A_CUT:
-		versionid = "NORMAL_UMC_CHIP_8723_1T1R_A_CUT";
-		break;
-	case VERSION_NORMA_UMC_CHIP_8723_1T1R_B_CUT:
-		versionid = "NORMAL_UMC_CHIP_8723_1T1R_B_CUT";
 		break;
 	case VERSION_TEST_CHIP_92C:
 		versionid = "TEST_CHIP_92C";
@@ -173,9 +157,8 @@ bool rtl92c_llt_write(struct ieee80211_hw *hw, u32 address, u32 data)
 		if (_LLT_NO_ACTIVE == _LLT_OP_VALUE(value))
 			break;
 		if (count > POLLING_LLT_THRESHOLD) {
-			RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG,
-				 "Failed to polling write LLT done at address %d! _LLT_OP_VALUE(%x)\n",
-				 address, _LLT_OP_VALUE(value));
+			pr_err("Failed to polling write LLT done at address %d! _LLT_OP_VALUE(%x)\n",
+			       address, _LLT_OP_VALUE(value));
 			status = false;
 			break;
 		}
@@ -278,8 +261,7 @@ void rtl92c_set_key(struct ieee80211_hw *hw, u32 key_index,
 			enc_algo = CAM_AES;
 			break;
 		default:
-			RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG,
-				 "illegal switch case\n");
+			pr_err("illegal switch case\n");
 			enc_algo = CAM_TKIP;
 			break;
 		}
@@ -296,9 +278,7 @@ void rtl92c_set_key(struct ieee80211_hw *hw, u32 key_index,
 					entry_id = rtl_cam_get_free_entry(hw,
 								 p_macaddr);
 					if (entry_id >=  TOTAL_CAM_ENTRY) {
-						RT_TRACE(rtlpriv, COMP_SEC,
-							 DBG_EMERG,
-							 "Can not find free hw security cam entry\n");
+						pr_err("Can not find free hw security cam entry\n");
 						return;
 					}
 				} else {
@@ -372,11 +352,10 @@ u32 rtl92c_get_txdma_status(struct ieee80211_hw *hw)
 void rtl92c_enable_interrupt(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
-	struct rtl_hal *rtlhal = rtl_hal(rtl_priv(hw));
 	struct rtl_pci *rtlpci = rtl_pcidev(rtl_pcipriv(hw));
 	struct rtl_usb *rtlusb = rtl_usbdev(rtl_usbpriv(hw));
 
-	if (IS_HARDWARE_TYPE_8192CE(rtlhal)) {
+	if (IS_HARDWARE_TYPE_8192CE(rtlpriv)) {
 		rtl_write_dword(rtlpriv, REG_HIMR, rtlpci->irq_mask[0] &
 				0xFFFFFFFF);
 		rtl_write_dword(rtlpriv, REG_HIMRE, rtlpci->irq_mask[1] &
@@ -405,59 +384,9 @@ void rtl92c_disable_interrupt(struct ieee80211_hw *hw)
 void rtl92c_set_qos(struct ieee80211_hw *hw, int aci)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
-	struct rtl_mac *mac = rtl_mac(rtl_priv(hw));
-	u32 u4b_ac_param;
 
 	rtl92c_dm_init_edca_turbo(hw);
-	u4b_ac_param = (u32)mac->ac[aci].aifs;
-	u4b_ac_param |=
-	    ((u32)le16_to_cpu(mac->ac[aci].cw_min) & 0xF) <<
-	    AC_PARAM_ECW_MIN_OFFSET;
-	u4b_ac_param |=
-	    ((u32)le16_to_cpu(mac->ac[aci].cw_max) & 0xF) <<
-	    AC_PARAM_ECW_MAX_OFFSET;
-	u4b_ac_param |= (u32)le16_to_cpu(mac->ac[aci].tx_op) <<
-			 AC_PARAM_TXOP_OFFSET;
-	RT_TRACE(rtlpriv, COMP_QOS, DBG_LOUD, "queue:%x, ac_param:%x\n",
-		 aci, u4b_ac_param);
-	switch (aci) {
-	case AC1_BK:
-		rtl_write_dword(rtlpriv, REG_EDCA_BK_PARAM, u4b_ac_param);
-		break;
-	case AC0_BE:
-		rtl_write_dword(rtlpriv, REG_EDCA_BE_PARAM, u4b_ac_param);
-		break;
-	case AC2_VI:
-		rtl_write_dword(rtlpriv, REG_EDCA_VI_PARAM, u4b_ac_param);
-		break;
-	case AC3_VO:
-		rtl_write_dword(rtlpriv, REG_EDCA_VO_PARAM, u4b_ac_param);
-		break;
-	default:
-		RT_ASSERT(false, "invalid aci: %d !\n", aci);
-		break;
-	}
-}
-
-/*-------------------------------------------------------------------------
- * HW MAC Address
- *-------------------------------------------------------------------------*/
-void rtl92c_set_mac_addr(struct ieee80211_hw *hw, const u8 *addr)
-{
-	u32 i;
-	struct rtl_priv *rtlpriv = rtl_priv(hw);
-
-	for (i = 0 ; i < ETH_ALEN ; i++)
-		rtl_write_byte(rtlpriv, (REG_MACID + i), *(addr+i));
-
-	RT_TRACE(rtlpriv, COMP_CMD, DBG_DMESG,
-		 "MAC Address: %02X-%02X-%02X-%02X-%02X-%02X\n",
-		 rtl_read_byte(rtlpriv, REG_MACID),
-		 rtl_read_byte(rtlpriv, REG_MACID+1),
-		 rtl_read_byte(rtlpriv, REG_MACID+2),
-		 rtl_read_byte(rtlpriv, REG_MACID+3),
-		 rtl_read_byte(rtlpriv, REG_MACID+4),
-		 rtl_read_byte(rtlpriv, REG_MACID+5));
+	rtlpriv->cfg->ops->set_hw_reg(hw, HW_VAR_AC_PARAM, (u8 *)&aci);
 }
 
 void rtl92c_init_driver_info_size(struct ieee80211_hw *hw, u8 size)
@@ -497,7 +426,7 @@ int rtl92c_set_network_type(struct ieee80211_hw *hw, enum nl80211_iftype type)
 			 "Network type %d not supported!\n", type);
 		return -EOPNOTSUPP;
 	}
-	rtl_write_byte(rtlpriv, (REG_CR + 2), value);
+	rtl_write_byte(rtlpriv, MSR, value);
 	return 0;
 }
 
@@ -541,8 +470,8 @@ static void rtl92c_set_cck_sifs(struct ieee80211_hw *hw, u8 trx_sifs,
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 
-	rtl_write_byte(rtlpriv, REG_SIFS_CTX, trx_sifs);
-	rtl_write_byte(rtlpriv, (REG_SIFS_CTX + 1), ctx_sifs);
+	rtl_write_byte(rtlpriv, REG_SIFS_CCK, trx_sifs);
+	rtl_write_byte(rtlpriv, (REG_SIFS_CCK + 1), ctx_sifs);
 }
 
 static void rtl92c_set_ofdm_sifs(struct ieee80211_hw *hw, u8 trx_sifs,
@@ -550,8 +479,8 @@ static void rtl92c_set_ofdm_sifs(struct ieee80211_hw *hw, u8 trx_sifs,
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 
-	rtl_write_byte(rtlpriv, REG_SIFS_TRX, trx_sifs);
-	rtl_write_byte(rtlpriv, (REG_SIFS_TRX + 1), ctx_sifs);
+	rtl_write_byte(rtlpriv, REG_SIFS_OFDM, trx_sifs);
+	rtl_write_byte(rtlpriv, (REG_SIFS_OFDM + 1), ctx_sifs);
 }
 
 void rtl92c_init_edca_param(struct ieee80211_hw *hw,
@@ -585,8 +514,8 @@ void rtl92c_init_edca(struct ieee80211_hw *hw)
 	rtl92c_set_cck_sifs(hw, 0xa, 0xa);
 	rtl92c_set_ofdm_sifs(hw, 0xe, 0xe);
 	/* Set CCK/OFDM SIFS to be 10us. */
-	rtl_write_word(rtlpriv, REG_SIFS_CTX, 0x0a0a);
-	rtl_write_word(rtlpriv, REG_SIFS_TRX, 0x1010);
+	rtl_write_word(rtlpriv, REG_SIFS_CCK, 0x0a0a);
+	rtl_write_word(rtlpriv, REG_SIFS_OFDM, 0x1010);
 	rtl_write_word(rtlpriv, REG_PROT_MODE_CTRL, 0x0204);
 	rtl_write_dword(rtlpriv, REG_BAR_MODE_CTRL, 0x014004);
 	/* TXOP */
@@ -613,7 +542,7 @@ void rtl92c_init_ampdu_aggregation(struct ieee80211_hw *hw)
 	rtl_write_word(rtlpriv, 0x4CA, 0x0708);
 }
 
-void rtl92c_init_beacon_max_error(struct ieee80211_hw *hw, bool infra_mode)
+void rtl92c_init_beacon_max_error(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 
@@ -641,21 +570,6 @@ void rtl92c_init_retry_function(struct ieee80211_hw *hw)
 	rtl_write_byte(rtlpriv, REG_ACKTO, 0x40);
 }
 
-void rtl92c_init_beacon_parameters(struct ieee80211_hw *hw,
-				   enum version_8192c version)
-{
-	struct rtl_priv *rtlpriv = rtl_priv(hw);
-	struct rtl_hal *rtlhal = rtl_hal(rtlpriv);
-
-	rtl_write_word(rtlpriv, REG_TBTT_PROHIBIT, 0x6404);/* ms */
-	rtl_write_byte(rtlpriv, REG_DRVERLYINT, DRIVER_EARLY_INT_TIME);/*ms*/
-	rtl_write_byte(rtlpriv, REG_BCNDMATIM, BCN_DMA_ATIME_INT_TIME);
-	if (IS_NORMAL_CHIP(rtlhal->version))
-		rtl_write_word(rtlpriv, REG_BCNTCFG, 0x660F);
-	else
-		rtl_write_word(rtlpriv, REG_BCNTCFG, 0x66FF);
-}
-
 void rtl92c_disable_fast_edca(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
@@ -671,50 +585,9 @@ void rtl92c_set_min_space(struct ieee80211_hw *hw, bool is2T)
 	rtl_write_byte(rtlpriv, REG_AMPDU_MIN_SPACE, value);
 }
 
-u16 rtl92c_get_mgt_filter(struct ieee80211_hw *hw)
-{
-	struct rtl_priv *rtlpriv = rtl_priv(hw);
-
-	return rtl_read_word(rtlpriv, REG_RXFLTMAP0);
-}
-
-void rtl92c_set_mgt_filter(struct ieee80211_hw *hw, u16 filter)
-{
-	struct rtl_priv *rtlpriv = rtl_priv(hw);
-
-	rtl_write_word(rtlpriv, REG_RXFLTMAP0, filter);
-}
-
-u16 rtl92c_get_ctrl_filter(struct ieee80211_hw *hw)
-{
-	struct rtl_priv *rtlpriv = rtl_priv(hw);
-
-	return rtl_read_word(rtlpriv, REG_RXFLTMAP1);
-}
-
-void rtl92c_set_ctrl_filter(struct ieee80211_hw *hw, u16 filter)
-{
-	struct rtl_priv *rtlpriv = rtl_priv(hw);
-
-	rtl_write_word(rtlpriv, REG_RXFLTMAP1, filter);
-}
-
-u16 rtl92c_get_data_filter(struct ieee80211_hw *hw)
-{
-	struct rtl_priv *rtlpriv = rtl_priv(hw);
-
-	return rtl_read_word(rtlpriv,  REG_RXFLTMAP2);
-}
-
-void rtl92c_set_data_filter(struct ieee80211_hw *hw, u16 filter)
-{
-	struct rtl_priv *rtlpriv = rtl_priv(hw);
-
-	rtl_write_word(rtlpriv, REG_RXFLTMAP2, filter);
-}
 /*==============================================================*/
 
-static u8 _rtl92c_query_rxpwrpercentage(char antpower)
+static u8 _rtl92c_query_rxpwrpercentage(s8 antpower)
 {
 	if ((antpower <= -100) || (antpower >= 20))
 		return 0;
@@ -724,9 +597,9 @@ static u8 _rtl92c_query_rxpwrpercentage(char antpower)
 		return 100 + antpower;
 }
 
-static u8 _rtl92c_evm_db_to_percentage(char value)
+static u8 _rtl92c_evm_db_to_percentage(s8 value)
 {
-	char ret_val;
+	s8 ret_val;
 
 	ret_val = value;
 	if (ret_val >= 0)
@@ -787,7 +660,7 @@ static void _rtl92c_query_rxphystatus(struct ieee80211_hw *hw,
 	bool is_cck_rate;
 	u8 *pdesc = (u8 *)p_desc;
 
-	is_cck_rate = RX_HAL_IS_CCK_RATE(p_desc);
+	is_cck_rate = RX_HAL_IS_CCK_RATE(p_desc->rxmcs);
 	pstats->packet_matchbssid = packet_match_bssid;
 	pstats->packet_toself = packet_toself;
 	pstats->packet_beacon = packet_beacon;
@@ -872,7 +745,7 @@ static void _rtl92c_query_rxphystatus(struct ieee80211_hw *hw,
 			    (long)(p_drvinfo->rxsnr[i] / 2);
 
 			if (packet_match_bssid)
-				pstats->rx_mimo_signalstrength[i] = (u8)rssi;
+				pstats->rx_mimo_signalstrength[i] = (u8) rssi;
 		}
 		rx_pwr_all = ((p_drvinfo->pwdb_all >> 1) & 0x7f) - 110;
 		pwdb_all = _rtl92c_query_rxpwrpercentage(rx_pwr_all);
@@ -890,18 +763,18 @@ static void _rtl92c_query_rxphystatus(struct ieee80211_hw *hw,
 			if (packet_match_bssid) {
 				if (i == 0)
 					pstats->signalquality =
-					    (u8)(evm & 0xff);
+					    (u8) (evm & 0xff);
 				pstats->RX_SIGQ[i] =
-				    (u8)(evm & 0xff);
+				    (u8) (evm & 0xff);
 			}
 		}
 	}
 	if (is_cck_rate)
 		pstats->signalstrength =
-		    (u8)(_rtl92c_signal_scale_mapping(hw, pwdb_all));
+		    (u8) (_rtl92c_signal_scale_mapping(hw, pwdb_all));
 	else if (rf_rx_num != 0)
 		pstats->signalstrength =
-		    (u8)(_rtl92c_signal_scale_mapping
+		    (u8) (_rtl92c_signal_scale_mapping
 			  (hw, total_rssi /= rf_rx_num));
 }
 
@@ -933,6 +806,7 @@ void rtl92c_translate_rx_signal_stuff(struct ieee80211_hw *hw,
 			      (cpu_fc & IEEE80211_FCTL_FROMDS) ? hdr->addr2 :
 			      hdr->addr3) &&
 	     (!pstats->hwerror) && (!pstats->crc) && (!pstats->icv));
+
 	packet_toself = packet_matchbssid &&
 	    ether_addr_equal(praddr, rtlefuse->dev_addr);
 	if (ieee80211_is_beacon(fc))

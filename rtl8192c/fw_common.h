@@ -11,10 +11,6 @@
  * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
  * more details.
  *
- * You should have received a copy of the GNU General Public License along with
- * this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110, USA
- *
  * The full GNU General Public License is included in this distribution in the
  * file called LICENSE.
  *
@@ -32,33 +28,42 @@
 
 #define FW_8192C_SIZE				0x3000
 #define FW_8192C_START_ADDRESS			0x1000
+#define FW_8192C_END_ADDRESS			0x1FFF
 #define FW_8192C_PAGE_SIZE			4096
 #define FW_8192C_POLLING_DELAY			5
 #define FW_8192C_POLLING_TIMEOUT_COUNT		100
+#define NORMAL_CHIP				BIT(4)
 #define H2C_92C_KEEP_ALIVE_CTRL			48
 
 #define IS_FW_HEADER_EXIST(_pfwhdr)	\
 	((le16_to_cpu(_pfwhdr->signature)&0xFFF0) == 0x92C0 ||\
 	(le16_to_cpu(_pfwhdr->signature)&0xFFF0) == 0x88C0)
 
-struct rtl92c_firmware_header {
-	__le16 signature;
-	u8 category;
-	u8 function;
-	__le16 version;
-	u8 subversion;
-	u8 rsvd1;
-	u8 month;
-	u8 date;
-	u8 hour;
-	u8 minute;
-	__le16 ramcodeSize;
-	__le16 rsvd2;
-	__le32 svnindex;
-	__le32 rsvd3;
-	__le32 rsvd4;
-	__le32 rsvd5;
-};
+#define CUT_VERSION_MASK		(BIT(6)|BIT(7))
+#define CHIP_VENDOR_UMC			BIT(5)
+#define CHIP_VENDOR_UMC_B_CUT		BIT(6) /* Chip version for ECO */
+#define IS_CHIP_VER_B(version)  ((version & CHIP_VER_B) ? true : false)
+#define RF_TYPE_MASK			(BIT(0)|BIT(1))
+#define GET_CVID_RF_TYPE(version)	\
+	((version) & RF_TYPE_MASK)
+#define GET_CVID_CUT_VERSION(version) \
+	((version) & CUT_VERSION_MASK)
+#define IS_NORMAL_CHIP(version)	\
+	((version & NORMAL_CHIP) ? true : false)
+#define IS_2T2R(version) \
+	(((GET_CVID_RF_TYPE(version)) == \
+	CHIP_92C_BITMASK) ? true : false)
+#define IS_92C_SERIAL(version) \
+	((IS_2T2R(version)) ? true : false)
+#define IS_CHIP_VENDOR_UMC(version)	\
+	((version & CHIP_VENDOR_UMC) ? true : false)
+#define IS_VENDOR_UMC_A_CUT(version) \
+	((IS_CHIP_VENDOR_UMC(version)) ? \
+	((GET_CVID_CUT_VERSION(version)) ? false : true) : false)
+#define IS_81XXC_VENDOR_UMC_B_CUT(version)	\
+	((IS_CHIP_VENDOR_UMC(version)) ? \
+	((GET_CVID_CUT_VERSION(version) == \
+		CHIP_VENDOR_UMC_B_CUT) ? true : false) : false)
 
 #define pagenum_128(_len)	(u32)(((_len)>>7) + ((_len)&0x7F ? 1 : 0))
 

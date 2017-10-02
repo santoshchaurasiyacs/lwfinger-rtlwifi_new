@@ -11,10 +11,6 @@
  * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
  * more details.
  *
- * You should have received a copy of the GNU General Public License along with
- * this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110, USA
- *
  * The full GNU General Public License is included in this distribution in the
  * file called LICENSE.
  *
@@ -34,10 +30,12 @@
 #include "reg.h"
 #include "def.h"
 #include "phy.h"
+#include "../rtl8192c/phy_common.h"
 #include "rf.h"
 #include "dm.h"
+#include "../rtl8192c/dm_common.h"
+#include "../rtl8192c/fw_common.h"
 #include "table.h"
-#include "../rtl8192c/phy_common.h"
 
 u32 rtl92cu_phy_query_rf_reg(struct ieee80211_hw *hw,
 			     enum radio_path rfpath, u32 regaddr, u32 bitmask)
@@ -106,13 +104,8 @@ void rtl92cu_phy_set_rf_reg(struct ieee80211_hw *hw,
 bool rtl92cu_phy_mac_config(struct ieee80211_hw *hw)
 {
 	bool rtstatus;
-	struct rtl_priv *rtlpriv = rtl_priv(hw);
-	struct rtl_hal *rtlhal = rtl_hal(rtl_priv(hw));
-	bool is92c = IS_92C_SERIAL(rtlhal->version);
 
 	rtstatus = _rtl92cu_phy_config_mac_with_headerfile(hw);
-	if (is92c && IS_HARDWARE_TYPE_8192CE(rtlhal))
-		rtl_write_byte(rtlpriv, 0x14, 0x71);
 	return rtstatus;
 }
 
@@ -120,7 +113,6 @@ bool rtl92cu_phy_bb_config(struct ieee80211_hw *hw)
 {
 	bool rtstatus = true;
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
-	struct rtl_hal *rtlhal = rtl_hal(rtl_priv(hw));
 	u16 regval;
 	u32 regval32;
 	u8 b_reg_hwparafile = 1;
@@ -132,17 +124,11 @@ bool rtl92cu_phy_bb_config(struct ieee80211_hw *hw)
 	rtl_write_byte(rtlpriv, REG_AFE_PLL_CTRL, 0x83);
 	rtl_write_byte(rtlpriv, REG_AFE_PLL_CTRL + 1, 0xdb);
 	rtl_write_byte(rtlpriv, REG_RF_CTRL, RF_EN | RF_RSTB | RF_SDMRSTB);
-	if (IS_HARDWARE_TYPE_8192CE(rtlhal)) {
-		rtl_write_byte(rtlpriv, REG_SYS_FUNC_EN, FEN_PPLL | FEN_PCIEA |
-			       FEN_DIO_PCIE |	FEN_BB_GLB_RSTN | FEN_BBRSTB);
-	} else if (IS_HARDWARE_TYPE_8192CU(rtlhal)) {
-		rtl_write_byte(rtlpriv, REG_SYS_FUNC_EN, FEN_USBA | FEN_USBD |
-			       FEN_BB_GLB_RSTN | FEN_BBRSTB);
-	}
+	rtl_write_byte(rtlpriv, REG_SYS_FUNC_EN, FEN_USBA | FEN_USBD |
+		       FEN_BB_GLB_RSTn | FEN_BBRSTB);
 	regval32 = rtl_read_dword(rtlpriv, 0x87c);
 	rtl_write_dword(rtlpriv, 0x87c, regval32 & (~BIT(31)));
-	if (IS_HARDWARE_TYPE_8192CU(rtlhal))
-		rtl_write_byte(rtlpriv, REG_LDOHCI12_CTRL, 0x0f);
+	rtl_write_byte(rtlpriv, REG_LDOHCI12_CTRL, 0x0f);
 	rtl_write_byte(rtlpriv, REG_AFE_XTAL_CTRL + 1, 0x80);
 	if (b_reg_hwparafile == 1)
 		rtstatus = _rtl92c_phy_bb8192c_config_parafile(hw);
@@ -160,9 +146,9 @@ bool _rtl92cu_phy_config_mac_with_headerfile(struct ieee80211_hw *hw)
 	RT_TRACE(rtlpriv, COMP_INIT, DBG_TRACE, "Read Rtl819XMACPHY_Array\n");
 	arraylength =  rtlphy->hwparam_tables[MAC_REG].length ;
 	ptrarray = rtlphy->hwparam_tables[MAC_REG].pdata;
-	RT_TRACE(rtlpriv, COMP_INIT, DBG_TRACE, "Img:RTL8192CEMAC_2T_ARRAY\n");
+	RT_TRACE(rtlpriv, COMP_INIT, DBG_TRACE, "Img:RTL8192CUMAC_2T_ARRAY\n");
 	for (i = 0; i < arraylength; i = i + 2)
-		rtl_write_byte(rtlpriv, ptrarray[i], (u8)ptrarray[i + 1]);
+		rtl_write_byte(rtlpriv, ptrarray[i], (u8) ptrarray[i + 1]);
 	return true;
 }
 
@@ -257,18 +243,18 @@ bool rtl92cu_phy_config_rf_with_headerfile(struct ieee80211_hw *hw,
 		radiob_arraylen = rtlphy->hwparam_tables[RADIOB_2T].length;
 		radiob_array_table = rtlphy->hwparam_tables[RADIOB_2T].pdata;
 		RT_TRACE(rtlpriv, COMP_INIT, DBG_TRACE,
-			 "Radio_A:RTL8192CERADIOA_2TARRAY\n");
+			 "Radio_A:RTL8192CURADIOA_2TARRAY\n");
 		RT_TRACE(rtlpriv, COMP_INIT, DBG_TRACE,
-			 "Radio_B:RTL8192CE_RADIOB_2TARRAY\n");
+			 "Radio_B:RTL8192CU_RADIOB_2TARRAY\n");
 	} else {
 		radioa_arraylen = rtlphy->hwparam_tables[RADIOA_1T].length;
 		radioa_array_table = rtlphy->hwparam_tables[RADIOA_1T].pdata;
 		radiob_arraylen = rtlphy->hwparam_tables[RADIOB_1T].length;
 		radiob_array_table = rtlphy->hwparam_tables[RADIOB_1T].pdata;
 		RT_TRACE(rtlpriv, COMP_INIT, DBG_TRACE,
-			 "Radio_A:RTL8192CE_RADIOA_1TARRAY\n");
+			 "Radio_A:RTL8192CU_RADIOA_1TARRAY\n");
 		RT_TRACE(rtlpriv, COMP_INIT, DBG_TRACE,
-			 "Radio_B:RTL8192CE_RADIOB_1TARRAY\n");
+			 "Radio_B:RTL8192CU_RADIOB_1TARRAY\n");
 	}
 	RT_TRACE(rtlpriv, COMP_INIT, DBG_TRACE, "Radio No %x\n", rfpath);
 	switch (rfpath) {
@@ -287,12 +273,8 @@ bool rtl92cu_phy_config_rf_with_headerfile(struct ieee80211_hw *hw,
 		}
 		break;
 	case RF90_PATH_C:
-		RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG,
-			 "switch case not processed\n");
-		break;
 	case RF90_PATH_D:
-		RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG,
-			 "switch case not processed\n");
+		pr_err("switch case %#x not processed\n", rfpath);
 		break;
 	default:
 		break;
@@ -331,8 +313,8 @@ void rtl92cu_phy_set_bw_mode_callback(struct ieee80211_hw *hw)
 		rtl_write_byte(rtlpriv, REG_RRSR + 2, reg_prsr_rsc);
 		break;
 	default:
-		RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG,
-			 "unknown bandwidth: %#X\n", rtlphy->current_chan_bw);
+		pr_err("unknown bandwidth: %#X\n",
+		       rtlphy->current_chan_bw);
 		break;
 	}
 	switch (rtlphy->current_chan_bw) {
@@ -353,8 +335,8 @@ void rtl92cu_phy_set_bw_mode_callback(struct ieee80211_hw *hw)
 			       HAL_PRIME_CHNL_OFFSET_LOWER) ? 2 : 1);
 		break;
 	default:
-		RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG,
-			 "unknown bandwidth: %#X\n", rtlphy->current_chan_bw);
+		pr_err("unknown bandwidth: %#X\n",
+		       rtlphy->current_chan_bw);
 		break;
 	}
 	rtl92cu_phy_rf6052_set_bandwidth(hw, rtlphy->current_chan_bw);
@@ -526,8 +508,8 @@ static bool _rtl92cu_phy_set_rf_power_state(struct ieee80211_hw *hw,
 		_rtl92c_phy_set_rf_sleep(hw);
 		break;
 	default:
-		RT_TRACE(rtlpriv, COMP_ERR, DBG_EMERG,
-			 "switch case not processed\n");
+		pr_err("switch case %#x not processed\n",
+		       rfpwr_state);
 		bresult = false;
 		break;
 	}

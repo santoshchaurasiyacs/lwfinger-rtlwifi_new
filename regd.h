@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Copyright(c) 2009-2010  Realtek Corporation.
+ * Copyright(c) 2009-2012  Realtek Corporation.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of version 2 of the GNU General Public License as
@@ -10,10 +10,6 @@
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
  * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
  * more details.
- *
- * You should have received a copy of the GNU General Public License along with
- * this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110, USA
  *
  * The full GNU General Public License is included in this distribution in the
  * file called LICENSE.
@@ -53,6 +49,7 @@ enum country_code_type_t {
 	COUNTRY_CODE_GLOBAL_DOMAIN = 10,
 	COUNTRY_CODE_WORLD_WIDE_13 = 11,
 	COUNTRY_CODE_TELEC_NETGEAR = 12,
+	COUNTRY_CODE_WORLD_WIDE_13_5G_ALL = 13,
 
 	/*add new channel plan above this line */
 	COUNTRY_CODE_MAX
@@ -60,7 +57,7 @@ enum country_code_type_t {
 
 int rtl_regd_init(struct ieee80211_hw *hw,
 		  void (*reg_notifier) (struct wiphy *wiphy,
-				        struct regulatory_request *request));
+		  struct regulatory_request *request));
 void rtl_reg_notifier(struct wiphy *wiphy, struct regulatory_request *request);
 
 #endif

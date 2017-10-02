@@ -21,7 +21,6 @@ PCI_8723AE_HAL_OBJS:=	\
 	led.o		\
 	phy.o		\
 	pwrseq.o	\
-	pwrseqcmd.o	\
 	rf.o		\
 	sw.o		\
 	table.o		\

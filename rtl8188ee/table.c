@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Copyright(c) 2009-2010  Realtek Corporation.
+ * Copyright(c) 2009-2013  Realtek Corporation.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of version 2 of the GNU General Public License as
@@ -10,10 +10,6 @@
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
  * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
  * more details.
- *
- * You should have received a copy of the GNU General Public License along with
- * this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110, USA
  *
  * The full GNU General Public License is included in this distribution in the
  * file called LICENSE.
@@ -354,11 +350,7 @@ u32 RTL8188EE_RADIOA_1TARRAY[] = {
 		0x0DF, 0x00000180,
 		0x0EF, 0x000001A0,
 		0x051, 0x0006B27D,
-	/*0xFF0F041F, 0xABCD,
-		0x052, 0x0007E4DD,
-	0xCDCDCDCD, 0xCDCD,*/
 		0x052, 0x0007E49D,
-	/*0xFF0F041F, 0xDEAD,*/
 		0x053, 0x00000073,
 		0x056, 0x00051FF3,
 		0x035, 0x00000086,

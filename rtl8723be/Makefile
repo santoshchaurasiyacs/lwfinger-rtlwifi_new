@@ -19,7 +19,6 @@ PCI_8723BE_HAL_OBJS:=	\
 	led.o		\
 	phy.o		\
 	pwrseq.o	\
-	pwrseqcmd.o	\
 	rf.o		\
 	sw.o		\
 	table.o		\

@@ -11,10 +11,6 @@
  * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
  * more details.
  *
- * You should have received a copy of the GNU General Public License along with
- * this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110, USA
- *
  * The full GNU General Public License is included in this distribution in the
  * file called LICENSE.
  *
@@ -210,7 +206,7 @@ u8 rtl92c_phy_sw_chnl(struct ieee80211_hw *hw);
 void rtl92c_phy_iq_calibrate(struct ieee80211_hw *hw, bool b_recovery);
 void rtl92c_phy_set_beacon_hw_reg(struct ieee80211_hw *hw,
 					 u16 beaconinterval);
-void rtl92c_phy_ap_calibrate(struct ieee80211_hw *hw, char delta);
+void rtl92c_phy_ap_calibrate(struct ieee80211_hw *hw, s8 delta);
 void rtl92c_phy_lc_calibrate(struct ieee80211_hw *hw);
 void rtl92c_phy_set_rfpath_switch(struct ieee80211_hw *hw, bool bmain);
 bool rtl92c_phy_config_rf_with_headerfile(struct ieee80211_hw *hw,
@@ -226,7 +222,7 @@ u32 _rtl92c_phy_calculate_bit_shift(u32 bitmask);
 long _rtl92c_phy_txpwr_idx_to_dbm(struct ieee80211_hw *hw,
 				  enum wireless_mode wirelessmode,
 				  u8 txpwridx);
-u8 _rtl92c_phy_dbm_to_txpwr_Idx(struct ieee80211_hw *hw,
+u8 _rtl92c_phy_dbm_to_txpwr_idx(struct ieee80211_hw *hw,
 				enum wireless_mode wirelessmode,
 				long power_indbm);
 void _rtl92c_phy_init_bb_rf_register_definition(struct ieee80211_hw *hw);

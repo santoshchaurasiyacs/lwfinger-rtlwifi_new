@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Copyright(c) 2009-2010  Realtek Corporation.
+ * Copyright(c) 2009-2012  Realtek Corporation.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of version 2 of the GNU General Public License as
@@ -10,10 +10,6 @@
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
  * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
  * more details.
- *
- * You should have received a copy of the GNU General Public License along with
- * this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110, USA
  *
  * The full GNU General Public License is included in this distribution in the
  * file called LICENSE.
@@ -34,33 +30,13 @@
 #define FW_8192C_END_ADDRESS			0x3FFF
 #define FW_8192C_PAGE_SIZE				4096
 #define FW_8192C_POLLING_DELAY			5
-#define FW_8192C_POLLING_TIMEOUT_COUNT	1000
 
 #define IS_FW_HEADER_EXIST(_pfwhdr)	\
 	((_pfwhdr->signature&0xFFFF) == 0x2300 ||\
 	(_pfwhdr->signature&0xFFFF) == 0x2301 ||\
 	(_pfwhdr->signature&0xFFFF) == 0x2302)
 
-struct rtl8723e_firmware_header {
-	u16 signature;
-	u8 category;
-	u8 function;
-	u16 version;
-	u8 subversion;
-	u8 rsvd1;
-	u8 month;
-	u8 date;
-	u8 hour;
-	u8 minute;
-	u16 ramcodeSize;
-	u16 rsvd2;
-	u32 svnindex;
-	u32 rsvd3;
-	u32 rsvd4;
-	u32 rsvd5;
-};
-
-#define pagenum_128(_len)		(u32)(((_len)>>7) + ((_len)&0x7F ? 1:0))
+#define pagenum_128(_len)	(u32)(((_len)>>7) + ((_len)&0x7F ? 1 : 0))
 
 #define SET_H2CCMD_PWRMODE_PARM_MODE(__ph2ccmd, __val)			\
 	SET_BITS_TO_LE_1BYTE(__ph2ccmd, 0, 8, __val)
@@ -77,10 +53,8 @@ struct rtl8723e_firmware_header {
 #define SET_H2CCMD_RSVDPAGE_LOC_NULL_DATA(__ph2ccmd, __val)		\
 	SET_BITS_TO_LE_1BYTE((__ph2ccmd)+2, 0, 8, __val)
 
-int rtl8723e_download_fw(struct ieee80211_hw *hw);
 void rtl8723e_fill_h2c_cmd(struct ieee80211_hw *hw, u8 element_id,
-			 u32 cmd_len, u8 *p_cmdbuffer);
-void rtl8723e_firmware_selfreset(struct ieee80211_hw *hw);
+			   u32 cmd_len, u8 *p_cmdbuffer);
 void rtl8723e_set_fw_pwrmode_cmd(struct ieee80211_hw *hw, u8 mode);
 void rtl8723e_set_fw_rsvdpagepkt(struct ieee80211_hw *hw, bool b_dl_finished);
 void rtl8723e_set_fw_joinbss_report_cmd(struct ieee80211_hw *hw, u8 mstatus);

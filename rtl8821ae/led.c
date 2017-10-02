@@ -11,10 +11,6 @@
  * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
  * more details.
  *
- * You should have received a copy of the GNU General Public License along with
- * this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110, USA
- *
  * The full GNU General Public License is included in this distribution in the
  * file called LICENSE.
  *
@@ -64,7 +60,7 @@ void rtl8821ae_sw_led_on(struct ieee80211_hw *hw, struct rtl_led *pled)
 		break;
 	default:
 		RT_TRACE(rtlpriv, COMP_ERR, DBG_LOUD,
-			 "switch case not process\n");
+			 "switch case %#x not processed\n", pled->ledpin);
 		break;
 	}
 	pled->ledon = true;
@@ -105,7 +101,6 @@ void rtl8812ae_sw_led_on(struct ieee80211_hw *hw, struct rtl_led *pled)
 void rtl8821ae_sw_led_off(struct ieee80211_hw *hw, struct rtl_led *pled)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
-	struct rtl_pci_priv *pcipriv = rtl_pcipriv(hw);
 	u8 ledcfg;
 
 	RT_TRACE(rtlpriv, COMP_LED, DBG_LOUD,
@@ -118,7 +113,7 @@ void rtl8821ae_sw_led_off(struct ieee80211_hw *hw, struct rtl_led *pled)
 		break;
 	case LED_PIN_LED0:
 		ledcfg &= 0xf0;
-		if (pcipriv->ledctl.led_opendrain == true) {
+		if (rtlpriv->ledctl.led_opendrain) {
 			ledcfg &= 0x90; /* Set to software control. */
 			rtl_write_byte(rtlpriv, REG_LEDCFG2, (ledcfg|BIT(3)));
 			ledcfg = rtl_read_byte(rtlpriv, REG_MAC_PINMUX_CFG);
@@ -127,18 +122,17 @@ void rtl8821ae_sw_led_off(struct ieee80211_hw *hw, struct rtl_led *pled)
 		} else {
 			ledcfg &= ~BIT(6);
 			rtl_write_byte(rtlpriv, REG_LEDCFG2,
-					(ledcfg | BIT(3) | BIT(5)));
+				       (ledcfg | BIT(3) | BIT(5)));
 		}
 		break;
 	case LED_PIN_LED1:
 		ledcfg = rtl_read_byte(rtlpriv, REG_LEDCFG1);
 		ledcfg &= 0x10; /* Set to software control. */
 		rtl_write_byte(rtlpriv, REG_LEDCFG1, ledcfg|BIT(3));
-
 		break;
 	default:
 		RT_TRACE(rtlpriv, COMP_ERR, DBG_LOUD,
-			 "switch case not process\n");
+			 "switch case %#x not processed\n", pled->ledpin);
 		break;
 	}
 	pled->ledon = false;
@@ -148,7 +142,6 @@ void rtl8812ae_sw_led_off(struct ieee80211_hw *hw, struct rtl_led *pled)
 {
 	u16 ledreg = REG_LEDCFG1;
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
-	struct rtl_pci_priv *pcipriv = rtl_pcipriv(hw);
 
 	switch (pled->ledpin) {
 	case LED_PIN_LED0:
@@ -168,9 +161,8 @@ void rtl8812ae_sw_led_off(struct ieee80211_hw *hw, struct rtl_led *pled)
 		 "In SwLedOff,LedAddr:%X LEDPIN=%d\n",
 		 ledreg, pled->ledpin);
 	/*Open-drain arrangement for controlling the LED*/
-	if (pcipriv->ledctl.led_opendrain == true) {
-
-		u8 ledcfg = rtl_read_byte(rtlpriv,  ledreg);
+	if (rtlpriv->ledctl.led_opendrain) {
+		u8 ledcfg = rtl_read_byte(rtlpriv, ledreg);
 
 		ledreg &= 0xd0; /* Set to software control.*/
 		rtl_write_byte(rtlpriv, ledreg, (ledcfg | BIT(3)));
@@ -188,31 +180,33 @@ void rtl8812ae_sw_led_off(struct ieee80211_hw *hw, struct rtl_led *pled)
 
 void rtl8821ae_init_sw_leds(struct ieee80211_hw *hw)
 {
-	struct rtl_pci_priv *pcipriv = rtl_pcipriv(hw);
-	_rtl8821ae_init_led(hw, &(pcipriv->ledctl.sw_led0), LED_PIN_LED0);
-	_rtl8821ae_init_led(hw, &(pcipriv->ledctl.sw_led1), LED_PIN_LED1);
+	struct rtl_priv *rtlpriv = rtl_priv(hw);
+
+	_rtl8821ae_init_led(hw, &rtlpriv->ledctl.sw_led0, LED_PIN_LED0);
+	_rtl8821ae_init_led(hw, &rtlpriv->ledctl.sw_led1, LED_PIN_LED1);
 }
 
 static void _rtl8821ae_sw_led_control(struct ieee80211_hw *hw,
-				    enum led_ctl_mode ledaction)
+				      enum led_ctl_mode ledaction)
 {
-	struct rtl_pci_priv *pcipriv = rtl_pcipriv(hw);
-	struct rtl_led *pLed0 = &(pcipriv->ledctl.sw_led0);
+	struct rtl_priv *rtlpriv = rtl_priv(hw);
+	struct rtl_led *pled0 = &rtlpriv->ledctl.sw_led0;
 	struct rtl_hal *rtlhal = rtl_hal(rtl_priv(hw));
+
 	switch (ledaction) {
 	case LED_CTL_POWER_ON:
 	case LED_CTL_LINK:
 	case LED_CTL_NO_LINK:
 		if (rtlhal->hw_type == HARDWARE_TYPE_RTL8812AE)
-			rtl8812ae_sw_led_on(hw, pLed0);
+			rtl8812ae_sw_led_on(hw, pled0);
 		else
-			rtl8821ae_sw_led_on(hw, pLed0);
+			rtl8821ae_sw_led_on(hw, pled0);
 		break;
 	case LED_CTL_POWER_OFF:
 		if (rtlhal->hw_type == HARDWARE_TYPE_RTL8812AE)
-			rtl8812ae_sw_led_off(hw, pLed0);
+			rtl8812ae_sw_led_off(hw, pled0);
 		else
-			rtl8821ae_sw_led_off(hw, pLed0);
+			rtl8821ae_sw_led_off(hw, pled0);
 		break;
 	default:
 		break;
@@ -220,7 +214,7 @@ static void _rtl8821ae_sw_led_control(struct ieee80211_hw *hw,
 }
 
 void rtl8821ae_led_control(struct ieee80211_hw *hw,
-			enum led_ctl_mode ledaction)
+			   enum led_ctl_mode ledaction)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_ps_ctl *ppsc = rtl_psc(rtl_priv(hw));
@@ -236,6 +230,6 @@ void rtl8821ae_led_control(struct ieee80211_hw *hw,
 		return;
 	}
 	RT_TRACE(rtlpriv, COMP_LED, DBG_LOUD, "ledaction %d,\n",
-				ledaction);
+		 ledaction);
 	_rtl8821ae_sw_led_control(hw, ledaction);
 }

@@ -11,10 +11,6 @@
  * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
  * more details.
  *
- * You should have received a copy of the GNU General Public License along with
- * this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110, USA
- *
  * The full GNU General Public License is included in this distribution in the
  * file called LICENSE.
  *
@@ -48,7 +44,7 @@ extern u32 RTL8192CE_RADIOB_2TARRAY[RADIOB_2TARRAYLENGTH];
 extern u32 RTL8192CE_RADIOA_1TARRAY[RADIOA_1TARRAYLENGTH];
 #define RADIOB_1TARRAYLENGTH	1
 extern u32 RTL8192CE_RADIOB_1TARRAY[RADIOB_1TARRAYLENGTH];
-#define MAC_2T_ARRAYLENGTH		162
+#define MAC_2T_ARRAYLENGTH	162
 extern u32 RTL8192CEMAC_2T_ARRAY[MAC_2T_ARRAYLENGTH];
 #define AGCTAB_2TARRAYLENGTH	320
 extern u32 RTL8192CEAGCTAB_2TARRAY[AGCTAB_2TARRAYLENGTH];

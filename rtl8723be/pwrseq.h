@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Copyright(c) 2009-2010  Realtek Corporation.
+ * Copyright(c) 2009-2014  Realtek Corporation.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of version 2 of the GNU General Public License as
@@ -10,10 +10,6 @@
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
  * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
  * more details.
- *
- * You should have received a copy of the GNU General Public License along with
- * this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110, USA
  *
  * The full GNU General Public License is included in this distribution in the
  * file called LICENSE.
@@ -30,28 +26,28 @@
 #ifndef __RTL8723BE_PWRSEQ_H__
 #define __RTL8723BE_PWRSEQ_H__
 
-#include "pwrseqcmd.h"
-/*
-	Check document WM-20130425-JackieLau-RTL8723B_Power_Architecture v05.vsd
-	There are 6 HW Power States:
-	0: POFF--Power Off
-	1: PDN--Power Down
-	2: CARDEMU--Card Emulation
-	3: ACT--Active Mode
-	4: LPS--Low Power State
-	5: SUS--Suspend
-
-	The transision from different states are defined below
-	TRANS_CARDEMU_TO_ACT
-	TRANS_ACT_TO_CARDEMU
-	TRANS_CARDEMU_TO_SUS
-	TRANS_SUS_TO_CARDEMU
-	TRANS_CARDEMU_TO_PDN
-	TRANS_ACT_TO_LPS
-	TRANS_LPS_TO_ACT
-
-	TRANS_END
-*/
+#include "../pwrseqcmd.h"
+/**
+ *	Check document WM-20130425-JackieLau-RTL8723B_Power_Architecture v05.vsd
+ *	There are 6 HW Power States:
+ *	0: POFF--Power Off
+ *	1: PDN--Power Down
+ *	2: CARDEMU--Card Emulation
+ *	3: ACT--Active Mode
+ *	4: LPS--Low Power State
+ *	5: SUS--Suspend
+ *
+ *	The transision from different states are defined below
+ *	TRANS_CARDEMU_TO_ACT
+ *	TRANS_ACT_TO_CARDEMU
+ *	TRANS_CARDEMU_TO_SUS
+ *	TRANS_SUS_TO_CARDEMU
+ *	TRANS_CARDEMU_TO_PDN
+ *	TRANS_ACT_TO_LPS
+ *	TRANS_LPS_TO_ACT
+ *
+ *	TRANS_END
+ */
 #define	RTL8723B_TRANS_CARDEMU_TO_ACT_STEPS	23
 #define	RTL8723B_TRANS_ACT_TO_CARDEMU_STEPS	15
 #define	RTL8723B_TRANS_CARDEMU_TO_SUS_STEPS	15
@@ -61,7 +57,6 @@
 #define	RTL8723B_TRANS_ACT_TO_LPS_STEPS		15
 #define	RTL8723B_TRANS_LPS_TO_ACT_STEPS		15
 #define	RTL8723B_TRANS_END_STEPS		1
-
 
 #define RTL8723B_TRANS_CARDEMU_TO_ACT					\
 	/* format */							\
@@ -134,7 +129,6 @@
 	{0x0069, PWR_CUT_ALL_MSK, PWR_FAB_ALL_MSK, PWR_INTF_ALL_MSK,	\
 	 PWR_BASEADDR_MAC, PWR_CMD_WRITE, BIT(6), BIT(6)},
 
-
 #define RTL8723B_TRANS_ACT_TO_CARDEMU					\
 	/* format */							\
 	/* comments here */						\
@@ -166,7 +160,6 @@
 	{0x0020, PWR_CUT_ALL_MSK, PWR_FAB_ALL_MSK,			\
 	 PWR_INTF_USB_MSK | PWR_INTF_SDIO_MSK, PWR_BASEADDR_MAC,	\
 	 PWR_CMD_WRITE, BIT(0), 0},
-
 
 #define RTL8723B_TRANS_CARDEMU_TO_SUS					\
 	/* format */							\
@@ -268,7 +261,6 @@
 	{0x0301, PWR_CUT_ALL_MSK, PWR_FAB_ALL_MSK, PWR_INTF_PCI_MSK,	\
 	 PWR_BASEADDR_MAC, PWR_CMD_WRITE, 0xFF, 0},
 
-
 #define RTL8723B_TRANS_CARDEMU_TO_PDN					\
 	/* format */							\
 	/* comments here */						\
@@ -338,7 +330,6 @@
 	/*Respond TxOK to scheduler*/					\
 	{0x0553, PWR_CUT_ALL_MSK, PWR_FAB_ALL_MSK, PWR_INTF_ALL_MSK,	\
 	 PWR_BASEADDR_MAC, PWR_CMD_WRITE, BIT(5), BIT(5)},
-
 
 #define RTL8723B_TRANS_LPS_TO_ACT					\
 	/* format */							\
@@ -419,15 +410,14 @@ extern struct wlan_pwr_cfg rtl8723B_leave_lps_flow
 				 RTL8723B_TRANS_END_STEPS];
 
 /* RTL8723 Power Configuration CMDs for PCIe interface */
-#define Rtl8723_NIC_PWR_ON_FLOW		rtl8723B_power_on_flow
-#define Rtl8723_NIC_RF_OFF_FLOW		rtl8723B_radio_off_flow
-#define Rtl8723_NIC_DISABLE_FLOW	rtl8723B_card_disable_flow
-#define Rtl8723_NIC_ENABLE_FLOW		rtl8723B_card_enable_flow
-#define Rtl8723_NIC_SUSPEND_FLOW	rtl8723B_suspend_flow
-#define Rtl8723_NIC_RESUME_FLOW		rtl8723B_resume_flow
-#define Rtl8723_NIC_PDN_FLOW		rtl8723B_hwpdn_flow
-#define Rtl8723_NIC_LPS_ENTER_FLOW	rtl8723B_enter_lps_flow
-#define Rtl8723_NIC_LPS_LEAVE_FLOW	rtl8723B_leave_lps_flow
-
+#define RTL8723_NIC_PWR_ON_FLOW		rtl8723B_power_on_flow
+#define RTL8723_NIC_RF_OFF_FLOW		rtl8723B_radio_off_flow
+#define RTL8723_NIC_DISABLE_FLOW	rtl8723B_card_disable_flow
+#define RTL8723_NIC_ENABLE_FLOW		rtl8723B_card_enable_flow
+#define RTL8723_NIC_SUSPEND_FLOW	rtl8723B_suspend_flow
+#define RTL8723_NIC_RESUME_FLOW		rtl8723B_resume_flow
+#define RTL8723_NIC_PDN_FLOW		rtl8723B_hwpdn_flow
+#define RTL8723_NIC_LPS_ENTER_FLOW	rtl8723B_enter_lps_flow
+#define RTL8723_NIC_LPS_LEAVE_FLOW	rtl8723B_leave_lps_flow
 
 #endif

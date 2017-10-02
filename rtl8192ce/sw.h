@@ -11,10 +11,6 @@
  * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
  * more details.
  *
- * You should have received a copy of the GNU General Public License along with
- * this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110, USA
- *
  * The full GNU General Public License is included in this distribution in the
  * file called LICENSE.
  *
@@ -33,7 +29,9 @@
 int rtl92c_init_sw_vars(struct ieee80211_hw *hw);
 void rtl92c_deinit_sw_vars(struct ieee80211_hw *hw);
 void rtl92c_init_var_map(struct ieee80211_hw *hw);
-bool rtl92c_get_btc_status(void);
-
+bool _rtl92ce_phy_config_bb_with_headerfile(struct ieee80211_hw *hw,
+					    u8 configtype);
+bool _rtl92ce_phy_config_bb_with_pgheaderfile(struct ieee80211_hw *hw,
+					      u8 configtype);
 
 #endif
