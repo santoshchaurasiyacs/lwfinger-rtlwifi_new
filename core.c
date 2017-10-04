@@ -34,6 +34,7 @@
 #include <linux/firmware.h>
 #include <linux/export.h>
 #include <net/cfg80211.h>
+#include <linux/version.h>
 
 u8 channel5g[CHANNEL_MAX_NUMBER_5G] = {
 	36, 38, 40, 42, 44, 46, 48,		/* Band 1 */
@@ -1378,15 +1379,25 @@ static void rtl_op_sta_notify(struct ieee80211_hw *hw,
 	}
 }
 
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(4, 6, 0))
+static int rtl_op_ampdu_action(struct ieee80211_hw *hw,
+			       struct ieee80211_vif *vif,
+			       enum ieee80211_ampdu_mlme_action action,
+			       struct ieee80211_sta *sta, u16 tid, u16 *ssn,
+			       u8 buf_size, bool amsdu)
+#else
 static int rtl_op_ampdu_action(struct ieee80211_hw *hw,
 			       struct ieee80211_vif *vif,
 			       struct ieee80211_ampdu_params *params)
+#endif
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 6, 0))
 	struct ieee80211_sta *sta = params->sta;
 	enum ieee80211_ampdu_mlme_action action = params->action;
 	u16 tid = params->tid;
 	u16 *ssn = &params->ssn;
+#endif
 
 	switch (action) {
 	case IEEE80211_AMPDU_TX_START:
