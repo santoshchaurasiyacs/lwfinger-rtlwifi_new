@@ -1384,7 +1384,11 @@ static int rtl_op_ampdu_action(struct ieee80211_hw *hw,
 			       struct ieee80211_vif *vif,
 			       enum ieee80211_ampdu_mlme_action action,
 			       struct ieee80211_sta *sta, u16 tid, u16 *ssn,
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(4, 4, 0))
+			       u8 buf_size)
+#else
 			       u8 buf_size, bool amsdu)
+#endif
 #else
 static int rtl_op_ampdu_action(struct ieee80211_hw *hw,
 			       struct ieee80211_vif *vif,
