@@ -35,6 +35,7 @@
 #include "mac.h"
 #include "trx.h"
 #include "../rtl8192c/fw_common.h"
+#include <linux/version.h>
 
 static int _ConfigVerTOutEP(struct ieee80211_hw *hw)
 {
@@ -329,9 +330,17 @@ bool rtl92cu_rx_query_desc(struct ieee80211_hw *hw,
 	if (!GET_RX_DESC_SWDEC(pdesc))
 		rx_status->flag |= RX_FLAG_DECRYPTED;
 	if (GET_RX_DESC_BW(pdesc))
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 12, 0)
 		rx_status->bw = RATE_INFO_BW_40;
+#else
+		rx_status->flag |= RX_FLAG_40MHZ;
+#endif
 	if (GET_RX_DESC_RX_HT(pdesc))
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 12, 0)
 		rx_status->encoding = RX_ENC_HT;
+#else
+		rx_status->flag |= RX_FLAG_HT;
+#endif
 	rx_status->flag |= RX_FLAG_MACTIME_START;
 	if (stats->decrypted)
 		rx_status->flag |= RX_FLAG_DECRYPTED;
@@ -398,9 +407,17 @@ static void _rtl_rx_process(struct ieee80211_hw *hw, struct sk_buff *skb)
 	if (!GET_RX_DESC_SWDEC(rxdesc))
 		rx_status->flag |= RX_FLAG_DECRYPTED;
 	if (GET_RX_DESC_BW(rxdesc))
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 12, 0)
 		rx_status->bw = RATE_INFO_BW_40;
+#else
+		rx_status->flag |= RX_FLAG_40MHZ;
+#endif
 	if (GET_RX_DESC_RX_HT(rxdesc))
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 12, 0)
 		rx_status->encoding = RX_ENC_HT;
+#else
+		rx_status->flag |= RX_FLAG_HT;
+#endif
 	/* Data rate */
 	rx_status->rate_idx = rtlwifi_rate_mapping(hw, stats.is_ht,
 						   false, stats.rate);

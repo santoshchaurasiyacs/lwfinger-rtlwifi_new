@@ -34,6 +34,7 @@
 #include "led.h"
 #include "dm.h"
 #include "fw.h"
+#include <linux/version.h>
 
 static u8 _rtl8723be_map_hwqueue_to_fwqueue(struct sk_buff *skb, u8 hw_queue)
 {
@@ -373,10 +374,18 @@ bool rtl8723be_rx_query_desc(struct ieee80211_hw *hw,
 		rx_status->flag |= RX_FLAG_FAILED_FCS_CRC;
 
 	if (status->rx_is40Mhzpacket)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 12, 0)
 		rx_status->bw = RATE_INFO_BW_40;
+#else
+		rx_status->flag |= RX_FLAG_40MHZ;
+#endif
 
 	if (status->is_ht)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 12, 0)
 		rx_status->encoding = RX_ENC_HT;
+#else
+		rx_status->flag |= RX_FLAG_HT;
+#endif
 
 	rx_status->flag |= RX_FLAG_MACTIME_START;
 

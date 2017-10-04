@@ -31,6 +31,7 @@
 #include "phy.h"
 #include "trx.h"
 #include "led.h"
+#include <linux/version.h>
 
 static u8 _rtl92de_map_hwqueue_to_fwqueue(struct sk_buff *skb, u8 hw_queue)
 {
@@ -503,9 +504,17 @@ bool rtl92de_rx_query_desc(struct ieee80211_hw *hw,	struct rtl_stats *stats,
 	if (!GET_RX_DESC_SWDEC(pdesc))
 		rx_status->flag |= RX_FLAG_DECRYPTED;
 	if (GET_RX_DESC_BW(pdesc))
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 12, 0)
 		rx_status->bw = RATE_INFO_BW_40;
+#else
+		rx_status->flag |= RX_FLAG_40MHZ;
+#endif
 	if (GET_RX_DESC_RXHT(pdesc))
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 12, 0)
 		rx_status->encoding = RX_ENC_HT;
+#else
+		rx_status->flag |= RX_FLAG_HT;
+#endif
 	rx_status->flag |= RX_FLAG_MACTIME_START;
 	if (stats->decrypted)
 		rx_status->flag |= RX_FLAG_DECRYPTED;
