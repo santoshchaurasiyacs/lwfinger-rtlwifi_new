@@ -26,14 +26,18 @@
 #include "efuse.h"
 #include "pci.h"
 #include <linux/export.h>
+#include <linux/version.h>
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 7, 0))
 static const u8 MAX_PGPKT_SIZE = 9;
+#endif
 static const u8 PGPKT_DATA_SIZE = 8;
 static const int EFUSE_MAX_SIZE = 512;
 
 #define START_ADDRESS		0x1000
 #define REG_MCUFWDL		0x0080
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 7, 0))
 static const struct efuse_map RTL8712_SDIO_EFUSE_TABLE[] = {
 	{0, 0, 0, 2},
 	{0, 1, 0, 2},
@@ -49,6 +53,7 @@ static const struct efuse_map RTL8712_SDIO_EFUSE_TABLE[] = {
 	{10, 3, 1, 1},
 	{11, 0, 0, 28}
 };
+#endif
 
 static void efuse_shadow_read_1byte(struct ieee80211_hw *hw, u16 offset,
 				    u8 *value);

@@ -34,6 +34,7 @@
 #include "fw.h"
 #include "trx.h"
 #include "../btcoexist/rtl_btc.h"
+#include <linux/version.h>
 
 static const u32 txscaling_tbl[TXSCALE_TABLE_SIZE] = {
 	0x081, /* 0, -12.0dB */
@@ -115,6 +116,7 @@ static const u32 rtl8821ae_txscaling_table[TXSCALE_TABLE_SIZE] = {
 	0x3FE  /* 36, +6.0dB */
 };
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 7, 0))
 static const u32 ofdmswing_table[] = {
 	0x0b40002d, /* 0, -15.0dB */
 	0x0c000030, /* 1, -14.5dB */
@@ -232,6 +234,7 @@ static const u8 cckswing_table_ch14[CCK_TABLE_SIZE][8] = {
 	{0x33, 0x32, 0x2b, 0x19, 0x00, 0x00, 0x00, 0x00}, /* 31, -0.5dB */
 	{0x36, 0x35, 0x2e, 0x1b, 0x00, 0x00, 0x00, 0x00} /* 32, +0dB */
 };
+#endif
 
 static const u32 edca_setting_dl[PEER_MAX] = {
 	0xa44f,		/* 0 UNKNOWN */

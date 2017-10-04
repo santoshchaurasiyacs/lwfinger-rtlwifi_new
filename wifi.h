@@ -36,6 +36,14 @@
 #include <net/mac80211.h>
 #include <linux/completion.h>
 #include "debug.h"
+#include <linux/version.h>
+
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(4, 7, 0))
+#define nl80211_band ieee80211_band
+#define NL80211_BAND_2GHZ IEEE80211_BAND_2GHZ
+#define NL80211_BAND_5GHZ IEEE80211_BAND_5GHZ
+#define NUM_NL80211_BANDS IEEE80211_NUM_BANDS
+#endif
 
 #define	MASKBYTE0				0xff
 #define	MASKBYTE1				0xff00
