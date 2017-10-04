@@ -31,6 +31,7 @@
 #include "reg.h"
 #include "def.h"
 #include "fw.h"
+#include <linux/version.h>
 
 static void _rtl88e_enable_fw_download(struct ieee80211_hw *hw, bool enable)
 {
@@ -620,7 +621,12 @@ void rtl88e_set_fw_rsvdpagepkt(struct ieee80211_hw *hw, bool b_dl_finished)
 		      u1rsvdpageloc, 3);
 
 	skb = dev_alloc_skb(totalpacketlen);
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 0)
 	skb_put_data(skb, &reserved_page_packet, totalpacketlen);
+#else
+	memcpy(skb_put(skb, totalpacketlen),
+	       &reserved_page_packet, totalpacketlen);
+#endif
 
 	rtstatus = rtl_cmd_send_packet(hw, skb);
 

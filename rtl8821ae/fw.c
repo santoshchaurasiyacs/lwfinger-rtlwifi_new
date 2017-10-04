@@ -32,6 +32,7 @@
 #include "def.h"
 #include "fw.h"
 #include "dm.h"
+#include <linux/version.h>
 
 static void _rtl8821ae_enable_fw_download(struct ieee80211_hw *hw, bool enable)
 {
@@ -1645,7 +1646,12 @@ out:
 		      &reserved_page_packet_8812[0], totalpacketlen);
 
 	skb = dev_alloc_skb(totalpacketlen);
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 0)
 	skb_put_data(skb, &reserved_page_packet_8812, totalpacketlen);
+#else
+	memcpy((u8 *)skb_put(skb, totalpacketlen),
+	       &reserved_page_packet_8812, totalpacketlen);
+#endif
 
 	rtstatus = rtl_cmd_send_packet(hw, skb);
 
@@ -1781,7 +1787,12 @@ out:
 		      &reserved_page_packet_8821[0], totalpacketlen);
 
 	skb = dev_alloc_skb(totalpacketlen);
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 0)
 	skb_put_data(skb, &reserved_page_packet_8821, totalpacketlen);
+#else
+	memcpy((u8 *)skb_put(skb, totalpacketlen),
+	       &reserved_page_packet_8821, totalpacketlen);
+#endif
 
 	rtstatus = rtl_cmd_send_packet(hw, skb);
 

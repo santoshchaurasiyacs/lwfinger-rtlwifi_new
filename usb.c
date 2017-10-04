@@ -29,6 +29,7 @@
 #include "rtl8192c/fw_common.h"
 #include <linux/export.h>
 #include <linux/module.h>
+#include <linux/version.h>
 
 MODULE_AUTHOR("lizhaoming	<chaoming_li@realsil.com.cn>");
 MODULE_AUTHOR("Realtek WlanFAE	<wlanfae@realtek.com>");
@@ -653,7 +654,11 @@ static void _rtl_rx_completed(struct urb *_urb)
 		/* reserve some space for mac80211's radiotap */
 		skb_reserve(skb, __RADIO_TAP_SIZE_RSV);
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 0)
 		skb_put_data(skb, _urb->transfer_buffer, size);
+#else
+		memcpy(skb_put(skb, size), _urb->transfer_buffer, size);
+#endif
 
 		skb_queue_tail(&rtlusb->rx_queue, skb);
 		tasklet_schedule(&rtlusb->rx_work_tasklet);

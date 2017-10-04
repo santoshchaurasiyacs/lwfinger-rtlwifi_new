@@ -34,7 +34,7 @@
 #include <linux/ip.h>
 #include <linux/module.h>
 #include <linux/udp.h>
-
+#include <linux/version.h>
 /*
  *NOTICE!!!: This file will be very big, we should
  *keep it clear under following roles:
@@ -2135,7 +2135,12 @@ static struct sk_buff *rtl_make_smps_action(struct ieee80211_hw *hw,
 		return NULL;
 
 	skb_reserve(skb, hw->extra_tx_headroom);
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 0)
 	action_frame = skb_put_zero(skb, 27);
+#else
+	action_frame = (void *)skb_put(skb, 27);
+	memset(action_frame, 0, 27);
+#endif
 	memcpy(action_frame->da, da, ETH_ALEN);
 	memcpy(action_frame->sa, rtlefuse->dev_addr, ETH_ALEN);
 	memcpy(action_frame->bssid, bssid, ETH_ALEN);
@@ -2264,7 +2269,12 @@ struct sk_buff *rtl_make_del_ba(struct ieee80211_hw *hw,
 		return NULL;
 
 	skb_reserve(skb, hw->extra_tx_headroom);
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 0)
 	action_frame = skb_put_zero(skb, 34);
+#else
+	action_frame = (void *)skb_put(skb, 34);
+	memset(action_frame, 0, 34);
+#endif
 	memcpy(action_frame->sa, sa, ETH_ALEN);
 	memcpy(action_frame->da, rtlefuse->dev_addr, ETH_ALEN);
 	memcpy(action_frame->bssid, bssid, ETH_ALEN);

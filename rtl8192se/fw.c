@@ -29,6 +29,7 @@
 #include "reg.h"
 #include "def.h"
 #include "fw.h"
+#include <linux/version.h>
 
 static void _rtl92s_fw_set_rqpn(struct ieee80211_hw *hw)
 {
@@ -188,9 +189,16 @@ static bool _rtl92s_firmware_downloadcode(struct ieee80211_hw *hw,
 		if (!skb)
 			return false;
 		skb_reserve(skb, extra_descoffset);
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 0)
 		seg_ptr = skb_put_data(skb,
 				       code_virtual_address + frag_offset,
 				       (u32)(frag_length - extra_descoffset));
+#else
+		seg_ptr = (u8 *)skb_put(skb, (u32)(frag_length -
+					extra_descoffset));
+		memcpy(seg_ptr, code_virtual_address + frag_offset,
+		       (u32)(frag_length - extra_descoffset));
+#endif
 
 		tcb_desc = (struct rtl_tcb_desc *)(skb->cb);
 		tcb_desc->queue_index = TXCMD_QUEUE;

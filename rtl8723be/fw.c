@@ -31,6 +31,7 @@
 #include "def.h"
 #include "fw.h"
 #include "../rtl8723com/fw_common.h"
+#include <linux/version.h>
 
 static bool _rtl8723be_check_fw_read_last_h2c(struct ieee80211_hw *hw,
 					      u8 boxnum)
@@ -584,7 +585,12 @@ void rtl8723be_set_fw_rsvdpagepkt(struct ieee80211_hw *hw,
 		      u1rsvdpageloc, sizeof(u1rsvdpageloc));
 
 	skb = dev_alloc_skb(totalpacketlen);
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 0)
 	skb_put_data(skb, &reserved_page_packet, totalpacketlen);
+#else
+	memcpy((u8 *)skb_put(skb, totalpacketlen),
+	       &reserved_page_packet, totalpacketlen);
+#endif
 
 	rtstatus = rtl_cmd_send_packet(hw, skb);
 

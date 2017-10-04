@@ -31,6 +31,7 @@
 #include "def.h"
 #include "fw.h"
 #include "sw.h"
+#include <linux/version.h>
 
 static bool _rtl92d_is_fw_downloaded(struct rtl_priv *rtlpriv)
 {
@@ -668,7 +669,12 @@ void rtl92d_set_fw_rsvdpagepkt(struct ieee80211_hw *hw, bool dl_finished)
 	if (!skb) {
 		dlok = false;
 	} else {
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 0)
 		skb_put_data(skb, &reserved_page_packet, totalpacketlen);
+#else
+		memcpy((u8 *) skb_put(skb, totalpacketlen),
+		       &reserved_page_packet, totalpacketlen);
+#endif
 		rtstatus = _rtl92d_cmd_send_packet(hw, skb);
 
 		if (rtstatus)
