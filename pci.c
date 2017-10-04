@@ -730,7 +730,9 @@ static void _rtl_pci_rx_to_mac80211(struct ieee80211_hw *hw,
 		dev_kfree_skb_any(skb);
 	} else {
 		struct sk_buff *uskb = NULL;
+#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 14, 0)
 		u8 *pdata;
+#endif
 
 		uskb = dev_alloc_skb(skb->len + 128);
 		if (likely(uskb)) {
