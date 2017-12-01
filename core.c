@@ -161,7 +161,11 @@ static int rtl_op_start(struct ieee80211_hw *hw)
 	mutex_lock(&rtlpriv->locks.conf_mutex);
 	err = rtlpriv->intf_ops->adapter_start(hw);
 	if (!err)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 15, 0)
+		rtl_watch_dog_timer_callback(&rtlpriv->works.watchdog_timer);
+#else
 		rtl_watch_dog_timer_callback((unsigned long)hw);
+#endif
 	mutex_unlock(&rtlpriv->locks.conf_mutex);
 	return err;
 }
