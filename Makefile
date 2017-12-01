@@ -66,6 +66,8 @@ all:
 	+@make -C rtl8192se/
 	@cp $(SYMBOL_FILE) rtl8723ae/
 	@cp btcoexist/$(SYMBOL_FILE) rtl8723ae/
+	+@make -C rtl8723com/
+	@cp $(SYMBOL_FILE) rtl8723com/
 	+@make -C rtl8723ae/
 	@cp $(SYMBOL_FILE) rtl8723be/
 	@cp btcoexist/$(SYMBOL_FILE) rtl8723be/
