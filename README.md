@@ -2,39 +2,39 @@ rtlwifi_new
 ===========
 ### A repo for the newest Realtek rtlwifi codes.
 
-This code will build on any kernel 3.0 and newer as long as the distro has not modified
-any of the kernel APIs. It includes the following drivers:
+This code will build on any kernel 3.20 and newer as long as the distro has not modified
+any of the kernel APIs. IF YOU RUN UBUNTU, YOU CAN BE ASSURED THAT THE APIs HAVE CHANGED.
+NO, I WILL NOT MODIFY THE SOURCE FOR YOU. YOU ARE ON YOUR OWN!!!!!
 
-rtl8192ce, rtl8192se, rtl8192de, rtl8188ee, rtl8192ee, rtl8723ae, rtl8723be, and rtl8821ae.
+It includes the following drivers:
+
+rtl8192ce, rtl8192cu, rtl8192se, rtl8192de, rtl8188ee, rtl8192ee, rtl8723ae, rtl8723be, and rtl8821ae.
 
 #### Installation instruction
-How can you find <<YOUR WIRELESS DRIVER CODE>> using `lspci | grep Wireless`.
+You can find <<YOUR WIRELESS DRIVER CODE>> using `lspci | grep Wireless`.
 Afterwards, execute the following lines of codes in your shell:  
   
 ```
-sudo apt-get install linux-headers-generic build-essential git
+You will need to install "make", "gcc", "kernel headers", "kernel build essentials", and "git".
+
+If you are running Ubuntu, then
+
+ sudo apt-get install linux-headers-generic build-essential git
+
+Please note the first paragraph above.
+
+For all distros:
 git clone https://github.com/lwfinger/rtlwifi_new.git
 cd rtlwifi_new
-make clean
 sudo make install
 sudo modprobe -r <<YOUR WIRELESS DRIVER CODE>>
 sudo modprobe <<YOUR WIRELESS DRIVER CODE>>
-sudo reboot
-```
 
 #### Option configuration
-Open the configuration file of your driver:
-```
-touch /etc/modprobe.d/<<YOUR WIRELESS DRIVER CODE>>.conf
+If it turns out that your system needs one of the configuration options, then do the following:
+
 vim /etc/modprobe.d/<<YOUR WIRELESS DRIVER CODE>>.conf 
-```
 
-There, paste the line bellow:
-`options <<YOUR WIRELESS DRIVER CODE>> fwlps=N ips=N`
+There, enter the line below:
+`options <<YOUR WIRELESS DRIVER CODE>> <<driver_option_name>>=<value>`
 
-
-#### Updates
-Added March 16, 2016: All branches of this repo now support the ant_sel module option
-for rtl8723be. In addition, patches to implement this feature have been submitted
-to the linux-wireless repo. If accepted, they should appear in kernel 4.7; however,
-they will be backported to kernels 4.0 and newer when they reach mainline.
