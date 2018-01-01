@@ -133,7 +133,7 @@ static void _rtl8723e_phy_fw_rf_serial_write(struct ieee80211_hw *hw,
 					     enum radio_path rfpath, u32 offset,
 					     u32 data)
 {
-	WARN_ONCE(true, "deprecated!\n");
+	WARN_ONCE(true, "rtl8723ae: _rtl8723e_phy_fw_rf_serial_write deprecated!\n");
 }
 
 static void _rtl8723e_phy_bb_config_1t(struct ieee80211_hw *hw)
@@ -790,7 +790,8 @@ void rtl8723e_phy_set_bw_mode_callback(struct ieee80211_hw *hw)
 		rtl_write_byte(rtlpriv, REG_RRSR + 2, reg_prsr_rsc);
 		break;
 	default:
-		pr_err("unknown bandwidth: %#X\n", rtlphy->current_chan_bw);
+		pr_err("unknown bandwidth: %#X\n",
+		       rtlphy->current_chan_bw);
 		break;
 	}
 
@@ -814,7 +815,8 @@ void rtl8723e_phy_set_bw_mode_callback(struct ieee80211_hw *hw)
 			       HAL_PRIME_CHNL_OFFSET_LOWER) ? 2 : 1);
 		break;
 	default:
-		pr_err("unknown bandwidth: %#X\n", rtlphy->current_chan_bw);
+		pr_err("unknown bandwidth: %#X\n",
+		       rtlphy->current_chan_bw);
 		break;
 	}
 	rtl8723e_phy_rf6052_set_bandwidth(hw, rtlphy->current_chan_bw);
@@ -883,7 +885,7 @@ u8 rtl8723e_phy_sw_chnl(struct ieee80211_hw *hw)
 	if (rtlphy->set_bwmode_inprogress)
 		return 0;
 	WARN_ONCE((rtlphy->current_channel > 14),
-		  "WIRELESS_MODE_G but channel>14");
+		  "rtl8723ae: WIRELESS_MODE_G but channel>14");
 	rtlphy->sw_chnl_inprogress = true;
 	rtlphy->sw_chnl_stage = 0;
 	rtlphy->sw_chnl_step = 0;
@@ -952,7 +954,7 @@ static bool _rtl8723e_phy_sw_chnl_step_by_step(struct ieee80211_hw *hw,
 	rfdependcmdcnt = 0;
 
 	WARN_ONCE((channel < 1 || channel > 14),
-		  "illegal channel for Zebra: %d\n", channel);
+		  "rtl8723ae: illegal channel for Zebra: %d\n", channel);
 
 	rtl8723_phy_set_sw_chnl_cmdarray(rfdependcmd, rfdependcmdcnt++,
 					 MAX_RFDEPENDCMD_CNT, CMDID_RF_WRITEREG,
@@ -974,7 +976,8 @@ static bool _rtl8723e_phy_sw_chnl_step_by_step(struct ieee80211_hw *hw,
 			currentcmd = &postcommoncmd[*step];
 			break;
 		default:
-			pr_err("Invalid 'stage' = %d, Check it!\n", *stage);
+			pr_err("Invalid 'stage' = %d, Check it!\n",
+			       *stage);
 			return true;
 		}
 

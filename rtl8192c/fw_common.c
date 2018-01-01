@@ -27,10 +27,13 @@
 #include "../pci.h"
 #include "../base.h"
 #include "../core.h"
+#include "../efuse.h"
 #include "../rtl8192ce/reg.h"
 #include "../rtl8192ce/def.h"
 #include "fw_common.h"
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 2, 0))
 #include <linux/export.h>
+#endif
 #include <linux/kmemleak.h>
 
 static void _rtl92c_enable_fw_download(struct ieee80211_hw *hw, bool enable)
@@ -68,63 +71,6 @@ static void _rtl92c_enable_fw_download(struct ieee80211_hw *hw, bool enable)
 	}
 }
 
-static void _rtl92c_fw_block_write(struct ieee80211_hw *hw,
-				   const u8 *buffer, u32 size)
-{
-	struct rtl_priv *rtlpriv = rtl_priv(hw);
-	u32 blocksize = sizeof(u32);
-	u8 *bufferptr = (u8 *)buffer;
-	u32 *pu4byteptr = (u32 *)buffer;
-	u32 i, offset, blockcount, remainsize;
-
-	blockcount = size / blocksize;
-	remainsize = size % blocksize;
-
-	for (i = 0; i < blockcount; i++) {
-		offset = i * blocksize;
-		rtl_write_dword(rtlpriv, (FW_8192C_START_ADDRESS + offset),
-				*(pu4byteptr + i));
-	}
-
-	if (remainsize) {
-		offset = blockcount * blocksize;
-		bufferptr += offset;
-		for (i = 0; i < remainsize; i++) {
-			rtl_write_byte(rtlpriv, (FW_8192C_START_ADDRESS +
-						 offset + i), *(bufferptr + i));
-		}
-	}
-}
-
-static void _rtl92c_fw_page_write(struct ieee80211_hw *hw,
-				  u32 page, const u8 *buffer, u32 size)
-{
-	struct rtl_priv *rtlpriv = rtl_priv(hw);
-	u8 value8;
-	u8 u8page = (u8) (page & 0x07);
-
-	value8 = (rtl_read_byte(rtlpriv, REG_MCUFWDL + 2) & 0xF8) | u8page;
-
-	rtl_write_byte(rtlpriv, (REG_MCUFWDL + 2), value8);
-	_rtl92c_fw_block_write(hw, buffer, size);
-}
-
-static void _rtl92c_fill_dummy(u8 *pfwbuf, u32 *pfwlen)
-{
-	u32 fwlen = *pfwlen;
-	u8 remain = (u8) (fwlen % 4);
-
-	remain = (remain == 0) ? 0 : (4 - remain);
-
-	while (remain > 0) {
-		pfwbuf[fwlen] = 0;
-		fwlen++;
-		remain--;
-	}
-
-	*pfwlen = fwlen;
-}
-
 static void _rtl92c_write_fw(struct ieee80211_hw *hw,
 			     enum version_8192c version, u8 *buffer, u32 size)
 {
@@ -140,7 +86,7 @@ static void _rtl92c_write_fw(struct ieee80211_hw *hw,
 		u32 page, offset;
 
 		if (rtlhal->hw_type == HARDWARE_TYPE_RTL8192CE)
-			_rtl92c_fill_dummy(bufferptr, &size);
+			rtl_fill_dummy(bufferptr, &size);
 
 		pageNums = size / FW_8192C_PAGE_SIZE;
 		remainsize = size % FW_8192C_PAGE_SIZE;
@@ -150,18 +96,18 @@ static void _rtl92c_write_fw(struct ieee80211_hw *hw,
 
 		for (page = 0; page < pageNums; page++) {
 			offset = page * FW_8192C_PAGE_SIZE;
-			_rtl92c_fw_page_write(hw, page, (bufferptr + offset),
-					      FW_8192C_PAGE_SIZE);
+			rtl_fw_page_write(hw, page, (bufferptr + offset),
+					  FW_8192C_PAGE_SIZE);
 		}
 
 		if (remainsize) {
 			offset = pageNums * FW_8192C_PAGE_SIZE;
 			page = pageNums;
-			_rtl92c_fw_page_write(hw, page, (bufferptr + offset),
-					      remainsize);
+			rtl_fw_page_write(hw, page, (bufferptr + offset),
+					  remainsize);
 		}
 	} else {
-		_rtl92c_fw_block_write(hw, buffer, size);
+		rtl_fw_block_write(hw, buffer, size);
 	}
 }
 
@@ -178,7 +124,7 @@ static int _rtl92c_fw_free_to_go(struct ieee80211_hw *hw)
 		 (!(value32 & FWDL_ChkSum_rpt)));
 
 	if (counter >= FW_8192C_POLLING_TIMEOUT_COUNT) {
-		pr_err("chksum report faill ! REG_MCUFWDL:0x%08x .\n",
+		pr_err("chksum report fail! REG_MCUFWDL:0x%08x .\n",
 		       value32);
 		goto exit;
 	}
@@ -191,16 +137,15 @@ static int _rtl92c_fw_free_to_go(struct ieee80211_hw *hw)
 
 	do {
 		value32 = rtl_read_dword(rtlpriv, REG_MCUFWDL);
-		if (value32 & WINTINI_RDY) {
-			err = 0;
-			goto exit;
-		}
+		if (value32 & WINTINI_RDY)
+			return 0;
 
 		mdelay(FW_8192C_POLLING_DELAY);
 
 	} while (counter++ < FW_8192C_POLLING_TIMEOUT_COUNT);
 
-	pr_err("Polling FW ready fail!! REG_MCUFWDL:0x%08x .\n", value32);
+	pr_err("Polling FW ready fail! REG_MCUFWDL:0x%08x.\n",
+	       value32);
 
 exit:
 	return err;
@@ -469,7 +414,7 @@ void rtl92c_fill_h2c_cmd(struct ieee80211_hw *hw,
 
 	if (!rtlhal->fw_ready) {
 		WARN_ONCE(true,
-			  "return H2C cmd because of Fw download fail!!!\n");
+			  "rtl8192c-common: return H2C cmd because of Fw download fail!!!\n");
 		return;
 	}
 
@@ -493,7 +438,7 @@ void rtl92c_firmware_selfreset(struct ieee80211_hw *hw)
 	while (u1b_tmp & BIT(2)) {
 		delay--;
 		if (delay == 0) {
-			WARN_ONCE(true, "8051 reset fail.\n");
+			WARN_ONCE(true, "rtl8192c-common: 8051 reset fail.\n");
 			break;
 		}
 		udelay(50);
@@ -704,8 +649,7 @@ void rtl92c_set_fw_rsvdpagepkt(struct ieee80211_hw *hw,
 
 
 	skb = dev_alloc_skb(totalpacketlen);
-	memcpy((u8 *)skb_put(skb, totalpacketlen),
-	       &reserved_page_packet, totalpacketlen);
+	skb_put_data(skb, &reserved_page_packet, totalpacketlen);
 
 	if (cmd_send_packet)
 		rtstatus = cmd_send_packet(hw, skb);

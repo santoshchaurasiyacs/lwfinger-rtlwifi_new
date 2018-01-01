@@ -434,8 +434,13 @@ bool rtl88ee_rx_query_desc(struct ieee80211_hw *hw,
 		RT_TRACE(rtlpriv, COMP_RXDESC, DBG_LOUD,
 		"GGGGGGGGGGGGGet Wakeup Packet!! WakeMatch=%d\n",
 		status->wake_match);
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 10, 0))
 	rx_status->freq = hw->conf.chandef.chan->center_freq;
 	rx_status->band = hw->conf.chandef.chan->band;
+#else
+	rx_status->freq = hw->conf.channel->center_freq;
+	rx_status->band = hw->conf.channel->band;
+#endif
 
 	hdr = (struct ieee80211_hdr *)(skb->data + status->rx_drvinfo_size
 			+ status->rx_bufshift);
@@ -444,10 +449,18 @@ bool rtl88ee_rx_query_desc(struct ieee80211_hw *hw,
 		rx_status->flag |= RX_FLAG_FAILED_FCS_CRC;
 
 	if (status->rx_is40Mhzpacket)
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,12,0))
+		rx_status->bw = RATE_INFO_BW_40;
+#else
 		rx_status->flag |= RX_FLAG_40MHZ;
+#endif
 
 	if (status->is_ht)
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,12,0))
+		rx_status->encoding = RX_ENC_HT;
+#else
 		rx_status->flag |= RX_FLAG_HT;
+#endif
 
 	rx_status->flag |= RX_FLAG_MACTIME_START;
 
@@ -760,7 +773,7 @@ void rtl88ee_set_desc(struct ieee80211_hw *hw, u8 *pdesc,
 			SET_TX_DESC_NEXT_DESC_ADDRESS(pdesc, *(u32 *)val);
 			break;
 		default:
-			WARN_ONCE(true, "ERR txdesc :%d not process\n",
+			WARN_ONCE(true, "rtl8188ee: ERR txdesc :%d not processed\n",
 				  desc_name);
 			break;
 		}
@@ -779,14 +792,15 @@ void rtl88ee_set_desc(struct ieee80211_hw *hw, u8 *pdesc,
 			SET_RX_DESC_EOR(pdesc, 1);
 			break;
 		default:
-			WARN_ONCE(true, "ERR rxdesc :%d not process\n",
+			WARN_ONCE(true, "rtl8188ee: ERR rxdesc :%d not processed\n",
 				  desc_name);
 			break;
 		}
 	}
 }
 
-u32 rtl88ee_get_desc(u8 *pdesc, bool istx, u8 desc_name)
+u64 rtl88ee_get_desc(struct ieee80211_hw *hw,
+		     u8 *pdesc, bool istx, u8 desc_name)
 {
 	u32 ret = 0;
 
@@ -799,7 +813,7 @@ u32 rtl88ee_get_desc(u8 *pdesc, bool istx, u8 desc_name)
 			ret = GET_TX_DESC_TX_BUFFER_ADDRESS(pdesc);
 			break;
 		default:
-			WARN_ONCE(true, "ERR txdesc :%d not process\n",
+			WARN_ONCE(true, "rtl8188ee: ERR txdesc :%d not processed\n",
 				  desc_name);
 			break;
 		}
@@ -815,7 +829,7 @@ u32 rtl88ee_get_desc(u8 *pdesc, bool istx, u8 desc_name)
 			ret = GET_RX_DESC_BUFF_ADDR(pdesc);
 			break;
 		default:
-			WARN_ONCE(true, "ERR rxdesc :%d not process\n",
+			WARN_ONCE(true, "rtl8188ee: ERR rxdesc :%d not processed\n",
 				  desc_name);
 			break;
 		}
@@ -828,7 +842,7 @@ bool rtl88ee_is_tx_desc_closed(struct ieee80211_hw *hw, u8 hw_queue, u16 index)
 	struct rtl_pci *rtlpci = rtl_pcidev(rtl_pcipriv(hw));
 	struct rtl8192_tx_ring *ring = &rtlpci->tx_ring[hw_queue];
 	u8 *entry = (u8 *)(&ring->desc[ring->idx]);
-	u8 own = (u8)rtl88ee_get_desc(entry, true, HW_DESC_OWN);
+	u8 own = (u8)rtl88ee_get_desc(hw, entry, true, HW_DESC_OWN);
 
 	/*beacon packet will only use the first
 	 *descriptor defautly,and the own may not

@@ -8,11 +8,8 @@ NO, I WILL NOT MODIFY THE SOURCE FOR YOU. YOU ARE ON YOUR OWN!!!!!
 
 It includes the following drivers:
 
-rtl8192ce, rtl8192cu, rtl8192se, rtl8192de, rtl8188ee, rtl8192ee, rtl8723ae, rtl8723be, and rtl8821ae.
-
-If you are looking for the driver for rtl8822be or rtl8723de, then execute the following command:
-
-git checkout origin/extended -b extended
+rtl8192ce, rtl8192cu, rtl8192se, rtl8192de, rtl8188ee, rtl8192ee, rtl8723ae, rtl8723be, rtl8821ae,
+rtl8822be and rtl8723de.
 
 #### Installation instruction
 You can find <<YOUR WIRELESS DRIVER CODE>> using `lspci | grep Wireless`.

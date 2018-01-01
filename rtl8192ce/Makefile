@@ -1,6 +1,6 @@
+# SPDX-License-Identifier: GPL-2.0
 rtl8192ce-objs :=		\
 		dm.o		\
-		fw.o		\
 		hw.o		\
 		led.o		\
 		phy.o		\
@@ -9,7 +9,4 @@ rtl8192ce-objs :=		\
 		table.o		\
 		trx.o
 
-obj-m += rtl8192ce.o
-
-ccflags-y += -Idrivers/net/wireless/rtlwifi -D__CHECK_ENDIAN__
-
+obj-$(CONFIG_RTL8192CE) += rtl8192ce.o

@@ -27,6 +27,7 @@
 #include "../pci.h"
 #include "../base.h"
 #include "../core.h"
+#include "../efuse.h"
 #include "reg.h"
 #include "def.h"
 #include "fw.h"
@@ -53,63 +54,6 @@ static void _rtl88e_enable_fw_download(struct ieee80211_hw *hw, bool enable)
 	}
 }
 
-static void _rtl88e_fw_block_write(struct ieee80211_hw *hw,
-				   const u8 *buffer, u32 size)
-{
-	struct rtl_priv *rtlpriv = rtl_priv(hw);
-	u32 blocksize = sizeof(u32);
-	u8 *bufferptr = (u8 *)buffer;
-	u32 *pu4BytePtr = (u32 *)buffer;
-	u32 i, offset, blockcount, remainsize;
-
-	blockcount = size / blocksize;
-	remainsize = size % blocksize;
-
-	for (i = 0; i < blockcount; i++) {
-		offset = i * blocksize;
-		rtl_write_dword(rtlpriv, (FW_8192C_START_ADDRESS + offset),
-				*(pu4BytePtr + i));
-	}
-
-	if (remainsize) {
-		offset = blockcount * blocksize;
-		bufferptr += offset;
-		for (i = 0; i < remainsize; i++) {
-			rtl_write_byte(rtlpriv, (FW_8192C_START_ADDRESS +
-						 offset + i), *(bufferptr + i));
-		}
-	}
-}
-
-static void _rtl88e_fw_page_write(struct ieee80211_hw *hw,
-				  u32 page, const u8 *buffer, u32 size)
-{
-	struct rtl_priv *rtlpriv = rtl_priv(hw);
-	u8 value8;
-	u8 u8page = (u8) (page & 0x07);
-
-	value8 = (rtl_read_byte(rtlpriv, REG_MCUFWDL + 2) & 0xF8) | u8page;
-
-	rtl_write_byte(rtlpriv, (REG_MCUFWDL + 2), value8);
-	_rtl88e_fw_block_write(hw, buffer, size);
-}
-
-static void _rtl88e_fill_dummy(u8 *pfwbuf, u32 *pfwlen)
-{
-	u32 fwlen = *pfwlen;
-	u8 remain = (u8) (fwlen % 4);
-
-	remain = (remain == 0) ? 0 : (4 - remain);
-
-	while (remain > 0) {
-		pfwbuf[fwlen] = 0;
-		fwlen++;
-		remain--;
-	}
-
-	*pfwlen = fwlen;
-}
-
 static void _rtl88e_write_fw(struct ieee80211_hw *hw,
 			     enum version_8188e version, u8 *buffer, u32 size)
 {
@@ -120,7 +64,7 @@ static void _rtl88e_write_fw(struct ieee80211_hw *hw,
 
 	RT_TRACE(rtlpriv, COMP_FW, DBG_LOUD, "FW size is %d bytes,\n", size);
 
-	_rtl88e_fill_dummy(bufferptr, &size);
+	rtl_fill_dummy(bufferptr, &size);
 
 	pagenums = size / FW_8192C_PAGE_SIZE;
 	remainsize = size % FW_8192C_PAGE_SIZE;
@@ -130,15 +74,14 @@ static void _rtl88e_write_fw(struct ieee80211_hw *hw,
 
 	for (page = 0; page < pagenums; page++) {
 		offset = page * FW_8192C_PAGE_SIZE;
-		_rtl88e_fw_page_write(hw, page, (bufferptr + offset),
-				      FW_8192C_PAGE_SIZE);
+		rtl_fw_page_write(hw, page, (bufferptr + offset),
+				  FW_8192C_PAGE_SIZE);
 	}
 
 	if (remainsize) {
 		offset = pagenums * FW_8192C_PAGE_SIZE;
 		page = pagenums;
-		_rtl88e_fw_page_write(hw, page, (bufferptr + offset),
-				      remainsize);
+		rtl_fw_page_write(hw, page, (bufferptr + offset), remainsize);
 	}
 }
 
@@ -155,7 +98,7 @@ static int _rtl88e_fw_free_to_go(struct ieee80211_hw *hw)
 		 (!(value32 & FWDL_CHKSUM_RPT)));
 
 	if (counter >= FW_8192C_POLLING_TIMEOUT_COUNT) {
-		pr_err("chksum report faill ! REG_MCUFWDL:0x%08x .\n",
+		pr_err("chksum report fail! REG_MCUFWDL:0x%08x .\n",
 		       value32);
 		goto exit;
 	}
@@ -169,19 +112,15 @@ static int _rtl88e_fw_free_to_go(struct ieee80211_hw *hw)
 
 	do {
 		value32 = rtl_read_dword(rtlpriv, REG_MCUFWDL);
-		if (value32 & WINTINI_RDY) {
-			RT_TRACE(rtlpriv, COMP_FW, DBG_TRACE,
-				 "Polling FW ready success!! REG_MCUFWDL:0x%08x.\n",
-				  value32);
-			err = 0;
-			goto exit;
-		}
+		if (value32 & WINTINI_RDY)
+			return 0;
 
 		udelay(FW_8192C_POLLING_DELAY);
 
 	} while (counter++ < FW_8192C_POLLING_TIMEOUT_COUNT);
 
-	pr_err("Polling FW ready fail!! REG_MCUFWDL:0x%08x .\n", value32);
+	pr_err("Polling FW ready fail!! REG_MCUFWDL:0x%08x .\n",
+	       value32);
 
 exit:
 	return err;
@@ -202,6 +141,8 @@ int rtl88e_download_fw(struct ieee80211_hw *hw,
 		return 1;
 
 	pfwheader = (struct rtlwifi_firmware_header *)rtlhal->pfirmware;
+	rtlhal->fw_version = le16_to_cpu(pfwheader->version);
+	rtlhal->fw_subversion = pfwheader->subversion;
 	pfwdata = rtlhal->pfirmware;
 	fwsize = rtlhal->fwsize;
 	RT_TRACE(rtlpriv, COMP_FW, DBG_DMESG,
@@ -421,7 +362,7 @@ void rtl88e_fill_h2c_cmd(struct ieee80211_hw *hw,
 
 	if (!rtlhal->fw_ready) {
 		WARN_ONCE(true,
-			  "return H2C cmd because of Fw download fail!!!\n");
+			  "rtl8188ee: error H2C cmd because of Fw download fail!!!\n");
 		return;
 	}
 
@@ -681,8 +622,7 @@ void rtl88e_set_fw_rsvdpagepkt(struct ieee80211_hw *hw, bool b_dl_finished)
 		      u1rsvdpageloc, 3);
 
 	skb = dev_alloc_skb(totalpacketlen);
-	memcpy(skb_put(skb, totalpacketlen),
-	       &reserved_page_packet, totalpacketlen);
+	skb_put_data(skb, &reserved_page_packet, totalpacketlen);
 
 	rtstatus = rtl_cmd_send_packet(hw, skb);
 

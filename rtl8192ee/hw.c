@@ -735,9 +735,8 @@ static bool _rtl92ee_llt_table_init(struct ieee80211_hw *hw)
 static void _rtl92ee_gen_refresh_led_state(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
-	struct rtl_pci_priv *pcipriv = rtl_pcipriv(hw);
 	struct rtl_ps_ctl *ppsc = rtl_psc(rtl_priv(hw));
-	struct rtl_led *pled0 = &pcipriv->ledctl.sw_led0;
+	struct rtl_led *pled0 = &rtlpriv->ledctl.sw_led0;
 
 	if (rtlpriv->rtlhal.up_first_time)
 		return;
@@ -841,6 +840,31 @@ static bool _rtl92ee_init_mac(struct ieee80211_hw *hw)
 	/* Set TCR register */
 	rtl_write_dword(rtlpriv, REG_TCR, rtlpci->transmit_config);
 
+	/* Set TX/RX descriptor physical address -- HI part */
+	if (!rtlpriv->cfg->mod_params->dma64)
+		goto dma64_end;
+
+	rtl_write_dword(rtlpriv, REG_BCNQ_DESA + 4,
+			((u64)rtlpci->tx_ring[BEACON_QUEUE].buffer_desc_dma) >>
+				32);
+	rtl_write_dword(rtlpriv, REG_MGQ_DESA + 4,
+			(u64)rtlpci->tx_ring[MGNT_QUEUE].buffer_desc_dma >> 32);
+	rtl_write_dword(rtlpriv, REG_VOQ_DESA + 4,
+			(u64)rtlpci->tx_ring[VO_QUEUE].buffer_desc_dma >> 32);
+	rtl_write_dword(rtlpriv, REG_VIQ_DESA + 4,
+			(u64)rtlpci->tx_ring[VI_QUEUE].buffer_desc_dma >> 32);
+	rtl_write_dword(rtlpriv, REG_BEQ_DESA + 4,
+			(u64)rtlpci->tx_ring[BE_QUEUE].buffer_desc_dma >> 32);
+	rtl_write_dword(rtlpriv, REG_BKQ_DESA + 4,
+			(u64)rtlpci->tx_ring[BK_QUEUE].buffer_desc_dma >> 32);
+	rtl_write_dword(rtlpriv, REG_HQ0_DESA + 4,
+			(u64)rtlpci->tx_ring[HIGH_QUEUE].buffer_desc_dma >> 32);
+
+	rtl_write_dword(rtlpriv, REG_RX_DESA + 4,
+			(u64)rtlpci->rx_ring[RX_MPDU_QUEUE].dma >> 32);
+
+dma64_end:
+
 	/* Set TX/RX descriptor physical address(from OS API). */
 	rtl_write_dword(rtlpriv, REG_BCNQ_DESA,
 			((u64)rtlpci->tx_ring[BEACON_QUEUE].buffer_desc_dma) &
@@ -914,15 +938,9 @@ static bool _rtl92ee_init_mac(struct ieee80211_hw *hw)
 	rtl_write_word(rtlpriv, REG_HI7Q_TXBD_NUM,
 		       TX_DESC_NUM_92E | ((RTL8192EE_SEG_NUM << 12) & 0x3000));
 	/*Rx*/
-#if (DMA_IS_64BIT == 1)
 	rtl_write_word(rtlpriv, REG_RX_RXBD_NUM,
 		       RX_DESC_NUM_92E |
 		       ((RTL8192EE_SEG_NUM << 13) & 0x6000) | 0x8000);
-#else
-	rtl_write_word(rtlpriv, REG_RX_RXBD_NUM,
-		       RX_DESC_NUM_92E |
-		       ((RTL8192EE_SEG_NUM << 13) & 0x6000) | 0x0000);
-#endif
 
 	rtl_write_dword(rtlpriv, REG_TSFTIMER_HCI, 0XFFFFFFFF);
 
@@ -1006,7 +1024,7 @@ static void _rtl92ee_hw_configure(struct ieee80211_hw *hw)
 	rtl_write_word(rtlpriv, REG_SIFS_TRX, 0x100a);
 
 	/* Note Data sheet don't define */
-	rtl_write_word(rtlpriv, 0x4C7, 0x80);
+	rtl_write_byte(rtlpriv, 0x4C7, 0x80);
 
 	rtl_write_byte(rtlpriv, REG_RX_PKT_LIMIT, 0x20);
 
@@ -1581,7 +1599,7 @@ void rtl92ee_set_qos(struct ieee80211_hw *hw, int aci)
 		rtl_write_dword(rtlpriv, REG_EDCA_VO_PARAM, 0x2f3222);
 		break;
 	default:
-		WARN_ONCE(true, "invalid aci: %d !\n", aci);
+		WARN_ONCE(true, "rtl8192ee: invalid aci: %d !\n", aci);
 		break;
 	}
 }
@@ -1676,16 +1694,16 @@ void rtl92ee_card_disable(struct ieee80211_hw *hw)
 }
 
 void rtl92ee_interrupt_recognized(struct ieee80211_hw *hw,
-				  u32 *p_inta, u32 *p_intb)
+				  struct rtl_int *intvec)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_pci *rtlpci = rtl_pcidev(rtl_pcipriv(hw));
 
-	*p_inta = rtl_read_dword(rtlpriv, ISR) & rtlpci->irq_mask[0];
-	rtl_write_dword(rtlpriv, ISR, *p_inta);
+	intvec->inta = rtl_read_dword(rtlpriv, ISR) & rtlpci->irq_mask[0];
+	rtl_write_dword(rtlpriv, ISR, intvec->inta);
 
-	*p_intb = rtl_read_dword(rtlpriv, REG_HISRE) & rtlpci->irq_mask[1];
-	rtl_write_dword(rtlpriv, REG_HISRE, *p_intb);
+	intvec->intb = rtl_read_dword(rtlpriv, REG_HISRE) & rtlpci->irq_mask[1];
+	rtl_write_dword(rtlpriv, REG_HISRE, intvec->intb);
 }
 
 void rtl92ee_set_beacon_related_registers(struct ieee80211_hw *hw)
@@ -2135,7 +2153,7 @@ static void _rtl92ee_read_adapter_info(struct ieee80211_hw *hw)
 		rtlefuse->board_type = 0;
 
 	if (rtlpriv->btcoexist.btc_info.btcoexist == 1)
-		rtlefuse->board_type |= ODM_BOARD_BT;
+		rtlefuse->board_type |= BIT(2); /* ODM_BOARD_BT */
 
 	rtlhal->board_type = rtlefuse->board_type;
 	RT_TRACE(rtlpriv, COMP_INIT, DBG_LOUD,
@@ -2172,10 +2190,9 @@ exit:
 static void _rtl92ee_hal_customized_behavior(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
-	struct rtl_pci_priv *pcipriv = rtl_pcipriv(hw);
 	struct rtl_hal *rtlhal = rtl_hal(rtl_priv(hw));
 
-	pcipriv->ledctl.led_opendrain = true;
+	rtlpriv->ledctl.led_opendrain = true;
 
 	RT_TRACE(rtlpriv, COMP_INIT, DBG_DMESG,
 		 "RT Customized ID: 0x%02X\n", rtlhal->oem_id);
@@ -2253,7 +2270,7 @@ static u8 _rtl92ee_mrate_idx_to_arfr_id(struct ieee80211_hw *hw, u8 rate_index)
 
 static void rtl92ee_update_hal_rate_mask(struct ieee80211_hw *hw,
 					 struct ieee80211_sta *sta,
-					 u8 rssi_level)
+					 u8 rssi_level, bool update_bw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_phy *rtlphy = &rtlpriv->phy;
@@ -2372,7 +2389,7 @@ static void rtl92ee_update_hal_rate_mask(struct ieee80211_hw *hw,
 				       (ratr_index << 28);
 	rate_mask[0] = macid;
 	rate_mask[1] = ratr_index | (b_shortgi ? 0x80 : 0x00);
-	rate_mask[2] = curtxbw_40mhz;
+	rate_mask[2] = curtxbw_40mhz | ((!update_bw) << 3);
 	rate_mask[3] = (u8)(ratr_bitmap & 0x000000ff);
 	rate_mask[4] = (u8)((ratr_bitmap & 0x0000ff00) >> 8);
 	rate_mask[5] = (u8)((ratr_bitmap & 0x00ff0000) >> 16);
@@ -2387,12 +2404,13 @@ static void rtl92ee_update_hal_rate_mask(struct ieee80211_hw *hw,
 }
 
 void rtl92ee_update_hal_rate_tbl(struct ieee80211_hw *hw,
-				 struct ieee80211_sta *sta, u8 rssi_level)
+				 struct ieee80211_sta *sta, u8 rssi_level,
+				 bool update_bw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 
 	if (rtlpriv->dm.useramask)
-		rtl92ee_update_hal_rate_mask(hw, sta, rssi_level);
+		rtl92ee_update_hal_rate_mask(hw, sta, rssi_level, update_bw);
 }
 
 void rtl92ee_update_channel_access_setting(struct ieee80211_hw *hw)
@@ -2514,7 +2532,7 @@ void rtl92ee_set_key(struct ieee80211_hw *hw, u32 key_index,
 				 "add one entry\n");
 			if (is_pairwise) {
 				RT_TRACE(rtlpriv, COMP_SEC, DBG_DMESG,
-					 "set Pairwiase key\n");
+					 "set Pairwise key\n");
 
 				rtl_cam_add_one_entry(hw, macaddr, key_index,
 					       entry_id, enc_algo,

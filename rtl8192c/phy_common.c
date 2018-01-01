@@ -11,10 +11,6 @@
  * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
  * more details.
  *
- * You should have received a copy of the GNU General Public License along with
- * this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110, USA
- *
  * The full GNU General Public License is included in this distribution in the
  * file called LICENSE.
  *
@@ -33,7 +29,9 @@
 #include "dm_common.h"
 #include "fw_common.h"
 #include "phy_common.h"
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 2, 0))
 #include <linux/export.h>
+#endif
 
 u32 rtl92c_phy_query_bb_reg(struct ieee80211_hw *hw, u32 regaddr, u32 bitmask)
 {
@@ -81,7 +79,7 @@ EXPORT_SYMBOL(rtl92c_phy_set_bb_reg);
 u32 _rtl92c_phy_fw_rf_serial_read(struct ieee80211_hw *hw,
 				  enum radio_path rfpath, u32 offset)
 {
-	WARN_ONCE(true, "deprecated!\n");
+	WARN_ONCE(true, "rtl8192c-common: _rtl92c_phy_fw_rf_serial_read deprecated!\n");
 	return 0;
 }
 EXPORT_SYMBOL(_rtl92c_phy_fw_rf_serial_read);
@@ -90,7 +88,7 @@ void _rtl92c_phy_fw_rf_serial_write(struct ieee80211_hw *hw,
 				    enum radio_path rfpath, u32 offset,
 				    u32 data)
 {
-	WARN_ONCE(true, "deprecated!\n");
+	WARN_ONCE(true, "rtl8192c-common: _rtl92c_phy_fw_rf_serial_write deprecated!\n");
 }
 EXPORT_SYMBOL(_rtl92c_phy_fw_rf_serial_write);
 
@@ -750,7 +748,7 @@ u8 rtl92c_phy_sw_chnl(struct ieee80211_hw *hw)
 	if (rtlphy->set_bwmode_inprogress)
 		return 0;
 	WARN_ONCE((rtlphy->current_channel > 14),
-		  "WIRELESS_MODE_G but channel>14");
+		  "rtl8192c-common: WIRELESS_MODE_G but channel>14");
 	rtlphy->sw_chnl_inprogress = true;
 	rtlphy->sw_chnl_stage = 0;
 	rtlphy->sw_chnl_step = 0;
@@ -796,7 +794,7 @@ static bool _rtl92c_phy_set_sw_chnl_cmdarray(struct swchnlcmd *cmdtable,
 	struct swchnlcmd *pcmd;
 
 	if (cmdtable == NULL) {
-		WARN_ONCE(true, "cmdtable cannot be NULL.\n");
+		WARN_ONCE(true, "rtl8192c-common: cmdtable cannot be NULL.\n");
 		return false;
 	}
 
@@ -842,7 +840,7 @@ bool _rtl92c_phy_sw_chnl_step_by_step(struct ieee80211_hw *hw,
 	rfdependcmdcnt = 0;
 
 	WARN_ONCE((channel < 1 || channel > 14),
-		  "illegal channel for Zebra: %d\n", channel);
+		  "rtl8192c-common: illegal channel for Zebra: %d\n", channel);
 
 	_rtl92c_phy_set_sw_chnl_cmdarray(rfdependcmd, rfdependcmdcnt++,
 					 MAX_RFDEPENDCMD_CNT, CMDID_RF_WRITEREG,
@@ -864,7 +862,8 @@ bool _rtl92c_phy_sw_chnl_step_by_step(struct ieee80211_hw *hw,
 			currentcmd = &postcommoncmd[*step];
 			break;
 		default:
-			pr_err("Invalid 'stage' = %d, Check it!\n", *stage);
+			pr_err("Invalid 'stage' = %d, Check it!\n",
+			       *stage);
 			return true;
 		}
 

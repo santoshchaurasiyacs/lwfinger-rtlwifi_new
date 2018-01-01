@@ -120,7 +120,8 @@ static void _rtl8723be_fill_h2c_command(struct ieee80211_hw *hw, u8 element_id,
 			box_extreg = REG_HMEBOX_EXT_3;
 			break;
 		default:
-			pr_err("switch case %#x not processed\n", boxnum);
+			pr_err("switch case %#x not processed\n",
+			       boxnum);
 			break;
 		}
 
@@ -192,7 +193,8 @@ static void _rtl8723be_fill_h2c_command(struct ieee80211_hw *hw, u8 element_id,
 			}
 			break;
 		default:
-			pr_err("switch case %#x not processed\n", cmd_len);
+			pr_err("switch case %#x not processed\n",
+			       cmd_len);
 			break;
 		}
 
@@ -222,7 +224,7 @@ void rtl8723be_fill_h2c_cmd(struct ieee80211_hw *hw, u8 element_id,
 
 	if (!rtlhal->fw_ready) {
 		WARN_ONCE(true,
-			  "return H2C cmd because of Fw download fail!!!\n");
+			  "rtl8723be: error H2C cmd because of Fw download fail!!!\n");
 		return;
 	}
 
@@ -241,8 +243,10 @@ void rtl8723be_set_fw_pwrmode_cmd(struct ieee80211_hw *hw, u8 mode)
 	u8 rlbm, power_state = 0, byte5 = 0;
 	u8 awake_intvl;	/* DTIM = (awake_intvl - 1) */
 	struct rtl_btc_ops *btc_ops = rtlpriv->btcoexist.btc_ops;
-	bool bt_ctrl_lps = btc_ops->btc_is_bt_ctrl_lps(rtlpriv);
-	bool bt_lps_on = btc_ops->btc_is_bt_lps_on(rtlpriv);
+	bool bt_ctrl_lps = (rtlpriv->cfg->ops->get_btc_status() ?
+			    btc_ops->btc_is_bt_ctrl_lps(rtlpriv) : false);
+	bool bt_lps_on = (rtlpriv->cfg->ops->get_btc_status() ?
+			  btc_ops->btc_is_bt_lps_on(rtlpriv) : false);
 
 	if (bt_ctrl_lps)
 		mode = (bt_lps_on ? FW_PS_MIN_MODE : FW_PS_ACTIVE_MODE);
@@ -311,9 +315,9 @@ void rtl8723be_set_fw_pwrmode_cmd(struct ieee80211_hw *hw, u8 mode)
 	RT_PRINT_DATA(rtlpriv, COMP_CMD, DBG_DMESG,
 		      "rtl92c_set_fw_pwrmode(): u1_h2c_set_pwrmode\n",
 		      u1_h2c_set_pwrmode, H2C_PWEMODE_LENGTH);
-	rtlpriv->btcoexist.btc_ops->btc_record_pwr_mode(rtlpriv,
-							u1_h2c_set_pwrmode,
-							H2C_PWEMODE_LENGTH);
+	if (rtlpriv->cfg->ops->get_btc_status())
+		btc_ops->btc_record_pwr_mode(rtlpriv, u1_h2c_set_pwrmode,
+					     H2C_PWEMODE_LENGTH);
 	rtl8723be_fill_h2c_cmd(hw, H2C_8723B_SETPWRMODE, H2C_PWEMODE_LENGTH,
 			       u1_h2c_set_pwrmode);
 }
@@ -580,8 +584,7 @@ void rtl8723be_set_fw_rsvdpagepkt(struct ieee80211_hw *hw,
 		      u1rsvdpageloc, sizeof(u1rsvdpageloc));
 
 	skb = dev_alloc_skb(totalpacketlen);
-	memcpy((u8 *)skb_put(skb, totalpacketlen),
-	       &reserved_page_packet, totalpacketlen);
+	skb_put_data(skb, &reserved_page_packet, totalpacketlen);
 
 	rtstatus = rtl_cmd_send_packet(hw, skb);
 
@@ -721,12 +724,16 @@ void rtl8723be_c2h_content_parsing(struct ieee80211_hw *hw,
 	case C2H_8723B_BT_INFO:
 		RT_TRACE(rtlpriv, COMP_FW, DBG_TRACE,
 			 "[C2H], C2H_8723BE_BT_INFO!!\n");
-		btc_ops->btc_btinfo_notify(rtlpriv, tmp_buf, c2h_cmd_len);
+		if (rtlpriv->cfg->ops->get_btc_status())
+			btc_ops->btc_btinfo_notify(rtlpriv, tmp_buf,
+						   c2h_cmd_len);
 		break;
 	case C2H_8723B_BT_MP:
 		RT_TRACE(rtlpriv, COMP_FW, DBG_TRACE,
 			 "[C2H], C2H_8723BE_BT_MP!!\n");
-		btc_ops->btc_btmpinfo_notify(rtlpriv, tmp_buf, c2h_cmd_len);
+		if (rtlpriv->cfg->ops->get_btc_status())
+			btc_ops->btc_btmpinfo_notify(rtlpriv, tmp_buf,
+						     c2h_cmd_len);
 		break;
 	default:
 		RT_TRACE(rtlpriv, COMP_FW, DBG_TRACE,

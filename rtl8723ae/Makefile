@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-2.0
 rtl8723ae-objs :=		\
 		dm.o		\
 		fw.o		\
@@ -7,14 +8,10 @@ rtl8723ae-objs :=		\
 		led.o		\
 		phy.o		\
 		pwrseq.o	\
-		pwrseqcmd.o	\
 		rf.o		\
 		sw.o		\
 		table.o		\
 		trx.o		\
 
-obj-m += rtl8723ae.o
 
-ccflags-y += -Idrivers/net/wireless/rtlwifi -D__CHECK_ENDIAN__
-
-
+obj-$(CONFIG_RTL8723AE) += rtl8723ae.o

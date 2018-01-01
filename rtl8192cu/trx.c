@@ -11,10 +11,6 @@
  * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
  * more details.
  *
- * You should have received a copy of the GNU General Public License along with
- * this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110, USA
- *
  * The full GNU General Public License is included in this distribution in the
  * file called LICENSE.
  *
@@ -245,7 +241,7 @@ u16 rtl8192cu_mq_to_hwq(__le16 fc, u16 mac80211_queue_index)
 		break;
 	default:
 		hw_queue_index = RTL_TXQ_BE;
-		WARN_ONCE(true, "QSLT_BE queue, skb_queue:%d\n",
+		WARN_ONCE(true, "rtl8192cu: QSLT_BE queue, skb_queue:%d\n",
 			  mac80211_queue_index);
 		break;
 	}
@@ -326,16 +322,29 @@ bool rtl92cu_rx_query_desc(struct ieee80211_hw *hw,
 	stats->timestamp_low = GET_RX_DESC_TSFL(pdesc);
 	stats->rx_is40Mhzpacket = (bool) GET_RX_DESC_BW(pdesc);
 	stats->is_ht = (bool)GET_RX_DESC_RX_HT(pdesc);
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 10, 0))
 	rx_status->freq = hw->conf.chandef.chan->center_freq;
 	rx_status->band = hw->conf.chandef.chan->band;
+#else
+	rx_status->freq = hw->conf.channel->center_freq;
+	rx_status->band = hw->conf.channel->band;
+#endif
 	if (GET_RX_DESC_CRC32(pdesc))
 		rx_status->flag |= RX_FLAG_FAILED_FCS_CRC;
 	if (!GET_RX_DESC_SWDEC(pdesc))
 		rx_status->flag |= RX_FLAG_DECRYPTED;
 	if (GET_RX_DESC_BW(pdesc))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,12,0))
+		rx_status->bw = RATE_INFO_BW_40;
+#else
 		rx_status->flag |= RX_FLAG_40MHZ;
+#endif
 	if (GET_RX_DESC_RX_HT(pdesc))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,12,0))
+		rx_status->encoding = RX_ENC_HT;
+#else
 		rx_status->flag |= RX_FLAG_HT;
+#endif
 	rx_status->flag |= RX_FLAG_MACTIME_START;
 	if (stats->decrypted)
 		rx_status->flag |= RX_FLAG_DECRYPTED;
@@ -395,16 +404,29 @@ static void _rtl_rx_process(struct ieee80211_hw *hw, struct sk_buff *skb)
 	stats.is_ht = (bool)GET_RX_DESC_RX_HT(rxdesc);
 	/* TODO: is center_freq changed when doing scan? */
 	/* TODO: Shall we add protection or just skip those two step? */
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 10, 0))
 	rx_status->freq = hw->conf.chandef.chan->center_freq;
 	rx_status->band = hw->conf.chandef.chan->band;
+#else
+	rx_status->freq = hw->conf.channel->center_freq;
+	rx_status->band = hw->conf.channel->band;
+#endif
 	if (GET_RX_DESC_CRC32(rxdesc))
 		rx_status->flag |= RX_FLAG_FAILED_FCS_CRC;
 	if (!GET_RX_DESC_SWDEC(rxdesc))
 		rx_status->flag |= RX_FLAG_DECRYPTED;
 	if (GET_RX_DESC_BW(rxdesc))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,12,0))
+		rx_status->bw = RATE_INFO_BW_40;
+#else
 		rx_status->flag |= RX_FLAG_40MHZ;
+#endif
 	if (GET_RX_DESC_RX_HT(rxdesc))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,12,0))
+		rx_status->encoding = RX_ENC_HT;
+#else
 		rx_status->flag |= RX_FLAG_HT;
+#endif
 	/* Data rate */
 	rx_status->rate_idx = rtlwifi_rate_mapping(hw, stats.is_ht,
 						   false, stats.rate);
@@ -438,13 +460,6 @@ static void _rtl_rx_process(struct ieee80211_hw *hw, struct sk_buff *skb)
 void  rtl8192cu_rx_hdl(struct ieee80211_hw *hw, struct sk_buff * skb)
 {
 	_rtl_rx_process(hw, skb);
-}
-
-void rtl8192c_rx_segregate_hdl(
-	struct ieee80211_hw *hw,
-	struct sk_buff *skb,
-	struct sk_buff_head *skb_list)
-{
 }
 
 /*----------------------------------------------------------------------
@@ -481,14 +496,14 @@ static void _rtl_fill_usb_tx_desc(u8 *txdesc)
  */
 static void _rtl_tx_desc_checksum(u8 *txdesc)
 {
-	u16 *ptr = (u16 *)txdesc;
+	__le16 *ptr = (__le16 *)txdesc;
 	u16	checksum = 0;
 	u32 index;
 
 	/* Clear first */
 	SET_TX_DESC_TX_DESC_CHECKSUM(txdesc, 0);
 	for (index = 0; index < 16; index++)
-		checksum = checksum ^ (*(ptr + index));
+		checksum = checksum ^ le16_to_cpu(*(ptr + index));
 	SET_TX_DESC_TX_DESC_CHECKSUM(txdesc, checksum);
 }
 
@@ -516,7 +531,7 @@ void rtl92cu_tx_fill_desc(struct ieee80211_hw *hw,
 
 	seq_number = (le16_to_cpu(hdr->seq_ctrl) & IEEE80211_SCTL_SEQ) >> 4;
 	rtl_get_tcb_desc(hw, info, sta, skb, tcb_desc);
-	txdesc = (u8 *)skb_push(skb, RTL_TX_HEADER_SIZE);
+	txdesc = skb_push(skb, RTL_TX_HEADER_SIZE);
 	memset(txdesc, 0, RTL_TX_HEADER_SIZE);
 	SET_TX_DESC_PKT_SIZE(txdesc, pktlen);
 	SET_TX_DESC_LINIP(txdesc, 0);
@@ -678,9 +693,4 @@ void rtl92cu_tx_fill_cmddesc(struct ieee80211_hw *hw,
 	}
 	RT_PRINT_DATA(rtlpriv, COMP_CMD, DBG_LOUD, "H2C Tx Cmd Content",
 		      pdesc, RTL_TX_DESC_SIZE);
-}
-
-bool rtl92cu_cmd_send_packet(struct ieee80211_hw *hw, struct sk_buff *skb)
-{
-	return true;
 }

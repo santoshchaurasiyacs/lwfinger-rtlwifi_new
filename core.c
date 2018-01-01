@@ -32,7 +32,9 @@
 
 #include "btcoexist/rtl_btc.h"
 #include <linux/firmware.h>
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 2, 0))
 #include <linux/export.h>
+#endif
 #include <net/cfg80211.h>
 
 u8 channel5g[CHANNEL_MAX_NUMBER_5G] = {
@@ -50,6 +52,11 @@ u8 channel5g_80m[CHANNEL_MAX_NUMBER_5G_80M] = {
 	42, 58, 106, 122, 138, 155, 171
 };
 EXPORT_SYMBOL(channel5g_80m);
+
+int show_it_bb;
+EXPORT_SYMBOL(show_it_bb);
+int show_it_mac;
+EXPORT_SYMBOL(show_it_mac);
 
 void rtl_addr_delay(u32 addr)
 {
@@ -160,7 +167,7 @@ static int rtl_op_start(struct ieee80211_hw *hw)
 	mutex_lock(&rtlpriv->locks.conf_mutex);
 	err = rtlpriv->intf_ops->adapter_start(hw);
 	if (!err)
-		rtl_watch_dog_timer_callback((unsigned long)hw);
+		rtl_watch_dog_timer_callback(&rtlpriv->works.watchdog_timer);
 	mutex_unlock(&rtlpriv->locks.conf_mutex);
 	return err;
 }
@@ -203,9 +210,13 @@ static void rtl_op_stop(struct ieee80211_hw *hw)
 	mutex_unlock(&rtlpriv->locks.conf_mutex);
 }
 
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(3, 7, 0))
+static void rtl_op_tx(struct ieee80211_hw *hw, struct sk_buff *skb)
+#else
 static void rtl_op_tx(struct ieee80211_hw *hw,
 		      struct ieee80211_tx_control *control,
 		      struct sk_buff *skb)
+#endif
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_hal *rtlhal = rtl_hal(rtl_priv(hw));
@@ -219,8 +230,14 @@ static void rtl_op_tx(struct ieee80211_hw *hw,
 	if (!test_bit(RTL_STATUS_INTERFACE_START, &rtlpriv->status))
 		goto err_free;
 
+
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(3, 7, 0))
+	if (!rtlpriv->intf_ops->waitq_insert(hw, skb))
+		rtlpriv->intf_ops->adapter_tx(hw, skb, &tcb_desc);
+#else
 	if (!rtlpriv->intf_ops->waitq_insert(hw, control->sta, skb))
 		rtlpriv->intf_ops->adapter_tx(hw, control->sta, skb, &tcb_desc);
+#endif
 	return;
 
 err_free:
@@ -241,7 +258,10 @@ static int rtl_op_add_interface(struct ieee80211_hw *hw,
 		return -EOPNOTSUPP;
 	}
 
+/*This flag is not defined before kernel 3.4*/
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 4, 0))
 	vif->driver_flags |= IEEE80211_VIF_BEACON_FILTER;
+#endif
 
 	rtl_ips_nic_on(hw);
 
@@ -308,7 +328,8 @@ static int rtl_op_add_interface(struct ieee80211_hw *hw,
 		retry_limit = 0x07;
 		break;
 	default:
-		pr_err("operation mode %d is not support!\n", vif->type);
+		pr_err("operation mode %d is not supported!\n",
+		       vif->type);
 		err = -EOPNOTSUPP;
 		goto out;
 	}
@@ -344,9 +365,9 @@ static void rtl_op_remove_interface(struct ieee80211_hw *hw,
 	mutex_lock(&rtlpriv->locks.conf_mutex);
 
 	/* Free beacon resources */
-	if ((vif->type == NL80211_IFTYPE_AP) ||
-	    (vif->type == NL80211_IFTYPE_ADHOC) ||
-	    (vif->type == NL80211_IFTYPE_MESH_POINT)) {
+	if (vif->type == NL80211_IFTYPE_AP ||
+	    vif->type == NL80211_IFTYPE_ADHOC ||
+	    vif->type == NL80211_IFTYPE_MESH_POINT) {
 		if (mac->beacon_enabled == 1) {
 			mac->beacon_enabled = 0;
 			rtlpriv->cfg->ops->update_interrupt_mask(hw, 0,
@@ -438,7 +459,11 @@ static void _rtl_add_wowlan_patterns(struct ieee80211_hw *hw,
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_mac *mac = &rtlpriv->mac80211;
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 12, 0))
 	struct cfg80211_pkt_pattern *patterns = wow->patterns;
+#else
+	struct cfg80211_wowlan_trig_pkt_pattern *patterns = wow->patterns;
+#endif
 	struct rtl_wow_pattern rtl_pattern;
 	const u8 *pattern_os, *mask_os;
 	u8 mask[MAX_WOL_BIT_MASK_SIZE] = {0};
@@ -452,7 +477,8 @@ static void _rtl_add_wowlan_patterns(struct ieee80211_hw *hw,
 	for (i = 0; i < wow->n_patterns; i++) {
 		memset(&rtl_pattern, 0, sizeof(struct rtl_wow_pattern));
 		memset(mask, 0, MAX_WOL_BIT_MASK_SIZE);
-		if (patterns[i].pattern_len > MAX_WOL_PATTERN_SIZE) {
+		if (patterns[i].pattern_len < 0 ||
+		    patterns[i].pattern_len > MAX_WOL_PATTERN_SIZE) {
 			RT_TRACE(rtlpriv, COMP_POWER, DBG_WARNING,
 				 "Pattern[%d] is too long\n", i);
 			continue;
@@ -548,15 +574,13 @@ static int rtl_op_suspend(struct ieee80211_hw *hw,
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_hal *rtlhal = rtl_hal(rtlpriv);
 	struct rtl_ps_ctl *ppsc = rtl_psc(rtl_priv(hw));
-	struct timeval ts;
 
 	RT_TRACE(rtlpriv, COMP_POWER, DBG_DMESG, "\n");
 	if (WARN_ON(!wow))
 		return -EINVAL;
 
 	/* to resolve s4 can not wake up*/
-	do_gettimeofday(&ts);
-	rtlhal->last_suspend_sec = ts.tv_sec;
+	rtlhal->last_suspend_sec = ktime_get_real_seconds();
 
 	if ((ppsc->wo_wlan_mode & WAKE_ON_PATTERN_MATCH) && wow->n_patterns)
 		_rtl_add_wowlan_patterns(hw, wow);
@@ -574,8 +598,10 @@ static int rtl_op_resume(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_hal *rtlhal = rtl_hal(rtlpriv);
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 1, 0))
 	struct rtl_mac *mac = rtl_mac(rtl_priv(hw));
-	struct timeval ts;
+#endif
+	time64_t now;
 
 	RT_TRACE(rtlpriv, COMP_POWER, DBG_DMESG, "\n");
 	rtlhal->driver_is_goingto_unload = false;
@@ -583,13 +609,15 @@ static int rtl_op_resume(struct ieee80211_hw *hw)
 	rtlhal->wake_from_pnp_sleep = true;
 
 	/* to resovle s4 can not wake up*/
-	do_gettimeofday(&ts);
-	if (ts.tv_sec - rtlhal->last_suspend_sec < 5)
+	now = ktime_get_real_seconds();
+	if (now - rtlhal->last_suspend_sec < 5)
 		return -1;
 
 	rtl_op_start(hw);
 	device_set_wakeup_enable(wiphy_dev(hw->wiphy), false);
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 1, 0))
 	ieee80211_resume_disconnect(mac->vif);
+#endif
 	rtlhal->wake_from_pnp_sleep = false;
 	return 0;
 }
@@ -668,15 +696,23 @@ static int rtl_op_config(struct ieee80211_hw *hw, u32 changed)
 
 	if (changed & IEEE80211_CONF_CHANGE_CHANNEL &&
 	    !rtlpriv->proximity.proxim_on) {
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 10, 0))
 		struct ieee80211_channel *channel = hw->conf.chandef.chan;
 		enum nl80211_chan_width width = hw->conf.chandef.width;
+#else
+		struct ieee80211_channel *channel = hw->conf.channel;
+#endif
 		enum nl80211_channel_type channel_type = NL80211_CHAN_NO_HT;
 		u8 wide_chan = (u8) channel->hw_value;
 
 		/* channel_type is for 20&40M */
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 10, 0))
 		if (width < NL80211_CHAN_WIDTH_80)
 			channel_type =
 				cfg80211_get_chandef_type(&hw->conf.chandef);
+#else
+		channel_type = hw->conf.channel_type;
+#endif
 		if (mac->act_scanning)
 			mac->n_channels++;
 
@@ -697,6 +733,7 @@ static int rtl_op_config(struct ieee80211_hw *hw, u32 changed)
 		 *it here based on UPPER & LOWER
 		 */
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 10, 0))
 		if (width >= NL80211_CHAN_WIDTH_80) {
 			if (width == NL80211_CHAN_WIDTH_80) {
 				u32 center = hw->conf.chandef.center_freq1;
@@ -738,6 +775,9 @@ static int rtl_op_config(struct ieee80211_hw *hw, u32 changed)
 				}
 			}
 		} else {
+#else
+		{
+#endif
 			switch (channel_type) {
 			case NL80211_CHAN_HT20:
 			case NL80211_CHAN_NO_HT:
@@ -858,8 +898,8 @@ static void rtl_op_configure_filter(struct ieee80211_hw *hw,
 	 * here just used for linked scanning, & linked
 	 * and nolink check bssid is set in set network_type
 	 */
-	if ((changed_flags & FIF_BCN_PRBRESP_PROMISC) &&
-	    (mac->link_state >= MAC80211_LINKED)) {
+	if (changed_flags & FIF_BCN_PRBRESP_PROMISC &&
+	    mac->link_state >= MAC80211_LINKED) {
 		if (mac->opmode != NL80211_IFTYPE_AP &&
 		    mac->opmode != NL80211_IFTYPE_MESH_POINT) {
 			if (*new_flags & FIF_BCN_PRBRESP_PROMISC)
@@ -909,6 +949,7 @@ static int rtl_op_sta_add(struct ieee80211_hw *hw,
 			 struct ieee80211_sta *sta)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
+	struct rtl_phy *rtlphy = &(rtlpriv->phy);
 	struct rtl_hal *rtlhal = rtl_hal(rtl_priv(hw));
 	struct rtl_mac *mac = rtl_mac(rtl_priv(hw));
 	struct rtl_sta_info *sta_entry;
@@ -918,6 +959,8 @@ static int rtl_op_sta_add(struct ieee80211_hw *hw,
 		spin_lock_bh(&rtlpriv->locks.entry_list_lock);
 		list_add_tail(&sta_entry->list, &rtlpriv->entry_list);
 		spin_unlock_bh(&rtlpriv->locks.entry_list_lock);
+		sta_entry->rtlpriv = rtlpriv;
+
 		if (rtlhal->current_bandtype == BAND_ON_2_4G) {
 			sta_entry->wireless_mode = WIRELESS_MODE_G;
 			if (sta->supp_rates[0] <= 0xf)
@@ -931,20 +974,70 @@ static int rtl_op_sta_add(struct ieee80211_hw *hw,
 			sta_entry->wireless_mode = WIRELESS_MODE_A;
 			if (sta->ht_cap.ht_supported)
 				sta_entry->wireless_mode = WIRELESS_MODE_N_5G;
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 8, 0))
 			if (sta->vht_cap.vht_supported)
 				sta_entry->wireless_mode = WIRELESS_MODE_AC_5G;
+#endif
 
 			if (vif->type == NL80211_IFTYPE_ADHOC)
 				sta_entry->wireless_mode = WIRELESS_MODE_A;
+
+			mac->mode = sta_entry->wireless_mode;
 		}
 		/*disable cck rate for p2p*/
 		if (mac->p2p)
 			sta->supp_rates[0] &= 0xfffffff0;
 
-		memcpy(sta_entry->mac_addr, sta->addr, ETH_ALEN);
+		sta_entry->cmn_info.bw_mode = HT_CHANNEL_WIDTH_20;
+
+		if (sta->ht_cap.ht_supported) {
+			if (sta->ht_cap.cap & IEEE80211_HT_CAP_SUP_WIDTH_20_40)
+				rtlphy->max_ht_chan_bw = HT_CHANNEL_WIDTH_20_40;
+			else
+				rtlphy->max_ht_chan_bw = HT_CHANNEL_WIDTH_20;
+
+			sta_entry->cmn_info.bw_mode = rtlphy->max_ht_chan_bw;
+		}
+
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 8, 0))
+		if (sta->vht_cap.vht_supported) {
+			rtlphy->max_vht_chan_bw = HT_CHANNEL_WIDTH_80;
+			sta_entry->cmn_info.bw_mode = rtlphy->max_vht_chan_bw;
+		}
+#endif
+
+		RT_TRACE(rtlpriv, COMP_MAC80211, DBG_DMESG,
+			 "bw_mode: %d\n", sta_entry->cmn_info.bw_mode);
+
+		memcpy(sta_entry->cmn_info.mac_addr, sta->addr, ETH_ALEN);
 		RT_TRACE(rtlpriv, COMP_MAC80211, DBG_DMESG,
 			"Add sta addr is %pM\n", sta->addr);
-		rtlpriv->cfg->ops->update_rate_tbl(hw, sta, 0);
+
+		/*update stbc/ldpc in cmn sta info*/
+		if (rtl_wireless_mode_is_vht(sta_entry->wireless_mode)) {
+			if (sta->vht_cap.cap & IEEE80211_VHT_CAP_RXSTBC_MASK)
+				sta_entry->cmn_info.stbc_en = 0x2;
+			if (sta->vht_cap.cap & IEEE80211_VHT_CAP_RXLDPC)
+				sta_entry->cmn_info.ldpc_en = 0x2;
+		} else {
+			if (sta->ht_cap.cap & IEEE80211_HT_CAP_RX_STBC)
+				sta_entry->cmn_info.stbc_en = 0x1;
+			if (sta->ht_cap.cap & IEEE80211_HT_CAP_LDPC_CODING)
+				sta_entry->cmn_info.ldpc_en = 0x1;
+		}
+		RT_TRACE(rtlpriv, COMP_MAC80211, DBG_DMESG,
+			 "STA cmn_info.stbc_en=%d cmn_info.ldpc_en=%d\n",
+			 sta_entry->cmn_info.stbc_en,
+			 sta_entry->cmn_info.ldpc_en);
+
+		rtlpriv->cfg->ops->update_rate_tbl(hw, sta, 0, true);
+
+		if (rtlpriv->phydm.ops) {
+			rtlpriv->phydm.ops->phydm_add_sta(rtlpriv, sta);
+			rtlpriv->phydm.ops->phydm_ra_registered(rtlpriv, sta);
+		}
+
+		rtlpriv->sta = sta_entry;
 	}
 
 	return 0;
@@ -959,9 +1052,17 @@ static int rtl_op_sta_remove(struct ieee80211_hw *hw,
 	if (sta) {
 		RT_TRACE(rtlpriv, COMP_MAC80211, DBG_DMESG,
 			 "Remove sta addr is %pM\n", sta->addr);
+
+		rtlpriv->sta = NULL;
+
+		if (rtlpriv->phydm.ops)
+			rtlpriv->phydm.ops->phydm_del_sta(rtlpriv, sta);
+
 		sta_entry = (struct rtl_sta_info *)sta->drv_priv;
 		sta_entry->wireless_mode = 0;
 		sta_entry->ratr_index = 0;
+		sta_entry->cmn_info.ra_info.rate_id = 0;
+		sta_entry->rtlpriv = NULL;
 		spin_lock_bh(&rtlpriv->locks.entry_list_lock);
 		list_del(&sta_entry->list);
 		spin_unlock_bh(&rtlpriv->locks.entry_list_lock);
@@ -992,13 +1093,34 @@ static int _rtl_get_hal_qnum(u16 queue)
 	return qnum;
 }
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 0, 0))
+static void rtl_op_sta_statistics(struct ieee80211_hw *hw,
+				  struct ieee80211_vif *vif,
+				  struct ieee80211_sta *sta,
+				  struct station_info *sinfo)
+{
+	/* nothing filled by driver, so mac80211 will update all info */
+	sinfo->filled = 0;
+}
+#endif
+
+static int rtl_op_set_frag_threshold(struct ieee80211_hw *hw, u32 value)
+{
+	return -EOPNOTSUPP;
+}
+
 /*
  *for mac80211 VO = 0, VI = 1, BE = 2, BK = 3
  *for rtl819x  BE = 0, BK = 1, VI = 2, VO = 3
  */
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 2, 0))
 static int rtl_op_conf_tx(struct ieee80211_hw *hw,
 			  struct ieee80211_vif *vif, u16 queue,
 			  const struct ieee80211_tx_queue_params *param)
+#else
+static int rtl_op_conf_tx(struct ieee80211_hw *hw, u16 queue,
+			  const struct ieee80211_tx_queue_params *param)
+#endif
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_mac *mac = rtl_mac(rtl_priv(hw));
@@ -1039,15 +1161,16 @@ static void rtl_op_bss_info_changed(struct ieee80211_hw *hw,
 				    u32 changed)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
+	struct rtl_phy *rtlphy = &(rtlpriv->phy);
 	struct rtl_hal *rtlhal = rtl_hal(rtlpriv);
 	struct rtl_mac *mac = rtl_mac(rtl_priv(hw));
 	struct rtl_ps_ctl *ppsc = rtl_psc(rtl_priv(hw));
 
 	mutex_lock(&rtlpriv->locks.conf_mutex);
-	if ((vif->type == NL80211_IFTYPE_ADHOC) ||
-	    (vif->type == NL80211_IFTYPE_AP) ||
-	    (vif->type == NL80211_IFTYPE_MESH_POINT)) {
-		if ((changed & BSS_CHANGED_BEACON) ||
+	if (vif->type == NL80211_IFTYPE_ADHOC ||
+	    vif->type == NL80211_IFTYPE_AP ||
+	    vif->type == NL80211_IFTYPE_MESH_POINT) {
+		if (changed & BSS_CHANGED_BEACON ||
 		    (changed & BSS_CHANGED_BEACON_ENABLED &&
 		     bss_conf->enable_beacon)) {
 			if (mac->beacon_enabled == 0) {
@@ -1091,6 +1214,7 @@ static void rtl_op_bss_info_changed(struct ieee80211_hw *hw,
 		u8 mstatus;
 		if (bss_conf->assoc) {
 			struct ieee80211_sta *sta = NULL;
+			struct rtl_sta_info *sta_entry = NULL;
 			u8 keep_alive = 10;
 
 			mstatus = RT_MEDIA_CONNECT;
@@ -1118,6 +1242,10 @@ static void rtl_op_bss_info_changed(struct ieee80211_hw *hw,
 				rcu_read_unlock();
 				goto out;
 			}
+
+			sta_entry = (struct rtl_sta_info *)sta->drv_priv;
+			sta_entry->cmn_info.aid = mac->assoc_id;
+
 			RT_TRACE(rtlpriv, COMP_EASY_CONCURRENT, DBG_LOUD,
 				 "send PS STATIC frame\n");
 			if (rtlpriv->dm.supp_phymode_switch) {
@@ -1142,15 +1270,29 @@ static void rtl_op_bss_info_changed(struct ieee80211_hw *hw,
 					mac->mode = WIRELESS_MODE_N_5G;
 			}
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 8, 0))
 			if (sta->vht_cap.vht_supported) {
 				if (rtlhal->current_bandtype == BAND_ON_5G)
 					mac->mode = WIRELESS_MODE_AC_5G;
 				else
 					mac->mode = WIRELESS_MODE_AC_24G;
 			}
+#endif
 
-			if (vif->type == NL80211_IFTYPE_STATION)
-				rtlpriv->cfg->ops->update_rate_tbl(hw, sta, 0);
+			if (vif->type == NL80211_IFTYPE_STATION) {
+				struct rtl_phydm_ops *dm_ops =
+					rtlpriv->phydm.ops;
+
+				sta_entry->wireless_mode = mac->mode;
+				rtlpriv->cfg->ops->update_rate_tbl(hw, sta, 0,
+								   true);
+				if (dm_ops &&
+				    mac->opmode == NL80211_IFTYPE_STATION)
+					dm_ops->phydm_iq_calibrate(rtlpriv);
+				if (dm_ops)
+					dm_ops->phydm_ra_registered(rtlpriv,
+						sta);
+			}
 			rcu_read_unlock();
 
 			/* to avoid AP Disassociation caused by inactivity */
@@ -1161,6 +1303,11 @@ static void rtl_op_bss_info_changed(struct ieee80211_hw *hw,
 			RT_TRACE(rtlpriv, COMP_MAC80211, DBG_DMESG,
 				 "BSS_CHANGED_ASSOC\n");
 		} else {
+
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 1, 0))
+			struct cfg80211_bss *bss = NULL;
+#endif
+
 			mstatus = RT_MEDIA_DISCONNECT;
 
 			if (mac->link_state == MAC80211_LINKED)
@@ -1168,6 +1315,28 @@ static void rtl_op_bss_info_changed(struct ieee80211_hw *hw,
 			if (ppsc->p2p_ps_info.p2p_ps_mode > P2P_PS_NONE)
 				rtl_p2p_ps_cmd(hw, P2P_PS_DISABLE);
 			mac->link_state = MAC80211_NOLINK;
+
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 1, 0))
+			bss = cfg80211_get_bss(hw->wiphy, NULL,
+				(u8 *)mac->bssid, NULL, 0,
+				IEEE80211_BSS_TYPE_ESS,
+				IEEE80211_PRIVACY_OFF);
+
+
+			RT_TRACE(rtlpriv, COMP_MAC80211, DBG_DMESG,
+				"bssid = %x-%x-%x-%x-%x-%x\n",
+				mac->bssid[0], mac->bssid[1],
+				mac->bssid[2], mac->bssid[3],
+				mac->bssid[4], mac->bssid[5]);
+
+			if (bss) {
+				cfg80211_unlink_bss(hw->wiphy, bss);
+				cfg80211_put_bss(hw->wiphy, bss);
+				RT_TRACE(rtlpriv, COMP_MAC80211, DBG_DMESG,
+					 "cfg80211_unlink !!\n");
+			}
+#endif
+
 			eth_zero_addr(mac->bssid);
 			mac->vendor = PEER_UNKNOWN;
 			mac->mode = 0;
@@ -1240,6 +1409,16 @@ static void rtl_op_bss_info_changed(struct ieee80211_hw *hw,
 			    mac->current_ampdu_factor)
 				mac->current_ampdu_factor =
 				    sta->ht_cap.ampdu_factor;
+
+			if (sta->ht_cap.ht_supported) {
+				if (sta->ht_cap.cap &
+				    IEEE80211_HT_CAP_SUP_WIDTH_20_40)
+					rtlphy->max_ht_chan_bw =
+							HT_CHANNEL_WIDTH_20_40;
+				else
+					rtlphy->max_ht_chan_bw =
+							HT_CHANNEL_WIDTH_20;
+			}
 		}
 		rcu_read_unlock();
 
@@ -1249,6 +1428,140 @@ static void rtl_op_bss_info_changed(struct ieee80211_hw *hw,
 					      &mac->current_ampdu_factor);
 		rtlpriv->cfg->ops->set_hw_reg(hw, HW_VAR_AMPDU_MIN_SPACE,
 					      &mac->current_ampdu_density);
+	}
+
+	if (changed & BSS_CHANGED_BANDWIDTH) {
+		struct rtl_phy *rtlphy = &rtlpriv->phy;
+		struct ieee80211_sta *sta = NULL;
+		struct rtl_sta_info *sta_entry = NULL;
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 10, 0))
+		enum nl80211_chan_width width = bss_conf->chandef.width;
+#endif
+
+		enum nl80211_channel_type channel_type = NL80211_CHAN_NO_HT;
+
+		RT_TRACE(rtlpriv, COMP_MAC80211, DBG_TRACE,
+			 "BSS_CHANGED_BANDWIDTH\n");
+
+		/* channel_type is for 20&40M */
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 10, 0))
+		if (width < NL80211_CHAN_WIDTH_80)
+			channel_type =
+				cfg80211_get_chandef_type(&hw->conf.chandef);
+#else
+		channel_type = hw->conf.channel_type;
+#endif
+
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 10, 0))
+		if (width >= NL80211_CHAN_WIDTH_80) {
+			if (width == NL80211_CHAN_WIDTH_80) {
+				u32 center = hw->conf.chandef.center_freq1;
+				u32 primary =
+					(u32)hw->conf.chandef.chan->center_freq;
+
+				rtlphy->current_chan_bw = HT_CHANNEL_WIDTH_80;
+				mac->bw_80 = true;
+				mac->bw_40 = true;
+				if (center > primary) {
+					mac->cur_80_prime_sc =
+						PRIME_CHNL_OFFSET_LOWER;
+					if (center - primary == 10) {
+						mac->cur_40_prime_sc =
+							PRIME_CHNL_OFFSET_UPPER;
+					} else if (center - primary == 30) {
+						mac->cur_40_prime_sc =
+							PRIME_CHNL_OFFSET_LOWER;
+					}
+				} else {
+					mac->cur_80_prime_sc =
+						PRIME_CHNL_OFFSET_UPPER;
+					if (primary - center == 10) {
+						mac->cur_40_prime_sc =
+							PRIME_CHNL_OFFSET_LOWER;
+					} else if (primary - center == 30) {
+						mac->cur_40_prime_sc =
+							PRIME_CHNL_OFFSET_UPPER;
+					}
+				}
+			}
+		} else {
+#else
+		{
+#endif
+			switch (channel_type) {
+			case NL80211_CHAN_HT20:
+			case NL80211_CHAN_NO_HT:
+					/* SC */
+					mac->cur_40_prime_sc =
+						PRIME_CHNL_OFFSET_DONT_CARE;
+					rtlphy->current_chan_bw =
+						HT_CHANNEL_WIDTH_20;
+					mac->bw_40 = false;
+					mac->bw_80 = false;
+					break;
+			case NL80211_CHAN_HT40MINUS:
+					/* SC */
+					mac->cur_40_prime_sc =
+						PRIME_CHNL_OFFSET_UPPER;
+					rtlphy->current_chan_bw =
+						HT_CHANNEL_WIDTH_20_40;
+					mac->bw_40 = true;
+					mac->bw_80 = false;
+					break;
+			case NL80211_CHAN_HT40PLUS:
+					/* SC */
+					mac->cur_40_prime_sc =
+						PRIME_CHNL_OFFSET_LOWER;
+					rtlphy->current_chan_bw =
+						HT_CHANNEL_WIDTH_20_40;
+					mac->bw_40 = true;
+					mac->bw_80 = false;
+					break;
+			default:
+					mac->bw_40 = false;
+					mac->bw_80 = false;
+					RT_TRACE(rtlpriv, COMP_ERR, DBG_WARNING,
+						 "switch case %#x not handled\n",
+						 channel_type);
+					break;
+			}
+		}
+
+		rtlpriv->cfg->ops->set_bw_mode(hw, channel_type);
+		if (rtlpriv->phydm.ops)
+			rtlpriv->phydm.ops->phydm_iq_calibrate(rtlpriv);
+
+		rcu_read_lock();
+		sta = ieee80211_find_sta(vif, (u8 *)bss_conf->bssid);
+
+		if (sta) {
+			struct rtl_phydm_ops *dm_ops = rtlpriv->phydm.ops;
+
+			sta_entry = (struct rtl_sta_info *)sta->drv_priv;
+			sta_entry->cmn_info.bw_mode = rtlphy->current_chan_bw;
+			rtlpriv->cfg->ops->update_rate_tbl(hw, sta, 0, true);
+			if (dm_ops)
+				dm_ops->phydm_ra_registered(rtlpriv, sta);
+
+			if (sta->ht_cap.ht_supported) {
+				if (sta->ht_cap.cap &
+				    IEEE80211_HT_CAP_SUP_WIDTH_20_40)
+					rtlphy->max_ht_chan_bw =
+						HT_CHANNEL_WIDTH_20_40;
+				else
+					rtlphy->max_ht_chan_bw =
+						HT_CHANNEL_WIDTH_20;
+			}
+
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 8, 0))
+			if (sta->vht_cap.vht_supported)
+				rtlphy->max_vht_chan_bw = HT_CHANNEL_WIDTH_80;
+#endif
+		} else {
+			RT_TRACE(rtlpriv, COMP_MAC80211, DBG_WARNING,
+				 "Warnning!!sta is NULL ( line%d)\n", __LINE__);
+		}
+		rcu_read_unlock();
 	}
 
 	if (changed & BSS_CHANGED_BSSID) {
@@ -1287,12 +1600,14 @@ static void rtl_op_bss_info_changed(struct ieee80211_hw *hw,
 				mac->mode = WIRELESS_MODE_N_5G;
 		}
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 8, 0))
 		if (sta->vht_cap.vht_supported) {
 			if (rtlhal->current_bandtype == BAND_ON_5G)
 				mac->mode = WIRELESS_MODE_AC_5G;
 			else
 				mac->mode = WIRELESS_MODE_AC_24G;
 		}
+#endif
 
 		/* just station need it, because ibss & ap mode will
 		 * set in sta_add, and will be NULL here */
@@ -1300,6 +1615,10 @@ static void rtl_op_bss_info_changed(struct ieee80211_hw *hw,
 			struct rtl_sta_info *sta_entry;
 			sta_entry = (struct rtl_sta_info *)sta->drv_priv;
 			sta_entry->wireless_mode = mac->mode;
+			rtlpriv->cfg->ops->update_rate_tbl(hw, sta, 0, true);
+			if (rtlpriv->phydm.ops)
+				rtlpriv->phydm.ops->phydm_ra_registered(rtlpriv,
+					sta);
 		}
 
 		if (sta->ht_cap.ht_supported) {
@@ -1313,8 +1632,10 @@ static void rtl_op_bss_info_changed(struct ieee80211_hw *hw,
 			 * */
 		}
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 8, 0))
 		if (sta->vht_cap.vht_supported)
 			mac->vht_enable = true;
+#endif
 
 		if (changed & BSS_CHANGED_BASIC_RATES) {
 			/* for 5G must << RATE_6M_INDEX = 4,
@@ -1334,7 +1655,11 @@ out:
 	mutex_unlock(&rtlpriv->locks.conf_mutex);
 }
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 2, 0))
 static u64 rtl_op_get_tsf(struct ieee80211_hw *hw, struct ieee80211_vif *vif)
+#else
+static u64 rtl_op_get_tsf(struct ieee80211_hw *hw)
+#endif
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	u64 tsf;
@@ -1343,8 +1668,12 @@ static u64 rtl_op_get_tsf(struct ieee80211_hw *hw, struct ieee80211_vif *vif)
 	return tsf;
 }
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 2, 0))
 static void rtl_op_set_tsf(struct ieee80211_hw *hw,
 			   struct ieee80211_vif *vif, u64 tsf)
+#else
+static void rtl_op_set_tsf(struct ieee80211_hw *hw, u64 tsf)
+#endif
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_mac *mac = rtl_mac(rtl_priv(hw));
@@ -1354,7 +1683,11 @@ static void rtl_op_set_tsf(struct ieee80211_hw *hw,
 	rtlpriv->cfg->ops->set_hw_reg(hw, HW_VAR_CORRECT_TSF, (u8 *)(&bibss));
 }
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 2, 0))
 static void rtl_op_reset_tsf(struct ieee80211_hw *hw, struct ieee80211_vif *vif)
+#else
+static void rtl_op_reset_tsf(struct ieee80211_hw *hw)
+#endif
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	u8 tmp = 0;
@@ -1377,18 +1710,20 @@ static void rtl_op_sta_notify(struct ieee80211_hw *hw,
 	}
 }
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 6, 0))
 static int rtl_op_ampdu_action(struct ieee80211_hw *hw,
 			       struct ieee80211_vif *vif,
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 6, 0))
 			       struct ieee80211_ampdu_params *params)
 #else
+static int rtl_op_ampdu_action(struct ieee80211_hw *hw,
+			       struct ieee80211_vif *vif,
 			       enum ieee80211_ampdu_mlme_action action,
-			       struct ieee80211_sta *sta, u16 tid, u16 *ssn,
+			       struct ieee80211_sta *sta,
+			       u16 tid, u16 *ssn, u8 buf_size
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 4, 0))
-			       u8 buf_size, bool amsdu)
-#else
-			       u8 buf_size)
+			       , bool amsdu
 #endif
+			       )
 #endif
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
@@ -1404,9 +1739,13 @@ static int rtl_op_ampdu_action(struct ieee80211_hw *hw,
 		RT_TRACE(rtlpriv, COMP_MAC80211, DBG_TRACE,
 			 "IEEE80211_AMPDU_TX_START: TID:%d\n", tid);
 		return rtl_tx_agg_start(hw, vif, sta, tid, ssn);
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 9, 0))
 	case IEEE80211_AMPDU_TX_STOP_CONT:
 	case IEEE80211_AMPDU_TX_STOP_FLUSH:
 	case IEEE80211_AMPDU_TX_STOP_FLUSH_CONT:
+#else
+	case IEEE80211_AMPDU_TX_STOP:
+#endif
 		RT_TRACE(rtlpriv, COMP_MAC80211, DBG_TRACE,
 			 "IEEE80211_AMPDU_TX_STOP: TID:%d\n", tid);
 		return rtl_tx_agg_stop(hw, vif, sta, tid);
@@ -1448,8 +1787,14 @@ static void rtl_op_sw_scan_start(struct ieee80211_hw *hw)
 		return;
 	}
 
+	if (rtlpriv->phydm.ops)
+		rtlpriv->phydm.ops->phydm_pause_dig(rtlpriv, 1);
+
 	if (rtlpriv->cfg->ops->get_btc_status())
 		rtlpriv->btcoexist.btc_ops->btc_scan_notify(rtlpriv, 1);
+	else if (rtlpriv->btcoexist.btc_ops)
+		rtlpriv->btcoexist.btc_ops->btc_scan_notify_wifi_only(rtlpriv,
+								      1);
 
 	if (rtlpriv->dm.supp_phymode_switch) {
 		if (rtlpriv->cfg->ops->chk_switch_dmdp)
@@ -1509,6 +1854,12 @@ static void rtl_op_sw_scan_complete(struct ieee80211_hw *hw)
 	rtlpriv->cfg->ops->scan_operation_backup(hw, SCAN_OPT_RESTORE);
 	if (rtlpriv->cfg->ops->get_btc_status())
 		rtlpriv->btcoexist.btc_ops->btc_scan_notify(rtlpriv, 0);
+	else if (rtlpriv->btcoexist.btc_ops)
+		rtlpriv->btcoexist.btc_ops->btc_scan_notify_wifi_only(rtlpriv,
+								      0);
+
+	if (rtlpriv->phydm.ops)
+		rtlpriv->phydm.ops->phydm_pause_dig(rtlpriv, 0);
 }
 
 static int rtl_op_set_key(struct ieee80211_hw *hw, enum set_key_cmd cmd,
@@ -1532,9 +1883,9 @@ static int rtl_op_set_key(struct ieee80211_hw *hw, enum set_key_cmd cmd,
 		return -ENOSPC;	/*User disabled HW-crypto */
 	}
 	/* To support IBSS, use sw-crypto for GTK */
-	if (((vif->type == NL80211_IFTYPE_ADHOC) ||
-	    (vif->type == NL80211_IFTYPE_MESH_POINT)) &&
-	   !(key->flags & IEEE80211_KEY_FLAG_PAIRWISE))
+	if ((vif->type == NL80211_IFTYPE_ADHOC ||
+	     vif->type == NL80211_IFTYPE_MESH_POINT) &&
+	    !(key->flags & IEEE80211_KEY_FLAG_PAIRWISE))
 		return -ENOSPC;
 	RT_TRACE(rtlpriv, COMP_SEC, DBG_DMESG,
 		 "%s hardware based encryption for keyidx: %d, mac: %pM\n",
@@ -1569,7 +1920,7 @@ static int rtl_op_set_key(struct ieee80211_hw *hw, enum set_key_cmd cmd,
 		key_type = AESCMAC_ENCRYPTION;
 		RT_TRACE(rtlpriv, COMP_SEC, DBG_DMESG, "alg:CMAC\n");
 		RT_TRACE(rtlpriv, COMP_SEC, DBG_DMESG,
-			 "HW don't support CMAC encrypiton, use software CMAC encrypiton\n");
+			 "HW don't support CMAC encryption, use software CMAC encryption\n");
 		err = -EOPNOTSUPP;
 		goto out_unlock;
 	default:
@@ -1607,7 +1958,7 @@ static int rtl_op_set_key(struct ieee80211_hw *hw, enum set_key_cmd cmd,
 			rtlpriv->cfg->ops->enable_hw_sec(hw);
 		}
 	} else {
-		if ((!group_key) || (vif->type == NL80211_IFTYPE_ADHOC) ||
+		if (!group_key || vif->type == NL80211_IFTYPE_ADHOC ||
 		    rtlpriv->sec.pairwise_enc_algorithm == NO_ENCRYPTION) {
 			if (rtlpriv->sec.pairwise_enc_algorithm ==
 			    NO_ENCRYPTION &&
@@ -1650,7 +2001,7 @@ static int rtl_op_set_key(struct ieee80211_hw *hw, enum set_key_cmd cmd,
 				 "set pairwise key\n");
 			if (!sta) {
 				WARN_ONCE(true,
-					  "pairwise key without mac_addr\n");
+					  "rtlwifi: pairwise key without mac_addr\n");
 
 				err = -EOPNOTSUPP;
 				goto out_unlock;
@@ -1744,19 +2095,23 @@ static void rtl_op_rfkill_poll(struct ieee80211_hw *hw)
  * before switch channle or power save, or tx buffer packet
  * maybe send after offchannel or rf sleep, this may cause
  * dis-association by AP */
-#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 16, 0)
-static void rtl_op_flush(struct ieee80211_hw *hw, u32 queues, bool drop)
-#else
 static void rtl_op_flush(struct ieee80211_hw *hw,
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 16, 0))
 			 struct ieee80211_vif *vif,
-			 u32 queues,
-			 bool drop)
 #endif
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 10, 0))
+			 u32 queues,
+#endif
+			 bool drop)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 
 	if (rtlpriv->intf_ops->flush)
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 10, 0))
 		rtlpriv->intf_ops->flush(hw, queues, drop);
+#else
+		rtlpriv->intf_ops->flush(hw, 0, drop);
+#endif
 }
 
 /*	Description:
@@ -1769,7 +2124,7 @@ bool rtl_hal_pwrseqcmdparsing(struct rtl_priv *rtlpriv, u8 cut_version,
 			      u8 faversion, u8 interface_type,
 			      struct wlan_pwr_cfg pwrcfgcmd[])
 {
-	struct wlan_pwr_cfg cfg_cmd = {0};
+	struct wlan_pwr_cfg cfg_cmd;
 	bool polling_bit = false;
 	u32 ary_idx = 0;
 	u8 value = 0;
@@ -1798,7 +2153,7 @@ bool rtl_hal_pwrseqcmdparsing(struct rtl_priv *rtlpriv, u8 cut_version,
 				break;
 			case PWR_CMD_WRITE:
 				RT_TRACE(rtlpriv, COMP_INIT, DBG_TRACE,
-					"rtl_hal_pwrseqcmdparsing(): PWR_CMD_WRITE\n");
+					 "%s(): PWR_CMD_WRITE\n", __func__);
 				offset = GET_PWR_CFG_OFFSET(cfg_cmd);
 
 				/*Read the value from system register*/
@@ -1846,7 +2201,7 @@ bool rtl_hal_pwrseqcmdparsing(struct rtl_priv *rtlpriv, u8 cut_version,
 				return true;
 			default:
 				WARN_ONCE(true,
-					  "rtl_hal_pwrseqcmdparsing(): Unknown CMD!!\n");
+					  "rtlwifi: rtl_hal_pwrseqcmdparsing(): Unknown CMD!!\n");
 				break;
 			}
 		}
@@ -1901,6 +2256,10 @@ const struct ieee80211_ops rtl_ops = {
 	.config = rtl_op_config,
 	.configure_filter = rtl_op_configure_filter,
 	.set_key = rtl_op_set_key,
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 0, 0))
+	.sta_statistics = rtl_op_sta_statistics,
+#endif
+	.set_frag_threshold = rtl_op_set_frag_threshold,
 	.conf_tx = rtl_op_conf_tx,
 	.bss_info_changed = rtl_op_bss_info_changed,
 	.get_tsf = rtl_op_get_tsf,

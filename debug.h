@@ -69,6 +69,10 @@
  */
 #define	DBG_TRACE			5
 
+#ifndef BIT_ULL
+#define BIT_ULL(nr)              (1ULL << (nr))
+#endif
+
 /*--------------------------------------------------------------
 		Define the rt_trace components
 --------------------------------------------------------------*/
@@ -107,6 +111,8 @@
 #define COMP_IQK			BIT(31)
 #define COMP_TX_REPORT			BIT_ULL(32)
 #define COMP_VENDOR_CMD			BIT_ULL(33)
+#define COMP_HALMAC			BIT_ULL(34)
+#define COMP_PHYDM			BIT_ULL(35)
 
 /*--------------------------------------------------------------
 		Define the rt_print components
@@ -170,43 +176,33 @@ enum dbgp_flag_e {
 
 struct rtl_priv;
 
-__printf(5, 6)
+__printf(4, 5)
 void _rtl_dbg_trace(struct rtl_priv *rtlpriv, u64 comp, int level,
-		    const char *modname, const char *fmt, ...);
-void _rtl_dbg_trace_string(struct rtl_priv *rtlpriv, u64 comp, int level,
-			   const char *modname, const char *string);
+		    const char *fmt, ...);
+
+__printf(4, 5)
+void _rtl_dbg_print(struct rtl_priv *rtlpriv, u64 comp, int level,
+		    const char *fmt, ...);
 
 void _rtl_dbg_print_data(struct rtl_priv *rtlpriv, u64 comp, int level,
-			 const char *modname, const char *titlestring,
+			 const char *titlestring,
 			 const void *hexdata, int hexdatalen);
-
-void _rtl_dbg_print(struct rtl_priv *rtlpriv, u64 comp, int level,
-		    const char *modname, const char *fmt, ...);
 
 #define RT_TRACE(rtlpriv, comp, level, fmt, ...)			\
 	_rtl_dbg_trace(rtlpriv, comp, level,				\
-		       KBUILD_MODNAME, fmt, ##__VA_ARGS__)
-
-#define RTPRINT(rtlpriv, dbgtype, dbgflag, fmt, ...)			\
-	_rtl_dbg_print(rtlpriv, dbgtype, dbgflag, KBUILD_MODNAME,	\
 		       fmt, ##__VA_ARGS__)
 
-#define RT_TRACE_STRING(__priv, comp, level, string)			\
-	_rtl_dbg_trace_string(__priv, comp, level,			\
-			      KBUILD_MODNAME, string)
+#define RTPRINT(rtlpriv, dbgtype, dbgflag, fmt, ...)			\
+	_rtl_dbg_print(rtlpriv, dbgtype, dbgflag, fmt, ##__VA_ARGS__)
 
 #define RT_PRINT_DATA(rtlpriv, _comp, _level, _titlestring, _hexdata,	\
 		      _hexdatalen)					\
-	_rtl_dbg_print_data(rtlpriv, _comp, _level, KBUILD_MODNAME,	\
+	_rtl_dbg_print_data(rtlpriv, _comp, _level,			\
 			    _titlestring, _hexdata, _hexdatalen)
+
 #else
 
 struct rtl_priv;
-
-__printf(2, 3)
-static inline void RT_ASSERT(int exp, const char *fmt, ...)
-{
-}
 
 __printf(4, 5)
 static inline void RT_TRACE(struct rtl_priv *rtlpriv,
@@ -222,13 +218,8 @@ static inline void RTPRINT(struct rtl_priv *rtlpriv,
 {
 }
 
-static inline void RT_TRACE_STRING(struct rtl_priv *rtlpriv,
-				   u64 comp, int level, const char *string)
-{
-}
-
 static inline void RT_PRINT_DATA(struct rtl_priv *rtlpriv,
-				 int comp, int level,
+				 u64 comp, int level,
 				 const char *titlestring,
 				 const void *hexdata, size_t hexdatalen)
 {
@@ -236,9 +227,15 @@ static inline void RT_PRINT_DATA(struct rtl_priv *rtlpriv,
 
 #endif
 
-void rtl_dbgp_flag_init(struct ieee80211_hw *hw);
+#ifdef CONFIG_RTLWIFI_DEBUG
 void rtl_debug_add_one(struct ieee80211_hw *hw);
 void rtl_debug_remove_one(struct ieee80211_hw *hw);
 void rtl_debugfs_add_topdir(void);
 void rtl_debugfs_remove_topdir(void);
+#else
+#define rtl_debug_add_one(hw)
+#define rtl_debug_remove_one(hw)
+#define rtl_debugfs_add_topdir()
+#define rtl_debugfs_remove_topdir()
+#endif
 #endif

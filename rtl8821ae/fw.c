@@ -27,6 +27,7 @@
 #include "../pci.h"
 #include "../base.h"
 #include "../core.h"
+#include "../efuse.h"
 #include "reg.h"
 #include "def.h"
 #include "fw.h"
@@ -51,63 +52,6 @@ static void _rtl8821ae_enable_fw_download(struct ieee80211_hw *hw, bool enable)
 	}
 }
 
-static void _rtl8821ae_fw_block_write(struct ieee80211_hw *hw,
-				      const u8 *buffer, u32 size)
-{
-	struct rtl_priv *rtlpriv = rtl_priv(hw);
-	u32 blocksize = sizeof(u32);
-	u8 *bufferptr = (u8 *)buffer;
-	u32 *pu4byteptr = (u32 *)buffer;
-	u32 i, offset, blockcount, remainsize;
-
-	blockcount = size / blocksize;
-	remainsize = size % blocksize;
-
-	for (i = 0; i < blockcount; i++) {
-		offset = i * blocksize;
-		rtl_write_dword(rtlpriv, (FW_8821AE_START_ADDRESS + offset),
-				*(pu4byteptr + i));
-	}
-
-	if (remainsize) {
-		offset = blockcount * blocksize;
-		bufferptr += offset;
-		for (i = 0; i < remainsize; i++) {
-			rtl_write_byte(rtlpriv, (FW_8821AE_START_ADDRESS +
-					offset + i), *(bufferptr + i));
-		}
-	}
-}
-
-static void _rtl8821ae_fw_page_write(struct ieee80211_hw *hw,
-				     u32 page, const u8 *buffer, u32 size)
-{
-	struct rtl_priv *rtlpriv = rtl_priv(hw);
-	u8 value8;
-	u8 u8page = (u8)(page & 0x07);
-
-	value8 = (rtl_read_byte(rtlpriv, REG_MCUFWDL + 2) & 0xF8) | u8page;
-
-	rtl_write_byte(rtlpriv, (REG_MCUFWDL + 2), value8);
-	_rtl8821ae_fw_block_write(hw, buffer, size);
-}
-
-static void _rtl8821ae_fill_dummy(u8 *pfwbuf, u32 *pfwlen)
-{
-	u32 fwlen = *pfwlen;
-	u8 remain = (u8)(fwlen % 4);
-
-	remain = (remain == 0) ? 0 : (4 - remain);
-
-	while (remain > 0) {
-		pfwbuf[fwlen] = 0;
-		fwlen++;
-		remain--;
-	}
-
-	*pfwlen = fwlen;
-}
-
 static void _rtl8821ae_write_fw(struct ieee80211_hw *hw,
 				enum version_8821ae version,
 				u8 *buffer, u32 size)
@@ -119,7 +63,7 @@ static void _rtl8821ae_write_fw(struct ieee80211_hw *hw,
 
 	RT_TRACE(rtlpriv, COMP_FW, DBG_LOUD, "FW size is %d bytes,\n", size);
 
-	_rtl8821ae_fill_dummy(bufferptr, &size);
+	rtl_fill_dummy(bufferptr, &size);
 
 	pagenums = size / FW_8821AE_PAGE_SIZE;
 	remainsize = size % FW_8821AE_PAGE_SIZE;
@@ -129,15 +73,14 @@ static void _rtl8821ae_write_fw(struct ieee80211_hw *hw,
 
 	for (page = 0; page < pagenums; page++) {
 		offset = page * FW_8821AE_PAGE_SIZE;
-		_rtl8821ae_fw_page_write(hw, page, (bufferptr + offset),
-					 FW_8821AE_PAGE_SIZE);
+		rtl_fw_page_write(hw, page, (bufferptr + offset),
+				  FW_8821AE_PAGE_SIZE);
 	}
 
 	if (remainsize) {
 		offset = pagenums * FW_8821AE_PAGE_SIZE;
 		page = pagenums;
-		_rtl8821ae_fw_page_write(hw, page, (bufferptr + offset),
-					 remainsize);
+		rtl_fw_page_write(hw, page, (bufferptr + offset), remainsize);
 	}
 }
 
@@ -155,7 +98,7 @@ static int _rtl8821ae_fw_free_to_go(struct ieee80211_hw *hw)
 
 	if (counter >= FW_8821AE_POLLING_TIMEOUT_COUNT) {
 		RT_TRACE(rtlpriv, COMP_ERR, DBG_LOUD,
-			 "chksum report faill ! REG_MCUFWDL:0x%08x .\n",
+			 "chksum report fail! REG_MCUFWDL:0x%08x .\n",
 			  value32);
 		goto exit;
 	}
@@ -169,10 +112,8 @@ static int _rtl8821ae_fw_free_to_go(struct ieee80211_hw *hw)
 	counter = 0;
 	do {
 		value32 = rtl_read_dword(rtlpriv, REG_MCUFWDL);
-		if (value32 & WINTINI_RDY) {
-			err = 0;
-			goto exit;
-		}
+		if (value32 & WINTINI_RDY)
+			return 0;
 
 		udelay(FW_8821AE_POLLING_DELAY);
 	} while (counter++ < FW_8821AE_POLLING_TIMEOUT_COUNT);
@@ -501,7 +442,7 @@ void rtl8821ae_fill_h2c_cmd(struct ieee80211_hw *hw,
 
 	if (!rtlhal->fw_ready) {
 		WARN_ONCE(true,
-			  "return H2C cmd because of Fw download fail!!!\n");
+			  "rtl8821ae: error H2C cmd because of Fw download fail!!!\n");
 		return;
 	}
 
@@ -551,8 +492,10 @@ void rtl8821ae_set_fw_pwrmode_cmd(struct ieee80211_hw *hw, u8 mode)
 	u8 rlbm, power_state = 0, byte5 = 0;
 	u8 awake_intvl;	/* DTIM = (awake_intvl - 1) */
 	struct rtl_btc_ops *btc_ops = rtlpriv->btcoexist.btc_ops;
-	bool bt_ctrl_lps = btc_ops->btc_is_bt_ctrl_lps(rtlpriv);
-	bool bt_lps_on = btc_ops->btc_is_bt_lps_on(rtlpriv);
+	bool bt_ctrl_lps = (rtlpriv->cfg->ops->get_btc_status() ?
+			    btc_ops->btc_is_bt_ctrl_lps(rtlpriv) : false);
+	bool bt_lps_on = (rtlpriv->cfg->ops->get_btc_status() ?
+			  btc_ops->btc_is_bt_lps_on(rtlpriv) : false);
 
 	if (bt_ctrl_lps)
 		mode = (bt_lps_on ? FW_PS_MIN_MODE : FW_PS_ACTIVE_MODE);
@@ -623,9 +566,9 @@ void rtl8821ae_set_fw_pwrmode_cmd(struct ieee80211_hw *hw, u8 mode)
 	RT_PRINT_DATA(rtlpriv, COMP_CMD, DBG_DMESG,
 		      "rtl92c_set_fw_pwrmode(): u1_h2c_set_pwrmode\n",
 		      u1_h2c_set_pwrmode, H2C_8821AE_PWEMODE_LENGTH);
-	rtlpriv->btcoexist.btc_ops->btc_record_pwr_mode(rtlpriv,
-							u1_h2c_set_pwrmode,
-						H2C_8821AE_PWEMODE_LENGTH);
+	if (rtlpriv->cfg->ops->get_btc_status())
+		btc_ops->btc_record_pwr_mode(rtlpriv, u1_h2c_set_pwrmode,
+					     H2C_8821AE_PWEMODE_LENGTH);
 	rtl8821ae_fill_h2c_cmd(hw, H2C_8821AE_SETPWRMODE,
 			       H2C_8821AE_PWEMODE_LENGTH,
 			       u1_h2c_set_pwrmode);
@@ -1702,8 +1645,7 @@ out:
 		      &reserved_page_packet_8812[0], totalpacketlen);
 
 	skb = dev_alloc_skb(totalpacketlen);
-	memcpy((u8 *)skb_put(skb, totalpacketlen),
-	       &reserved_page_packet_8812, totalpacketlen);
+	skb_put_data(skb, &reserved_page_packet_8812, totalpacketlen);
 
 	rtstatus = rtl_cmd_send_packet(hw, skb);
 
@@ -1839,8 +1781,7 @@ out:
 		      &reserved_page_packet_8821[0], totalpacketlen);
 
 	skb = dev_alloc_skb(totalpacketlen);
-	memcpy((u8 *)skb_put(skb, totalpacketlen),
-	       &reserved_page_packet_8821, totalpacketlen);
+	skb_put_data(skb, &reserved_page_packet_8821, totalpacketlen);
 
 	rtstatus = rtl_cmd_send_packet(hw, skb);
 

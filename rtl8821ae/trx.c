@@ -510,8 +510,13 @@ bool rtl8821ae_rx_query_desc(struct ieee80211_hw *hw,
 		RT_TRACE(rtlpriv, COMP_RXDESC, DBG_LOUD,
 			 "GGGGGGGGGGGGGet Wakeup Packet!! WakeMatch=%d\n",
 			 status->wake_match);
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 10, 0))
 	rx_status->freq = hw->conf.chandef.chan->center_freq;
 	rx_status->band = hw->conf.chandef.chan->band;
+#else
+	rx_status->freq = hw->conf.channel->center_freq;
+	rx_status->band = hw->conf.channel->band;
+#endif
 
 	hdr = (struct ieee80211_hdr *)(skb->data +
 	      status->rx_drvinfo_size + status->rx_bufshift);
@@ -519,38 +524,50 @@ bool rtl8821ae_rx_query_desc(struct ieee80211_hw *hw,
 	if (status->crc)
 		rx_status->flag |= RX_FLAG_FAILED_FCS_CRC;
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 12, 0)
 	if (status->rx_packet_bw == HT_CHANNEL_WIDTH_20_40)
-		rx_status->flag |= RX_FLAG_40MHZ;
-	else if (status->rx_packet_bw == HT_CHANNEL_WIDTH_80)
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 15, 0)
-		rx_status->vht_flag |= RX_VHT_FLAG_80MHZ;
-#else
-		rx_status->flag |= RX_FLAG_80MHZ;
-#endif
-	if (status->is_ht)
-		rx_status->flag |= RX_FLAG_HT;
-	if (status->is_vht)
-		rx_status->flag |= RX_FLAG_VHT;
-
-	if (status->is_short_gi)
-		rx_status->flag |= RX_FLAG_SHORT_GI;
-
-	rx_status->vht_nss = status->vht_nss;
-#else
-	if (status->rx_packet_bw == HT_CHANNEL_WIDTH_20_40)
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,12,0))
 		rx_status->bw = RATE_INFO_BW_40;
+#else
+		rx_status->flag |= RX_FLAG_40MHZ;
+#endif
 	else if (status->rx_packet_bw == HT_CHANNEL_WIDTH_80)
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,12,0))
 		rx_status->bw = RATE_INFO_BW_80;
+#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 15, 0))
+		rx_status->vht_flag |= RX_VHT_FLAG_80MHZ;
+#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 8, 0))
+		rx_status->flag |= RX_FLAG_80MHZ;
+#else
+		;
+#endif
+
+
 	if (status->is_ht)
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,12,0))
 		rx_status->encoding = RX_ENC_HT;
+#else
+		rx_status->flag |= RX_FLAG_HT;
+#endif
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 8, 0))
 	if (status->is_vht)
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,12,0))
 		rx_status->encoding = RX_ENC_VHT;
+#else
+		rx_status->flag |= RX_FLAG_VHT;
+#endif
+#endif
 
 	if (status->is_short_gi)
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,12,0))
 		rx_status->enc_flags |= RX_ENC_FLAG_SHORT_GI;
+#else
+		rx_status->flag |= RX_FLAG_SHORT_GI;
+#endif
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,12,0))
 	rx_status->nss = status->vht_nss;
+#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 8, 0))
+	rx_status->vht_nss = status->vht_nss;
 #endif
 	rx_status->flag |= RX_FLAG_MACTIME_START;
 
@@ -563,7 +580,13 @@ bool rtl8821ae_rx_query_desc(struct ieee80211_hw *hw,
 	 * to decrypt it
 	 */
 	if (status->decrypted) {
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 15, 0)) ||	\
+    ((LINUX_VERSION_CODE >= KERNEL_VERSION(3, 13, 0)) &&	\
+    defined(UTS_UBUNTU_RELEASE_ABI))
 		if ((!_ieee80211_is_robust_mgmt_frame(hdr)) &&
+#else
+		if ((!ieee80211_is_robust_mgmt_frame(hdr)) &&
+#endif
 		    (ieee80211_has_protected(hdr->frame_control)))
 			rx_status->flag |= RX_FLAG_DECRYPTED;
 		else
@@ -928,7 +951,8 @@ void rtl8821ae_set_desc(struct ieee80211_hw *hw, u8 *pdesc,
 			break;
 		default:
 			WARN_ONCE(true,
-				  "ERR txdesc :%d not process\n", desc_name);
+				  "rtl8821ae: ERR txdesc :%d not processed\n",
+				  desc_name);
 			break;
 		}
 	} else {
@@ -947,13 +971,15 @@ void rtl8821ae_set_desc(struct ieee80211_hw *hw, u8 *pdesc,
 			break;
 		default:
 			WARN_ONCE(true,
-				  "ERR rxdesc :%d not process\n", desc_name);
+				  "rtl8821ae: ERR rxdesc :%d not processed\n",
+				  desc_name);
 			break;
 		}
 	}
 }
 
-u32 rtl8821ae_get_desc(u8 *pdesc, bool istx, u8 desc_name)
+u64 rtl8821ae_get_desc(struct ieee80211_hw *hw,
+		       u8 *pdesc, bool istx, u8 desc_name)
 {
 	u32 ret = 0;
 
@@ -967,7 +993,8 @@ u32 rtl8821ae_get_desc(u8 *pdesc, bool istx, u8 desc_name)
 			break;
 		default:
 			WARN_ONCE(true,
-				  "ERR txdesc :%d not process\n", desc_name);
+				  "rtl8821ae: ERR txdesc :%d not processed\n",
+				  desc_name);
 			break;
 		}
 	} else {
@@ -983,7 +1010,8 @@ u32 rtl8821ae_get_desc(u8 *pdesc, bool istx, u8 desc_name)
 			break;
 		default:
 			WARN_ONCE(true,
-				  "ERR rxdesc :%d not process\n", desc_name);
+				  "rtl8821ae: ERR rxdesc :%d not processed\n",
+				  desc_name);
 			break;
 		}
 	}
@@ -996,7 +1024,7 @@ bool rtl8821ae_is_tx_desc_closed(struct ieee80211_hw *hw,
 	struct rtl_pci *rtlpci = rtl_pcidev(rtl_pcipriv(hw));
 	struct rtl8192_tx_ring *ring = &rtlpci->tx_ring[hw_queue];
 	u8 *entry = (u8 *)(&ring->desc[ring->idx]);
-	u8 own = (u8)rtl8821ae_get_desc(entry, true, HW_DESC_OWN);
+	u8 own = (u8)rtl8821ae_get_desc(hw, entry, true, HW_DESC_OWN);
 
 	/**
 	 *beacon packet will only use the first

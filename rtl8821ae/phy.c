@@ -1160,7 +1160,7 @@ static void _rtl8812ae_phy_cross_reference_ht_and_vht_txpower_limit(struct ieee8
 	s8 temp_pwrlmt = 0;
 
 	for (regulation = 0; regulation < MAX_REGULATION_NUM; ++regulation) {
-		for (bw = 0; bw < MAX_5G_BANDWITH_NUM; ++bw) {
+		for (bw = 0; bw < MAX_5G_BANDWIDTH_NUM; ++bw) {
 			for (channel = 0; channel < CHANNEL_MAX_NUMBER_5G; ++channel) {
 				for (rate_section = 0; rate_section < MAX_RATE_SECTION_NUM; ++rate_section) {
 					temp_pwrlmt = rtlphy->txpwr_limit_5g[regulation]
@@ -1335,7 +1335,7 @@ static void _rtl8812ae_phy_convert_txpower_limit_to_power_index(struct ieee80211
 	_rtl8812ae_phy_cross_reference_ht_and_vht_txpower_limit(hw);
 
 	for (regulation = 0; regulation < MAX_REGULATION_NUM; ++regulation) {
-		for (bw = 0; bw < MAX_2_4G_BANDWITH_NUM; ++bw) {
+		for (bw = 0; bw < MAX_2_4G_BANDWIDTH_NUM; ++bw) {
 			for (channel = 0; channel < CHANNEL_MAX_NUMBER_2G; ++channel) {
 				for (rate_section = 0; rate_section < MAX_RATE_SECTION_NUM; ++rate_section) {
 					/* obtain the base dBm values in 2.4G band
@@ -1391,7 +1391,7 @@ static void _rtl8812ae_phy_convert_txpower_limit_to_power_index(struct ieee80211
 		}
 	}
 	for (regulation = 0; regulation < MAX_REGULATION_NUM; ++regulation) {
-		for (bw = 0; bw < MAX_5G_BANDWITH_NUM; ++bw) {
+		for (bw = 0; bw < MAX_5G_BANDWIDTH_NUM; ++bw) {
 			for (channel = 0; channel < CHANNEL_MAX_NUMBER_5G; ++channel) {
 				for (rate_section = 0; rate_section < MAX_RATE_SECTION_NUM; ++rate_section) {
 					/* obtain the base dBm values in 5G band
@@ -1468,7 +1468,7 @@ static void _rtl8821ae_phy_init_txpower_limit(struct ieee80211_hw *hw)
 		 "=====> _rtl8821ae_phy_init_txpower_limit()!\n");
 
 	for (i = 0; i < MAX_REGULATION_NUM; ++i) {
-		for (j = 0; j < MAX_2_4G_BANDWITH_NUM; ++j)
+		for (j = 0; j < MAX_2_4G_BANDWIDTH_NUM; ++j)
 			for (k = 0; k < MAX_RATE_SECTION_NUM; ++k)
 				for (m = 0; m < CHANNEL_MAX_NUMBER_2G; ++m)
 					for (l = 0; l < MAX_RF_PATH_NUM; ++l)
@@ -1477,7 +1477,7 @@ static void _rtl8821ae_phy_init_txpower_limit(struct ieee80211_hw *hw)
 							= MAX_POWER_INDEX;
 	}
 	for (i = 0; i < MAX_REGULATION_NUM; ++i) {
-		for (j = 0; j < MAX_5G_BANDWITH_NUM; ++j)
+		for (j = 0; j < MAX_5G_BANDWIDTH_NUM; ++j)
 			for (k = 0; k < MAX_RATE_SECTION_NUM; ++k)
 				for (m = 0; m < CHANNEL_MAX_NUMBER_5G; ++m)
 					for (l = 0; l < MAX_RF_PATH_NUM; ++l)
@@ -1867,9 +1867,11 @@ static bool _rtl8821ae_phy_bb8821a_config_parafile(struct ieee80211_hw *hw)
 	return true;
 }
 
-static bool __rtl8821ae_phy_config_with_headerfile(struct ieee80211_hw *hw,
-		u32 *array_table, u16 arraylen,
-		void (*set_reg)(struct ieee80211_hw *hw, u32 regaddr, u32 data))
+static bool
+__rtl8821ae_phy_config_with_headerfile(struct ieee80211_hw *hw,
+				       u32 *array_table, u16 arraylen,
+				       void (*set_reg)(struct ieee80211_hw *hw,
+						       u32 regaddr, u32 data))
 {
 	#define COND_ELSE  2
 	#define COND_ENDIF 3
@@ -1985,7 +1987,7 @@ static u8 _rtl8821ae_get_rate_section_index(u32 regaddr)
 		index = (u8)((regaddr - 0xE20) / 4);
 	else
 		WARN_ONCE(true,
-			  "Invalid RegAddr 0x%x\n", regaddr);
+			  "rtl8821ae: Invalid RegAddr 0x%x\n", regaddr);
 	return index;
 }
 
@@ -2340,7 +2342,7 @@ static s8 _rtl8821ae_phy_get_ratesection_intxpower_byrate(u8 path, u8 rate)
 		rate_section = 11;
 		break;
 	default:
-		WARN_ONCE(true, "Rate_Section is Illegal\n");
+		WARN_ONCE(true, "rtl8821ae: Rate_Section is Illegal\n");
 		break;
 	}
 
@@ -2606,7 +2608,7 @@ static s8 _rtl8821ae_phy_get_txpower_by_rate(struct ieee80211_hw *hw,
 		shift = 24;
 		break;
 	default:
-		WARN_ONCE(true, "Rate_Section is Illegal\n");
+		WARN_ONCE(true, "rtl8821ae: Rate_Section is Illegal\n");
 		break;
 	}
 
@@ -3493,7 +3495,8 @@ void rtl8821ae_phy_set_bw_mode_callback(struct ieee80211_hw *hw)
 
 		break;
 	default:
-		pr_err("unknown bandwidth: %#X\n", rtlphy->current_chan_bw);
+		pr_err("unknown bandwidth: %#X\n",
+		       rtlphy->current_chan_bw);
 		break;
 	}
 
@@ -3770,10 +3773,11 @@ static void _rtl8821ae_iqk_tx(struct ieee80211_hw *hw, enum radio_path path)
 	u32	tx_fail, rx_fail, delay_count, iqk_ready, cal_retry, cal = 0, temp_reg65;
 	int	tx_x = 0, tx_y = 0, rx_x = 0, rx_y = 0, tx_average = 0, rx_average = 0;
 	int	tx_x0[cal_num], tx_y0[cal_num], tx_x0_rxk[cal_num],
-		tx_y0_rxk[cal_num], rx_x0[cal_num], rx_y0[cal_num];
+		tx_y0_rxk[cal_num], rx_x0[cal_num], rx_y0[cal_num],
+		tx_dt[cal_num], rx_dt[cal_num];
 	bool	tx0iqkok = false, rx0iqkok = false;
 	bool	vdf_enable = false;
-	int	i, k, vdf_y[3], vdf_x[3], tx_dt[3], rx_dt[3],
+	int	i, k, vdf_y[3], vdf_x[3],
 		ii, dx = 0, dy = 0, tx_finish = 0, rx_finish = 0;
 
 	RT_TRACE(rtlpriv, COMP_IQK, DBG_LOUD,
@@ -4673,7 +4677,8 @@ bool rtl8821ae_phy_set_io_cmd(struct ieee80211_hw *hw, enum io_type iotype)
 			postprocessing = true;
 			break;
 		default:
-			pr_err("switch case %#x not processed\n", iotype);
+			pr_err("switch case %#x not processed\n",
+			       iotype);
 			break;
 		}
 	} while (false);
@@ -4822,7 +4827,8 @@ static bool _rtl8821ae_phy_set_rf_power_state(struct ieee80211_hw *hw,
 		}
 		break;
 	default:
-		pr_err("switch case %#x not processed\n", rfpwr_state);
+		pr_err("switch case %#x not processed\n",
+		       rfpwr_state);
 		bresult = false;
 		break;
 	}

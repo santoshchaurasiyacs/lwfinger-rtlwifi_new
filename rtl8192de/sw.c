@@ -11,10 +11,6 @@
  * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
  * more details.
  *
- * You should have received a copy of the GNU General Public License along with
- * this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110, USA
- *
  * The full GNU General Public License is included in this distribution in the
  * file called LICENSE.
  *
@@ -44,6 +40,7 @@
 
 static void rtl92d_init_aspm_vars(struct ieee80211_hw *hw)
 {
+	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_pci *rtlpci = rtl_pcidev(rtl_pcipriv(hw));
 
 	/*close ASPM for AMD defaultly */
@@ -83,7 +80,7 @@ static void rtl92d_init_aspm_vars(struct ieee80211_hw *hw)
 	 * 1 - Support ASPM,
 	 * 2 - According to chipset.
 	 */
-	rtlpci->const_support_pciaspm = 1;
+	rtlpci->const_support_pciaspm = rtlpriv->cfg->mod_params->aspm_support;
 }
 
 static int rtl92d_init_sw_vars(struct ieee80211_hw *hw)
@@ -144,8 +141,6 @@ static int rtl92d_init_sw_vars(struct ieee80211_hw *hw)
 
 	rtlpci->irq_mask[1] = (u32) (IMR_CPWM | IMR_C2HCMD);
 
-	/* for debug level */
-	rtlpriv->dbg.global_debuglevel = rtlpriv->cfg->mod_params->debug;
 	/* for LPS & IPS */
 	rtlpriv->psc.inactiveps = rtlpriv->cfg->mod_params->inactiveps;
 	rtlpriv->psc.swctrl_lps = rtlpriv->cfg->mod_params->swctrl_lps;
@@ -189,6 +184,8 @@ static int rtl92d_init_sw_vars(struct ieee80211_hw *hw)
 				      rtl_fw_cb);
 	if (err) {
 		pr_err("Failed to request firmware!\n");
+		vfree(rtlpriv->rtlhal.pfirmware);
+		rtlpriv->rtlhal.pfirmware = NULL;
 		return 1;
 	}
 
@@ -258,7 +255,9 @@ static struct rtl_mod_params rtl92de_mod_params = {
 	.inactiveps = true,
 	.swctrl_lps = true,
 	.fwctrl_lps = false,
-	.debug = 0,
+	.aspm_support = 1,
+	.debug_level = 0,
+	.debug_mask = 0,
 };
 
 static const struct rtl_hal_cfg rtl92de_hal_cfg = {
@@ -352,7 +351,7 @@ static const struct rtl_hal_cfg rtl92de_hal_cfg = {
 	.maps[RTL_RC_HT_RATEMCS15] = DESC_RATEMCS15,
 };
 
-static struct pci_device_id rtl92de_pci_ids[] = {
+static const struct pci_device_id rtl92de_pci_ids[] = {
 	{RTL_PCI_DEVICE(PCI_VENDOR_ID_REALTEK, 0x8193, rtl92de_hal_cfg)},
 	{RTL_PCI_DEVICE(PCI_VENDOR_ID_REALTEK, 0x002B, rtl92de_hal_cfg)},
 	{},
@@ -368,15 +367,21 @@ MODULE_DESCRIPTION("Realtek 8192DE 802.11n Dual Mac PCI wireless");
 MODULE_FIRMWARE("rtlwifi/rtl8192defw.bin");
 
 module_param_named(swenc, rtl92de_mod_params.sw_crypto, bool, 0444);
-module_param_named(debug, rtl92de_mod_params.debug, int, 0444);
+module_param_named(debug_level, rtl92de_mod_params.debug_level, int, 0644);
 module_param_named(ips, rtl92de_mod_params.inactiveps, bool, 0444);
 module_param_named(swlps, rtl92de_mod_params.swctrl_lps, bool, 0444);
 module_param_named(fwlps, rtl92de_mod_params.fwctrl_lps, bool, 0444);
+module_param_named(aspm, rtl92de_mod_params.aspm_support, int, 0444);
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 17, 0))
+module_param_named(debug_mask, rtl92de_mod_params.debug_mask, ullong, 0644);
+#endif
 MODULE_PARM_DESC(swenc, "Set to 1 for software crypto (default 0)\n");
 MODULE_PARM_DESC(ips, "Set to 0 to not use link power save (default 1)\n");
 MODULE_PARM_DESC(swlps, "Set to 1 to use SW control power save (default 1)\n");
 MODULE_PARM_DESC(fwlps, "Set to 1 to use FW control power save (default 0)\n");
-MODULE_PARM_DESC(debug, "Set debug level (0-5) (default 0)");
+MODULE_PARM_DESC(aspm, "Set to 1 to enable ASPM (default 1)\n");
+MODULE_PARM_DESC(debug_level, "Set debug level (0-5) (default 0)");
+MODULE_PARM_DESC(debug_mask, "Set debug mask (default 0)");
 
 static SIMPLE_DEV_PM_OPS(rtlwifi_pm_ops, rtl_pci_suspend, rtl_pci_resume);
 
@@ -394,6 +399,9 @@ spinlock_t globalmutex_power;
 spinlock_t globalmutex_for_fwdownload;
 spinlock_t globalmutex_for_power_and_efuse;
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 4, 0))
+module_pci_driver(rtl92de_driver);
+#else
 static int __init rtl92de_module_init(void)
 {
 	int ret = 0;
@@ -404,7 +412,7 @@ static int __init rtl92de_module_init(void)
 
 	ret = pci_register_driver(&rtl92de_driver);
 	if (ret)
-		WARN_ONCE(true, "No device found\n");
+		WARN_ONCE(true, "rtl8192de: No device found\n");
 	return ret;
 }
 
@@ -415,3 +423,4 @@ static void __exit rtl92de_module_exit(void)
 
 module_init(rtl92de_module_init);
 module_exit(rtl92de_module_exit);
+#endif

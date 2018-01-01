@@ -35,6 +35,7 @@
 #include "../rtl8723com/dm_common.h"
 #include "table.h"
 #include "trx.h"
+#include <linux/kernel.h>
 
 static bool _rtl8723be_phy_bb8723b_config_parafile(struct ieee80211_hw *hw);
 static bool _rtl8723be_phy_config_mac_with_headerfile(struct ieee80211_hw *hw);
@@ -230,8 +231,8 @@ static bool _rtl8723be_check_positive(struct ieee80211_hw *hw,
 			return true;
 		else
 			return false;
-	} else
-		return false;
+	}
+	return false;
 }
 
 static void _rtl8723be_config_rf_reg(struct ieee80211_hw *hw, u32 addr,
@@ -518,9 +519,9 @@ static bool _rtl8723be_phy_bb8723b_config_parafile(struct ieee80211_hw *hw)
 	bool rtstatus;
 
 	/* switch ant to BT */
-	if (rtlpriv->rtlhal.interface == INTF_USB)
+	if (rtlpriv->rtlhal.interface == INTF_USB) {
 		rtl_write_dword(rtlpriv, 0x948, 0x0);
-	else {
+	} else {
 		if (rtlpriv->btcoexist.btc_info.single_ant_path == 0)
 			rtl_write_dword(rtlpriv, 0x948, 0x280);
 		else
@@ -556,8 +557,9 @@ static bool _rtl8723be_phy_bb8723b_config_parafile(struct ieee80211_hw *hw)
 	return true;
 }
 
-static bool __rtl8723be_phy_config_with_headerfile(struct ieee80211_hw *hw,
-		u32 *array_table, u16 arraylen,
+static bool rtl8723be_phy_config_with_headerfile(struct ieee80211_hw *hw,
+						 u32 *array_table,
+						 u16 arraylen,
 		void (*set_reg)(struct ieee80211_hw *hw, u32 regaddr, u32 data))
 {
 	#define COND_ELSE  2
@@ -574,15 +576,15 @@ static bool __rtl8723be_phy_config_with_headerfile(struct ieee80211_hw *hw,
 		if (v1 & (BIT(31) | BIT(30))) {/*positive & negative condition*/
 			if (v1 & BIT(31)) {/* positive condition*/
 				cond  = (u8)((v1 & (BIT(29) | BIT(28))) >> 28);
-				if (cond == COND_ENDIF) {/*end*/
+				if (cond == COND_ENDIF) { /*end*/
 					matched = true;
 					skipped = false;
-				} else if (cond == COND_ELSE) /*else*/
+				} else if (cond == COND_ELSE) { /*else*/
 					matched = skipped ? false : true;
-				else {/*if , else if*/
-					if (skipped)
+				} else {/*if , else if*/
+					if (skipped) {
 						matched = false;
-					else {
+					} else {
 						if (_rtl8723be_check_positive(
 								hw, v1, v2)) {
 							matched = true;
@@ -612,7 +614,7 @@ static bool _rtl8723be_phy_config_mac_with_headerfile(struct ieee80211_hw *hw)
 
 	RT_TRACE(rtlpriv, COMP_INIT, DBG_TRACE, "Read rtl8723beMACPHY_Array\n");
 
-	return __rtl8723be_phy_config_with_headerfile(hw,
+	return rtl8723be_phy_config_with_headerfile(hw,
 			RTL8723BEMAC_1T_ARRAY, RTL8723BEMAC_1T_ARRAYLEN,
 			rtl_write_byte_with_val32);
 }
@@ -622,12 +624,12 @@ static bool _rtl8723be_phy_config_bb_with_headerfile(struct ieee80211_hw *hw,
 {
 
 	if (configtype == BASEBAND_CONFIG_PHY_REG)
-		return __rtl8723be_phy_config_with_headerfile(hw,
+		return rtl8723be_phy_config_with_headerfile(hw,
 				RTL8723BEPHY_REG_1TARRAY,
 				RTL8723BEPHY_REG_1TARRAYLEN,
 				_rtl8723be_config_bb_reg);
 	else if (configtype == BASEBAND_CONFIG_AGC_TAB)
-		return __rtl8723be_phy_config_with_headerfile(hw,
+		return rtl8723be_phy_config_with_headerfile(hw,
 				RTL8723BEAGCTAB_1TARRAY,
 				RTL8723BEAGCTAB_1TARRAYLEN,
 				rtl_set_bbreg_with_dwmask);
@@ -772,7 +774,7 @@ bool rtl8723be_phy_config_rf_with_headerfile(struct ieee80211_hw *hw,
 	RT_TRACE(rtlpriv, COMP_INIT, DBG_LOUD, "Radio No %x\n", rfpath);
 	switch (rfpath) {
 	case RF90_PATH_A:
-		ret = __rtl8723be_phy_config_with_headerfile(hw,
+		ret =  rtl8723be_phy_config_with_headerfile(hw,
 				RTL8723BE_RADIOA_1TARRAY,
 				RTL8723BE_RADIOA_1TARRAYLEN,
 				_rtl8723be_config_rf_radio_a);
@@ -887,7 +889,7 @@ static u8 _rtl8723be_phy_get_ratesection_intxpower_byrate(enum radio_path path,
 		break;
 
 	default:
-		WARN_ONCE(true, "Rate_Section is Illegal\n");
+		WARN_ONCE(true, "rtl8723be: Rate_Section is Illegal\n");
 		break;
 	}
 
@@ -952,7 +954,7 @@ static u8 _rtl8723be_get_txpower_by_rate(struct ieee80211_hw *hw,
 		shift = 24;
 		break;
 	default:
-		WARN_ONCE(true, "Rate_Section is Illegal\n");
+		WARN_ONCE(true, "rtl8723be: Rate_Section is Illegal\n");
 		break;
 	}
 	tx_pwr_diff = (u8)(rtlphy->tx_power_by_rate_offset[band][rfpath][tx_num]
@@ -1142,14 +1144,13 @@ void rtl8723be_phy_set_txpower_level(struct ieee80211_hw *hw, u8 channel)
 			     DESC92C_RATEMCS2, DESC92C_RATEMCS3,
 			     DESC92C_RATEMCS4, DESC92C_RATEMCS5,
 			     DESC92C_RATEMCS6, DESC92C_RATEMCS7};
-	u8 i, size;
+	u8 i;
 	u8 power_index;
 
 	if (!rtlefuse->txpwr_fromeprom)
 		return;
 
-	size = sizeof(cck_rates) / sizeof(u8);
-	for (i = 0; i < size; i++) {
+	for (i = 0; i < ARRAY_SIZE(cck_rates); i++) {
 		power_index = _rtl8723be_get_txpower_index(hw, RF90_PATH_A,
 					cck_rates[i],
 					rtl_priv(hw)->phy.current_chan_bw,
@@ -1157,8 +1158,7 @@ void rtl8723be_phy_set_txpower_level(struct ieee80211_hw *hw, u8 channel)
 		_rtl8723be_phy_set_txpower_index(hw, power_index, RF90_PATH_A,
 						 cck_rates[i]);
 	}
-	size = sizeof(ofdm_rates) / sizeof(u8);
-	for (i = 0; i < size; i++) {
+	for (i = 0; i < ARRAY_SIZE(ofdm_rates); i++) {
 		power_index = _rtl8723be_get_txpower_index(hw, RF90_PATH_A,
 					ofdm_rates[i],
 					rtl_priv(hw)->phy.current_chan_bw,
@@ -1166,8 +1166,7 @@ void rtl8723be_phy_set_txpower_level(struct ieee80211_hw *hw, u8 channel)
 		_rtl8723be_phy_set_txpower_index(hw, power_index, RF90_PATH_A,
 						 ofdm_rates[i]);
 	}
-	size = sizeof(ht_rates_1t) / sizeof(u8);
-	for (i = 0; i < size; i++) {
+	for (i = 0; i < ARRAY_SIZE(ht_rates_1t); i++) {
 		power_index = _rtl8723be_get_txpower_index(hw, RF90_PATH_A,
 					ht_rates_1t[i],
 					rtl_priv(hw)->phy.current_chan_bw,
@@ -1238,7 +1237,8 @@ void rtl8723be_phy_set_bw_mode_callback(struct ieee80211_hw *hw)
 		rtl_write_byte(rtlpriv, REG_RRSR + 2, reg_prsr_rsc);
 		break;
 	default:
-		pr_err("unknown bandwidth: %#X\n", rtlphy->current_chan_bw);
+		pr_err("unknown bandwidth: %#X\n",
+		       rtlphy->current_chan_bw);
 		break;
 	}
 
@@ -1262,7 +1262,8 @@ void rtl8723be_phy_set_bw_mode_callback(struct ieee80211_hw *hw)
 			       HAL_PRIME_CHNL_OFFSET_LOWER) ? 2 : 1);
 		break;
 	default:
-		pr_err("unknown bandwidth: %#X\n", rtlphy->current_chan_bw);
+		pr_err("unknown bandwidth: %#X\n",
+		       rtlphy->current_chan_bw);
 		break;
 	}
 	rtl8723be_phy_rf6052_set_bandwidth(hw, rtlphy->current_chan_bw);
@@ -1333,7 +1334,7 @@ u8 rtl8723be_phy_sw_chnl(struct ieee80211_hw *hw)
 	if (rtlphy->set_bwmode_inprogress)
 		return 0;
 	WARN_ONCE((rtlphy->current_channel > 14),
-		  "WIRELESS_MODE_G but channel>14");
+		  "rtl8723be: WIRELESS_MODE_G but channel>14");
 	rtlphy->sw_chnl_inprogress = true;
 	rtlphy->sw_chnl_stage = 0;
 	rtlphy->sw_chnl_step = 0;
@@ -1384,7 +1385,7 @@ static bool _rtl8723be_phy_sw_chnl_step_by_step(struct ieee80211_hw *hw,
 	rfdependcmdcnt = 0;
 
 	WARN_ONCE((channel < 1 || channel > 14),
-		  "illegal channel for Zebra: %d\n", channel);
+		  "rtl8723be: illegal channel for Zebra: %d\n", channel);
 
 	rtl8723_phy_set_sw_chnl_cmdarray(rfdependcmd, rfdependcmdcnt++,
 					 MAX_RFDEPENDCMD_CNT,
@@ -1407,7 +1408,8 @@ static bool _rtl8723be_phy_sw_chnl_step_by_step(struct ieee80211_hw *hw,
 			currentcmd = &postcommoncmd[*step];
 			break;
 		default:
-			pr_err("Invalid 'stage' = %d, Check it!\n", *stage);
+			pr_err("Invalid 'stage' = %d, Check it!\n",
+			       *stage);
 			return true;
 		}
 

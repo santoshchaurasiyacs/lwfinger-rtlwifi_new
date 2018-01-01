@@ -11,10 +11,6 @@
  * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
  * more details.
  *
- * You should have received a copy of the GNU General Public License along with
- * this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110, USA
- *
  * The full GNU General Public License is included in this distribution in the
  * file called LICENSE.
  *
@@ -290,7 +286,8 @@ void rtl92s_phy_set_bw_mode(struct ieee80211_hw *hw,
 		rtl_write_byte(rtlpriv, BW_OPMODE, reg_bw_opmode);
 		break;
 	default:
-		pr_err("unknown bandwidth: %#X\n", rtlphy->current_chan_bw);
+		pr_err("unknown bandwidth: %#X\n",
+		       rtlphy->current_chan_bw);
 		break;
 	}
 
@@ -314,7 +311,8 @@ void rtl92s_phy_set_bw_mode(struct ieee80211_hw *hw,
 			rtl_write_byte(rtlpriv, RFPGA0_ANALOGPARAMETER2, 0x18);
 		break;
 	default:
-		pr_err("unknown bandwidth: %#X\n", rtlphy->current_chan_bw);
+		pr_err("unknown bandwidth: %#X\n",
+		       rtlphy->current_chan_bw);
 		break;
 	}
 
@@ -330,7 +328,7 @@ static bool _rtl92s_phy_set_sw_chnl_cmdarray(struct swchnlcmd *cmdtable,
 	struct swchnlcmd *pcmd;
 
 	if (cmdtable == NULL) {
-		WARN_ONCE(true, "cmdtable cannot be NULL\n");
+		WARN_ONCE(true, "rtl8192se: cmdtable cannot be NULL\n");
 		return false;
 	}
 
@@ -375,7 +373,7 @@ static bool _rtl92s_phy_sw_chnl_step_by_step(struct ieee80211_hw *hw,
 	rfdependcmdcnt = 0;
 
 	WARN_ONCE((channel < 1 || channel > 14),
-		  "invalid channel for Zebra: %d\n", channel);
+		  "rtl8192se: invalid channel for Zebra: %d\n", channel);
 
 	_rtl92s_phy_set_sw_chnl_cmdarray(rfdependcmd, rfdependcmdcnt++,
 					 MAX_RFDEPENDCMD_CNT, CMDID_RF_WRITEREG,
@@ -643,7 +641,8 @@ bool rtl92s_phy_set_rf_power_state(struct ieee80211_hw *hw,
 			_rtl92se_phy_set_rf_sleep(hw);
 			break;
 	default:
-		pr_err("switch case %#x not processed\n", rfpwr_state);
+		pr_err("switch case %#x not processed\n",
+		       rfpwr_state);
 		bresult = false;
 		break;
 	}

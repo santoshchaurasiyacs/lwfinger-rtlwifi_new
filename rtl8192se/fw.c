@@ -11,10 +11,6 @@
  * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
  * more details.
  *
- * You should have received a copy of the GNU General Public License along with
- * this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110, USA
- *
  * The full GNU General Public License is included in this distribution in the
  * file called LICENSE.
  *
@@ -192,10 +188,9 @@ static bool _rtl92s_firmware_downloadcode(struct ieee80211_hw *hw,
 		if (!skb)
 			return false;
 		skb_reserve(skb, extra_descoffset);
-		seg_ptr = (u8 *)skb_put(skb, (u32)(frag_length -
-					extra_descoffset));
-		memcpy(seg_ptr, code_virtual_address + frag_offset,
-		       (u32)(frag_length - extra_descoffset));
+		seg_ptr = skb_put_data(skb,
+				       code_virtual_address + frag_offset,
+				       (u32)(frag_length - extra_descoffset));
 
 		tcb_desc = (struct rtl_tcb_desc *)(skb->cb);
 		tcb_desc->queue_index = TXCMD_QUEUE;
@@ -459,7 +454,7 @@ static u32 _rtl92s_fill_h2c_cmd(struct sk_buff *skb, u32 h2cbufferlen,
 	u8 i = 0;
 
 	do {
-		/* 8 - Byte aligment */
+		/* 8 - Byte alignment */
 		len = H2C_TX_CMD_HDR_LEN + N_BYTE_ALIGMENT(pcmd_len[i], 8);
 
 		/* Buffer length is not enough */
@@ -467,7 +462,7 @@ static u32 _rtl92s_fill_h2c_cmd(struct sk_buff *skb, u32 h2cbufferlen,
 			break;
 
 		/* Clear content */
-		ph2c_buffer = (u8 *)skb_put(skb, (u32)len);
+		ph2c_buffer = skb_put(skb, (u32)len);
 		memset((ph2c_buffer + totallen + tx_desclen), 0, len);
 
 		/* CMD len */
@@ -508,7 +503,7 @@ static u32 _rtl92s_get_h2c_cmdlen(u32 h2cbufferlen, u32 cmd_num, u32 *pcmd_len)
 	u8 i = 0;
 
 	do {
-		/* 8 - Byte aligment */
+		/* 8 - Byte alignment */
 		len = H2C_TX_CMD_HDR_LEN + N_BYTE_ALIGMENT(pcmd_len[i], 8);
 
 		/* Buffer length is not enough */

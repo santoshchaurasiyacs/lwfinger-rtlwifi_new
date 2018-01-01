@@ -11,10 +11,6 @@
  * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
  * more details.
  *
- * You should have received a copy of the GNU General Public License along with
- * this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110, USA
- *
  * The full GNU General Public License is included in this distribution in the
  * file called LICENSE.
  *
@@ -397,12 +393,11 @@ exit:
 static void _rtl92cu_hal_customized_behavior(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
-	struct rtl_usb_priv *usb_priv = rtl_usbpriv(hw);
 	struct rtl_hal *rtlhal = rtl_hal(rtl_priv(hw));
 
 	switch (rtlhal->oem_id) {
 	case RT_CID_819X_HP:
-		usb_priv->ledctl.led_opendrain = true;
+		rtlpriv->ledctl.led_opendrain = true;
 		break;
 	case RT_CID_819X_LENOVO:
 	case RT_CID_DEFAULT:
@@ -782,10 +777,6 @@ static void _rtl92cu_init_queue_priority(struct ieee80211_hw *hw,
 						   queue_sel);
 }
 
-static void _rtl92cu_init_usb_aggregation(struct ieee80211_hw *hw)
-{
-}
-
 static void _rtl92cu_init_wmac_setting(struct ieee80211_hw *hw)
 {
 	u16 value16;
@@ -875,7 +866,6 @@ static int _rtl92cu_init_mac(struct ieee80211_hw *hw)
 	rtl92c_init_edca(hw);
 	rtl92c_init_rate_fallback(hw);
 	rtl92c_init_retry_function(hw);
-	_rtl92cu_init_usb_aggregation(hw);
 	rtlpriv->cfg->ops->set_bw_mode(hw, NL80211_CHAN_HT20);
 	rtl92c_set_min_space(hw, IS_92C_SERIAL(rtlhal->version));
 	_rtl92cu_init_beacon_parameters(hw);
@@ -1784,7 +1774,7 @@ void rtl92cu_set_hw_reg(struct ieee80211_hw *hw, u8 variable, u8 *val)
 						u4b_ac_param);
 				break;
 			default:
-				WARN_ONCE(true, "invalid aci: %d !\n",
+				WARN_ONCE(true, "rtl8192cu: invalid aci: %d !\n",
 					  e_aci);
 				break;
 			}
@@ -2016,7 +2006,7 @@ static void rtl92cu_update_hal_rate_table(struct ieee80211_hw *hw,
 
 static void rtl92cu_update_hal_rate_mask(struct ieee80211_hw *hw,
 					 struct ieee80211_sta *sta,
-					 u8 rssi_level)
+					 u8 rssi_level, bool update_bw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_phy *rtlphy = &(rtlpriv->phy);
@@ -2163,12 +2153,12 @@ static void rtl92cu_update_hal_rate_mask(struct ieee80211_hw *hw,
 
 void rtl92cu_update_hal_rate_tbl(struct ieee80211_hw *hw,
 				 struct ieee80211_sta *sta,
-				 u8 rssi_level)
+				 u8 rssi_level, bool update_bw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 
 	if (rtlpriv->dm.useramask)
-		rtl92cu_update_hal_rate_mask(hw, sta, rssi_level);
+		rtl92cu_update_hal_rate_mask(hw, sta, rssi_level, update_bw);
 	else
 		rtl92cu_update_hal_rate_table(hw, sta);
 }

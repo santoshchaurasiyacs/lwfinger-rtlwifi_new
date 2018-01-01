@@ -116,15 +116,15 @@ enum rtl8723b_c2h_evt {
 #define SET_H2CCMD_PWRMODE_PARM_MODE(__ph2ccmd, __val)			\
 	SET_BITS_TO_LE_1BYTE(__ph2ccmd, 0, 8, __val)
 #define SET_H2CCMD_PWRMODE_PARM_RLBM(__ph2ccmd, __val)			\
-	SET_BITS_TO_LE_1BYTE((__ph2ccmd) + 1, 0, 4, __val)
+	SET_BITS_TO_LE_1BYTE((__ph2ccmd)+1, 0, 4, __val)
 #define SET_H2CCMD_PWRMODE_PARM_SMART_PS(__ph2ccmd, __val)		\
-	SET_BITS_TO_LE_1BYTE((__ph2ccmd) + 1, 4, 4, __val)
+	SET_BITS_TO_LE_1BYTE((__ph2ccmd)+1, 4, 4, __val)
 #define SET_H2CCMD_PWRMODE_PARM_AWAKE_INTERVAL(__ph2ccmd, __val)	\
-	SET_BITS_TO_LE_1BYTE((__ph2ccmd) + 2, 0, 8, __val)
+	SET_BITS_TO_LE_1BYTE((__ph2ccmd)+2, 0, 8, __val)
 #define SET_H2CCMD_PWRMODE_PARM_ALL_QUEUE_UAPSD(__ph2ccmd, __val)	\
-	SET_BITS_TO_LE_1BYTE((__ph2ccmd) + 3, 0, 8, __val)
+	SET_BITS_TO_LE_1BYTE((__ph2ccmd)+3, 0, 8, __val)
 #define SET_H2CCMD_PWRMODE_PARM_PWR_STATE(__ph2ccmd, __val)		\
-	SET_BITS_TO_LE_1BYTE((__ph2ccmd) + 4, 0, 8, __val)
+	SET_BITS_TO_LE_1BYTE((__ph2ccmd)+4, 0, 8, __val)
 #define SET_H2CCMD_PWRMODE_PARM_BYTE5(__ph2ccmd, __val)			\
 	SET_BITS_TO_LE_1BYTE((__ph2ccmd) + 5, 0, 8, __val)
 #define GET_88E_H2CCMD_PWRMODE_PARM_MODE(__ph2ccmd)			\
@@ -138,13 +138,14 @@ enum rtl8723b_c2h_evt {
 #define SET_H2CCMD_RSVDPAGE_LOC_PROBE_RSP(__ph2ccmd, __val)		\
 	SET_BITS_TO_LE_1BYTE(__ph2ccmd, 0, 8, __val)
 #define SET_H2CCMD_RSVDPAGE_LOC_PSPOLL(__ph2ccmd, __val)		\
-	SET_BITS_TO_LE_1BYTE((__ph2ccmd) + 1, 0, 8, __val)
+	SET_BITS_TO_LE_1BYTE((__ph2ccmd)+1, 0, 8, __val)
 #define SET_H2CCMD_RSVDPAGE_LOC_NULL_DATA(__ph2ccmd, __val)		\
-	SET_BITS_TO_LE_1BYTE((__ph2ccmd) + 2, 0, 8, __val)
+	SET_BITS_TO_LE_1BYTE((__ph2ccmd)+2, 0, 8, __val)
 #define SET_H2CCMD_RSVDPAGE_LOC_QOS_NULL_DATA(__ph2ccmd, __val)	\
 	SET_BITS_TO_LE_1BYTE((__ph2ccmd) + 3, 0, 8, __val)
 #define SET_H2CCMD_RSVDPAGE_LOC_BT_QOS_NULL_DATA(__ph2ccmd, __val)	\
 	SET_BITS_TO_LE_1BYTE((__ph2ccmd) + 4, 0, 8, __val)
+
 
 void rtl8723be_fill_h2c_cmd(struct ieee80211_hw *hw, u8 element_id,
 			    u32 cmd_len, u8 *p_cmdbuffer);

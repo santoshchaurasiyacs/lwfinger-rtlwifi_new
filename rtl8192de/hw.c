@@ -11,10 +11,6 @@
  * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
  * more details.
  *
- * You should have received a copy of the GNU General Public License along with
- * this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110, USA
- *
  * The full GNU General Public License is included in this distribution in the
  * file called LICENSE.
  *
@@ -618,19 +614,19 @@ static bool _rtl92de_llt_table_init(struct ieee80211_hw *hw)
 
 static void _rtl92de_gen_refresh_led_state(struct ieee80211_hw *hw)
 {
-	struct rtl_pci_priv *pcipriv = rtl_pcipriv(hw);
+	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_pci *rtlpci = rtl_pcidev(rtl_pcipriv(hw));
 	struct rtl_ps_ctl *ppsc = rtl_psc(rtl_priv(hw));
-	struct rtl_led *pLed0 = &(pcipriv->ledctl.sw_led0);
+	struct rtl_led *pled0 = &rtlpriv->ledctl.sw_led0;
 
 	if (rtlpci->up_first_time)
 		return;
 	if (ppsc->rfoff_reason == RF_CHANGE_BY_IPS)
-		rtl92de_sw_led_on(hw, pLed0);
+		rtl92de_sw_led_on(hw, pled0);
 	else if (ppsc->rfoff_reason == RF_CHANGE_BY_INIT)
-		rtl92de_sw_led_on(hw, pLed0);
+		rtl92de_sw_led_on(hw, pled0);
 	else
-		rtl92de_sw_led_off(hw, pLed0);
+		rtl92de_sw_led_off(hw, pled0);
 }
 
 static bool _rtl92de_init_mac(struct ieee80211_hw *hw)
@@ -1360,18 +1356,13 @@ void rtl92de_card_disable(struct ieee80211_hw *hw)
 }
 
 void rtl92de_interrupt_recognized(struct ieee80211_hw *hw,
-				  u32 *p_inta, u32 *p_intb)
+				  struct rtl_int *intvec)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_pci *rtlpci = rtl_pcidev(rtl_pcipriv(hw));
 
-	*p_inta = rtl_read_dword(rtlpriv, ISR) & rtlpci->irq_mask[0];
-	rtl_write_dword(rtlpriv, ISR, *p_inta);
-
-	/*
-	 * *p_intb = rtl_read_dword(rtlpriv, REG_HISRE) & rtlpci->irq_mask[1];
-	 * rtl_write_dword(rtlpriv, ISR + 4, *p_intb);
-	 */
+	intvec->inta = rtl_read_dword(rtlpriv, ISR) & rtlpci->irq_mask[0];
+	rtl_write_dword(rtlpriv, ISR, intvec->inta);
 }
 
 void rtl92de_set_beacon_related_registers(struct ieee80211_hw *hw)
@@ -1901,7 +1892,7 @@ static void rtl92de_update_hal_rate_table(struct ieee80211_hw *hw,
 }
 
 static void rtl92de_update_hal_rate_mask(struct ieee80211_hw *hw,
-		struct ieee80211_sta *sta, u8 rssi_level)
+		struct ieee80211_sta *sta, u8 rssi_level, bool update_bw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_phy *rtlphy = &(rtlpriv->phy);
@@ -2037,12 +2028,12 @@ static void rtl92de_update_hal_rate_mask(struct ieee80211_hw *hw,
 }
 
 void rtl92de_update_hal_rate_tbl(struct ieee80211_hw *hw,
-		struct ieee80211_sta *sta, u8 rssi_level)
+		struct ieee80211_sta *sta, u8 rssi_level, bool update_bw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 
 	if (rtlpriv->dm.useramask)
-		rtl92de_update_hal_rate_mask(hw, sta, rssi_level);
+		rtl92de_update_hal_rate_mask(hw, sta, rssi_level, update_bw);
 	else
 		rtl92de_update_hal_rate_table(hw, sta);
 }
@@ -2166,7 +2157,8 @@ void rtl92de_set_key(struct ieee80211_hw *hw, u32 key_index,
 			enc_algo = CAM_AES;
 			break;
 		default:
-			pr_err("switch case %#x not processed\n", enc_algo);
+			pr_err("switch case %#x not processed\n",
+			       enc_algo);
 			enc_algo = CAM_TKIP;
 			break;
 		}
