@@ -16,6 +16,14 @@ else
 MODDESTDIR := /lib/modules/$(KVER)/kernel/drivers/net/wireless/rtlwifi
 endif
 
+#Handle the compression option for modules in 3.18+
+ifneq ("","$(wildcard $(MODDESTDIR)/*.ko.gz)")
+COMPRESS_GZIP := y
+endif
+ifneq ("","$(wildcard $(MODDESTDIR)/*.ko.xz)")
+COMPRESS_XZ := y
+endif
+
 ccflags-y += -O2
 
 CONFIG_RTLWIFI=m
@@ -45,7 +53,7 @@ export CONFIG_RTL8188EE CONFIG_RTL8821AE
 export CONFIG_RTLBTCOEXIST
 
 
-obj-$(CONFIG_RTLWIFI) 		+= rtlwifi.o
+obj-m		+= rtlwifi.o
 rtlwifi-objs	:=		\
 		base.o		\
 		cam.o		\
@@ -59,28 +67,28 @@ rtlwifi-objs	:=		\
 
 rtl8192c_common-objs +=		\
 
-obj-$(CONFIG_RTLWIFI_PCI)	+= rtl_pci.o
+obj-m				+= rtl_pci.o
 rtl_pci-objs	:=		pci.o
 
-obj-$(CONFIG_RTLWIFI_USB)	+= rtl_usb.o
+obj-m				+= rtl_usb.o
 rtl_usb-objs	:=		usb.o
 
-obj-$(CONFIG_RTL8192C_COMMON)	+= rtl8192c/
-obj-$(CONFIG_RTL8192CE)		+= rtl8192ce/
-obj-$(CONFIG_RTL8192CU)		+= rtl8192cu/
-obj-$(CONFIG_RTL8192SE)		+= rtl8192se/
-obj-$(CONFIG_RTL8192DE)		+= rtl8192de/
-obj-$(CONFIG_RTL8723AE)		+= rtl8723ae/
-obj-$(CONFIG_RTL8723BE)		+= rtl8723be/
-obj-$(CONFIG_RTL8723DE)		+= rtl8723de/
-obj-$(CONFIG_RTL8188EE)		+= rtl8188ee/
-obj-$(CONFIG_RTLBTCOEXIST)	+= btcoexist/
-obj-$(CONFIG_RTLHALMAC)		+= halmac/
-obj-$(CONFIG_RTLPHYDM)		+= phydm/
-obj-$(CONFIG_RTL8723_COMMON)	+= rtl8723com/
-obj-$(CONFIG_RTL8821AE)		+= rtl8821ae/
-obj-$(CONFIG_RTL8822BE)		+= rtl8822be/
-obj-$(CONFIG_RTL8192EE)		+= rtl8192ee/
+obj-m				+= rtl8192c/
+obj-m				+= rtl8192ce/
+obj-m				+= rtl8192cu/
+obj-m				+= rtl8192se/
+obj-m				+= rtl8192de/
+obj-m				+= rtl8723ae/
+obj-m				+= rtl8723be/
+obj-m				+= rtl8723de/
+obj-m				+= rtl8188ee/
+obj-m				+= btcoexist/
+obj-m				+= halmac/
+obj-m				+= phydm/
+obj-m				+= rtl8723com/
+obj-m				+= rtl8821ae/
+obj-m				+= rtl8822be/
+obj-m				+= rtl8192ee/
 
 ccflags-y += -D__CHECK_ENDIAN__
 #subdir-ccflags-y += -Werror
@@ -123,6 +131,7 @@ endif
 	@mkdir -p $(MODDESTDIR)/rtl8723ae
 	@mkdir -p $(MODDESTDIR)/rtl8723be
 	@mkdir -p $(MODDESTDIR)/rtl8723de
+	@mkdir -p $(MODDESTDIR)/rtl8723com
 	@mkdir -p $(MODDESTDIR)/rtl8821ae
 	@mkdir -p $(MODDESTDIR)/rtl8822be
 	@install -p -D -m 644 rtl_pci.ko $(MODDESTDIR)
@@ -143,6 +152,21 @@ endif
 	@install -p -D -m 644 ./rtl8723de/rtl8723de.ko $(MODDESTDIR)/rtl8723de
 	@install -p -D -m 644 ./rtl8821ae/rtl8821ae.ko $(MODDESTDIR)/rtl8821ae
 	@install -p -D -m 644 ./rtl8822be/rtl8822be.ko $(MODDESTDIR)/rtl8822be
+	@install -p -D -m 644 ./rtl8723com/rtl8723-common.ko $(MODDESTDIR)/rtl8723com
+ifeq ($(COMPRESS_GZIP), y)
+	@gzip -f $(MODDESTDIR)/*.ko
+	@gzip -f $(MODDESTDIR)/btcoexist/*.ko
+	@gzip -f $(MODDESTDIR)/rtl8*/*.ko
+	@gzip -f $(MODDESTDIR)/halmac/*.ko
+	@gzip -f $(MODDESTDIR)/phydm/*.ko
+endif
+ifeq ($(COMPRESS_XZ), y)
+	@xz -f $(MODDESTDIR)/*.ko
+	@xz -f $(MODDESTDIR)/btcoexist/*.ko
+	@xz -f $(MODDESTDIR)/rtl8*/*.ko
+	@xz -f $(MODDESTDIR)/halmac/*.ko
+	@xz -f $(MODDESTDIR)/phydm/*.ko
+endif
 
 	@depmod -a
 
