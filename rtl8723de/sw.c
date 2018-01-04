@@ -301,7 +301,7 @@ static struct rtl_mod_params rtl8723de_mod_params = {
 	.dma64 = false,
 	.aspm_support = 0,
 	.disable_watchdog = false,
-	.debug_level = 3,//DBG_EMERG,
+	.debug_level = 0,//DBG_EMERG,
 	.debug_mask = 0xffffffffffffffffULL,
 	.ant_sel = 0,
 };
