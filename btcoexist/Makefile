@@ -12,4 +12,4 @@ btcoexist-objs :=	halbtc8192e2ant.o	\
 			halbtcoutsrc.o		\
 			rtl_btc.o
 
-obj-$(CONFIG_RTLBTCOEXIST) += btcoexist.o
+obj-m += btcoexist.o

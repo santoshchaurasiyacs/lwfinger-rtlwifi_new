@@ -12,4 +12,4 @@ rtl8821ae-objs :=		\
 		trx.o		\
 
 
-obj-$(CONFIG_RTL8821AE) += rtl8821ae.o
+obj-m += rtl8821ae.o

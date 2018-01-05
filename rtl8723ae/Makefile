@@ -14,4 +14,4 @@ rtl8723ae-objs :=		\
 		trx.o		\
 
 
-obj-$(CONFIG_RTL8723AE) += rtl8723ae.o
+obj-m += rtl8723ae.o

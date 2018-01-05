@@ -9,4 +9,4 @@ rtl8192ce-objs :=		\
 		table.o		\
 		trx.o
 
-obj-$(CONFIG_RTL8192CE) += rtl8192ce.o
+obj-m += rtl8192ce.o
