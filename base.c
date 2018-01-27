@@ -2649,12 +2649,12 @@ label_lps_done:
 		rtlpriv->sta->last_txbytes = rtlpriv->sta->txbytes;
 		rtlpriv->sta->last_rxbytes = rtlpriv->sta->rxbytes;
 
-		rtlpriv->sta->txbytes_inperiod =
-			((rtlpriv->sta->txbytes_inperiod / 10) * 1 +
-				(curr_tx_bytes  / 10) * 9) / 2;
-		rtlpriv->sta->rxbytes_inperiod =
-			((rtlpriv->sta->rxbytes_inperiod / 10) * 1 +
-				(curr_rx_bytes  / 10) * 9) / 2;
+		rtlpriv->sta->txbytes_inperiod = 
+			(div64_u64(rtlpriv->sta->txbytes_inperiod, 10) * 1 +
+				div64_u64(curr_tx_bytes, 10) * 9) / 2;
+		rtlpriv->sta->rxbytes_inperiod = 
+			(div64_u64(rtlpriv->sta->rxbytes_inperiod, 10) * 1 +
+				div64_u64(curr_rx_bytes, 10) * 9) / 2;
 
 		rtlpriv->sta->cmn_info.tx_moving_average_tp =
 			rtlpriv->sta->txbytes_inperiod >> 20;
