@@ -573,10 +573,17 @@ static void _rtl_init_deferred_work(struct ieee80211_hw *hw)
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 
 	/* <1> timer */
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 15, 0)
+	timer_setup(&rtlpriv->works.watchdog_timer,
+		    rtl_watch_dog_timer_callback, 0);
+	timer_setup(&rtlpriv->works.dualmac_easyconcurrent_retrytimer,
+		    rtl_easy_concurrent_retrytimer_callback, 0);
+#else
 	setup_timer(&rtlpriv->works.watchdog_timer,
 		    rtl_watch_dog_timer_callback, (unsigned long)hw);
 	setup_timer(&rtlpriv->works.dualmac_easyconcurrent_retrytimer,
 		    rtl_easy_concurrent_retrytimer_callback, (unsigned long)hw);
+#endif
 	/* <2> work queue */
 	rtlpriv->works.hw = hw;
 	rtlpriv->works.rtl_wq = alloc_workqueue("%s", 0, 0, rtlpriv->cfg->name);
@@ -2088,10 +2095,18 @@ label_lps_done:
 	rtl_scan_list_expire(hw);
 }
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 15, 0)
+void rtl_watch_dog_timer_callback(struct timer_list *t)
+#else
 void rtl_watch_dog_timer_callback(unsigned long data)
+#endif
 {
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 15, 0)
+	struct rtl_priv *rtlpriv = from_timer(rtlpriv, t, works.watchdog_timer);
+#else
 	struct ieee80211_hw *hw = (struct ieee80211_hw *)data;
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
+#endif
 
 	queue_delayed_work(rtlpriv->works.rtl_wq,
 			   &rtlpriv->works.watchdog_wq, 0);
@@ -2196,10 +2211,20 @@ void rtl_c2hcmd_wq_callback(void *data)
 	rtl_c2hcmd_launcher(hw, 1);
 }
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 15, 0)
+void rtl_easy_concurrent_retrytimer_callback(struct timer_list *t)
+#else
 void rtl_easy_concurrent_retrytimer_callback(unsigned long data)
+#endif
 {
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 15, 0)
+	struct rtl_priv *rtlpriv =
+		from_timer(rtlpriv, t, works.dualmac_easyconcurrent_retrytimer);
+	struct ieee80211_hw *hw = rtlpriv->hw;
+#else
 	struct ieee80211_hw *hw = (struct ieee80211_hw *)data;
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
+#endif
 	struct rtl_priv *buddy_priv = rtlpriv->buddy_priv;
 
 	if (buddy_priv == NULL)
