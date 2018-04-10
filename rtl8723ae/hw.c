@@ -1257,10 +1257,24 @@ void rtl8723e_set_qos(struct ieee80211_hw *hw, int aci)
 	}
 }
 
+static void rtl8723e_clear_interrupt(struct ieee80211_hw *hw)
+{
+	struct rtl_priv *rtlpriv = rtl_priv(hw);
+	u32 tmp = rtl_read_dword(rtlpriv, 0x3a8);
+
+	rtl_write_dword(rtlpriv, 0x3a8, tmp);
+
+	tmp = rtl_read_dword(rtlpriv, 0x3ac);
+	rtl_write_dword(rtlpriv, 0x3ac, tmp);
+}
+
 void rtl8723e_enable_interrupt(struct ieee80211_hw *hw)
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rtl_pci *rtlpci = rtl_pcidev(rtl_pcipriv(hw));
+
+	if (rtlpci->int_clear)
+		rtl8723e_clear_interrupt(hw);/*clear it here first*/
 
 	rtl_write_dword(rtlpriv, 0x3a8, rtlpci->irq_mask[0] & 0xFFFFFFFF);
 	rtl_write_dword(rtlpriv, 0x3ac, rtlpci->irq_mask[1] & 0xFFFFFFFF);
