@@ -125,7 +125,7 @@ void rtl_watch_dog_timer_callback(struct timer_list *t);
 #else
 void rtl_watch_dog_timer_callback(unsigned long data);
 #endif
-void rtl_deinit_deferred_work(struct ieee80211_hw *hw);
+void rtl_deinit_deferred_work(struct ieee80211_hw *hw, bool ips_wq);
 
 bool rtl_action_proc(struct ieee80211_hw *hw, struct sk_buff *skb, u8 is_tx);
 int rtlwifi_rate_mapping(struct ieee80211_hw *hw, bool isht,
