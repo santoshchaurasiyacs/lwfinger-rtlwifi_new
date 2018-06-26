@@ -160,7 +160,7 @@ endif
 clean:
 	@find halmac/ \( -name "*.mod.c" -o -name "*.mod" -o -name "*.o" -o -name ".*.cmd" -o -name "*.ko" -o -name "*~" \) -exec rm {} \;
 	@find phydm/ \( -name "*.mod.c" -o -name "*.mod" -o -name "*.o" -o -name ".*.cmd" -o -name "*.ko" -o -name "*~" \) -exec rm {} \;
-	@rm -fr *.mod.c *.mod *.o .*.cmd *.ko *~
+	@rm -fr *.mod.c *.mod *.o .*.cmd *.ko *~ .cache.mk
 	@rm -fr rtl8*/*.mod.c rtl8*/*.mod rtl8*/*.o rtl8*/.*.cmd rtl8*/*.ko rtl8*/*~
 	@rm -fr bt*/*.mod.c bt*/*.mod bt*/*.o bt*/.*.cmd bt*/*.ko bt*/*~
 	@rm -fr .tmp_versions
