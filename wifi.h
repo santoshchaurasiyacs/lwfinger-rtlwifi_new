@@ -40,7 +40,7 @@
 #include "debug.h"
 /*#define ERROR_RESUME*/
 
-#error "This branch is abandoned. Please do not use"
+#error "This branch is abandoned. Please do not use. As an alternative, 'git checkout origin/extended -b extended'"
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 8, 0))
 #define CONFIG_HAVE_ARCH_WITHIN_STACK_FRAMES 1
