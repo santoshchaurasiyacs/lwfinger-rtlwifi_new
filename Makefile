@@ -58,6 +58,7 @@ all:
 	$(MAKE) -C $(KSRC) M=$(PWD) modules
 install: all
 	@mkdir -p $(MODDESTDIR)/rtwlan
+	@install -p -D -m 644 rtwlan.ko $(MODDESTDIR)
 ifeq ($(COMPRESS_GZIP), y)
 	@gzip -f $(MODDESTDIR)/*.ko
 endif
