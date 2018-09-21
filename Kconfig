@@ -1,0 +1,55 @@
+menuconfig RTWLAN
+	tristate "Realtek 802.11ac wireless chips support"
+	depends on MAC80211
+	default y
+	help
+	  This module adds support for mac80211-based wireless drivers that
+	  enables Realtek IEEE 802.11ac wireless chipsets.
+
+	  If you choose to build a module, it'll be called rtwlan.
+
+if RTWLAN
+
+config RTWLAN_CORE
+	tristate
+	depends on RTWLAN
+
+config RTWLAN_PCI
+	tristate
+	depends on RTWLAN_CORE && PCI
+
+config RTWLAN_8822BE
+	bool "Realtek 8822BE PCI wireless network adapter"
+	select RTWLAN_CORE
+	select RTWLAN_PCI
+	help
+	  Select this option will enable support for 8822BE chipset
+
+	  802.11ac PCIe wireless network adapter
+
+config RTWLAN_8822CE
+	bool "Realtek 8822CE PCI wireless network adapter"
+	select RTWLAN_CORE
+	select RTWLAN_PCI
+	help
+	  Select this option will enable support for 8822CE chipset
+
+	  802.11ac PCIe wireless network adapter
+
+config RTWLAN_DEBUG
+	bool "Realtek rtwlan debug support"
+	depends on RTWLAN_CORE
+	help
+	  Enable debug support
+
+	  If unsure, say Y to simplify debug problems
+
+config RTWLAN_DEBUGFS
+	bool "Realtek rtwlan debugfs support"
+	depends on RTWLAN_CORE
+	help
+	  Enable debug support
+
+	  If unsure, say Y to simplify debug problems
+
+endif

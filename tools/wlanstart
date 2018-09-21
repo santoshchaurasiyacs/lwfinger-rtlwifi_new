@@ -1,9 +1,0 @@
-#!/bin/sh
-
-
-chmod +x wlan*
-./wlandown
-make
-sleep 1
-./wlanup
-./wlanlog
