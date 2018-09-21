@@ -60,17 +60,9 @@ install: all
 	@mkdir -p $(MODDESTDIR)/rtwlan
 ifeq ($(COMPRESS_GZIP), y)
 	@gzip -f $(MODDESTDIR)/*.ko
-	@gzip -f $(MODDESTDIR)/btcoexist/*.ko
-	@gzip -f $(MODDESTDIR)/rtl8*/*.ko
-	@gzip -f $(MODDESTDIR)/halmac/*.ko
-	@gzip -f $(MODDESTDIR)/phydm/*.ko
 endif
 ifeq ($(COMPRESS_XZ), y)
 	@xz -f $(MODDESTDIR)/*.ko
-	@xz -f $(MODDESTDIR)/btcoexist/*.ko
-	@xz -f $(MODDESTDIR)/rtl8*/*.ko
-	@xz -f $(MODDESTDIR)/halmac/*.ko
-	@xz -f $(MODDESTDIR)/phydm/*.ko
 endif
 
 	@depmod -a
