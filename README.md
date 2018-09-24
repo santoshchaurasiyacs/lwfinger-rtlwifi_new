@@ -2,6 +2,8 @@ rtlwifi_new
 ===========
 ### A repo for the newest Realtek rtlwifi codes.
 
+I. Branch "extended":
+
 This code will build on any kernel 4.2 and newer as long as the distro has not modified
 any of the kernel APIs. IF YOU RUN UBUNTU, YOU CAN BE ASSURED THAT THE APIs HAVE CHANGED.
 NO, I WILL NOT MODIFY THE SOURCE FOR YOU. YOU ARE ON YOUR OWN!!!!!
@@ -25,7 +27,7 @@ If you are running Ubuntu, then
 Please note the first paragraph above.
 
 For all distros:
-git clone https://github.com/lwfinger/rtlwifi_new.git
+git clone -b extended https://github.com/lwfinger/rtlwifi_new.git
 cd rtlwifi_new
 sudo make install
 sudo modprobe -r <<YOUR WIRELESS DRIVER CODE>>
@@ -38,4 +40,12 @@ vim /etc/modprobe.d/<<YOUR WIRELESS DRIVER CODE>>.conf
 
 There, enter the line below:
 `options <<YOUR WIRELESS DRIVER CODE>> <<driver_option_name>>=<value>`
+
+II. New drivers
+
+In branch rtwlan, new drivers for RTL8822BE and RTL8822CE are available. The installation
+instructions are the same as step I, other than the 'git clone' command should be
+
+git clone -b rtwlan https://github.com/lwfinger/rtlwifi_new.git
+
 
