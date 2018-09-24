@@ -1184,6 +1184,7 @@ static const struct pci_device_id rtw_pci_id_table[] = {
 #ifdef CONFIG_RTWLAN_8822CE
 	{ RTK_PCI_DEVICE(PCI_VENDOR_ID_REALTEK, 0xC822, rtw8822c_hw_spec) },
 #endif
+	{},
 };
 
 static struct pci_driver rtw_pci_driver = {
@@ -1209,6 +1210,8 @@ struct rtw_hci_ops rtw_pci_ops = {
 	.write_data_h2c = rtw_pci_write_data_h2c,
 	.check_avail_desc = rtw_pci_check_avail_desc,
 };
+
+MODULE_DEVICE_TABLE(pci, rtw_pci_id_table);
 
 module_pci_driver(rtw_pci_driver);
 
