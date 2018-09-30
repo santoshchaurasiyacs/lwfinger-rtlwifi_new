@@ -238,6 +238,16 @@ static void rtl8723de_dm_watchdog(struct ieee80211_hw *hw)
 	rtlpriv->phydm.ops->phydm_watchdog(rtlpriv);
 }
 
+static void rtl8723de_shutdown(struct pci_dev *pdev)
+{
+	struct ieee80211_hw *hw = pci_get_drvdata(pdev);
+	struct rtl_priv *rtlpriv = rtl_priv(hw);
+	u8 tmp;
+
+	tmp = rtl_read_byte(rtlpriv, 0x75);
+	rtl_write_byte(rtlpriv, 0x75, tmp | BIT(0));
+}
+
 static struct rtl_hal_ops rtl8723de_hal_ops = {
 	.init_sw_vars = rtl8723de_init_sw_vars,
 	.deinit_sw_vars = rtl8723de_deinit_sw_vars,
@@ -450,6 +460,7 @@ static struct pci_driver rtl8723de_driver = {
 	.id_table = rtl8723de_pci_ids,
 	.probe = rtl_pci_probe,
 	.remove = rtl_pci_disconnect,
+	.shutdown = rtl8723de_shutdown,
 	.driver.pm = &rtlwifi_pm_ops,
 };
 
