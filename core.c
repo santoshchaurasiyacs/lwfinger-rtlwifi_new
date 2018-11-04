@@ -633,7 +633,6 @@ static int rtl_op_config(struct ieee80211_hw *hw, u32 changed)
 	if (mac->skip_scan)
 		return 1;
 
-	mutex_lock(&rtlpriv->locks.conf_mutex);
 	if (changed & IEEE80211_CONF_CHANGE_LISTEN_INTERVAL) {	/* BIT(2)*/
 		RT_TRACE(rtlpriv, COMP_MAC80211, DBG_LOUD,
 			 "IEEE80211_CONF_CHANGE_LISTEN_INTERVAL\n");
@@ -654,6 +653,7 @@ static int rtl_op_config(struct ieee80211_hw *hw, u32 changed)
 			rtl_ips_nic_on(hw);
 	}
 
+	mutex_lock(&rtlpriv->locks.conf_mutex);
 	/*For LPS */
 	if ((changed & IEEE80211_CONF_CHANGE_PS) &&
 	    rtlpriv->psc.swctrl_lps && !rtlpriv->psc.fwctrl_lps) {
