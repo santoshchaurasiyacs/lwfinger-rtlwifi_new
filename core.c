@@ -130,7 +130,6 @@ found_alt:
 		       firmware->size);
 		rtlpriv->rtlhal.wowlan_fwsize = firmware->size;
 	}
-	rtlpriv->rtlhal.fwsize = firmware->size;
 	release_firmware(firmware);
 }
 
@@ -160,7 +159,11 @@ static int rtl_op_start(struct ieee80211_hw *hw)
 	mutex_lock(&rtlpriv->locks.conf_mutex);
 	err = rtlpriv->intf_ops->adapter_start(hw);
 	if (!err)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 15, 0)
+		rtl_watch_dog_timer_callback(&rtlpriv->works.watchdog_timer);
+#else
 		rtl_watch_dog_timer_callback((unsigned long)hw);
+#endif
 	mutex_unlock(&rtlpriv->locks.conf_mutex);
 	return err;
 }
@@ -196,7 +199,7 @@ static void rtl_op_stop(struct ieee80211_hw *hw)
 		/* reset sec info */
 		rtl_cam_reset_sec_info(hw);
 
-		rtl_deinit_deferred_work(hw);
+		rtl_deinit_deferred_work(hw, false);
 	}
 	rtlpriv->intf_ops->adapter_stop(hw);
 
@@ -1424,7 +1427,7 @@ static int rtl_op_ampdu_action(struct ieee80211_hw *hw,
 			 "IEEE80211_AMPDU_RX_STOP:TID:%d\n", tid);
 		return rtl_rx_agg_stop(hw, sta, tid);
 	default:
-		pr_err("IEEE80211_AMPDU_ERR!!!!:\n");
+		pr_err("IEEE80211_AMPDU_ERR for action %d!!!!:\n", action);
 		return -EOPNOTSUPP;
 	}
 	return 0;

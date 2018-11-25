@@ -49,6 +49,11 @@
 #define _ieee80211_is_robust_mgmt_frame ieee80211_is_robust_mgmt_frame
 #endif
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 12, 0))
+#define RX_FLAG_40MHZ RATE_INFO_BW_40
+#define RX_FLAG_HT RX_ENC_HT
+#endif
+
 #define	MASKBYTE0				0xff
 #define	MASKBYTE1				0xff00
 #define	MASKBYTE2				0xff0000
@@ -111,6 +116,7 @@
 #define RTL_USB_MAX_RX_COUNT			100
 #define QBSS_LOAD_SIZE				5
 #define MAX_WMMELE_LENGTH			64
+#define ASPM_L1_LATENCY				7
 
 #define TOTAL_CAM_ENTRY				32
 
