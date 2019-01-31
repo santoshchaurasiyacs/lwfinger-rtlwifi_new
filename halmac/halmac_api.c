@@ -249,9 +249,10 @@ halmac_get_chip_info(void *driver_adapter,
 	else
 		halmac_adapter->chip_id = HALMAC_CHIP_ID_UNDEFINE;
 
-	if (halmac_adapter->chip_id == HALMAC_CHIP_ID_UNDEFINE)
+	if (halmac_adapter->chip_id == HALMAC_CHIP_ID_UNDEFINE) {
+		pr_err("chip_id of 0x%x is not supported\n", chip_id);
 		return HALMAC_RET_CHIP_NOT_SUPPORT;
-
+	}
 	return HALMAC_RET_SUCCESS;
 }
 
