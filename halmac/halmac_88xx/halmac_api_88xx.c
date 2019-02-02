@@ -358,14 +358,13 @@ halmac_mount_api_88xx(struct halmac_adapter *halmac_adapter)
 	halmac_api->halmac_fill_txdesc_checksum =
 		halmac_fill_txdesc_check_sum_88xx;
 
-	if (halmac_adapter->chip_id == HALMAC_CHIP_ID_8822B) {
+	switch (halmac_adapter->chip_id) {
+	case HALMAC_CHIP_ID_8822B:
+	case HALMAC_CHIP_ID_8822B2:
 		/*mount 8822b function and data*/
 		halmac_mount_api_8822b(halmac_adapter);
-
-	} else if (halmac_adapter->chip_id == HALMAC_CHIP_ID_8821C) {
-	} else if (halmac_adapter->chip_id == HALMAC_CHIP_ID_8814B) {
-	} else if (halmac_adapter->chip_id == HALMAC_CHIP_ID_8197F) {
-	} else {
+		break;
+	default:
 		pr_err("Chip ID undefine!!\n");
 		return HALMAC_RET_CHIP_NOT_SUPPORT;
 	}
