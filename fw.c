@@ -319,10 +319,18 @@ static struct sk_buff *rtw_get_rsvd_page_skb(struct ieee80211_hw *hw,
 		skb_new = ieee80211_proberesp_get(hw, vif);
 		break;
 	case RSVD_NULL:
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 15, 0)
 		skb_new = ieee80211_nullfunc_get(hw, vif, false);
+#else
+		skb_new = ieee80211_nullfunc_get(hw, vif);
+#endif
 		break;
 	case RSVD_QOS_NULL:
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 15, 0)
 		skb_new = ieee80211_nullfunc_get(hw, vif, true);
+#else
+		skb_new = ieee80211_nullfunc_get(hw, vif);
+#endif
 		break;
 	default:
 		return NULL;

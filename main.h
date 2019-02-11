@@ -10,7 +10,12 @@
 #include <linux/firmware.h>
 #include <linux/average.h>
 #include <linux/bitops.h>
+#include <linux/version.h>
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 19, 0)
 #include <linux/bitfield.h>
+#else
+#include "bitfield.h"
+#endif
 
 #include "util.h"
 
