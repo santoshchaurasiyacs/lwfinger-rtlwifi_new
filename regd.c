@@ -1,540 +1,391 @@
-/******************************************************************************
- *
- * Copyright(c) 2009-2012  Realtek Corporation.
- *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of version 2 of the GNU General Public License as
- * published by the Free Software Foundation.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
- * more details.
- *
- * The full GNU General Public License is included in this distribution in the
- * file called LICENSE.
- *
- * Contact Information:
- * wlanfae <wlanfae@realtek.com>
- * Realtek Corporation, No. 2, Innovation Road II, Hsinchu Science Park,
- * Hsinchu 300, Taiwan.
- *
- * Larry Finger <Larry.Finger@lwfinger.net>
- *
- *****************************************************************************/
+// SPDX-License-Identifier: GPL-2.0
+/* Copyright(c) 2018  Realtek Corporation.
+ */
 
-#include "wifi.h"
+#include "main.h"
 #include "regd.h"
+#include "debug.h"
+#include "phy.h"
 
-static struct country_code_to_enum_rd allCountries[] = {
-	{COUNTRY_CODE_FCC, "US"},
-	{COUNTRY_CODE_IC, "US"},
-	{COUNTRY_CODE_ETSI, "EC"},
-	{COUNTRY_CODE_SPAIN, "EC"},
-	{COUNTRY_CODE_FRANCE, "EC"},
-	{COUNTRY_CODE_MKK, "JP"},
-	{COUNTRY_CODE_MKK1, "JP"},
-	{COUNTRY_CODE_ISRAEL, "EC"},
-	{COUNTRY_CODE_TELEC, "JP"},
-	{COUNTRY_CODE_MIC, "JP"},
-	{COUNTRY_CODE_GLOBAL_DOMAIN, "JP"},
-	{COUNTRY_CODE_WORLD_WIDE_13, "EC"},
-	{COUNTRY_CODE_TELEC_NETGEAR, "EC"},
-	{COUNTRY_CODE_WORLD_WIDE_13_5G_ALL, "US"},
-};
+#define COUNTRY_CHPLAN_ENT(_alpha2, _chplan, _txpwr_regd) \
+	{.alpha2 = (_alpha2), \
+	 .chplan = (_chplan), \
+	 .txpwr_regd = (_txpwr_regd) \
+	}
 
-/*
- *Only these channels all allow active
- *scan on all world regulatory domains
+/* If country code is not correctly defined in efuse,
+ * use worldwide country code and txpwr regd.
  */
-#define RTL819x_2GHZ_CH01_11	\
-	REG_RULE(2412-10, 2462+10, 40, 0, 20, 0)
+static const struct rtw_regulatory rtw_defined_chplan =
+	COUNTRY_CHPLAN_ENT("00", RTW_CHPLAN_REALTEK_DEFINE, RTW_REGD_WW);
 
-/*
- *We enable active scan on these a case
- *by case basis by regulatory domain
- */
-#define RTL819x_2GHZ_CH12_13	\
-	REG_RULE(2467-10, 2472+10, 40, 0, 20,\
-	NL80211_RRF_PASSIVE_SCAN)
-
-#define RTL819x_2GHZ_CH14	\
-	REG_RULE(2484-10, 2484+10, 40, 0, 20, \
-	NL80211_RRF_PASSIVE_SCAN | \
-	NL80211_RRF_NO_OFDM)
-
-
-/* 5G chan 36 - chan 64*/
-#define RTL819x_5GHZ_5150_5350	\
-	REG_RULE(5150-10, 5350+10, 80, 0, 30, 0)
-/* 5G chan 100 - chan 165*/
-#define RTL819x_5GHZ_5470_5850	\
-	REG_RULE(5470-10, 5850+10, 80, 0, 30, 0)
-/* 5G chan 149 - chan 165*/
-#define RTL819x_5GHZ_5725_5850	\
-	REG_RULE(5725-10, 5850+10, 80, 0, 30, 0)
-
-#define RTL819x_5GHZ_ALL	\
-	(RTL819x_5GHZ_5150_5350, RTL819x_5GHZ_5470_5850)
-
-static const struct ieee80211_regdomain rtl_regdom_11 = {
-	.n_reg_rules = 1,
-	.alpha2 = "99",
-	.reg_rules = {
-		      RTL819x_2GHZ_CH01_11,
-		      }
+static const struct rtw_regulatory all_chplan_map[] = {
+	COUNTRY_CHPLAN_ENT("AD", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("AE", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("AF", RTW_CHPLAN_ETSI1_ETSI4, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("AG", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("AI", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("AL", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("AM", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("AN", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("AO", RTW_CHPLAN_WORLD_ETSI6, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("AQ", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("AR", RTW_CHPLAN_FCC2_FCC7, RTW_REGD_FCC),
+	COUNTRY_CHPLAN_ENT("AS", RTW_CHPLAN_FCC2_FCC11, RTW_REGD_FCC),
+	COUNTRY_CHPLAN_ENT("AT", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("AU", RTW_CHPLAN_WORLD_ACMA1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("AW", RTW_CHPLAN_FCC2_FCC11, RTW_REGD_FCC),
+	COUNTRY_CHPLAN_ENT("AZ", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("BA", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("BB", RTW_CHPLAN_FCC2_FCC11, RTW_REGD_FCC),
+	COUNTRY_CHPLAN_ENT("BD", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("BE", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("BF", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("BG", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("BH", RTW_CHPLAN_WORLD_ETSI6, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("BI", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("BJ", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("BN", RTW_CHPLAN_WORLD_ETSI6, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("BO", RTW_CHPLAN_WORLD_FCC7, RTW_REGD_FCC),
+	COUNTRY_CHPLAN_ENT("BR", RTW_CHPLAN_FCC2_FCC1, RTW_REGD_FCC),
+	COUNTRY_CHPLAN_ENT("BS", RTW_CHPLAN_FCC2_FCC11, RTW_REGD_FCC),
+	COUNTRY_CHPLAN_ENT("BW", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("BY", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("BZ", RTW_CHPLAN_FCC2_FCC11, RTW_REGD_FCC),
+	COUNTRY_CHPLAN_ENT("CA", RTW_CHPLAN_IC1_IC2, RTW_REGD_FCC),
+	COUNTRY_CHPLAN_ENT("CC", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("CD", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("CF", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("CG", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("CH", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("CI", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("CK", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("CL", RTW_CHPLAN_WORLD_CHILE1, RTW_REGD_FCC),
+	COUNTRY_CHPLAN_ENT("CM", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("CN", RTW_CHPLAN_WORLD_ETSI7, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("CO", RTW_CHPLAN_FCC2_FCC11, RTW_REGD_FCC),
+	COUNTRY_CHPLAN_ENT("CR", RTW_CHPLAN_FCC2_FCC11, RTW_REGD_FCC),
+	COUNTRY_CHPLAN_ENT("CV", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("CX", RTW_CHPLAN_WORLD_ACMA1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("CY", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("CZ", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("DE", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("DJ", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("DK", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("DM", RTW_CHPLAN_FCC2_FCC11, RTW_REGD_FCC),
+	COUNTRY_CHPLAN_ENT("DO", RTW_CHPLAN_FCC2_FCC11, RTW_REGD_FCC),
+	COUNTRY_CHPLAN_ENT("DZ", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("EC", RTW_CHPLAN_FCC2_FCC11, RTW_REGD_FCC),
+	COUNTRY_CHPLAN_ENT("EE", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("EG", RTW_CHPLAN_WORLD_ETSI6, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("EH", RTW_CHPLAN_WORLD_ETSI6, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("ER", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("ES", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("ET", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("FI", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("FJ", RTW_CHPLAN_FCC2_FCC11, RTW_REGD_FCC),
+	COUNTRY_CHPLAN_ENT("FK", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("FM", RTW_CHPLAN_FCC2_FCC11, RTW_REGD_FCC),
+	COUNTRY_CHPLAN_ENT("FO", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("FR", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("GA", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("GB", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("GD", RTW_CHPLAN_FCC1_FCC7, RTW_REGD_FCC),
+	COUNTRY_CHPLAN_ENT("GE", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("GF", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("GG", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("GH", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("GI", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("GL", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("GM", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("GN", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("GP", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("GQ", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("GR", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("GS", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("GT", RTW_CHPLAN_FCC2_FCC7, RTW_REGD_FCC),
+	COUNTRY_CHPLAN_ENT("GU", RTW_CHPLAN_FCC2_FCC11, RTW_REGD_FCC),
+	COUNTRY_CHPLAN_ENT("GW", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("GY", RTW_CHPLAN_FCC1_NCC3, RTW_REGD_FCC),
+	COUNTRY_CHPLAN_ENT("HK", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("HM", RTW_CHPLAN_WORLD_ACMA1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("HN", RTW_CHPLAN_WORLD_FCC5, RTW_REGD_FCC),
+	COUNTRY_CHPLAN_ENT("HR", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("HT", RTW_CHPLAN_FCC2_FCC11, RTW_REGD_FCC),
+	COUNTRY_CHPLAN_ENT("HU", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("ID", RTW_CHPLAN_ETSI1_ETSI12, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("IE", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("IL", RTW_CHPLAN_WORLD_ETSI6, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("IM", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("IN", RTW_CHPLAN_WORLD_ETSI7, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("IQ", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("IR", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("IS", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("IT", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("JE", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("JM", RTW_CHPLAN_WORLD_ETSI10, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("JO", RTW_CHPLAN_WORLD_ETSI8, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("JP", RTW_CHPLAN_MKK1_MKK1, RTW_REGD_MKK),
+	COUNTRY_CHPLAN_ENT("KE", RTW_CHPLAN_WORLD_ETSI6, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("KG", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("KH", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("KI", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("KN", RTW_CHPLAN_FCC2_FCC11, RTW_REGD_FCC),
+	COUNTRY_CHPLAN_ENT("KR", RTW_CHPLAN_KCC1_KCC2, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("KW", RTW_CHPLAN_WORLD_ETSI6, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("KY", RTW_CHPLAN_FCC2_FCC11, RTW_REGD_FCC),
+	COUNTRY_CHPLAN_ENT("KZ", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("LA", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("LB", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("LC", RTW_CHPLAN_FCC2_FCC11, RTW_REGD_FCC),
+	COUNTRY_CHPLAN_ENT("LI", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("LK", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("LR", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("LS", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("LT", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("LU", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("LV", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("LY", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("MA", RTW_CHPLAN_WORLD_ETSI6, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("MC", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("MD", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("ME", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("MF", RTW_CHPLAN_FCC2_FCC11, RTW_REGD_FCC),
+	COUNTRY_CHPLAN_ENT("MG", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("MH", RTW_CHPLAN_FCC2_FCC11, RTW_REGD_FCC),
+	COUNTRY_CHPLAN_ENT("MK", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("ML", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("MM", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("MN", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("MO", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("MP", RTW_CHPLAN_FCC2_FCC11, RTW_REGD_FCC),
+	COUNTRY_CHPLAN_ENT("MQ", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("MR", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("MS", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("MT", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("MU", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("MV", RTW_CHPLAN_WORLD_ETSI6, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("MW", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("MX", RTW_CHPLAN_FCC2_FCC7, RTW_REGD_FCC),
+	COUNTRY_CHPLAN_ENT("MY", RTW_CHPLAN_WORLD_ETSI20, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("MZ", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("NA", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("NC", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("NE", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("NF", RTW_CHPLAN_WORLD_ACMA1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("NG", RTW_CHPLAN_WORLD_ETSI20, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("NI", RTW_CHPLAN_FCC2_FCC11, RTW_REGD_FCC),
+	COUNTRY_CHPLAN_ENT("NL", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("NO", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("NP", RTW_CHPLAN_WORLD_ETSI6, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("NR", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("NU", RTW_CHPLAN_WORLD_ACMA1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("NZ", RTW_CHPLAN_WORLD_ACMA1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("OM", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("PA", RTW_CHPLAN_FCC2_FCC11, RTW_REGD_FCC),
+	COUNTRY_CHPLAN_ENT("PE", RTW_CHPLAN_FCC2_FCC11, RTW_REGD_FCC),
+	COUNTRY_CHPLAN_ENT("PF", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("PG", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("PH", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("PK", RTW_CHPLAN_WORLD_ETSI10, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("PL", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("PM", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("PR", RTW_CHPLAN_FCC2_FCC11, RTW_REGD_FCC),
+	COUNTRY_CHPLAN_ENT("PT", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("PW", RTW_CHPLAN_FCC2_FCC11, RTW_REGD_FCC),
+	COUNTRY_CHPLAN_ENT("PY", RTW_CHPLAN_FCC2_FCC11, RTW_REGD_FCC),
+	COUNTRY_CHPLAN_ENT("QA", RTW_CHPLAN_WORLD_ETSI10, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("RE", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("RO", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("RS", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("RU", RTW_CHPLAN_WORLD_ETSI14, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("RW", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("SA", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("SB", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("SC", RTW_CHPLAN_FCC2_FCC11, RTW_REGD_FCC),
+	COUNTRY_CHPLAN_ENT("SE", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("SG", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("SH", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("SI", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("SJ", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("SK", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("SL", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("SM", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("SN", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("SO", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("SR", RTW_CHPLAN_FCC2_FCC17, RTW_REGD_FCC),
+	COUNTRY_CHPLAN_ENT("ST", RTW_CHPLAN_FCC2_FCC11, RTW_REGD_FCC),
+	COUNTRY_CHPLAN_ENT("SV", RTW_CHPLAN_WORLD_FCC3, RTW_REGD_FCC),
+	COUNTRY_CHPLAN_ENT("SX", RTW_CHPLAN_FCC2_FCC11, RTW_REGD_FCC),
+	COUNTRY_CHPLAN_ENT("SZ", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("TC", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("TD", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("TF", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("TG", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("TH", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("TJ", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("TK", RTW_CHPLAN_WORLD_ACMA1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("TM", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("TN", RTW_CHPLAN_WORLD_ETSI6, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("TO", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("TR", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("TT", RTW_CHPLAN_ETSI1_ETSI4, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("TW", RTW_CHPLAN_FCC2_FCC11, RTW_REGD_FCC),
+	COUNTRY_CHPLAN_ENT("TZ", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("UA", RTW_CHPLAN_WORLD_ETSI3, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("UG", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("US", RTW_CHPLAN_FCC2_FCC11, RTW_REGD_FCC),
+	COUNTRY_CHPLAN_ENT("UY", RTW_CHPLAN_WORLD_FCC3, RTW_REGD_FCC),
+	COUNTRY_CHPLAN_ENT("UZ", RTW_CHPLAN_WORLD_ETSI6, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("VA", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("VC", RTW_CHPLAN_FCC2_FCC11, RTW_REGD_FCC),
+	COUNTRY_CHPLAN_ENT("VE", RTW_CHPLAN_WORLD_FCC3, RTW_REGD_FCC),
+	COUNTRY_CHPLAN_ENT("VI", RTW_CHPLAN_FCC2_FCC11, RTW_REGD_FCC),
+	COUNTRY_CHPLAN_ENT("VN", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("VU", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("WF", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("WS", RTW_CHPLAN_FCC2_FCC11, RTW_REGD_FCC),
+	COUNTRY_CHPLAN_ENT("YE", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("YT", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("ZA", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("ZM", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
+	COUNTRY_CHPLAN_ENT("ZW", RTW_CHPLAN_WORLD_ETSI1, RTW_REGD_ETSI),
 };
 
-static const struct ieee80211_regdomain rtl_regdom_12_13 = {
-	.n_reg_rules = 2,
-	.alpha2 = "99",
-	.reg_rules = {
-		      RTL819x_2GHZ_CH01_11,
-			  RTL819x_2GHZ_CH12_13,
-		      }
-};
-
-static const struct ieee80211_regdomain rtl_regdom_no_midband = {
-	.n_reg_rules = 3,
-	.alpha2 = "99",
-	.reg_rules = {
-		      RTL819x_2GHZ_CH01_11,
-			  RTL819x_5GHZ_5150_5350,
-			  RTL819x_5GHZ_5725_5850,
-		      }
-};
-
-static const struct ieee80211_regdomain rtl_regdom_60_64 = {
-	.n_reg_rules = 3,
-	.alpha2 = "99",
-	.reg_rules = {
-		      RTL819x_2GHZ_CH01_11,
-			  RTL819x_2GHZ_CH12_13,
-			  RTL819x_5GHZ_5725_5850,
-		      }
-};
-
-static const struct ieee80211_regdomain rtl_regdom_14_60_64 = {
-	.n_reg_rules = 4,
-	.alpha2 = "99",
-	.reg_rules = {
-		      RTL819x_2GHZ_CH01_11,
-			  RTL819x_2GHZ_CH12_13,
-			  RTL819x_2GHZ_CH14,
-			  RTL819x_5GHZ_5725_5850,
-		      }
-};
-
-static const struct ieee80211_regdomain rtl_regdom_12_13_5g_all = {
-	.n_reg_rules = 4,
-	.alpha2 = "99",
-	.reg_rules = {
-			RTL819x_2GHZ_CH01_11,
-			RTL819x_2GHZ_CH12_13,
-			RTL819x_5GHZ_5150_5350,
-			RTL819x_5GHZ_5470_5850,
-		}
-};
-
-static const struct ieee80211_regdomain rtl_regdom_14 = {
-	.n_reg_rules = 3,
-	.alpha2 = "99",
-	.reg_rules = {
-		      RTL819x_2GHZ_CH01_11,
-			  RTL819x_2GHZ_CH12_13,
-			  RTL819x_2GHZ_CH14,
-		      }
-};
-
-static bool _rtl_is_radar_freq(u16 center_freq)
-{
-	return center_freq >= 5260 && center_freq <= 5700;
-}
-
-static void _rtl_reg_apply_beaconing_flags(struct wiphy *wiphy,
+static void rtw_regd_apply_beaconing_flags(struct wiphy *wiphy,
 					   enum nl80211_reg_initiator initiator)
 {
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 7, 0))
 	enum nl80211_band band;
-#else
-	enum ieee80211_band band;
-#endif
 	struct ieee80211_supported_band *sband;
 	const struct ieee80211_reg_rule *reg_rule;
 	struct ieee80211_channel *ch;
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(3, 9, 0))
-	u32 bandwidth = 0;
-	int r;
-#endif
 	unsigned int i;
 
 	for (band = 0; band < NUM_NL80211_BANDS; band++) {
-
 		if (!wiphy->bands[band])
 			continue;
 
 		sband = wiphy->bands[band];
-
 		for (i = 0; i < sband->n_channels; i++) {
 			ch = &sband->channels[i];
-			if (_rtl_is_radar_freq(ch->center_freq) ||
-			    (ch->flags & IEEE80211_CHAN_RADAR))
-				continue;
-			if (initiator == NL80211_REGDOM_SET_BY_COUNTRY_IE) {
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 9, 0))
-				reg_rule = freq_reg_info(wiphy,
-							 ch->center_freq);
-				if (IS_ERR(reg_rule))
-					continue;
-#else
-				r = freq_reg_info(wiphy, ch->center_freq,
-						  bandwidth, &reg_rule);
-				if (r)
-					continue;
-#endif
-				/*
-				 *If 11d had a rule for this channel ensure
-				 *we enable adhoc/beaconing if it allows us to
-				 *use it. Note that we would have disabled it
-				 *by applying our static world regdomain by
-				 *default during init, prior to calling our
-				 *regulatory_hint().
-				 */
 
-				if (!(reg_rule->flags & NL80211_RRF_NO_IBSS))
-					ch->flags &= ~IEEE80211_CHAN_NO_IBSS;
-				if (!(reg_rule->flags &
-				      NL80211_RRF_PASSIVE_SCAN))
-					ch->flags &=
-					    ~IEEE80211_CHAN_PASSIVE_SCAN;
-			} else {
-				if (ch->beacon_found)
-					ch->flags &= ~(IEEE80211_CHAN_NO_IBSS |
-						   IEEE80211_CHAN_PASSIVE_SCAN);
-			}
+			reg_rule = freq_reg_info(wiphy,
+						 MHZ_TO_KHZ(ch->center_freq));
+			if (IS_ERR(reg_rule))
+				continue;
+
+			ch->flags &= ~IEEE80211_CHAN_DISABLED;
+
+			if (!(reg_rule->flags & NL80211_RRF_NO_IR))
+				ch->flags &= ~IEEE80211_CHAN_NO_IR;
 		}
 	}
 }
 
-/* Allows active scan scan on Ch 12 and 13 */
-static void _rtl_reg_apply_active_scan_flags(struct wiphy *wiphy,
-					     enum nl80211_reg_initiator
-					     initiator)
+static void rtw_regd_apply_hw_cap_flags(struct wiphy *wiphy)
 {
+	struct ieee80211_hw *hw = wiphy_to_ieee80211_hw(wiphy);
 	struct ieee80211_supported_band *sband;
 	struct ieee80211_channel *ch;
-	const struct ieee80211_reg_rule *reg_rule;
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(3, 9, 0))
-	u32 bandwidth = 0;
-	int r;
-#endif
+	struct rtw_dev *rtwdev = hw->priv;
+	struct rtw_efuse *efuse = &rtwdev->efuse;
+	int i;
 
-	if (!wiphy->bands[NL80211_BAND_2GHZ])
+	if (efuse->hw_cap.bw & BIT(RTW_CHANNEL_WIDTH_80))
 		return;
+
 	sband = wiphy->bands[NL80211_BAND_2GHZ];
-
-	/*
-	 *If no country IE has been received always enable active scan
-	 *on these channels. This is only done for specific regulatory SKUs
-	 */
-	if (initiator != NL80211_REGDOM_SET_BY_COUNTRY_IE) {
-		ch = &sband->channels[11];	/* CH 12 */
-		if (ch->flags & IEEE80211_CHAN_PASSIVE_SCAN)
-			ch->flags &= ~IEEE80211_CHAN_PASSIVE_SCAN;
-		ch = &sband->channels[12];	/* CH 13 */
-		if (ch->flags & IEEE80211_CHAN_PASSIVE_SCAN)
-			ch->flags &= ~IEEE80211_CHAN_PASSIVE_SCAN;
-		return;
-	}
-
-	/*
-	 *If a country IE has been recieved check its rule for this
-	 *channel first before enabling active scan. The passive scan
-	 *would have been enforced by the initial processing of our
-	 *custom regulatory domain.
-	 */
-
-	ch = &sband->channels[11];	/* CH 12 */
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 9, 0))
-	reg_rule = freq_reg_info(wiphy, ch->center_freq);
-	if (!IS_ERR(reg_rule)) {
-#else
-	r = freq_reg_info(wiphy, ch->center_freq, bandwidth, &reg_rule);
-	if (!r) {
-#endif
-		if (!(reg_rule->flags & NL80211_RRF_PASSIVE_SCAN))
-			if (ch->flags & IEEE80211_CHAN_PASSIVE_SCAN)
-				ch->flags &= ~IEEE80211_CHAN_PASSIVE_SCAN;
-	}
-
-	ch = &sband->channels[12];	/* CH 13 */
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 9, 0))
-	reg_rule = freq_reg_info(wiphy, ch->center_freq);
-	if (!IS_ERR(reg_rule)) {
-#else
-	r = freq_reg_info(wiphy, ch->center_freq, bandwidth, &reg_rule);
-	if (!r) {
-#endif
-		if (!(reg_rule->flags & NL80211_RRF_PASSIVE_SCAN))
-			if (ch->flags & IEEE80211_CHAN_PASSIVE_SCAN)
-				ch->flags &= ~IEEE80211_CHAN_PASSIVE_SCAN;
-	}
-}
-
-/*
- *Always apply Radar/DFS rules on
- *freq range 5260 MHz - 5700 MHz
- */
-static void _rtl_reg_apply_radar_flags(struct wiphy *wiphy)
-{
-	struct ieee80211_supported_band *sband;
-	struct ieee80211_channel *ch;
-	unsigned int i;
-
-	if (!wiphy->bands[NL80211_BAND_5GHZ])
-		return;
-
-	sband = wiphy->bands[NL80211_BAND_5GHZ];
+	if (!sband)
+		goto out_5g;
 
 	for (i = 0; i < sband->n_channels; i++) {
 		ch = &sband->channels[i];
-		if (!_rtl_is_radar_freq(ch->center_freq))
-			continue;
+		ch->flags |= IEEE80211_CHAN_NO_80MHZ;
+	}
 
-		/*
-		 *We always enable radar detection/DFS on this
-		 *frequency range. Additionally we also apply on
-		 *this frequency range:
-		 *- If STA mode does not yet have DFS supports disable
-		 * active scanning
-		 *- If adhoc mode does not support DFS yet then disable
-		 * adhoc in the frequency.
-		 *- If AP mode does not yet support radar detection/DFS
-		 *do not allow AP mode
-		 */
-		if (!(ch->flags & IEEE80211_CHAN_DISABLED))
-			ch->flags |= IEEE80211_CHAN_RADAR |
-			    IEEE80211_CHAN_NO_IBSS |
-			    IEEE80211_CHAN_PASSIVE_SCAN;
+out_5g:
+	sband = wiphy->bands[NL80211_BAND_5GHZ];
+	if (!sband)
+		return;
+
+	for (i = 0; i < sband->n_channels; i++) {
+		ch = &sband->channels[i];
+		ch->flags |= IEEE80211_CHAN_NO_80MHZ;
 	}
 }
 
-static void _rtl_reg_apply_world_flags(struct wiphy *wiphy,
-				       enum nl80211_reg_initiator initiator,
-				       struct rtl_regulatory *reg)
+static void rtw_regd_apply_world_flags(struct wiphy *wiphy,
+				       enum nl80211_reg_initiator initiator)
 {
-	_rtl_reg_apply_beaconing_flags(wiphy, initiator);
-	_rtl_reg_apply_active_scan_flags(wiphy, initiator);
-	return;
+	rtw_regd_apply_beaconing_flags(wiphy, initiator);
 }
 
-static void _rtl_dump_channel_map(struct wiphy *wiphy)
+static struct rtw_regulatory rtw_regd_find_reg_by_name(char *alpha2)
 {
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 7, 0))
-	enum nl80211_band band;
-#else
-	enum ieee80211_band band;
-#endif
-	struct ieee80211_supported_band *sband;
-	struct ieee80211_channel *ch;
 	unsigned int i;
 
-	for (band = 0; band < NUM_NL80211_BANDS; band++) {
-		if (!wiphy->bands[band])
-			continue;
-		sband = wiphy->bands[band];
-		for (i = 0; i < sband->n_channels; i++)
-			ch = &sband->channels[i];
+	for (i = 0; i < ARRAY_SIZE(all_chplan_map); i++) {
+		if (!memcmp(all_chplan_map[i].alpha2, alpha2, 2))
+			return all_chplan_map[i];
 	}
+
+	return rtw_defined_chplan;
 }
 
-static int _rtl_reg_notifier_apply(struct wiphy *wiphy,
-				   struct regulatory_request *request,
-				   struct rtl_regulatory *reg)
+static int rtw_regd_notifier_apply(struct rtw_dev *rtwdev,
+				   struct wiphy *wiphy,
+				   struct regulatory_request *request)
 {
-	/* We always apply this */
-	_rtl_reg_apply_radar_flags(wiphy);
-
-	switch (request->initiator) {
-	case NL80211_REGDOM_SET_BY_DRIVER:
-	case NL80211_REGDOM_SET_BY_CORE:
-	case NL80211_REGDOM_SET_BY_USER:
-		break;
-	case NL80211_REGDOM_SET_BY_COUNTRY_IE:
-		_rtl_reg_apply_world_flags(wiphy, request->initiator, reg);
-		break;
-	}
-
-	_rtl_dump_channel_map(wiphy);
+	if (request->initiator == NL80211_REGDOM_SET_BY_USER)
+		return 0;
+	rtwdev->regd = rtw_regd_find_reg_by_name(request->alpha2);
+	rtw_regd_apply_world_flags(wiphy, request->initiator);
 
 	return 0;
 }
 
-static const struct ieee80211_regdomain *_rtl_regdomain_select(
-						struct rtl_regulatory *reg)
+static int
+rtw_regd_init_wiphy(struct rtw_regulatory *reg, struct wiphy *wiphy,
+		    void (*reg_notifier)(struct wiphy *wiphy,
+					 struct regulatory_request *request))
 {
-	switch (reg->country_code) {
-	case COUNTRY_CODE_FCC:
-		return &rtl_regdom_no_midband;
-	case COUNTRY_CODE_IC:
-		return &rtl_regdom_11;
-	case COUNTRY_CODE_TELEC_NETGEAR:
-		return &rtl_regdom_60_64;
-	case COUNTRY_CODE_ETSI:
-	case COUNTRY_CODE_SPAIN:
-	case COUNTRY_CODE_FRANCE:
-	case COUNTRY_CODE_ISRAEL:
-		return &rtl_regdom_12_13;
-	case COUNTRY_CODE_MKK:
-	case COUNTRY_CODE_MKK1:
-	case COUNTRY_CODE_TELEC:
-	case COUNTRY_CODE_MIC:
-		return &rtl_regdom_14_60_64;
-	case COUNTRY_CODE_GLOBAL_DOMAIN:
-		return &rtl_regdom_14;
-	case COUNTRY_CODE_WORLD_WIDE_13:
-	case COUNTRY_CODE_WORLD_WIDE_13_5G_ALL:
-		return &rtl_regdom_12_13_5g_all;
-	default:
-		return &rtl_regdom_no_midband;
-	}
-}
-
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 9, 0))
-static int _rtl_regd_init_wiphy(struct rtl_regulatory *reg,
-				struct wiphy *wiphy,
-				void (*reg_notifier)(struct wiphy *wiphy,
-						     struct regulatory_request *
-						     request))
-#else
-static int _rtl_regd_init_wiphy(struct rtl_regulatory *reg,
-				struct wiphy *wiphy,
-				int (*reg_notifier)(struct wiphy *wiphy,
-						    struct regulatory_request *
-						    request))
-#endif
-{
-	const struct ieee80211_regdomain *regd;
-
 	wiphy->reg_notifier = reg_notifier;
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 14, 0))
-	wiphy->regulatory_flags |= REGULATORY_CUSTOM_REG;
+	wiphy->regulatory_flags &= ~REGULATORY_CUSTOM_REG;
 	wiphy->regulatory_flags &= ~REGULATORY_STRICT_REG;
 	wiphy->regulatory_flags &= ~REGULATORY_DISABLE_BEACON_HINTS;
-#else
-	wiphy->flags |= WIPHY_FLAG_CUSTOM_REGULATORY;
-	wiphy->flags &= ~WIPHY_FLAG_STRICT_REGULATORY;
-	wiphy->flags &= ~WIPHY_FLAG_DISABLE_BEACON_HINTS;
-#endif
-	regd = _rtl_regdomain_select(reg);
-	wiphy_apply_custom_regulatory(wiphy, regd);
-	_rtl_reg_apply_radar_flags(wiphy);
-	_rtl_reg_apply_world_flags(wiphy, NL80211_REGDOM_SET_BY_DRIVER, reg);
+
+	rtw_regd_apply_hw_cap_flags(wiphy);
+
 	return 0;
 }
 
-static struct country_code_to_enum_rd *_rtl_regd_find_country(u16 countrycode)
-{
-	int i;
-
-	for (i = 0; i < ARRAY_SIZE(allCountries); i++) {
-		if (allCountries[i].countrycode == countrycode)
-			return &allCountries[i];
-	}
-	return NULL;
-}
-
-static u8 channel_plan_to_country_code(u8 channelplan)
-{
-	switch (channelplan) {
-	case 0x20:
-	case 0x21:
-		return COUNTRY_CODE_WORLD_WIDE_13;
-	case 0x22:
-		return COUNTRY_CODE_IC;
-	case 0x25:
-		return COUNTRY_CODE_ETSI;
-	case 0x32:
-		return COUNTRY_CODE_TELEC_NETGEAR;
-	case 0x41:
-		return COUNTRY_CODE_GLOBAL_DOMAIN;
-	case 0x7f:
-		return COUNTRY_CODE_WORLD_WIDE_13_5G_ALL;
-	default:
-		return COUNTRY_CODE_MAX; /*Error*/
-	}
-}
-
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 9, 0))
-int rtl_regd_init(struct ieee80211_hw *hw,
+int rtw_regd_init(struct rtw_dev *rtwdev,
 		  void (*reg_notifier)(struct wiphy *wiphy,
 				       struct regulatory_request *request))
-#else
-int rtl_regd_init(struct ieee80211_hw *hw,
-		  int (*reg_notifier)(struct wiphy *wiphy,
-				      struct regulatory_request *request))
-#endif
 {
-	struct rtl_priv *rtlpriv = rtl_priv(hw);
-	struct wiphy *wiphy = hw->wiphy;
-	struct country_code_to_enum_rd *country = NULL;
+	struct wiphy *wiphy = rtwdev->hw->wiphy;
 
-	if (wiphy == NULL || &rtlpriv->regd == NULL)
+	if (!wiphy)
 		return -EINVAL;
 
-	/* init country_code from efuse channel plan */
-	rtlpriv->regd.country_code =
-		channel_plan_to_country_code(rtlpriv->efuse.channel_plan);
-
-	RT_TRACE(rtlpriv, COMP_REGD, DBG_DMESG,
-		 "rtl: EEPROM regdomain: 0x%0x country code: %d\n",
-		 rtlpriv->efuse.channel_plan, rtlpriv->regd.country_code);
-
-	if (rtlpriv->regd.country_code >= COUNTRY_CODE_MAX) {
-		RT_TRACE(rtlpriv, COMP_REGD, DBG_DMESG,
-			 "rtl: EEPROM indicates invalid country code, world wide 13 should be used\n");
-
-		rtlpriv->regd.country_code = COUNTRY_CODE_WORLD_WIDE_13;
-	}
-
-	country = _rtl_regd_find_country(rtlpriv->regd.country_code);
-
-	if (country) {
-		rtlpriv->regd.alpha2[0] = country->iso_name[0];
-		rtlpriv->regd.alpha2[1] = country->iso_name[1];
-	} else {
-		rtlpriv->regd.alpha2[0] = '0';
-		rtlpriv->regd.alpha2[1] = '0';
-	}
-
-	RT_TRACE(rtlpriv, COMP_REGD, DBG_TRACE,
-		 "rtl: Country alpha2 being used: %c%c\n",
-		  rtlpriv->regd.alpha2[0], rtlpriv->regd.alpha2[1]);
-
-	_rtl_regd_init_wiphy(&rtlpriv->regd, wiphy, reg_notifier);
+	rtwdev->regd = rtw_regd_find_reg_by_name(rtwdev->efuse.country_code);
+	rtw_regd_init_wiphy(&rtwdev->regd, wiphy, reg_notifier);
 
 	return 0;
 }
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 9, 0))
-void rtl_reg_notifier(struct wiphy *wiphy, struct regulatory_request *request)
+void rtw_regd_notifier(struct wiphy *wiphy, struct regulatory_request *request)
 {
 	struct ieee80211_hw *hw = wiphy_to_ieee80211_hw(wiphy);
-	struct rtl_priv *rtlpriv = rtl_priv(hw);
+	struct rtw_dev *rtwdev = hw->priv;
+	struct rtw_hal *hal = &rtwdev->hal;
 
-	RT_TRACE(rtlpriv, COMP_REGD, DBG_LOUD, "\n");
+	rtw_regd_notifier_apply(rtwdev, wiphy, request);
+	rtw_dbg(rtwdev,
+		"get alpha2 %c%c from initiator %d, mapping to chplan 0x%x, txregd %d\n",
+		request->alpha2[0], request->alpha2[1], request->initiator,
+		rtwdev->regd.chplan, rtwdev->regd.txpwr_regd);
 
-	_rtl_reg_notifier_apply(wiphy, request, &rtlpriv->regd);
+	rtw_phy_set_tx_power_level(rtwdev, hal->current_channel);
 }
-#else
-int rtl_reg_notifier(struct wiphy *wiphy, struct regulatory_request *request)
-{
-	struct ieee80211_hw *hw = wiphy_to_ieee80211_hw(wiphy);
-	struct rtl_priv *rtlpriv = rtl_priv(hw);
-
-	RT_TRACE(rtlpriv, COMP_REGD, DBG_LOUD, "\n");
-
-	return _rtl_reg_notifier_apply(wiphy, request, &rtlpriv->regd);
-}
-#endif

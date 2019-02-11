@@ -1,43 +1,46 @@
-/******************************************************************************
- *
- * Copyright(c) 2009-2012  Realtek Corporation.
- *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of version 2 of the GNU General Public License as
- * published by the Free Software Foundation.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
- * more details.
- *
- * The full GNU General Public License is included in this distribution in the
- * file called LICENSE.
- *
- * Contact Information:
- * wlanfae <wlanfae@realtek.com>
- * Realtek Corporation, No. 2, Innovation Road II, Hsinchu Science Park,
- * Hsinchu 300, Taiwan.
- *
- * Larry Finger <Larry.Finger@lwfinger.net>
- *
- *****************************************************************************/
+/* SPDX-License-Identifier: GPL-2.0 */
+/* Copyright(c) 2018  Realtek Corporation.
+ */
 
-#ifndef __RTL_REGD_H__
-#define __RTL_REGD_H__
+#ifndef __RTW_REGD_H_
+#define __RTW_REGD_H_
 
-/* for kernel 3.14 , both value are changed to IEEE80211_CHAN_NO_IR*/
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 14, 0))
 #define IEEE80211_CHAN_NO_IBSS IEEE80211_CHAN_NO_IR
 #define IEEE80211_CHAN_PASSIVE_SCAN IEEE80211_CHAN_NO_IR
-#endif
+enum rtw_chplan_id {
+	RTW_CHPLAN_WORLD_ETSI1 = 0x26,
+	RTW_CHPLAN_MKK1_MKK1 = 0x27,
+	RTW_CHPLAN_IC1_IC2 = 0x2B,
+	RTW_CHPLAN_WORLD_CHILE1 = 0x2D,
+	RTW_CHPLAN_WORLD_FCC3 = 0x30,
+	RTW_CHPLAN_WORLD_FCC5 = 0x32,
+	RTW_CHPLAN_FCC1_FCC7 = 0x34,
+	RTW_CHPLAN_WORLD_ETSI3 = 0x36,
+	RTW_CHPLAN_ETSI1_ETSI12 = 0x3D,
+	RTW_CHPLAN_KCC1_KCC2 = 0x3E,
+	RTW_CHPLAN_ETSI1_ETSI4 = 0x42,
+	RTW_CHPLAN_FCC1_NCC3 = 0x44,
+	RTW_CHPLAN_WORLD_ACMA1 = 0x45,
+	RTW_CHPLAN_WORLD_ETSI6 = 0x47,
+	RTW_CHPLAN_WORLD_ETSI7 = 0x48,
+	RTW_CHPLAN_WORLD_ETSI8 = 0x49,
+	RTW_CHPLAN_WORLD_ETSI10 = 0x51,
+	RTW_CHPLAN_WORLD_ETSI14 = 0x59,
+	RTW_CHPLAN_FCC2_FCC7 = 0x61,
+	RTW_CHPLAN_FCC2_FCC1 = 0x62,
+	RTW_CHPLAN_WORLD_FCC7 = 0x73,
+	RTW_CHPLAN_FCC2_FCC17 = 0x74,
+	RTW_CHPLAN_WORLD_ETSI20 = 0x75,
+	RTW_CHPLAN_FCC2_FCC11 = 0x76,
+	RTW_CHPLAN_REALTEK_DEFINE = 0x7f,
+};
 
 struct country_code_to_enum_rd {
 	u16 countrycode;
 	const char *iso_name;
 };
 
-enum country_code_type_t {
+enum country_code_type {
 	COUNTRY_CODE_FCC = 0,
 	COUNTRY_CODE_IC = 1,
 	COUNTRY_CODE_ETSI = 2,
@@ -53,20 +56,12 @@ enum country_code_type_t {
 	COUNTRY_CODE_TELEC_NETGEAR = 12,
 	COUNTRY_CODE_WORLD_WIDE_13_5G_ALL = 13,
 
-	/*add new channel plan above this line */
+	/* new channel plan above this */
 	COUNTRY_CODE_MAX
 };
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 9, 0))
-int rtl_regd_init(struct ieee80211_hw *hw,
-		  void (*reg_notifier) (struct wiphy *wiphy,
-		  struct regulatory_request *request));
-void rtl_reg_notifier(struct wiphy *wiphy, struct regulatory_request *request);
-#else
-int rtl_regd_init(struct ieee80211_hw *hw,
-		  int (*reg_notifier)(struct wiphy *wiphy,
-				      struct regulatory_request *request));
-int rtl_reg_notifier(struct wiphy *wiphy, struct regulatory_request *request);
-#endif
-
+int rtw_regd_init(struct rtw_dev *rtwdev,
+		  void (*reg_notifier)(struct wiphy *wiphy,
+				       struct regulatory_request *request));
+void rtw_regd_notifier(struct wiphy *wiphy, struct regulatory_request *request);
 #endif

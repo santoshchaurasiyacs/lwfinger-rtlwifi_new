@@ -1,0 +1,24 @@
+diff --git a/core.c b/core.c
+index 2ec763b..8e83788 100644
+--- a/core.c
++++ b/core.c
+@@ -1732,6 +1732,7 @@ static int rtl_op_ampdu_action(struct ieee80211_hw *hw,
+ 	u16 tid = params->tid;
+ 	u16 *ssn = &params->ssn;
+ #endif
++	static int count;
+ 
+ 	switch (action) {
+ 	case IEEE80211_AMPDU_TX_START:
+@@ -1762,7 +1763,10 @@ static int rtl_op_ampdu_action(struct ieee80211_hw *hw,
+ 			 "IEEE80211_AMPDU_RX_STOP:TID:%d\n", tid);
+ 		return rtl_rx_agg_stop(hw, sta, tid);
+ 	default:
+-		pr_err("IEEE80211_AMPDU_ERR for action %d!!!!:\n", action);
++		if (count++ < 3) {
++			pr_err("IEEE80211_AMPDU_ERR for action %d!!!!:\n", action);
++			dump_stack();
++		}
+ 		return -EOPNOTSUPP;
+ 	}
+ 	return 0;
