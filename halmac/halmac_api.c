@@ -230,7 +230,7 @@ halmac_get_chip_info(void *driver_adapter,
 				       driver_adapter, REG_SYS_CFG1 + 1) >>
 			       4;
 	}
-
+	pr_info("chip_id 0x%x, chip_version 0x%x\n", chip_id, chip_version);
 	HALMAC_RT_TRACE(driver_adapter, HALMAC_MSG_INIT, DBG_DMESG,
 			"[TRACE]Chip id : 0x%X\n", chip_id);
 	HALMAC_RT_TRACE(driver_adapter, HALMAC_MSG_INIT, DBG_DMESG,
