@@ -11,6 +11,7 @@
 #include <linux/average.h>
 #include <linux/bitops.h>
 #include <linux/version.h>
+#include <linux/module.h>
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 19, 0)
 #include <linux/bitfield.h>
 #else

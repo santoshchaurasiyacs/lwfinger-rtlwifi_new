@@ -15,7 +15,9 @@
 #ifndef _LINUX_BITFIELD_H
 #define _LINUX_BITFIELD_H
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 13, 0)
 #include <linux/build_bug.h>
+#endif
 #include <asm/byteorder.h>
 
 /*

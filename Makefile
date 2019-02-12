@@ -23,7 +23,7 @@ endif
 EXTRA_CFLAGS += -O2
 
 obj-m	+= rtw88.o
-rtw88-y += main.o \
+rtw88-m += main.o \
 	   mac80211.o \
 	   util.o \
 	   debug.o \

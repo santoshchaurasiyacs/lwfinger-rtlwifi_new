@@ -1085,8 +1085,13 @@ int rtw_core_init(struct rtw_dev *rtwdev)
 
 	INIT_LIST_HEAD(&rtwdev->rsvd_page_list);
 
+#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 15, 0)
+	setup_timer(&rtwdev->tx_report.purge_timer,
+		    rtw_tx_report_purge_timer, (unsigned long)rtwdev);
+#else
 	timer_setup(&rtwdev->tx_report.purge_timer,
 		    rtw_tx_report_purge_timer, 0);
+#endif
 
 	INIT_DELAYED_WORK(&rtwdev->watch_dog_work, rtw_watch_dog_work);
 	INIT_DELAYED_WORK(&rtwdev->lps_work, rtw_lps_work);
