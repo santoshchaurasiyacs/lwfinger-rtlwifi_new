@@ -291,11 +291,7 @@ int rtl_pci_resume(struct device *dev);
 #endif /* CONFIG_PM_SLEEP */
 static inline u8 pci_read8_sync(struct rtl_priv *rtlpriv, u32 addr)
 {
-	u16 temp = readw((u8 __iomem *)rtlpriv->io.pci_mem_start + (u8)(addr & 0xFFFE));
-
-	if (addr & 1)
-		return temp >> 8;
-	return temp & 0xFF;
+	return readb((u8 __iomem *)rtlpriv->io.pci_mem_start + addr);
 }
 
 static inline u16 pci_read16_sync(struct rtl_priv *rtlpriv, u32 addr)
