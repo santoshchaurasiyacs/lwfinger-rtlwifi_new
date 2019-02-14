@@ -148,6 +148,23 @@ endif
 	@echo "Install rtlwifi SUCCESS"
 
 uninstall:
+	@rm $(MODDESTDIR)/*.ko*
+	@rm $(MODDESTDIR)/btcoexist/*.ko*
+	@rm $(MODDESTDIR)/halmac/*.ko*
+	@rm $(MODDESTDIR)/phydm/*.ko*
+	@rm $(MODDESTDIR)/rtl8188ee/*.ko*
+	@rm $(MODDESTDIR)/rtl8192c/*.ko*
+	@rm $(MODDESTDIR)/rtl8192ce/*.ko*
+	@rm $(MODDESTDIR)/rtl8192cu/*.ko*
+	@rm $(MODDESTDIR)/rtl8192de/*.ko*
+	@rm $(MODDESTDIR)/rtl8192ee/*.ko*
+	@rm $(MODDESTDIR)/rtl8192se/*.ko*
+	@rm $(MODDESTDIR)/rtl8723ae/*.ko*
+	@rm $(MODDESTDIR)/rtl8723be/*.ko*
+	@rm $(MODDESTDIR)/rtl8723de/*.ko*
+	@rm $(MODDESTDIR)/rtl8821ae/*.ko*
+	@rm $(MODDESTDIR)/rtl8822be/*.ko*
+	@rm $(MODDESTDIR)/rtl8723com/*.ko*
 ifneq (,$(wildcard ./backup_drivers.tar))
 	@echo Restoring backups
 	@tar xvPf backup_drivers.tar
