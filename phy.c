@@ -5,6 +5,7 @@
 #include <linux/bcd.h>
 
 #include "main.h"
+#include "reg.h"
 #include "fw.h"
 #include "phy.h"
 #include "debug.h"
@@ -595,9 +596,14 @@ bool rtw_phy_write_rf_reg(struct rtw_dev *rtwdev, enum rtw_rf_path rf_path,
 	direct_addr = base_addr[rf_path] + (addr << 2);
 	mask &= RFREG_MASK;
 
+	rtw_write32_mask(rtwdev, REG_RSV_CTRL, BITS_RFC_DIRECT, DISABLE_PI);
+	rtw_write32_mask(rtwdev, REG_WLRF1, BITS_RFC_DIRECT, DISABLE_PI);
 	rtw_write32_mask(rtwdev, direct_addr, mask, data);
 
 	udelay(1);
+
+	rtw_write32_mask(rtwdev, REG_RSV_CTRL, BITS_RFC_DIRECT, ENABLE_PI);
+	rtw_write32_mask(rtwdev, REG_WLRF1, BITS_RFC_DIRECT, ENABLE_PI);
 
 	return true;
 }
@@ -637,7 +643,7 @@ void rtw_phy_setup_phy_cond(struct rtw_dev *rtwdev, u32 pkg)
 
 	hal->phy_cond = cond;
 
-	rtw_dbg(rtwdev, "phy cond=0x%08x\n", *((u32 *)&hal->phy_cond));
+	rtw_dbg(rtwdev, RTW_DBG_PHY, "phy cond=0x%08x\n", *((u32 *)&hal->phy_cond));
 }
 
 static bool check_positive(struct rtw_dev *rtwdev, struct rtw_phy_cond cond)

@@ -229,7 +229,7 @@ static bool rtw8822c_dac_iq_check(struct rtw_dev *rtwdev, u32 value)
 	if ((value >= 0x200 && (0x400 - value) > 0x64) ||
 	    (value < 0x200 && value > 0x64)) {
 		ret = false;
-		rtw_dbg(rtwdev, "[DACK] Error overflow\n");
+		rtw_dbg(rtwdev, RTW_DBG_RFK, "[DACK] Error overflow\n");
 	}
 
 	return ret;
@@ -285,9 +285,11 @@ static void rtw8822c_dac_cal_iq_search(struct rtw_dev *rtwdev,
 		else
 			q_delta = q_max + (0x400 - q_min);
 
-		rtw_dbg(rtwdev, "[DACK] i: min=0x%08x, max=0x%08x, delta=0x%08x\n",
+		rtw_dbg(rtwdev, RTW_DBG_RFK,
+			"[DACK] i: min=0x%08x, max=0x%08x, delta=0x%08x\n",
 			i_min, i_max, i_delta);
-		rtw_dbg(rtwdev, "[DACK] q: min=0x%08x, max=0x%08x, delta=0x%08x\n",
+		rtw_dbg(rtwdev, RTW_DBG_RFK,
+			"[DACK] q: min=0x%08x, max=0x%08x, delta=0x%08x\n",
 			q_min, q_max, q_delta);
 
 		rtw8822c_dac_iq_sort(rtwdev, iv, qv);
@@ -319,8 +321,8 @@ static void rtw8822c_dac_cal_rf_mode(struct rtw_dev *rtwdev,
 	rf_a = rtw_read_rf(rtwdev, RF_PATH_A, 0x0, RFREG_MASK);
 	rf_b = rtw_read_rf(rtwdev, RF_PATH_B, 0x0, RFREG_MASK);
 
-	rtw_dbg(rtwdev, "[DACK] RF path-A=0x%05x\n", rf_a);
-	rtw_dbg(rtwdev, "[DACK] RF path-B=0x%05x\n", rf_b);
+	rtw_dbg(rtwdev, RTW_DBG_RFK, "[DACK] RF path-A=0x%05x\n", rf_a);
+	rtw_dbg(rtwdev, RTW_DBG_RFK, "[DACK] RF path-B=0x%05x\n", rf_b);
 
 	rtw8822c_dac_cal_iq_sample(rtwdev, iv, qv);
 	rtw8822c_dac_cal_iq_search(rtwdev, iv, qv, i_value, q_value);
@@ -350,7 +352,7 @@ static void rtw8822c_dac_cal_adc(struct rtw_dev *rtwdev,
 	u32 path_sel;
 	int i;
 
-	rtw_dbg(rtwdev, "[DACK] ADCK path(%d)\n", path);
+	rtw_dbg(rtwdev, RTW_DBG_RFK, "[DACK] ADCK path(%d)\n", path);
 
 	base_addr = rtw8822c_get_path_base_addr(path);
 	switch (path) {
@@ -376,11 +378,12 @@ static void rtw8822c_dac_cal_adc(struct rtw_dev *rtwdev,
 	rtw_write_rf(rtwdev, RF_PATH_A, 0x0, RFREG_MASK, 0x10000);
 	rtw_write_rf(rtwdev, RF_PATH_B, 0x0, RFREG_MASK, 0x10000);
 	for (i = 0; i < 10; i++) {
-		rtw_dbg(rtwdev, "[DACK] ADCK count=%d\n", i);
+		rtw_dbg(rtwdev, RTW_DBG_RFK, "[DACK] ADCK count=%d\n", i);
 		rtw_write32(rtwdev, 0x1c3c, path_sel + 0x8003);
 		rtw_write32(rtwdev, 0x1c24, 0x00010002);
 		rtw8822c_dac_cal_rf_mode(rtwdev, &ic, &qc);
-		rtw_dbg(rtwdev, "[DACK] before: i=0x%x, q=0x%x\n", ic, qc);
+		rtw_dbg(rtwdev, RTW_DBG_RFK,
+			"[DACK] before: i=0x%x, q=0x%x\n", ic, qc);
 
 		/* compensation value */
 		if (ic != 0x0) {
@@ -393,12 +396,13 @@ static void rtw8822c_dac_cal_adc(struct rtw_dev *rtwdev,
 		}
 		temp = (ic & 0x3ff) | ((qc & 0x3ff) << 10);
 		rtw_write32(rtwdev, base_addr + 0x68, temp);
-		rtw_dbg(rtwdev, "[DACK] ADCK 0x%08x=0x08%x\n",
+		rtw_dbg(rtwdev, RTW_DBG_RFK, "[DACK] ADCK 0x%08x=0x08%x\n",
 			base_addr + 0x68, temp);
 		/* check ADC DC offset */
 		rtw_write32(rtwdev, 0x1c3c, path_sel + 0x8103);
 		rtw8822c_dac_cal_rf_mode(rtwdev, &ic, &qc);
-		rtw_dbg(rtwdev, "[DACK] after:  i=0x%08x, q=0x%08x\n", ic, qc);
+		rtw_dbg(rtwdev, RTW_DBG_RFK,
+			"[DACK] after:  i=0x%08x, q=0x%08x\n", ic, qc);
 		if (ic >= 0x200)
 			ic = 0x400 - ic;
 		if (qc >= 0x200)
@@ -500,8 +504,8 @@ static void rtw8822c_dac_cal_step2(struct rtw_dev *rtwdev,
 	*ic_out = ic;
 	*qc_out = qc;
 
-	rtw_dbg(rtwdev, "[DACK] before i=0x%x, q=0x%x\n", ic_in, qc_in);
-	rtw_dbg(rtwdev, "[DACK] after  i=0x%x, q=0x%x\n", ic, qc);
+	rtw_dbg(rtwdev, RTW_DBG_RFK, "[DACK] before i=0x%x, q=0x%x\n", ic_in, qc_in);
+	rtw_dbg(rtwdev, RTW_DBG_RFK, "[DACK] after  i=0x%x, q=0x%x\n", ic, qc);
 }
 
 static void rtw8822c_dac_cal_step3(struct rtw_dev *rtwdev, u8 path,
@@ -573,7 +577,8 @@ static void rtw8822c_dac_cal_step3(struct rtw_dev *rtwdev, u8 path,
 	*ic_in = ic;
 	*qc_in = qc;
 
-	rtw_dbg(rtwdev, "[DACK] after  DACK i=0x%x, q=0x%x\n", *i_out, *q_out);
+	rtw_dbg(rtwdev, RTW_DBG_RFK,
+		"[DACK] after  DACK i=0x%x, q=0x%x\n", *i_out, *q_out);
 }
 
 static void rtw8822c_dac_cal_step4(struct rtw_dev *rtwdev, u8 path)
@@ -639,10 +644,10 @@ static void rtw8822c_rf_dac_cal(struct rtw_dev *rtwdev)
 
 	rtw8822c_dac_restore_reg(rtwdev, backup, backup_rf);
 
-	rtw_dbg(rtwdev, "[DACK] path A: ic=0x%x, qc=0x%x\n", ic_a, qc_a);
-	rtw_dbg(rtwdev, "[DACK] path B: ic=0x%x, qc=0x%x\n", ic_b, qc_b);
-	rtw_dbg(rtwdev, "[DACK] path A: i=0x%x, q=0x%x\n", i_a, q_a);
-	rtw_dbg(rtwdev, "[DACK] path B: i=0x%x, q=0x%x\n", i_b, q_b);
+	rtw_dbg(rtwdev, RTW_DBG_RFK, "[DACK] path A: ic=0x%x, qc=0x%x\n", ic_a, qc_a);
+	rtw_dbg(rtwdev, RTW_DBG_RFK, "[DACK] path B: ic=0x%x, qc=0x%x\n", ic_b, qc_b);
+	rtw_dbg(rtwdev, RTW_DBG_RFK, "[DACK] path A: i=0x%x, q=0x%x\n", i_a, q_a);
+	rtw_dbg(rtwdev, RTW_DBG_RFK, "[DACK] path B: i=0x%x, q=0x%x\n", i_b, q_b);
 }
 
 static void rtw8822c_rf_x2_check(struct rtw_dev *rtwdev)

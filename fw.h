@@ -71,13 +71,6 @@ enum rtw_fw_rf_type {
 	FW_RF_MAX_TYPE = 0xF,
 };
 
-struct rtw_general_info {
-	u8 rfe_type;
-	u8 rf_type;
-	u8 tx_ant_status;
-	u8 rx_ant_status;
-};
-
 struct rtw_iqk_para {
 	u8 clear;
 	u8 segment_iqk;
@@ -208,10 +201,9 @@ static inline struct rtw_c2h_cmd *get_c2h_from_skb(struct sk_buff *skb)
 }
 
 void rtw_fw_c2h_cmd_handle(struct rtw_dev *rtwdev, struct sk_buff *skb);
-void rtw_fw_send_general_info(struct rtw_dev *rtwdev,
-			      struct rtw_general_info *info);
-void rtw_fw_send_phydm_info(struct rtw_dev *rtwdev,
-			    struct rtw_general_info *info);
+void rtw_fw_send_general_info(struct rtw_dev *rtwdev);
+void rtw_fw_send_phydm_info(struct rtw_dev *rtwdev);
+
 void rtw_fw_do_iqk(struct rtw_dev *rtwdev, struct rtw_iqk_para *para);
 void rtw_fw_set_pwr_mode(struct rtw_dev *rtwdev);
 void rtw_fw_send_rssi_info(struct rtw_dev *rtwdev, struct rtw_sta_info *si);
@@ -224,6 +216,7 @@ int rtw_fw_write_data_rsvd_page(struct rtw_dev *rtwdev, u16 pg_addr,
 void rtw_reset_rsvd_page(struct rtw_dev *rtwdev);
 int rtw_fw_download_rsvd_page(struct rtw_dev *rtwdev,
 			      struct ieee80211_vif *vif);
+void rtw_send_rsvd_page_h2c(struct rtw_dev *rtwdev);
 int rtw_dump_drv_rsvd_page(struct rtw_dev *rtwdev,
 			   u32 offset, u32 size, u32 *buf);
 #endif

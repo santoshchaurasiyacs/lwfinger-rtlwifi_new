@@ -14,6 +14,9 @@
 #define BIT_CPU_CLK_EN		BIT(14)
 
 #define REG_RSV_CTRL		0x001C
+#define DISABLE_PI		0x3
+#define ENABLE_PI		0x2
+#define BITS_RFC_DIRECT		(BIT(31) | BIT(30))
 #define BIT_WLMCU_IOIF		BIT(0)
 #define REG_RF_CTRL		0x001F
 #define BIT_RF_SDM_RSTB		BIT(2)
@@ -66,6 +69,7 @@
 				 BIT_CHECK_SUM_OK)
 #define FW_READY_MASK		0xffff
 
+#define REG_WLRF1		0x00EC
 #define REG_SYS_CFG1		0x00F0
 #define	BIT_RTL_ID		BIT(23)
 #define BIT_RF_TYPE_ID		BIT(27)
@@ -177,6 +181,7 @@
 #define REG_H2C_INFO		0x0254
 
 #define REG_FWHW_TXQ_CTRL	0x0420
+#define BIT_EN_BCNQ_DL		BIT(22)
 #define BIT_EN_WR_FREE_TAIL	BIT(20)
 #define REG_BCNQ_BDNY_V1	0x0424
 #define REG_LIFETIME_EN		0x0426

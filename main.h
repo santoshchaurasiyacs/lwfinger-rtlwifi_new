@@ -33,6 +33,7 @@
 #define RTW_RF_PATH_MAX			4
 #define HW_FEATURE_LEN			13
 
+extern unsigned int rtw_debug_mask;
 extern const struct ieee80211_ops rtw_ops;
 extern struct rtw_chip_info rtw8822b_hw_spec;
 extern struct rtw_chip_info rtw8822c_hw_spec;
@@ -888,8 +889,6 @@ struct rtw_efuse {
 	u8 apa_type;
 	bool ext_pa_2g;
 	bool ext_pa_5g;
-	u8 x3d7;
-	u8 x3d8;
 
 	bool btcoex;
 	/* bt share antenna with wifi */
@@ -1098,7 +1097,11 @@ void rtw_restore_reg(struct rtw_dev *rtwdev,
 void rtw_set_channel(struct rtw_dev *rtwdev);
 void rtw_vif_port_config(struct rtw_dev *rtwdev, struct rtw_vif *rtwvif,
 			 u32 config);
+#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 14, 0)
+void rtw_tx_report_purge_timer(void *ctx);
+#else
 void rtw_tx_report_purge_timer(struct timer_list *t);
+#endif
 void rtw_update_sta_info(struct rtw_dev *rtwdev, struct rtw_sta_info *si);
 int rtw_core_start(struct rtw_dev *rtwdev);
 void rtw_core_stop(struct rtw_dev *rtwdev);

@@ -17,6 +17,8 @@
 #define RTK_PCI_RX_BUF_SIZE	(8192 + 24)
 
 #define RTK_PCI_CTRL		0x300
+#define BIT_RST_TRXDMA_INTF	BIT(20)
+#define BIT_RX_TAG_EN		BIT(15)
 #define REG_DBI_WDATA_V1	0x03E8
 #define REG_DBI_FLAG_V1		0x03F0
 #define REG_MDIO_V1		0x03F4
@@ -53,6 +55,10 @@
 #define RTK_PCI_RXBD_IDX_MPDUQ	0x3B4
 
 #define RTK_PCI_TXBD_RWPTR_CLR	0x39C
+#define RTK_PCI_TXBD_H2CQ_CSR	0x1330
+
+#define BIT_CLR_H2CQ_HOST_IDX	BIT(16)
+#define BIT_CLR_H2CQ_HW_IDX	BIT(8)
 
 #define RTK_PCI_HIMR0		0x0B0
 #define RTK_PCI_HISR0		0x0B4
@@ -171,6 +177,8 @@ struct rtw_pci_rx_ring {
 	struct sk_buff *buf[RTK_MAX_RX_DESC_NUM];
 };
 
+#define RX_TAG_MAX	8192
+
 struct rtw_pci {
 	struct pci_dev *pdev;
 
@@ -179,13 +187,12 @@ struct rtw_pci {
 	u32 irq_mask[4];
 	bool irq_enabled;
 
+	u16 rx_tag;
 	struct rtw_pci_tx_ring tx_rings[RTK_MAX_TX_QUEUE_NUM];
 	struct rtw_pci_rx_ring rx_rings[RTK_MAX_RX_QUEUE_NUM];
 
 	void __iomem *mmap;
 };
-
-extern struct rtw_hci_ops rtw_pci_ops;
 
 static u32 max_num_of_tx_queue(u8 queue)
 {

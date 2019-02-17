@@ -319,19 +319,23 @@ static ssize_t rtw_debugfs_set_write_reg(struct file *filp,
 
 	switch (len) {
 	case 1:
-		rtw_dbg(rtwdev, "reg write8 0x%03x: 0x%08x\n", addr, val);
+		rtw_dbg(rtwdev, RTW_DBG_DEBUGFS,
+			"reg write8 0x%03x: 0x%08x\n", addr, val);
 		rtw_write8(rtwdev, addr, (u8)val);
 		break;
 	case 2:
-		rtw_dbg(rtwdev, "reg write16 0x%03x: 0x%08x\n", addr, val);
+		rtw_dbg(rtwdev, RTW_DBG_DEBUGFS,
+			"reg write16 0x%03x: 0x%08x\n", addr, val);
 		rtw_write16(rtwdev, addr, (u16)val);
 		break;
 	case 4:
-		rtw_dbg(rtwdev, "reg write32 0x%03x: 0x%08x\n", addr, val);
+		rtw_dbg(rtwdev, RTW_DBG_DEBUGFS,
+			"reg write32 0x%03x: 0x%08x\n", addr, val);
 		rtw_write32(rtwdev, addr, (u32)val);
 		break;
 	default:
-		rtw_dbg(rtwdev, "error write length = %d\n", len);
+		rtw_dbg(rtwdev, RTW_DBG_DEBUGFS,
+			"error write length = %d\n", len);
 		break;
 	}
 
@@ -358,7 +362,8 @@ static ssize_t rtw_debugfs_set_rf_write(struct file *filp,
 	}
 
 	rtw_write_rf(rtwdev, path, addr, mask, val);
-	rtw_dbg(rtwdev, "write_rf path:%d addr:0x%08x mask:0x%08x, val:0x%08x\n",
+	rtw_dbg(rtwdev, RTW_DBG_DEBUGFS,
+		"write_rf path:%d addr:0x%08x mask:0x%08x, val:0x%08x\n",
 		path, addr, mask, val);
 
 	return count;
@@ -611,7 +616,8 @@ void rtw_debugfs_init(struct rtw_dev *rtwdev)
 
 #ifdef CONFIG_RTW88_DEBUG
 
-void __rtw_dbg(struct rtw_dev *rtwdev, const char *fmt, ...)
+void __rtw_dbg(struct rtw_dev *rtwdev, enum rtw_debug_mask mask,
+	       const char *fmt, ...)
 {
 	struct va_format vaf = {
 		.fmt = fmt,
@@ -621,8 +627,8 @@ void __rtw_dbg(struct rtw_dev *rtwdev, const char *fmt, ...)
 	va_start(args, fmt);
 	vaf.va = &args;
 
-	if (net_ratelimit())
-		dev_dbg(rtwdev->dev, "%pV", &vaf);
+	if (rtw_debug_mask & mask)
+		dev_printk(KERN_DEBUG, rtwdev->dev, "%pV", &vaf);
 
 	va_end(args);
 }

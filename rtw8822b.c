@@ -929,7 +929,7 @@ static void rtw8822b_set_antenna(struct rtw_dev *rtwdev, u8 antenna_tx,
 {
 	struct rtw_hal *hal = &rtwdev->hal;
 
-	rtw_dbg(rtwdev, "config RF path, tx=0x%x rx=0x%x\n",
+	rtw_dbg(rtwdev, RTW_DBG_PHY, "config RF path, tx=0x%x rx=0x%x\n",
 		antenna_tx, antenna_rx);
 
 	if (!rtw8822b_check_rf_path(antenna_tx)) {
@@ -998,7 +998,8 @@ static void rtw8822b_do_iqk(struct rtw_dev *rtwdev)
 
 	reload = !!rtw_read32_mask(rtwdev, REG_IQKFAILMSK, BIT(16));
 	iqk_fail_mask = rtw_read32_mask(rtwdev, REG_IQKFAILMSK, GENMASK(0, 7));
-	rtw_dbg(rtwdev, "iqk counter=%d reload=%d do_iqk_cnt=%d n_iqk_fail(mask)=0x%02x\n",
+	rtw_dbg(rtwdev, RTW_DBG_PHY,
+		"iqk counter=%d reload=%d do_iqk_cnt=%d n_iqk_fail(mask)=0x%02x\n",
 		counter, reload, ++do_iqk_cnt, iqk_fail_mask);
 }
 

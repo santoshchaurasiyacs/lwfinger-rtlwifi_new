@@ -215,7 +215,8 @@ static void rtw_ops_configure_filter(struct ieee80211_hw *hw,
 			rtwdev->hal.rcr |= BIT_CBSSID_BCN;
 	}
 
-	rtw_dbg(rtwdev, "config rx filter, changed=0x%08x, new=0x%08x, rcr=0x%08x\n",
+	rtw_dbg(rtwdev, RTW_DBG_RX,
+		"config rx filter, changed=0x%08x, new=0x%08x, rcr=0x%08x\n",
 		changed_flags, *new_flags, rtwdev->hal.rcr);
 
 	rtw_write32(rtwdev, REG_RCR, rtwdev->hal.rcr);
@@ -247,6 +248,7 @@ static void rtw_ops_bss_info_changed(struct ieee80211_hw *hw,
 			rtw_add_rsvd_page(rtwdev, RSVD_QOS_NULL, true);
 			rtw_add_rsvd_page(rtwdev, RSVD_NULL, true);
 			rtw_fw_download_rsvd_page(rtwdev, vif);
+			rtw_send_rsvd_page_h2c(rtwdev);
 		} else {
 			net_type = RTW_NET_NO_LINK;
 			rtwvif->aid = 0;

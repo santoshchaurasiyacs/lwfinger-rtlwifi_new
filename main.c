@@ -14,8 +14,14 @@
 #include "debug.h"
 
 static bool rtw_fw_support_lps;
+unsigned int rtw_debug_mask;
+EXPORT_SYMBOL(rtw_debug_mask);
+
 module_param_named(support_lps, rtw_fw_support_lps, bool, 0644);
+module_param_named(debug_mask, rtw_debug_mask, uint, 0644);
+
 MODULE_PARM_DESC(support_lps, "Set Y to enable LPS support");
+MODULE_PARM_DESC(debug_mask, "Debugging mask");
 
 static struct ieee80211_channel rtw_channeltable_2g[] = {
 	{.center_freq = 2412, .hw_value = 1,},
@@ -627,8 +633,7 @@ static int rtw_power_on(struct rtw_dev *rtwdev)
 		goto err;
 	}
 
-	ret = rtw_download_firmware(rtwdev, fw->firmware->data,
-				    fw->firmware->size);
+	ret = rtw_download_firmware(rtwdev, fw);
 	if (ret) {
 		rtw_err(rtwdev, "failed to download firmware\n");
 		goto err_off;
@@ -665,8 +670,6 @@ int rtw_core_start(struct rtw_dev *rtwdev)
 	ret = rtw_power_on(rtwdev);
 	if (ret)
 		return ret;
-
-	rtwdev->h2c.last_box_num = 0;
 
 	rtw_sec_enable_sec_engine(rtwdev);
 
@@ -915,8 +918,7 @@ static int rtw_chip_efuse_enable(struct rtw_dev *rtwdev)
 		goto err;
 	}
 
-	ret = rtw_download_firmware(rtwdev, fw->firmware->data,
-				    fw->firmware->size);
+	ret = rtw_download_firmware(rtwdev, fw);
 	if (ret) {
 		rtw_err(rtwdev, "failed to download firmware\n");
 		goto err_off;
@@ -934,12 +936,10 @@ err:
 static int rtw_dump_hw_feature(struct rtw_dev *rtwdev)
 {
 	struct rtw_efuse *efuse = &rtwdev->efuse;
-	struct efuse_hw_cap *hw_cap;
 	u8 hw_feature[HW_FEATURE_LEN];
 	u8 id;
+	u8 bw;
 	int i;
-
-	BUILD_BUG_ON(sizeof(*hw_cap) != HW_FEATURE_LEN);
 
 	id = rtw_read8(rtwdev, REG_C2HEVT);
 	if (id != C2H_HW_FEATURE_REPORT) {
@@ -952,20 +952,20 @@ static int rtw_dump_hw_feature(struct rtw_dev *rtwdev)
 
 	rtw_write8(rtwdev, REG_C2HEVT, 0);
 
-	hw_cap = (struct efuse_hw_cap *)hw_feature;
-
-	efuse->hw_cap.bw = hw_bw_cap_to_bitamp(hw_cap->bw);
-	efuse->hw_cap.hci = hw_cap->hci;
-	efuse->hw_cap.nss = hw_cap->nss;
-	efuse->hw_cap.ptcl = hw_cap->ptcl;
-	efuse->hw_cap.ant_num = hw_cap->ant_num;
+	bw = GET_EFUSE_HW_CAP_BW(hw_feature);
+	efuse->hw_cap.bw = hw_bw_cap_to_bitamp(bw);
+	efuse->hw_cap.hci = GET_EFUSE_HW_CAP_HCI(hw_feature);
+	efuse->hw_cap.nss = GET_EFUSE_HW_CAP_NSS(hw_feature);
+	efuse->hw_cap.ptcl = GET_EFUSE_HW_CAP_PTCL(hw_feature);
+	efuse->hw_cap.ant_num = GET_EFUSE_HW_CAP_ANT_NUM(hw_feature);
 
 	rtw_hw_config_rf_ant_num(rtwdev, efuse->hw_cap.ant_num);
 
 	if (efuse->hw_cap.nss == EFUSE_HW_CAP_IGNORE)
 		efuse->hw_cap.nss = rtwdev->hal.rf_path_num;
 
-	rtw_dbg(rtwdev, "hw cap: hci=0x%02x, bw=0x%02x, ptcl=0x%02x, ant_num=%d, nss=%d\n",
+	rtw_dbg(rtwdev, RTW_DBG_EFUSE,
+		"hw cap: hci=0x%02x, bw=0x%02x, ptcl=0x%02x, ant_num=%d, nss=%d\n",
 		efuse->hw_cap.hci, efuse->hw_cap.bw, efuse->hw_cap.ptcl,
 		efuse->hw_cap.ant_num, efuse->hw_cap.nss);
 
@@ -1085,9 +1085,10 @@ int rtw_core_init(struct rtw_dev *rtwdev)
 
 	INIT_LIST_HEAD(&rtwdev->rsvd_page_list);
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 15, 0)
+#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 14, 0)
 	setup_timer(&rtwdev->tx_report.purge_timer,
-		    rtw_tx_report_purge_timer, (unsigned long)rtwdev);
+		    (void *)(long unsigned int)rtw_tx_report_purge_timer,
+		    (long unsigned int)rtwdev);
 #else
 	timer_setup(&rtwdev->tx_report.purge_timer,
 		    rtw_tx_report_purge_timer, 0);

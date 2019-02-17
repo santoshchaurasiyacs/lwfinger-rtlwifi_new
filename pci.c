@@ -239,6 +239,7 @@ static int rtw_pci_init_rx_ring(struct rtw_dev *rtwdev,
 		ret = rtw_pci_reset_rx_desc(rtwdev, skb, rx_ring, i, desc_size);
 		if (ret) {
 			allocated = i;
+			dev_kfree_skb_any(skb);
 			goto err_out;
 		}
 	}
@@ -252,7 +253,6 @@ static int rtw_pci_init_rx_ring(struct rtw_dev *rtwdev,
 	return 0;
 
 err_out:
-	dev_kfree_skb_any(skb);
 	for (i = 0; i < allocated; i++) {
 		skb = rx_ring->buf[i];
 		if (!skb)
@@ -418,6 +418,10 @@ static void rtw_pci_reset_buf_desc(struct rtw_dev *rtwdev)
 
 	/* reset read/write point */
 	rtw_write32(rtwdev, RTK_PCI_TXBD_RWPTR_CLR, 0xffffffff);
+
+	/* rest H2C Queue index */
+	rtw_write32_set(rtwdev, RTK_PCI_TXBD_H2CQ_CSR, BIT_CLR_H2CQ_HOST_IDX);
+	rtw_write32_set(rtwdev, RTK_PCI_TXBD_H2CQ_CSR, BIT_CLR_H2CQ_HW_IDX);
 }
 
 static void rtw_pci_reset_trx_ring(struct rtw_dev *rtwdev)
@@ -450,10 +454,20 @@ static int rtw_pci_setup(struct rtw_dev *rtwdev)
 	return 0;
 }
 
+static void rtw_pci_dma_reset(struct rtw_dev *rtwdev, struct rtw_pci *rtwpci)
+{
+	/* reset dma and rx tag */
+	rtw_write32_set(rtwdev, RTK_PCI_CTRL,
+			BIT_RST_TRXDMA_INTF | BIT_RX_TAG_EN);
+	rtwpci->rx_tag = 0;
+}
+
 static int rtw_pci_start(struct rtw_dev *rtwdev)
 {
 	struct rtw_pci *rtwpci = (struct rtw_pci *)rtwdev->priv;
 	unsigned long flags;
+
+	rtw_pci_dma_reset(rtwdev, rtwpci);
 
 	spin_lock_irqsave(&rtwpci->irq_lock, flags);
 	rtw_pci_enable_interrupt(rtwdev, rtwpci);
@@ -517,22 +531,21 @@ static void rtw_pci_dma_check(struct rtw_dev *rtwdev,
 			      struct rtw_pci_rx_ring *rx_ring,
 			      u32 idx)
 {
+	struct rtw_pci *rtwpci = (struct rtw_pci *)rtwdev->priv;
 	struct rtw_chip_info *chip = rtwdev->chip;
 	struct rtw_pci_rx_buffer_desc *buf_desc;
 	u32 desc_sz = chip->rx_buf_desc_sz;
 	u16 total_pkt_size;
-	int i;
 
 	buf_desc = (struct rtw_pci_rx_buffer_desc *)(rx_ring->r.head +
 						     idx * desc_sz);
-	for (i = 0; i < 20; i++) {
-		total_pkt_size = le16_to_cpu(buf_desc->total_pkt_size);
-		if (total_pkt_size)
-			return;
-	}
+	total_pkt_size = le16_to_cpu(buf_desc->total_pkt_size);
 
-	if (i >= 20)
-		rtw_warn(rtwdev, "pci bus timeout, drop packet\n");
+	/* rx tag mismatch, throw a warning */
+	if (total_pkt_size != rtwpci->rx_tag)
+		rtw_warn(rtwdev, "pci bus timeout, check dma status\n");
+
+	rtwpci->rx_tag = (rtwpci->rx_tag + 1) % RX_TAG_MAX;
 }
 
 static int rtw_pci_xmit(struct rtw_dev *rtwdev,
@@ -723,6 +736,13 @@ static void rtw_pci_tx_isr(struct rtw_dev *rtwdev, struct rtw_pci *rtwpci,
 			rtw_tx_report_enqueue(rtwdev, skb, tx_data->sn);
 			continue;
 		}
+
+		/* always ACK for others, then they won't be marked as drop */
+		if (info->flags & IEEE80211_TX_CTL_NO_ACK)
+			info->flags |= IEEE80211_TX_STAT_NOACK_TRANSMITTED;
+		else
+			info->flags |= IEEE80211_TX_STAT_ACK;
+
 		ieee80211_tx_info_clear_status(info);
 		ieee80211_tx_status_irqsafe(hw, skb);
 	}
@@ -788,7 +808,11 @@ static void rtw_pci_rx_isr(struct rtw_dev *rtwdev, struct rtw_pci *rtwpci,
 			if (!new) {
 				new = skb;
 			} else {
+#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 13, 0)
+				memcpy(__skb_put(new, skb->len), skb->data, skb->len);
+#else
 				skb_put_data(new, skb->data, skb->len);
+#endif
 				dev_kfree_skb_any(skb);
 			}
 			/* TODO: merge into rx.c */
@@ -991,28 +1015,6 @@ static void rtw_pci_phy_cfg(struct rtw_dev *rtwdev)
 	}
 }
 
-static void rtw_pci_parse_configuration(struct rtw_dev *rtwdev,
-					struct pci_dev *pdev)
-{
-	u16 link_control;
-	u8 config;
-
-	/* Disable Clk Request */
-	pci_write_config_byte(pdev, 0x81, 0);
-	/* leave D3 mode */
-	pci_write_config_byte(pdev, 0x44, 0);
-	pci_write_config_byte(pdev, 0x04, 0x06);
-	pci_write_config_byte(pdev, 0x04, 0x07);
-
-	pcie_capability_read_word(pdev, PCI_EXP_LNKCTL, &link_control);
-
-	pci_read_config_byte(pdev, 0x98, &config);
-	config |= BIT(4);
-	pci_write_config_byte(pdev, 0x98, config);
-
-	pci_write_config_byte(pdev, 0x70f, 0x17);
-}
-
 static int rtw_pci_claim(struct rtw_dev *rtwdev, struct pci_dev *pdev)
 {
 	int ret;
@@ -1057,7 +1059,6 @@ static int rtw_pci_setup_resource(struct rtw_dev *rtwdev, struct pci_dev *pdev)
 		goto err_io_unmap;
 	}
 
-	rtw_pci_parse_configuration(rtwdev, pdev);
 	rtw_pci_phy_cfg(rtwdev);
 
 	return 0;
@@ -1074,6 +1075,22 @@ static void rtw_pci_destroy(struct rtw_dev *rtwdev, struct pci_dev *pdev)
 	rtw_pci_deinit(rtwdev);
 	rtw_pci_io_unmapping(rtwdev, pdev);
 }
+
+static struct rtw_hci_ops rtw_pci_ops = {
+	.tx = rtw_pci_tx,
+	.setup = rtw_pci_setup,
+	.start = rtw_pci_start,
+	.stop = rtw_pci_stop,
+
+	.read8 = rtw_pci_read8,
+	.read16 = rtw_pci_read16,
+	.read32 = rtw_pci_read32,
+	.write8 = rtw_pci_write8,
+	.write16 = rtw_pci_write16,
+	.write32 = rtw_pci_write32,
+	.write_data_rsvd_page = rtw_pci_write_data_rsvd_page,
+	.write_data_h2c = rtw_pci_write_data_h2c,
+};
 
 static int rtw_pci_probe(struct pci_dev *pdev,
 			 const struct pci_device_id *id)
@@ -1101,7 +1118,7 @@ static int rtw_pci_probe(struct pci_dev *pdev,
 	if (ret)
 		goto err_release_hw;
 
-	rtw_dbg(rtwdev,
+	rtw_dbg(rtwdev, RTW_DBG_PCI,
 		"rtw88 pci probe: vendor=0x%4.04X device=0x%4.04X rev=%d\n",
 		pdev->vendor, pdev->device, pdev->revision);
 
@@ -1183,6 +1200,7 @@ static const struct pci_device_id rtw_pci_id_table[] = {
 #endif
 	{},
 };
+MODULE_DEVICE_TABLE(pci, rtw_pci_id_table);
 
 static struct pci_driver rtw_pci_driver = {
 	.name = "rtw_pci",
@@ -1190,25 +1208,6 @@ static struct pci_driver rtw_pci_driver = {
 	.probe = rtw_pci_probe,
 	.remove = rtw_pci_remove,
 };
-
-struct rtw_hci_ops rtw_pci_ops = {
-	.tx = rtw_pci_tx,
-	.setup = rtw_pci_setup,
-	.start = rtw_pci_start,
-	.stop = rtw_pci_stop,
-
-	.read8 = rtw_pci_read8,
-	.read16 = rtw_pci_read16,
-	.read32 = rtw_pci_read32,
-	.write8 = rtw_pci_write8,
-	.write16 = rtw_pci_write16,
-	.write32 = rtw_pci_write32,
-	.write_data_rsvd_page = rtw_pci_write_data_rsvd_page,
-	.write_data_h2c = rtw_pci_write_data_h2c,
-};
-
-MODULE_DEVICE_TABLE(pci, rtw_pci_id_table);
-
 module_pci_driver(rtw_pci_driver);
 
 MODULE_AUTHOR("Realtek Corporation");

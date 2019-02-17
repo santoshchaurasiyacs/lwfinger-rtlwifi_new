@@ -560,9 +560,10 @@ download_firmware_to_mem(struct rtw_dev *rtwdev, const u8 *data,
 	return 0;
 }
 
-static void update_firmware_info(struct rtw_dev *rtwdev, const u8 *data)
+static void update_firmware_info(struct rtw_dev *rtwdev,
+				 struct rtw_fw_state *fw)
 {
-	struct rtw_fw_state *fw = &rtwdev->fw;
+	const u8 *data = fw->firmware->data;
 
 	fw->h2c_version =
 		le16_to_cpu(*((__le16 *)(data + FW_HDR_H2C_FMT_VER)));
@@ -571,10 +572,10 @@ static void update_firmware_info(struct rtw_dev *rtwdev, const u8 *data)
 	fw->sub_version = *(data + FW_HDR_SUBVERSION);
 	fw->sub_index = *(data + FW_HDR_SUBINDEX);
 
-	rtw_dbg(rtwdev, "fw h2c version: %x\n", fw->h2c_version);
-	rtw_dbg(rtwdev, "fw version:     %x\n", fw->version);
-	rtw_dbg(rtwdev, "fw sub version: %x\n", fw->sub_version);
-	rtw_dbg(rtwdev, "fw sub index:   %x\n", fw->sub_index);
+	rtw_dbg(rtwdev, RTW_DBG_FW, "fw h2c version: %x\n", fw->h2c_version);
+	rtw_dbg(rtwdev, RTW_DBG_FW, "fw version:     %x\n", fw->version);
+	rtw_dbg(rtwdev, RTW_DBG_FW, "fw sub version: %x\n", fw->sub_version);
+	rtw_dbg(rtwdev, RTW_DBG_FW, "fw sub index:   %x\n", fw->sub_index);
 }
 
 static int
@@ -582,7 +583,6 @@ start_download_firmware(struct rtw_dev *rtwdev, const u8 *data, u32 size)
 {
 	const u8 *cur_fw;
 	u16 val;
-	u16 fw_ctrl;
 	u32 imem_size;
 	u32 dmem_size;
 	u32 emem_size;
@@ -625,16 +625,6 @@ start_download_firmware(struct rtw_dev *rtwdev, const u8 *data, u32 size)
 			return ret;
 	}
 
-	rtw_write32(rtwdev, REG_TXDMA_STATUS, BTI_PAGE_OVF);
-
-	/* Check IMEM & DMEM checksum is OK or not */
-	fw_ctrl = rtw_read16(rtwdev, REG_MCUFW_CTRL);
-	if ((fw_ctrl & BIT_CHECK_SUM_OK) != BIT_CHECK_SUM_OK)
-		return -EBUSY;
-
-	fw_ctrl = (fw_ctrl | BIT_FW_DW_RDY) & ~BIT_MCUFWDL_EN;
-	rtw_write16(rtwdev, REG_MCUFW_CTRL, fw_ctrl);
-
 	return 0;
 }
 
@@ -652,9 +642,26 @@ static int download_firmware_validate(struct rtw_dev *rtwdev)
 	return 0;
 }
 
-int rtw_download_firmware(struct rtw_dev *rtwdev, const u8 *data, u32 size)
+static void download_firmware_end_flow(struct rtw_dev *rtwdev)
+{
+	u16 fw_ctrl;
+
+	rtw_write32(rtwdev, REG_TXDMA_STATUS, BTI_PAGE_OVF);
+
+	/* Check IMEM & DMEM checksum is OK or not */
+	fw_ctrl = rtw_read16(rtwdev, REG_MCUFW_CTRL);
+	if ((fw_ctrl & BIT_CHECK_SUM_OK) != BIT_CHECK_SUM_OK)
+		return;
+
+	fw_ctrl = (fw_ctrl | BIT_FW_DW_RDY) & ~BIT_MCUFWDL_EN;
+	rtw_write16(rtwdev, REG_MCUFW_CTRL, fw_ctrl);
+}
+
+int rtw_download_firmware(struct rtw_dev *rtwdev, struct rtw_fw_state *fw)
 {
 	struct rtw_backup_info bckp[DLFW_RESTORE_REG_NUM];
+	const u8 *data = fw->firmware->data;
+	u32 size = fw->firmware->size;
 	u32 ltecoex_bckp;
 	int ret;
 
@@ -675,6 +682,8 @@ int rtw_download_firmware(struct rtw_dev *rtwdev, const u8 *data, u32 size)
 
 	download_firmware_reg_restore(rtwdev, bckp, DLFW_RESTORE_REG_NUM);
 
+	download_firmware_end_flow(rtwdev);
+
 	wlan_cpu_enable(rtwdev, true);
 
 	if (!ltecoex_reg_write(rtwdev, 0x38, ltecoex_bckp))
@@ -684,7 +693,16 @@ int rtw_download_firmware(struct rtw_dev *rtwdev, const u8 *data, u32 size)
 	if (ret)
 		goto dlfw_fail;
 
-	update_firmware_info(rtwdev, data);
+	update_firmware_info(rtwdev, fw);
+
+	/* reset desc and index */
+	rtw_hci_setup(rtwdev);
+
+	rtwdev->h2c.last_box_num = 0;
+	rtwdev->h2c.seq = 0;
+
+	rtw_fw_send_general_info(rtwdev);
+	rtw_fw_send_phydm_info(rtwdev);
 
 	rtw_flag_set(rtwdev, RTW_FLAG_FW_RUNNING);
 
@@ -929,8 +947,6 @@ static int rtw_drv_info_cfg(struct rtw_dev *rtwdev)
 int rtw_mac_init(struct rtw_dev *rtwdev)
 {
 	struct rtw_chip_info *chip = rtwdev->chip;
-	struct rtw_efuse *efuse = &rtwdev->efuse;
-	struct rtw_general_info info;
 	int ret;
 
 	ret = rtw_init_trx_cfg(rtwdev);
@@ -944,16 +960,6 @@ int rtw_mac_init(struct rtw_dev *rtwdev)
 	ret = rtw_drv_info_cfg(rtwdev);
 	if (ret)
 		return ret;
-
-	efuse = &rtwdev->efuse;
-	info.rfe_type = efuse->rfe_option;
-	if (rtwdev->hal.rf_type == RF_1T1R)
-		info.rf_type = FW_RF_1T1R;
-	else if (rtwdev->hal.rf_type == RF_2T2R)
-		info.rf_type = FW_RF_2T2R;
-
-	rtw_fw_send_general_info(rtwdev, &info);
-	rtw_fw_send_phydm_info(rtwdev, &info);
 
 	return 0;
 }

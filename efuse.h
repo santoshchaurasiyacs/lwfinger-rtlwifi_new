@@ -10,43 +10,16 @@
 #define EFUSE_HW_CAP_SUPP_BW80		7
 #define EFUSE_HW_CAP_SUPP_BW40		6
 
-struct efuse_hw_cap {
-	u8 rsvd_0;
-	u8 rsvd_1;
-	u8 rsvd_2;
-	u8 rsvd_3;
-#ifdef __LITTLE_ENDIAN
-	u8 hci:4;
-	u8 rsvd_4:4;
-#else
-	u8 rsvd_4:4;
-	u8 hci:4;
-#endif
-	u8 rsvd_5;
-#ifdef __LITTLE_ENDIAN
-	u8 bw:3;
-	u8 nss:2;
-	u8 ant_num:3;
-#else
-	u8 ant_num:3;
-	u8 nss:2;
-	u8 bw:3;
-#endif
-#ifdef __LITTLE_ENDIAN
-	u8 rsvd_7_1:2;
-	u8 ptcl:2;
-	u8 rsvd_7_2:4;
-#else
-	u8 rsvd_7_2:4;
-	u8 ptcl:2;
-	u8 rsvd_7_1:2;
-#endif
-	u8 rsvd_8;
-	u8 rsvd_9;
-	u8 rsvd_10;
-	u8 rsvd_11;
-	u8 rsvd_12;
-};
+#define GET_EFUSE_HW_CAP_HCI(hw_cap)					       \
+	le32_get_bits(*((__le32 *)(hw_cap) + 0x01), GENMASK(3, 0))
+#define GET_EFUSE_HW_CAP_BW(hw_cap)					       \
+	le32_get_bits(*((__le32 *)(hw_cap) + 0x01), GENMASK(18, 16))
+#define GET_EFUSE_HW_CAP_NSS(hw_cap)					       \
+	le32_get_bits(*((__le32 *)(hw_cap) + 0x01), GENMASK(20, 19))
+#define GET_EFUSE_HW_CAP_ANT_NUM(hw_cap)				       \
+	le32_get_bits(*((__le32 *)(hw_cap) + 0x01), GENMASK(23, 21))
+#define GET_EFUSE_HW_CAP_PTCL(hw_cap)					       \
+	le32_get_bits(*((__le32 *)(hw_cap) + 0x01), GENMASK(27, 26))
 
 int rtw_parse_efuse_map(struct rtw_dev *rtwdev);
 

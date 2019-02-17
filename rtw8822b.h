@@ -100,14 +100,14 @@ struct rtw8822b_efuse {
 static inline void
 _rtw_write32s_mask(struct rtw_dev *rtwdev, u32 addr, u32 mask, u32 data)
 {
+	/* 0xC00-0xCFF and 0xE00-0xEFF have the same layout */
 	rtw_write32_mask(rtwdev, addr, mask, data);
 	rtw_write32_mask(rtwdev, addr + 0x200, mask, data);
 }
 
-/* 0xC00-0xCFF and 0xE00-0xEFF have the same layout */
 #define rtw_write32s_mask(rtwdev, addr, mask, data)			       \
 	do {								       \
-		BUILD_BUG_ON(addr < 0xC00 || addr >= 0xD00);		       \
+		BUILD_BUG_ON((addr) < 0xC00 || (addr) >= 0xD00);	       \
 									       \
 		_rtw_write32s_mask(rtwdev, addr, mask, data);		       \
 	} while (0)

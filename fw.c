@@ -35,7 +35,7 @@ void rtw_fw_c2h_cmd_handle(struct rtw_dev *rtwdev, struct sk_buff *skb)
 	c2h = (struct rtw_c2h_cmd *)(skb->data + pkt_offset);
 	len = skb->len - pkt_offset - 2;
 
-	rtw_dbg(rtwdev, "recv C2H, id=0x%02x, seq=0x%02x, len=%d\n",
+	rtw_dbg(rtwdev, RTW_DBG_FW, "recv C2H, id=0x%02x, seq=0x%02x, len=%d\n",
 		c2h->id, c2h->seq, len);
 
 	switch (c2h->id) {
@@ -55,7 +55,7 @@ void rtw_fw_send_h2c_command(struct rtw_dev *rtwdev, u8 *h2c)
 	u32 h2c_wait;
 	int idx;
 
-	rtw_dbg(rtwdev,
+	rtw_dbg(rtwdev, RTW_DBG_FW,
 		"send H2C content %02x%02x%02x%02x %02x%02x%02x%02x\n",
 		h2c[3], h2c[2], h2c[1], h2c[0],
 		h2c[7], h2c[6], h2c[5], h2c[4]);
@@ -123,7 +123,7 @@ static void rtw_fw_send_h2c_packet(struct rtw_dev *rtwdev, u8 *h2c_pkt)
 }
 
 void
-rtw_fw_send_general_info(struct rtw_dev *rtwdev, struct rtw_general_info *info)
+rtw_fw_send_general_info(struct rtw_dev *rtwdev)
 {
 	struct rtw_fifo_conf *fifo = &rtwdev->fifo;
 	u8 h2c_pkt[H2C_PKT_SIZE] = {0};
@@ -141,20 +141,27 @@ rtw_fw_send_general_info(struct rtw_dev *rtwdev, struct rtw_general_info *info)
 }
 
 void
-rtw_fw_send_phydm_info(struct rtw_dev *rtwdev, struct rtw_general_info *info)
+rtw_fw_send_phydm_info(struct rtw_dev *rtwdev)
 {
 	struct rtw_hal *hal = &rtwdev->hal;
+	struct rtw_efuse *efuse = &rtwdev->efuse;
 	u8 h2c_pkt[H2C_PKT_SIZE] = {0};
 	u16 total_size = H2C_PKT_HDR_SIZE + 8;
+	u8 fw_rf_type = 0;
+
+	if (hal->rf_type == RF_1T1R)
+		fw_rf_type = FW_RF_1T1R;
+	else if (hal->rf_type == RF_2T2R)
+		fw_rf_type = FW_RF_2T2R;
 
 	rtw_h2c_pkt_set_header(h2c_pkt, H2C_PKT_PHYDM_INFO);
 
 	SET_PKT_H2C_TOTAL_LEN(h2c_pkt, total_size);
-	PHYDM_INFO_SET_REF_TYPE(h2c_pkt, info->rfe_type);
-	PHYDM_INFO_SET_RF_TYPE(h2c_pkt, info->rf_type);
-	PHYDM_INFO_SET_CUT_VER(h2c_pkt, hal->chip_version);
-	PHYDM_INFO_SET_RX_ANT_STATUS(h2c_pkt, info->rx_ant_status);
-	PHYDM_INFO_SET_TX_ANT_STATUS(h2c_pkt, info->tx_ant_status);
+	PHYDM_INFO_SET_REF_TYPE(h2c_pkt, efuse->rfe_option);
+	PHYDM_INFO_SET_RF_TYPE(h2c_pkt, fw_rf_type);
+	PHYDM_INFO_SET_CUT_VER(h2c_pkt, hal->cut_version);
+	PHYDM_INFO_SET_RX_ANT_STATUS(h2c_pkt, hal->antenna_tx);
+	PHYDM_INFO_SET_TX_ANT_STATUS(h2c_pkt, hal->antenna_rx);
 
 	rtw_fw_send_h2c_packet(rtwdev, h2c_pkt);
 }
@@ -257,7 +264,7 @@ static u8 rtw_get_rsvd_page_location(struct rtw_dev *rtwdev,
 	return location;
 }
 
-static void rtw_send_rsvd_page_h2c(struct rtw_dev *rtwdev)
+void rtw_send_rsvd_page_h2c(struct rtw_dev *rtwdev)
 {
 	u8 h2c_pkt[H2C_PKT_SIZE] = {0};
 	u8 location = 0;
@@ -266,19 +273,19 @@ static void rtw_send_rsvd_page_h2c(struct rtw_dev *rtwdev)
 
 	location = rtw_get_rsvd_page_location(rtwdev, RSVD_PROBE_RESP);
 	*(h2c_pkt + 1) = location;
-	rtw_dbg(rtwdev, "RSVD_PROBE_RESP loc: %d\n", location);
+	rtw_dbg(rtwdev, RTW_DBG_FW, "RSVD_PROBE_RESP loc: %d\n", location);
 
 	location = rtw_get_rsvd_page_location(rtwdev, RSVD_PS_POLL);
 	*(h2c_pkt + 2) = location;
-	rtw_dbg(rtwdev, "RSVD_PS_POLL loc: %d\n", location);
+	rtw_dbg(rtwdev, RTW_DBG_FW, "RSVD_PS_POLL loc: %d\n", location);
 
 	location = rtw_get_rsvd_page_location(rtwdev, RSVD_NULL);
 	*(h2c_pkt + 3) = location;
-	rtw_dbg(rtwdev, "RSVD_NULL loc: %d\n", location);
+	rtw_dbg(rtwdev, RTW_DBG_FW, "RSVD_NULL loc: %d\n", location);
 
 	location = rtw_get_rsvd_page_location(rtwdev, RSVD_QOS_NULL);
 	*(h2c_pkt + 4) = location;
-	rtw_dbg(rtwdev, "RSVD_QOS_NULL loc: %d\n", location);
+	rtw_dbg(rtwdev, RTW_DBG_FW, "RSVD_QOS_NULL loc: %d\n", location);
 
 	rtw_fw_send_h2c_command(rtwdev, h2c_pkt);
 }
@@ -429,12 +436,12 @@ int rtw_fw_write_data_rsvd_page(struct rtw_dev *rtwdev, u16 pg_addr,
 
 	val = rtw_read8(rtwdev, REG_CR + 1);
 	bckp[0] = val;
-	val |= BIT(0);
+	val |= BIT_ENSWBCN >> 8;
 	rtw_write8(rtwdev, REG_CR + 1, val);
 
 	val = rtw_read8(rtwdev, REG_FWHW_TXQ_CTRL + 2);
 	bckp[1] = val;
-	val &= ~BIT(6);
+	val &= ~(BIT_EN_BCNQ_DL >> 16);
 	rtw_write8(rtwdev, REG_FWHW_TXQ_CTRL + 2, val);
 
 	ret = rtw_hci_write_data_rsvd_page(rtwdev, buf, size);
@@ -579,8 +586,6 @@ int rtw_fw_download_rsvd_page(struct rtw_dev *rtwdev, struct ieee80211_vif *vif)
 		rtw_err(rtwdev, "failed to download beacon\n");
 		goto free;
 	}
-
-	rtw_send_rsvd_page_h2c(rtwdev);
 
 free:
 	kfree(buf);

@@ -15,6 +15,26 @@ static void switch_efuse_bank(struct rtw_dev *rtwdev)
 			 RTW_EFUSE_BANK_WIFI);
 }
 
+#define invalid_efuse_header(hdr1, hdr2) \
+	((hdr1) == 0xff || (((hdr1) & 0x1f) == 0xf && (hdr2) == 0xff))
+#define invalid_efuse_content(word_en, i) \
+	(((word_en) & BIT(i)) != 0x0)
+#define get_efuse_blk_idx_2_byte(hdr1, hdr2) \
+	((((hdr2) & 0xf0) >> 1) | (((hdr1) >> 5) & 0x07))
+#define get_efuse_blk_idx_1_byte(hdr1) \
+	(((hdr1) & 0xf0) >> 4)
+#define block_idx_to_logical_idx(blk_idx, i) \
+	(((blk_idx) << 3) + ((i) << 1))
+
+/* efuse header format
+ *
+ * | 7        5   4    0 | 7        4   3          0 | 15  8  7   0 |
+ *   block[2:0]   0 1111   block[6:3]   word_en[3:0]   byte0  byte1
+ * | header 1 (optional) |          header 2         |    word N    |
+ *
+ * word_en: 4 bits each word. 0 -> write; 1 -> not write
+ * N: 1~4, depends on word_en
+ */
 static int rtw_dump_logical_efuse_map(struct rtw_dev *rtwdev, u8 *phy_map,
 				      u8 *log_map)
 {
@@ -24,46 +44,41 @@ static int rtw_dump_logical_efuse_map(struct rtw_dev *rtwdev, u8 *phy_map,
 	u32 phy_idx, log_idx;
 	u8 hdr1, hdr2;
 	u8 blk_idx;
-	u8 valid;
 	u8 word_en;
 	int i;
 
-	phy_idx = 0;
-
-	do {
-		hdr1 = *(phy_map + phy_idx);
-		if ((hdr1 & 0x1f) == 0xf) {
-			phy_idx++;
-			hdr2 = *(phy_map + phy_idx);
-			if (hdr2 == 0xff)
-				break;
-			blk_idx = ((hdr2 & 0xf0) >> 1) | ((hdr1 >> 5) & 0x07);
-			word_en = hdr2 & 0x0f;
-		} else {
-			blk_idx = (hdr1 & 0xf0) >> 4;
-			word_en = hdr1 & 0x0f;
-		}
-
-		if (hdr1 == 0xff)
+	for (phy_idx = 0; phy_idx < physical_size - protect_size;) {
+		hdr1 = phy_map[phy_idx];
+		hdr2 = phy_map[phy_idx + 1];
+		if (invalid_efuse_header(hdr1, hdr2))
 			break;
 
-		phy_idx++;
-		for (i = 0; i < 4; i++) {
-			valid = (~(word_en >> i)) & 0x1;
-			if (valid != 0x1)
-				continue;
-			log_idx = (blk_idx << 3) + (i << 1);
-			*(log_map + log_idx) = *(phy_map + phy_idx);
-			log_idx++;
-			phy_idx++;
-			*(log_map + log_idx) = *(phy_map + phy_idx);
-			phy_idx++;
-			if (phy_idx > physical_size - protect_size ||
-			    log_idx > logical_size)
-				return -EINVAL;
+		if ((hdr1 & 0x1f) == 0xf) {
+			/* 2-byte header format */
+			blk_idx = get_efuse_blk_idx_2_byte(hdr1, hdr2);
+			word_en = hdr2 & 0xf;
+			phy_idx += 2;
+		} else {
+			/* 1-byte header format */
+			blk_idx = get_efuse_blk_idx_1_byte(hdr1);
+			word_en = hdr1 & 0xf;
+			phy_idx += 1;
 		}
-	} while (1);
 
+		for (i = 0; i < 4; i++) {
+			if (invalid_efuse_content(word_en, i))
+				continue;
+
+			log_idx = block_idx_to_logical_idx(blk_idx, i);
+			if (phy_idx + 1 > physical_size - protect_size ||
+			    log_idx + 1 > logical_size)
+				return -EINVAL;
+
+			log_map[log_idx] = phy_map[phy_idx];
+			log_map[log_idx + 1] = phy_map[phy_idx + 1];
+			phy_idx += 2;
+		}
+	}
 	return 0;
 }
 
@@ -130,11 +145,6 @@ int rtw_parse_efuse_map(struct rtw_dev *rtwdev)
 		rtw_err(rtwdev, "failed to dump efuse logical map\n");
 		goto out_free;
 	}
-
-	print_hex_dump_bytes("efuse: ", DUMP_PREFIX_OFFSET, log_map, log_size);
-
-	efuse->x3d7 = phy_map[0x3d7];
-	efuse->x3d8 = phy_map[0x3d8];
 
 	ret = chip->ops->read_efuse(rtwdev, log_map);
 	if (ret) {
