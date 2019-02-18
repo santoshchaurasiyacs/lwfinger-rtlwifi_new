@@ -5,6 +5,7 @@
 #include "main.h"
 #include "rx.h"
 #include "ps.h"
+#include <linux/version.h>
 
 void rtw_rx_stats(struct rtw_dev *rtwdev, struct ieee80211_vif *vif,
 		  struct sk_buff *skb)
@@ -98,27 +99,50 @@ void rtw_rx_fill_rx_status(struct rtw_dev *rtwdev,
 		rx_status->flag |= RX_FLAG_FAILED_FCS_CRC;
 	if (pkt_stat->decrypted)
 		rx_status->flag |= RX_FLAG_DECRYPTED;
-
 	if (pkt_stat->rate >= DESC_RATEVHT1SS_MCS0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 12, 0)
 		rx_status->encoding = RX_ENC_VHT;
+#else
+		rx_status->flag |= RX_FLAG_VHT;
+#endif
 	else if (pkt_stat->rate >= DESC_RATEMCS0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 12, 0)
 		rx_status->encoding = RX_ENC_HT;
+#else
+		rx_status->flag |= RX_FLAG_VHT;
+#endif
 
 	if (pkt_stat->rate >= DESC_RATEVHT1SS_MCS0 &&
 	    pkt_stat->rate <= DESC_RATEVHT1SS_MCS9) {
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 12, 0)
 		rx_status->nss = 1;
+#else
+		rx_status->vht_nss = 1;
+#endif
 		rx_status->rate_idx = pkt_stat->rate - DESC_RATEVHT1SS_MCS0;
 	} else if (pkt_stat->rate >= DESC_RATEVHT2SS_MCS0 &&
 		   pkt_stat->rate <= DESC_RATEVHT2SS_MCS9) {
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 12, 0)
 		rx_status->nss = 2;
+#else
+		rx_status->vht_nss = 2;
+#endif
 		rx_status->rate_idx = pkt_stat->rate - DESC_RATEVHT2SS_MCS0;
 	} else if (pkt_stat->rate >= DESC_RATEVHT3SS_MCS0 &&
 		   pkt_stat->rate <= DESC_RATEVHT3SS_MCS9) {
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 12, 0)
 		rx_status->nss = 3;
+#else
+		rx_status->vht_nss = 3;
+#endif
 		rx_status->rate_idx = pkt_stat->rate - DESC_RATEVHT3SS_MCS0;
 	} else if (pkt_stat->rate >= DESC_RATEVHT4SS_MCS0 &&
 		   pkt_stat->rate <= DESC_RATEVHT4SS_MCS9) {
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 12, 0)
 		rx_status->nss = 4;
+#else
+		rx_status->vht_nss = 4;
+#endif
 		rx_status->rate_idx = pkt_stat->rate - DESC_RATEVHT4SS_MCS0;
 	} else if (pkt_stat->rate >= DESC_RATEMCS0 &&
 		   pkt_stat->rate <= DESC_RATEMCS15) {
@@ -139,11 +163,23 @@ void rtw_rx_fill_rx_status(struct rtw_dev *rtwdev,
 	rx_status->mactime = pkt_stat->tsf_low;
 
 	if (pkt_stat->bw == RTW_CHANNEL_WIDTH_80)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 12, 0)
 		rx_status->bw = RATE_INFO_BW_80;
+#else
+		rx_status->vht_flag |= RX_VHT_FLAG_80MHZ;
+#endif
 	else if (pkt_stat->bw == RTW_CHANNEL_WIDTH_40)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 12, 0)
 		rx_status->bw = RATE_INFO_BW_40;
+#else
+		rx_status->flag |= RX_FLAG_40MHZ;
+#endif
 	else
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 12, 0)
 		rx_status->bw = RATE_INFO_BW_20;
+#else
+		/* What goes here? */
+#endif
 
 	rx_status->signal = pkt_stat->signal_power;
 
