@@ -144,9 +144,17 @@ static void rtw_tx_report_enable(struct rtw_dev *rtwdev,
 	pkt_info->report = true;
 }
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 0)
 void rtw_tx_report_purge_timer(struct timer_list *t)
+#else
+void rtw_tx_report_purge_timer(void *cntx)
+#endif
 {
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 0)
 	struct rtw_dev *rtwdev = from_timer(rtwdev, t, tx_report.purge_timer);
+#else
+	struct rtw_dev *rtwdev = (struct rtw_dev *)cntx;
+#endif
 	struct rtw_tx_report *tx_report = &rtwdev->tx_report;
 	unsigned long flags;
 
