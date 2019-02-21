@@ -8,7 +8,9 @@
 #include <linux/version.h>
 #if LINUX_VERSION_CODE < KERNEL_VERSION(4, 11, 0)
 #include "compiler.h"
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 8, 0)
 #include "sch_generic.h"
+#endif
 #endif
 #include <net/mac80211.h>
 #include <linux/vmalloc.h>
@@ -24,6 +26,9 @@
 #endif
 
 #include "util.h"
+#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 8, 0)
+#include <linux/etherdevice.h>
+#endif
 
 #define RTW_MAX_MAC_ID_NUM		32
 #define RTW_MAX_SEC_CAM_NUM		32
