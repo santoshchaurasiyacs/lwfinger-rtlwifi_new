@@ -5,6 +5,11 @@
 #ifndef __RTK_MAIN_H_
 #define __RTK_MAIN_H_
 
+#include <linux/version.h>
+#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 11, 0)
+#include "compiler.h"
+#include "sch_generic.h"
+#endif
 #include <net/mac80211.h>
 #include <linux/vmalloc.h>
 #include <linux/firmware.h>

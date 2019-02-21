@@ -2,13 +2,12 @@
 /* Copyright(c) 2018  Realtek Corporation.
  */
 
-#include <linux/bcd.h>
-
 #include "main.h"
 #include "reg.h"
 #include "fw.h"
 #include "phy.h"
 #include "debug.h"
+#include <linux/bcd.h>
 
 struct phy_cfg_pair {
 	u32 addr;
