@@ -261,7 +261,7 @@ static void rtw_regd_apply_beaconing_flags(struct wiphy *wiphy,
 	struct ieee80211_channel *ch;
 	unsigned int i;
 
-	for (band = 0; band < NUM_NL80211_BANDS; band++) {
+	for (band = 0; band < (enum nl80211_band)NUM_NL80211_BANDS; band++) {
 		if (!wiphy->bands[band])
 			continue;
 

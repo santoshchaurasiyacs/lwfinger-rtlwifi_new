@@ -30,6 +30,10 @@
 #include <linux/etherdevice.h>
 #endif
 
+#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 7, 0)
+#define NUM_NL80211_BANDS IEEE80211_NUM_BANDS
+#endif
+
 #define RTW_MAX_MAC_ID_NUM		32
 #define RTW_MAX_SEC_CAM_NUM		32
 
