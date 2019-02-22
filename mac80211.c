@@ -412,14 +412,26 @@ out:
 	return ret;
 }
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 6, 0)
 static int rtw_ops_ampdu_action(struct ieee80211_hw *hw,
 				struct ieee80211_vif *vif,
 				struct ieee80211_ampdu_params *params)
+#else
+static int rtw_ops_ampdu_action(struct ieee80211_hw *hw,
+				struct ieee80211_vif *vif,
+				enum ieee80211_ampdu_mlme_action action,
+				struct ieee80211_sta *sta, u16 tid, u16 *ssn,
+				u8 buf_size, bool amsdu)
+#endif
 {
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 6, 0)
 	struct ieee80211_sta *sta = params->sta;
 	u16 tid = params->tid;
 
 	switch (params->action) {
+#else
+	switch (action) {
+#endif
 	case IEEE80211_AMPDU_TX_START:
 		ieee80211_start_tx_ba_cb_irqsafe(vif, sta->addr, tid);
 		break;
