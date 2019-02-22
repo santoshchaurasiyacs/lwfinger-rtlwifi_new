@@ -23,7 +23,7 @@ endif
 EXTRA_CFLAGS += -O2
 
 obj-m	+= rtw88.o
-rtw88-m += main.o \
+rtw88-objs += main.o \
 	   mac80211.o \
 	   util.o \
 	   debug.o \
@@ -37,8 +37,8 @@ rtw88-m += main.o \
 	   sec.o \
 	   regd.o
 
-rtw88-m	+= rtw8822b.o rtw8822b_table.o
-rtw88-m	+= rtw8822c.o rtw8822c_table.o
+rtw88-objs	+= rtw8822b.o rtw8822b_table.o
+rtw88-objs	+= rtw8822c.o rtw8822c_table.o
 
 obj-m		+= rtwpci.o
 rtwpci-objs			:= pci.o

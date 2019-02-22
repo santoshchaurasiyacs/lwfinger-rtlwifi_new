@@ -1192,12 +1192,8 @@ static void rtw_pci_remove(struct pci_dev *pdev)
 }
 
 static const struct pci_device_id rtw_pci_id_table[] = {
-#ifdef CONFIG_RTW88_8822BE
 	{ RTK_PCI_DEVICE(PCI_VENDOR_ID_REALTEK, 0xB822, rtw8822b_hw_spec) },
-#endif
-#ifdef CONFIG_RTW88_8822CE
 	{ RTK_PCI_DEVICE(PCI_VENDOR_ID_REALTEK, 0xC822, rtw8822c_hw_spec) },
-#endif
 	{},
 };
 MODULE_DEVICE_TABLE(pci, rtw_pci_id_table);
