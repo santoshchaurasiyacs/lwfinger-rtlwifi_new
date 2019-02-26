@@ -1365,8 +1365,6 @@ static void _rtl8821ae_get_wakeup_reason(struct ieee80211_hw *hw)
 	struct rtl_hal *rtlhal = rtl_hal(rtl_priv(hw));
 	struct rtl_ps_ctl *ppsc = rtl_psc(rtlpriv);
 	u8 fw_reason = 0;
-	struct timeval ts;
-	do_gettimeofday(&ts);
 
 	fw_reason = rtl_read_byte(rtlpriv, REG_MCUTST_WOWLAN);
 
@@ -1375,20 +1373,16 @@ static void _rtl8821ae_get_wakeup_reason(struct ieee80211_hw *hw)
 
 	ppsc->wakeup_reason = 0;
 
-	rtlhal->last_suspend_sec = ts.tv_sec;
+	rtlhal->last_suspend_sec = ktime_get_real_seconds();
 
 	switch (fw_reason) {
 	case FW_WOW_V2_PTK_UPDATE_EVENT:
 		ppsc->wakeup_reason = WOL_REASON_PTK_UPDATE;
-		do_gettimeofday(&ts);
-		ppsc->last_wakeup_time = ts.tv_sec*1000 + ts.tv_usec/1000;
 		RT_TRACE(rtlpriv, COMP_POWER, DBG_DMESG,
 			 "It's a WOL PTK Key update event!\n");
 		break;
 	case FW_WOW_V2_GTK_UPDATE_EVENT:
 		ppsc->wakeup_reason = WOL_REASON_GTK_UPDATE;
-		do_gettimeofday(&ts);
-		ppsc->last_wakeup_time = ts.tv_sec*1000 + ts.tv_usec/1000;
 		RT_TRACE(rtlpriv, COMP_POWER, DBG_DMESG,
 			 "It's a WOL GTK Key update event!\n");
 		break;
