@@ -168,7 +168,7 @@ bool rtl8723de_rx_query_desc(struct ieee80211_hw *hw,
 	else
 		status->packet_report_type = NORMAL_RX;
 
-	if (GET_RX_DESC_MAGIC_MATCH_8723D(pdesc))
+	if (GET_RX_DESC_PATTERN_MATCH_8723D(pdesc))
 		status->wake_match = BIT(2);
 	else if (GET_RX_DESC_MAGIC_MATCH_8723D(pdesc))
 		status->wake_match = BIT(1);
