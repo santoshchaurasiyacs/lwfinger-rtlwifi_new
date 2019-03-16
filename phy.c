@@ -2,12 +2,13 @@
 /* Copyright(c) 2018  Realtek Corporation.
  */
 
+#include <linux/bcd.h>
+
 #include "main.h"
 #include "reg.h"
 #include "fw.h"
 #include "phy.h"
 #include "debug.h"
-#include <linux/bcd.h>
 
 struct phy_cfg_pair {
 	u32 addr;
@@ -817,41 +818,56 @@ void rtw_phy_load_tables(struct rtw_dev *rtwdev)
 
 #define RTW_MAX_POWER_INDEX		0x3F
 
-u8 cck_rates[] = {DESC_RATE1M, DESC_RATE2M, DESC_RATE5_5M, DESC_RATE11M};
-u8 ofdm_rates[] = {DESC_RATE6M,  DESC_RATE9M,  DESC_RATE12M,
-		   DESC_RATE18M, DESC_RATE24M, DESC_RATE36M,
-		   DESC_RATE48M, DESC_RATE54M};
-u8 ht_1s_rates[] = {DESC_RATEMCS0, DESC_RATEMCS1, DESC_RATEMCS2,
-		    DESC_RATEMCS3, DESC_RATEMCS4, DESC_RATEMCS5,
-		    DESC_RATEMCS6, DESC_RATEMCS7};
-u8 ht_2s_rates[] = {DESC_RATEMCS8,  DESC_RATEMCS9,  DESC_RATEMCS10,
-		    DESC_RATEMCS11, DESC_RATEMCS12, DESC_RATEMCS13,
-		    DESC_RATEMCS14, DESC_RATEMCS15};
-u8 vht_1s_rates[] = {DESC_RATEVHT1SS_MCS0, DESC_RATEVHT1SS_MCS1,
-		     DESC_RATEVHT1SS_MCS2, DESC_RATEVHT1SS_MCS3,
-		     DESC_RATEVHT1SS_MCS4, DESC_RATEVHT1SS_MCS5,
-		     DESC_RATEVHT1SS_MCS6, DESC_RATEVHT1SS_MCS7,
-		     DESC_RATEVHT1SS_MCS8, DESC_RATEVHT1SS_MCS9};
-u8 vht_2s_rates[] = {DESC_RATEVHT2SS_MCS0, DESC_RATEVHT2SS_MCS1,
-		     DESC_RATEVHT2SS_MCS2, DESC_RATEVHT2SS_MCS3,
-		     DESC_RATEVHT2SS_MCS4, DESC_RATEVHT2SS_MCS5,
-		     DESC_RATEVHT2SS_MCS6, DESC_RATEVHT2SS_MCS7,
-		     DESC_RATEVHT2SS_MCS8, DESC_RATEVHT2SS_MCS9};
-u8 cck_size = ARRAY_SIZE(cck_rates);
-u8 ofdm_size = ARRAY_SIZE(ofdm_rates);
-u8 ht_1s_size = ARRAY_SIZE(ht_1s_rates);
-u8 ht_2s_size = ARRAY_SIZE(ht_2s_rates);
-u8 vht_1s_size = ARRAY_SIZE(vht_1s_rates);
-u8 vht_2s_size = ARRAY_SIZE(vht_2s_rates);
-u8 *rate_section[RTW_RATE_SECTION_MAX] = {cck_rates, ofdm_rates,
-					  ht_1s_rates, ht_2s_rates,
-					  vht_1s_rates, vht_2s_rates};
-u8 rate_size[RTW_RATE_SECTION_MAX] = {ARRAY_SIZE(cck_rates),
-				      ARRAY_SIZE(ofdm_rates),
-				      ARRAY_SIZE(ht_1s_rates),
-				      ARRAY_SIZE(ht_2s_rates),
-				      ARRAY_SIZE(vht_1s_rates),
-				      ARRAY_SIZE(vht_2s_rates)};
+u8 rtw_cck_rates[] = { DESC_RATE1M, DESC_RATE2M, DESC_RATE5_5M, DESC_RATE11M };
+u8 rtw_ofdm_rates[] = {
+	DESC_RATE6M,  DESC_RATE9M,  DESC_RATE12M,
+	DESC_RATE18M, DESC_RATE24M, DESC_RATE36M,
+	DESC_RATE48M, DESC_RATE54M
+};
+u8 rtw_ht_1s_rates[] = {
+	DESC_RATEMCS0, DESC_RATEMCS1, DESC_RATEMCS2,
+	DESC_RATEMCS3, DESC_RATEMCS4, DESC_RATEMCS5,
+	DESC_RATEMCS6, DESC_RATEMCS7
+};
+u8 rtw_ht_2s_rates[] = {
+	DESC_RATEMCS8,  DESC_RATEMCS9,  DESC_RATEMCS10,
+	DESC_RATEMCS11, DESC_RATEMCS12, DESC_RATEMCS13,
+	DESC_RATEMCS14, DESC_RATEMCS15
+};
+u8 rtw_vht_1s_rates[] = {
+	DESC_RATEVHT1SS_MCS0, DESC_RATEVHT1SS_MCS1,
+	DESC_RATEVHT1SS_MCS2, DESC_RATEVHT1SS_MCS3,
+	DESC_RATEVHT1SS_MCS4, DESC_RATEVHT1SS_MCS5,
+	DESC_RATEVHT1SS_MCS6, DESC_RATEVHT1SS_MCS7,
+	DESC_RATEVHT1SS_MCS8, DESC_RATEVHT1SS_MCS9
+};
+u8 rtw_vht_2s_rates[] = {
+	DESC_RATEVHT2SS_MCS0, DESC_RATEVHT2SS_MCS1,
+	DESC_RATEVHT2SS_MCS2, DESC_RATEVHT2SS_MCS3,
+	DESC_RATEVHT2SS_MCS4, DESC_RATEVHT2SS_MCS5,
+	DESC_RATEVHT2SS_MCS6, DESC_RATEVHT2SS_MCS7,
+	DESC_RATEVHT2SS_MCS8, DESC_RATEVHT2SS_MCS9
+};
+u8 rtw_cck_size = ARRAY_SIZE(rtw_cck_rates);
+u8 rtw_ofdm_size = ARRAY_SIZE(rtw_ofdm_rates);
+u8 rtw_ht_1s_size = ARRAY_SIZE(rtw_ht_1s_rates);
+u8 rtw_ht_2s_size = ARRAY_SIZE(rtw_ht_2s_rates);
+u8 rtw_vht_1s_size = ARRAY_SIZE(rtw_vht_1s_rates);
+u8 rtw_vht_2s_size = ARRAY_SIZE(rtw_vht_2s_rates);
+u8 *rtw_rate_section[RTW_RATE_SECTION_MAX] = {
+	rtw_cck_rates, rtw_ofdm_rates,
+	rtw_ht_1s_rates, rtw_ht_2s_rates,
+	rtw_vht_1s_rates, rtw_vht_2s_rates
+};
+u8 rtw_rate_size[RTW_RATE_SECTION_MAX] = {
+	ARRAY_SIZE(rtw_cck_rates),
+	ARRAY_SIZE(rtw_ofdm_rates),
+	ARRAY_SIZE(rtw_ht_1s_rates),
+	ARRAY_SIZE(rtw_ht_2s_rates),
+	ARRAY_SIZE(rtw_vht_1s_rates),
+	ARRAY_SIZE(rtw_vht_2s_rates)
+};
+
 static const u8 rtw_channel_idx_5g[RTW_MAX_CHANNEL_NUM_5G] = {
 	36,  38,  40,  42,  44,  46,  48, /* Band 1 */
 	52,  54,  56,  58,  60,  62,  64, /* Band 2 */
@@ -1170,8 +1186,8 @@ void phy_set_tx_power_index_by_rs(void *adapter, u8 ch, u8 path, u8 rs)
 	if (rs >= RTW_RATE_SECTION_MAX)
 		return;
 
-	rates = rate_section[rs];
-	size = rate_size[rs];
+	rates = rtw_rate_section[rs];
+	size = rtw_rate_size[rs];
 	bw = hal->current_band_width;
 	for (i = 0; i < size; i++) {
 		rate = rates[i];
@@ -1556,23 +1572,23 @@ void rtw_phy_tx_power_by_rate_config(struct rtw_hal *hal)
 
 	for (path = 0; path < RTW_RF_PATH_MAX; path++) {
 		phy_tx_power_by_rate_config_by_path(hal, path,
-						    RTW_RATE_SECTION_CCK,
-						    cck_size, cck_rates);
+				RTW_RATE_SECTION_CCK,
+				rtw_cck_size, rtw_cck_rates);
 		phy_tx_power_by_rate_config_by_path(hal, path,
-						    RTW_RATE_SECTION_OFDM,
-						    ofdm_size, ofdm_rates);
+				RTW_RATE_SECTION_OFDM,
+				rtw_ofdm_size, rtw_ofdm_rates);
 		phy_tx_power_by_rate_config_by_path(hal, path,
-						    RTW_RATE_SECTION_HT_1S,
-						    ht_1s_size, ht_1s_rates);
+				RTW_RATE_SECTION_HT_1S,
+				rtw_ht_1s_size, rtw_ht_1s_rates);
 		phy_tx_power_by_rate_config_by_path(hal, path,
-						    RTW_RATE_SECTION_HT_2S,
-						    ht_2s_size, ht_2s_rates);
+				RTW_RATE_SECTION_HT_2S,
+				rtw_ht_2s_size, rtw_ht_2s_rates);
 		phy_tx_power_by_rate_config_by_path(hal, path,
-						    RTW_RATE_SECTION_VHT_1S,
-						    vht_1s_size, vht_1s_rates);
+				RTW_RATE_SECTION_VHT_1S,
+				rtw_vht_1s_size, rtw_vht_1s_rates);
 		phy_tx_power_by_rate_config_by_path(hal, path,
-						    RTW_RATE_SECTION_VHT_2S,
-						    vht_2s_size, vht_2s_rates);
+				RTW_RATE_SECTION_VHT_2S,
+				rtw_vht_2s_size, rtw_vht_2s_rates);
 	}
 }
 

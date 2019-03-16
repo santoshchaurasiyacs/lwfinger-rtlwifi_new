@@ -887,8 +887,8 @@ rtw8822b_set_tx_power_index_by_rate(struct rtw_dev *rtwdev, u8 path, u8 rs)
 	u8 rate, rate_idx, pwr_index, shift;
 	int j;
 
-	for (j = 0; j < rate_size[rs]; j++) {
-		rate = rate_section[rs][j];
+	for (j = 0; j < rtw_rate_size[rs]; j++) {
+		rate = rtw_rate_section[rs][j];
 		pwr_index = hal->tx_pwr_tbl[path][rate];
 		shift = rate & 0x3;
 		phy_pwr_idx |= ((u32)pwr_index << (shift * 8));
