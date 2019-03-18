@@ -2181,8 +2181,12 @@ bool rtl_hal_pwrseqcmdparsing(struct rtl_priv *rtlpriv, u8 cut_version,
 					else
 						udelay(10);
 
-					if (polling_count++ > max_polling_cnt)
+					if (polling_count++ > max_polling_cnt) {
+						pr_info("rtlwifi: %s Polling count exceeded, value = 0x%x, expected = 0x%x, mask = 0x%c\n",
+							__func__, rtl_read_byte(rtlpriv, offset),
+							GET_PWR_CFG_VALUE(cfg_cmd), GET_PWR_CFG_MASK(cfg_cmd));
 						return false;
+					}
 				} while (!polling_bit);
 				break;
 			case PWR_CMD_DELAY:

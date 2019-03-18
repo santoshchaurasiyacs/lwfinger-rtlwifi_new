@@ -1010,8 +1010,7 @@ static bool _rtl8723de_init_mac(struct ieee80211_hw *hw)
 	if (!rtl_hal_pwrseqcmdparsing(rtlpriv, PWR_CUT_ALL_MSK,
 				      PWR_FAB_ALL_MSK, PWR_INTF_PCI_MSK,
 				      RTL8723D_NIC_ENABLE_FLOW)) {
-		RT_TRACE(rtlpriv, COMP_INIT, DBG_LOUD,
-			 "init MAC Fail as power on failure\n");
+		pr_info("rtl8723de: init MAC Fail as power on failure\n");
 		return false;
 	}
 
@@ -1054,7 +1053,6 @@ static bool _rtl8723de_init_mac(struct ieee80211_hw *hw)
 
 	if (!_rtl8723de_llt_table_init(hw))
 		return false;
-
 	rtl_write_dword(rtlpriv, REG_HISR, 0xffffffff);
 	rtl_write_dword(rtlpriv, REG_HISRE, 0xffffffff);
 
