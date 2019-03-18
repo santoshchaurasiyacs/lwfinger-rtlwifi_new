@@ -229,7 +229,11 @@ bool rtl8723de_get_btc_status(void)
 
 static bool is_fw_header(struct rtlwifi_firmware_header *hdr)
 {
-	return (le16_to_cpu(hdr->signature) & 0xfff0) == 0x23D0;
+	bool header = (le16_to_cpu(hdr->signature) & 0xfff0) == 0x23D0;
+
+	if (header)
+		msleep_interruptible(1000);		/* delay for the system to stabilize */
+	return header;
 }
 
 static void rtl8723de_dm_watchdog(struct ieee80211_hw *hw)
