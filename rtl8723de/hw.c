@@ -996,6 +996,10 @@ static bool _rtl8723de_init_mac(struct ieee80211_hw *hw)
 	u8 bytetmp;
 	u16 wordtmp;
 	u32 dwordtmp;
+	u8 tmp;
+
+	tmp = rtl_read_byte(rtlpriv, 0x75);
+	rtl_write_byte(rtlpriv, 0x75, tmp | BIT(0));
 
 	rtl_write_byte(rtlpriv, REG_RSV_CTRL, 0x00);
 
