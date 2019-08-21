@@ -3448,6 +3448,7 @@ static u8 _rtl8821ae_mrate_idx_to_arfr_id(
 			ret = 6;
 		else
 			ret = 7;
+		break;
 	case RATR_INX_WIRELESS_AC_5N:
 		if (rtlphy->rf_type == RF_1T1R)
 			ret = 10;
