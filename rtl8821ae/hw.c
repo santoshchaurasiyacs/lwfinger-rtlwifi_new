@@ -1437,7 +1437,6 @@ static void _rtl8821ae_get_wakeup_reason(struct ieee80211_hw *hw)
 	struct rtl_hal *rtlhal = rtl_hal(rtl_priv(hw));
 	struct rtl_ps_ctl *ppsc = rtl_psc(rtlpriv);
 	u8 fw_reason = 0;
-	struct timeval ts;
 
 	fw_reason = rtl_read_byte(rtlpriv, REG_MCUTST_WOWLAN);
 
@@ -1446,21 +1445,16 @@ static void _rtl8821ae_get_wakeup_reason(struct ieee80211_hw *hw)
 
 	ppsc->wakeup_reason = 0;
 
-
-	rtlhal->last_suspend_sec = ts.tv_sec;
+	rtlhal->last_suspend_sec = ktime_get_real_seconds();
 
 	switch (fw_reason) {
 	case FW_WOW_V2_PTK_UPDATE_EVENT:
 		ppsc->wakeup_reason = WOL_REASON_PTK_UPDATE;
-		do_gettimeofday(&ts);
-		ppsc->last_wakeup_time = ts.tv_sec*1000 + ts.tv_usec/1000;
 		RT_TRACE(rtlpriv, COMP_POWER, DBG_DMESG,
 			 "It's a WOL PTK Key update event!\n");
 		break;
 	case FW_WOW_V2_GTK_UPDATE_EVENT:
 		ppsc->wakeup_reason = WOL_REASON_GTK_UPDATE;
-		do_gettimeofday(&ts);
-		ppsc->last_wakeup_time = ts.tv_sec*1000 + ts.tv_usec/1000;
 		RT_TRACE(rtlpriv, COMP_POWER, DBG_DMESG,
 			 "It's a WOL GTK Key update event!\n");
 		break;
@@ -2252,7 +2246,7 @@ static int _rtl8821ae_set_media_status(struct ieee80211_hw *hw,
 
 	rtl_write_byte(rtlpriv, (MSR), bt_msr);
 	rtlpriv->cfg->ops->led_control(hw, ledaction);
-	if ((bt_msr & 0xfc) == MSR_AP)
+	if ((bt_msr & MSR_MASK) == MSR_AP)
 		rtl_write_byte(rtlpriv, REG_BCNTCFG + 1, 0x00);
 	else
 		rtl_write_byte(rtlpriv, REG_BCNTCFG + 1, 0x66);
@@ -3589,6 +3583,7 @@ static u8 _rtl8821ae_mrate_idx_to_arfr_id(
 			ret = 6;
 		else
 			ret = 7;
+		break;
 	case RATR_INX_WIRELESS_AC_5N:
 		if (rtlphy->rf_type == RF_1T1R)
 			ret = 10;

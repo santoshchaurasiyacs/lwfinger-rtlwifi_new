@@ -40,8 +40,6 @@
 #include "debug.h"
 #include "btcoexist/halbtc8812a_ext.h"
 
-#error "This branch is abandoned. Please do not use"
-
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 8, 0))
 #define CONFIG_HAVE_ARCH_WITHIN_STACK_FRAMES 1
 #endif
@@ -51,6 +49,11 @@
 #define IEEE80211_BAND_2GHZ NL80211_BAND_2GHZ
 #define IEEE80211_BAND_5GHZ NL80211_BAND_5GHZ
 #define IEEE80211_NUM_BANDS NUM_NL80211_BANDS
+#endif
+
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 12, 0))
+#define RX_FLAG_40MHZ RATE_INFO_BW_40
+#define RX_FLAG_HT RX_ENC_HT
 #endif
 
 #define RF_CHANGE_BY_INIT		0

@@ -514,12 +514,17 @@ static void _rtl_init_deferred_work(struct ieee80211_hw *hw)
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 
 	/* <1> timer */
-	init_timer(&rtlpriv->works.watchdog_timer);
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 15, 0)
+	timer_setup(&rtlpriv->works.watchdog_timer,
+		    rtl_watch_dog_timer_callback, 0);
+	timer_setup(&rtlpriv->works.dualmac_easyconcurrent_retrytimer,
+		    rtl_easy_concurrent_retrytimer_callback, 0);
+#else
 	setup_timer(&rtlpriv->works.watchdog_timer,
 		    rtl_watch_dog_timer_callback, (unsigned long)hw);
-	init_timer(&rtlpriv->works.dualmac_easyconcurrent_retrytimer);
 	setup_timer(&rtlpriv->works.dualmac_easyconcurrent_retrytimer,
 		    rtl_easy_concurrent_retrytimer_callback, (unsigned long)hw);
+#endif
 	/* <2> work queue */
 	rtlpriv->works.hw = hw;
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 37))
@@ -1851,10 +1856,18 @@ void rtl_watchdog_wq_callback(void *data)
 	rtlpriv->link_info.bcn_rx_inperiod = 0;
 }
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 15, 0)
+void rtl_watch_dog_timer_callback(struct timer_list *t)
+#else
 void rtl_watch_dog_timer_callback(unsigned long data)
+#endif
 {
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 15, 0)
+	struct rtl_priv *rtlpriv = from_timer(rtlpriv, t, works.watchdog_timer);
+#else
 	struct ieee80211_hw *hw = (struct ieee80211_hw *)data;
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
+#endif
 
 	queue_delayed_work(rtlpriv->works.rtl_wq,
 			   &rtlpriv->works.watchdog_wq, 0);
@@ -1871,10 +1884,21 @@ void rtl_fwevt_wq_callback(void *data)
 
 	rtlpriv->cfg->ops->c2h_command_handle(hw);
 }
+
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 15, 0)
+void rtl_easy_concurrent_retrytimer_callback(struct timer_list *t)
+#else
 void rtl_easy_concurrent_retrytimer_callback(unsigned long data)
+#endif
 {
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 15, 0)
+	struct rtl_priv *rtlpriv =
+		from_timer(rtlpriv, t, works.dualmac_easyconcurrent_retrytimer);
+	struct ieee80211_hw *hw = rtlpriv->hw;
+#else
 	struct ieee80211_hw *hw = (struct ieee80211_hw *)data;
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
+#endif
 	struct rtl_priv *buddy_priv = rtlpriv->buddy_priv;
 
 	if (buddy_priv == NULL)
@@ -1935,9 +1959,9 @@ static struct sk_buff *rtl_make_smps_action(struct ieee80211_hw *hw,
 	case IEEE80211_SMPS_AUTOMATIC:/* 0 */
 	case IEEE80211_SMPS_NUM_MODES:/* 4 */
 		WARN_ON(1);
-	/* Here will get a 'MISSING_BREAK' in Coverity Test, just ignore it.
-	 * According to Kernel Code, here is right.
-	 */
+		action_frame->u.action.u.ht_smps.smps_control =
+				WLAN_HT_SMPS_CONTROL_DISABLED;/* 0 */
+		break;
 	case IEEE80211_SMPS_OFF:/* 1 */ /*MIMO_PS_NOLIMIT*/
 		action_frame->u.action.u.ht_smps.smps_control =
 				WLAN_HT_SMPS_CONTROL_DISABLED;/* 0 */

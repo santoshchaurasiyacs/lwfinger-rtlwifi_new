@@ -126,7 +126,11 @@ void rtl_init_rx_config(struct ieee80211_hw *hw);
 void rtl_init_rfkill(struct ieee80211_hw *hw);
 void rtl_deinit_rfkill(struct ieee80211_hw *hw);
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 15, 0)
+void rtl_watch_dog_timer_callback(struct timer_list *t);
+#else
 void rtl_watch_dog_timer_callback(unsigned long data);
+#endif
 void rtl_deinit_deferred_work(struct ieee80211_hw *hw);
 
 bool rtl_action_proc(struct ieee80211_hw *hw, struct sk_buff *skb, u8 is_tx);
@@ -143,7 +147,6 @@ bool rtl_check_tx_report_acked(struct ieee80211_hw *hw);
 void rtl_wait_tx_report_acked(struct ieee80211_hw *hw, u32 wait_ms);
 
 void rtl_beacon_statistic(struct ieee80211_hw *hw, struct sk_buff *skb);
-void rtl_watch_dog_timer_callback(unsigned long data);
 int rtl_tx_agg_start(struct ieee80211_hw *hw, struct ieee80211_vif *vif,
 	struct ieee80211_sta *sta, u16 tid, u16 *ssn);
 int rtl_tx_agg_stop(struct ieee80211_hw *hw, struct ieee80211_vif *vif,
@@ -169,7 +172,11 @@ u8 *rtl_find_ie(u8 *data, unsigned int len, u8 ie);
 void rtl_recognize_peer(struct ieee80211_hw *hw, u8 *data, unsigned int len);
 u8 rtl_tid_to_ac(u8 tid);
 extern struct attribute_group rtl_attribute_group;
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 15, 0)
+void rtl_easy_concurrent_retrytimer_callback(struct timer_list *t);
+#else
 void rtl_easy_concurrent_retrytimer_callback(unsigned long data);
+#endif
 extern struct rtl_global_var rtl_global_var;
 void rtl_phy_scan_operation_backup(struct ieee80211_hw *hw, u8 operation);
 

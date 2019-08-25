@@ -61,7 +61,11 @@ bool rtl_ps_enable_nic(struct ieee80211_hw *hw)
 	rtlpriv->cfg->ops->enable_interrupt(hw);
 
 	/*<enable timer> */
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 15, 0)
+	rtl_watch_dog_timer_callback(&rtlpriv->works.watchdog_timer);
+#else
 	rtl_watch_dog_timer_callback((unsigned long)hw);
+#endif
 
 	return init_status;
 }
