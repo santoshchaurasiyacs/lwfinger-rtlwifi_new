@@ -392,8 +392,8 @@ static void _rtl8812ae_phy_set_rfe_reg_24g(struct ieee80211_hw *hw)
 				      0x77777777);
 			rtl_set_bbreg(hw, RA_RFE_INV, 0x33f00000, 0x000);
 			rtl_set_bbreg(hw, RB_RFE_INV, BMASKRFEINV, 0x000);
-			break;
 		}
+		break;
 	case 0:
 	case 2:
 	default:
