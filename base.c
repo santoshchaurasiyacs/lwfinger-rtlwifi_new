@@ -400,6 +400,7 @@ static const struct wiphy_vendor_command rtl_vendor_cmds[] = {
 		.flags = WIPHY_VENDOR_CMD_NEED_WDEV |
 			 WIPHY_VENDOR_CMD_NEED_NETDEV,
 		.doit = rtl_cfgvendor_coex_ap_num,
+		.policy = VENDOR_CMD_RAW_DATA,
 	},
 	{
 		{
@@ -409,6 +410,7 @@ static const struct wiphy_vendor_command rtl_vendor_cmds[] = {
 		.flags = WIPHY_VENDOR_CMD_NEED_WDEV |
 			 WIPHY_VENDOR_CMD_NEED_NETDEV,
 		.doit = rtl_cfgvendor_coex_4way,
+		.policy = VENDOR_CMD_RAW_DATA,
 	},
 };
 #endif
