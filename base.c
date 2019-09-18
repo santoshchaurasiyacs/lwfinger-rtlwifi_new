@@ -400,7 +400,9 @@ static const struct wiphy_vendor_command rtl_vendor_cmds[] = {
 		.flags = WIPHY_VENDOR_CMD_NEED_WDEV |
 			 WIPHY_VENDOR_CMD_NEED_NETDEV,
 		.doit = rtl_cfgvendor_coex_ap_num,
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 3, 0))
 		.policy = VENDOR_CMD_RAW_DATA,
+#endif
 	},
 	{
 		{
@@ -410,7 +412,9 @@ static const struct wiphy_vendor_command rtl_vendor_cmds[] = {
 		.flags = WIPHY_VENDOR_CMD_NEED_WDEV |
 			 WIPHY_VENDOR_CMD_NEED_NETDEV,
 		.doit = rtl_cfgvendor_coex_4way,
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 3, 0))
 		.policy = VENDOR_CMD_RAW_DATA,
+#endif
 	},
 };
 #endif
