@@ -2372,8 +2372,10 @@ int rtl_pci_probe(struct pci_dev *pdev,
 	/* init mp flag */
 	rtlpriv->mp_mode = 0;
 
+#ifdef CONFIG_RTLWIFI_DEBUG
 	/* add for debug */
 	rtl_debug_add_one(hw);
+#endif
 
 	/*init rfkill */
 	rtl_init_rfkill(hw);	/* Init PCI sw */
@@ -2423,8 +2425,10 @@ void rtl_pci_disconnect(struct pci_dev *pdev)
 	wait_for_completion(&rtlpriv->firmware_loading_complete);
 	clear_bit(RTL_STATUS_INTERFACE_START, &rtlpriv->status);
 
+#ifdef CONFIG_RTLWIFI_DEBUG
 	/* remove form debug */
 	rtl_debug_remove_one(hw);
+#endif
 
 	/*ieee80211_unregister_hw will call ops_stop */
 	if (rtlmac->mac80211_registered == 1) {

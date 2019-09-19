@@ -65,8 +65,6 @@ obj-m				+= rtl8192ee/
 
 ccflags-y += -D__CHECK_ENDIAN__
 #subdir-ccflags-y += -Werror
-ccflags-y += -DCONFIG_RTLWIFI_DEBUG
-subdir-ccflags-y += -DCONFIG_RTLWIFI_DEBUG
 
 ifeq ("$(KVER)", $(filter "$(KVER)", "3.14.35-031435-generic" "3.14.35-031435-lowlatency"))
 ccflags-y += -D_ieee80211_is_robust_mgmt_frame=ieee80211_is_robust_mgmt_frame
