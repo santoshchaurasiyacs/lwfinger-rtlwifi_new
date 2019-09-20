@@ -56,7 +56,7 @@ endif
 	@mkdir -p $(MODDESTDIR)
 	@install -p -D -m 644 rtwpci.ko $(MODDESTDIR)	
 	@install -p -D -m 644 rtw88.ko $(MODDESTDIR)	
-	@mkdir -p /lib/firmware
+	@mkdir -p /lib/firmware/rtw88
 	@cp *.bin /lib/firmware/rtw88/.
 ifeq ($(COMPRESS_GZIP), y)
 	@gzip -f $(MODDESTDIR)/*.ko
