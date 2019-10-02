@@ -1,5 +1,5 @@
-/* SPDX-License-Identifier: GPL-2.0 */
-/* Copyright(c) 2018  Realtek Corporation.
+/* SPDX-License-Identifier: GPL-2.0 OR BSD-3-Clause */
+/* Copyright(c) 2018-2019  Realtek Corporation
  */
 
 #ifndef __RTW_DEBUG_H
@@ -16,6 +16,7 @@ enum rtw_debug_mask {
 	RTW_DBG_RFK		= 0x00000080,
 	RTW_DBG_REGD		= 0x00000100,
 	RTW_DBG_DEBUGFS		= 0x00000200,
+	RTW_DBG_PS		= 0x00000400,
 
 	RTW_DBG_ALL		= 0xffffffff
 };

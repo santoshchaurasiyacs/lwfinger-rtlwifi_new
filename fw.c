@@ -1,14 +1,17 @@
-// SPDX-License-Identifier: GPL-2.0
-/* Copyright(c) 2018  Realtek Corporation.
+// SPDX-License-Identifier: GPL-2.0 OR BSD-3-Clause
+/* Copyright(c) 2018-2019  Realtek Corporation
  */
 
 #include "main.h"
+#include "coex.h"
 #include "fw.h"
 #include "tx.h"
 #include "reg.h"
+#include "sec.h"
 #include "debug.h"
 
-void rtw_fw_c2h_cmd_handle_ext(struct rtw_dev *rtwdev, struct sk_buff *skb)
+static void rtw_fw_c2h_cmd_handle_ext(struct rtw_dev *rtwdev,
+				      struct sk_buff *skb)
 {
 	struct rtw_c2h_cmd *c2h;
 	u8 sub_cmd_id;
@@ -35,19 +38,54 @@ void rtw_fw_c2h_cmd_handle(struct rtw_dev *rtwdev, struct sk_buff *skb)
 	c2h = (struct rtw_c2h_cmd *)(skb->data + pkt_offset);
 	len = skb->len - pkt_offset - 2;
 
-	rtw_dbg(rtwdev, RTW_DBG_FW, "recv C2H, id=0x%02x, seq=0x%02x, len=%d\n",
-		c2h->id, c2h->seq, len);
+	mutex_lock(&rtwdev->mutex);
 
 	switch (c2h->id) {
+	case C2H_BT_INFO:
+		rtw_coex_bt_info_notify(rtwdev, c2h->payload, len);
+		break;
+	case C2H_WLAN_INFO:
+		rtw_coex_wl_fwdbginfo_notify(rtwdev, c2h->payload, len);
+		break;
 	case C2H_HALMAC:
 		rtw_fw_c2h_cmd_handle_ext(rtwdev, skb);
 		break;
 	default:
 		break;
 	}
+
+	mutex_unlock(&rtwdev->mutex);
 }
 
-void rtw_fw_send_h2c_command(struct rtw_dev *rtwdev, u8 *h2c)
+void rtw_fw_c2h_cmd_rx_irqsafe(struct rtw_dev *rtwdev, u32 pkt_offset,
+			       struct sk_buff *skb)
+{
+	struct rtw_c2h_cmd *c2h;
+	u8 len;
+
+	c2h = (struct rtw_c2h_cmd *)(skb->data + pkt_offset);
+	len = skb->len - pkt_offset - 2;
+	*((u32 *)skb->cb) = pkt_offset;
+
+	rtw_dbg(rtwdev, RTW_DBG_FW, "recv C2H, id=0x%02x, seq=0x%02x, len=%d\n",
+		c2h->id, c2h->seq, len);
+
+	switch (c2h->id) {
+	case C2H_BT_MP_INFO:
+		rtw_coex_info_response(rtwdev, skb);
+		break;
+	default:
+		/* pass offset for further operation */
+		*((u32 *)skb->cb) = pkt_offset;
+		skb_queue_tail(&rtwdev->c2h_queue, skb);
+		ieee80211_queue_work(rtwdev->hw, &rtwdev->c2h_work);
+		break;
+	}
+}
+EXPORT_SYMBOL(rtw_fw_c2h_cmd_rx_irqsafe);
+
+static void rtw_fw_send_h2c_command(struct rtw_dev *rtwdev,
+				    u8 *h2c)
 {
 	u8 box;
 	u8 box_state;
@@ -179,6 +217,102 @@ void rtw_fw_do_iqk(struct rtw_dev *rtwdev, struct rtw_iqk_para *para)
 	rtw_fw_send_h2c_packet(rtwdev, h2c_pkt);
 }
 
+void rtw_fw_query_bt_info(struct rtw_dev *rtwdev)
+{
+	u8 h2c_pkt[H2C_PKT_SIZE] = {0};
+
+	SET_H2C_CMD_ID_CLASS(h2c_pkt, H2C_CMD_QUERY_BT_INFO);
+
+	SET_QUERY_BT_INFO(h2c_pkt, true);
+
+	rtw_fw_send_h2c_command(rtwdev, h2c_pkt);
+}
+
+void rtw_fw_wl_ch_info(struct rtw_dev *rtwdev, u8 link, u8 ch, u8 bw)
+{
+	u8 h2c_pkt[H2C_PKT_SIZE] = {0};
+
+	SET_H2C_CMD_ID_CLASS(h2c_pkt, H2C_CMD_WL_CH_INFO);
+
+	SET_WL_CH_INFO_LINK(h2c_pkt, link);
+	SET_WL_CH_INFO_CHNL(h2c_pkt, ch);
+	SET_WL_CH_INFO_BW(h2c_pkt, bw);
+
+	rtw_fw_send_h2c_command(rtwdev, h2c_pkt);
+}
+
+void rtw_fw_query_bt_mp_info(struct rtw_dev *rtwdev,
+			     struct rtw_coex_info_req *req)
+{
+	u8 h2c_pkt[H2C_PKT_SIZE] = {0};
+
+	SET_H2C_CMD_ID_CLASS(h2c_pkt, H2C_CMD_QUERY_BT_MP_INFO);
+
+	SET_BT_MP_INFO_SEQ(h2c_pkt, req->seq);
+	SET_BT_MP_INFO_OP_CODE(h2c_pkt, req->op_code);
+	SET_BT_MP_INFO_PARA1(h2c_pkt, req->para1);
+	SET_BT_MP_INFO_PARA2(h2c_pkt, req->para2);
+	SET_BT_MP_INFO_PARA3(h2c_pkt, req->para3);
+
+	rtw_fw_send_h2c_command(rtwdev, h2c_pkt);
+}
+
+void rtw_fw_force_bt_tx_power(struct rtw_dev *rtwdev, u8 bt_pwr_dec_lvl)
+{
+	u8 h2c_pkt[H2C_PKT_SIZE] = {0};
+	u8 index = 0 - bt_pwr_dec_lvl;
+
+	SET_H2C_CMD_ID_CLASS(h2c_pkt, H2C_CMD_FORCE_BT_TX_POWER);
+
+	SET_BT_TX_POWER_INDEX(h2c_pkt, index);
+
+	rtw_fw_send_h2c_command(rtwdev, h2c_pkt);
+}
+
+void rtw_fw_bt_ignore_wlan_action(struct rtw_dev *rtwdev, bool enable)
+{
+	u8 h2c_pkt[H2C_PKT_SIZE] = {0};
+
+	SET_H2C_CMD_ID_CLASS(h2c_pkt, H2C_CMD_IGNORE_WLAN_ACTION);
+
+	SET_IGNORE_WLAN_ACTION_EN(h2c_pkt, enable);
+
+	rtw_fw_send_h2c_command(rtwdev, h2c_pkt);
+}
+
+void rtw_fw_coex_tdma_type(struct rtw_dev *rtwdev,
+			   u8 para1, u8 para2, u8 para3, u8 para4, u8 para5)
+{
+	u8 h2c_pkt[H2C_PKT_SIZE] = {0};
+
+	SET_H2C_CMD_ID_CLASS(h2c_pkt, H2C_CMD_COEX_TDMA_TYPE);
+
+	SET_COEX_TDMA_TYPE_PARA1(h2c_pkt, para1);
+	SET_COEX_TDMA_TYPE_PARA2(h2c_pkt, para2);
+	SET_COEX_TDMA_TYPE_PARA3(h2c_pkt, para3);
+	SET_COEX_TDMA_TYPE_PARA4(h2c_pkt, para4);
+	SET_COEX_TDMA_TYPE_PARA5(h2c_pkt, para5);
+
+	rtw_fw_send_h2c_command(rtwdev, h2c_pkt);
+}
+
+void rtw_fw_bt_wifi_control(struct rtw_dev *rtwdev, u8 op_code, u8 *data)
+{
+	u8 h2c_pkt[H2C_PKT_SIZE] = {0};
+
+	SET_H2C_CMD_ID_CLASS(h2c_pkt, H2C_CMD_BT_WIFI_CONTROL);
+
+	SET_BT_WIFI_CONTROL_OP_CODE(h2c_pkt, op_code);
+
+	SET_BT_WIFI_CONTROL_DATA1(h2c_pkt, *data);
+	SET_BT_WIFI_CONTROL_DATA2(h2c_pkt, *(data + 1));
+	SET_BT_WIFI_CONTROL_DATA3(h2c_pkt, *(data + 2));
+	SET_BT_WIFI_CONTROL_DATA4(h2c_pkt, *(data + 3));
+	SET_BT_WIFI_CONTROL_DATA5(h2c_pkt, *(data + 4));
+
+	rtw_fw_send_h2c_command(rtwdev, h2c_pkt);
+}
+
 void rtw_fw_send_rssi_info(struct rtw_dev *rtwdev, struct rtw_sta_info *si)
 {
 	u8 h2c_pkt[H2C_PKT_SIZE] = {0};
@@ -264,6 +398,24 @@ static u8 rtw_get_rsvd_page_location(struct rtw_dev *rtwdev,
 	return location;
 }
 
+void rtw_fw_set_pg_info(struct rtw_dev *rtwdev)
+{
+	struct rtw_lps_conf *conf = &rtwdev->lps_conf;
+	u8 h2c_pkt[H2C_PKT_SIZE] = {0};
+	u8 loc_pg, loc_dpk;
+
+	loc_pg = rtw_get_rsvd_page_location(rtwdev, RSVD_LPS_PG_INFO);
+	loc_dpk = rtw_get_rsvd_page_location(rtwdev, RSVD_LPS_PG_DPK);
+
+	SET_H2C_CMD_ID_CLASS(h2c_pkt, H2C_CMD_LPS_PG_INFO);
+
+	LPS_PG_INFO_LOC(h2c_pkt, loc_pg);
+	LPS_PG_DPK_LOC(h2c_pkt, loc_dpk);
+	LPS_PG_SEC_CAM_EN(h2c_pkt, conf->sec_cam_backup);
+
+	rtw_fw_send_h2c_command(rtwdev, h2c_pkt);
+}
+
 void rtw_send_rsvd_page_h2c(struct rtw_dev *rtwdev)
 {
 	u8 h2c_pkt[H2C_PKT_SIZE] = {0};
@@ -309,6 +461,58 @@ rtw_beacon_get(struct ieee80211_hw *hw, struct ieee80211_vif *vif)
 	return skb_new;
 }
 
+static struct sk_buff *rtw_lps_pg_dpk_get(struct ieee80211_hw *hw)
+{
+	struct rtw_dev *rtwdev = hw->priv;
+	struct rtw_chip_info *chip = rtwdev->chip;
+	struct rtw_dpk_info *dpk_info = &rtwdev->dm_info.dpk_info;
+	struct rtw_lps_pg_dpk_hdr *dpk_hdr;
+	struct sk_buff *skb;
+	u32 size;
+
+	size = chip->tx_pkt_desc_sz + sizeof(*dpk_hdr);
+	skb = alloc_skb(size, GFP_KERNEL);
+	if (!skb)
+		return NULL;
+
+	skb_reserve(skb, chip->tx_pkt_desc_sz);
+	dpk_hdr = skb_put_zero(skb, sizeof(*dpk_hdr));
+	dpk_hdr->dpk_ch = dpk_info->dpk_ch;
+	dpk_hdr->dpk_path_ok = dpk_info->dpk_path_ok[0];
+	memcpy(dpk_hdr->dpk_txagc, dpk_info->dpk_txagc, 2);
+	memcpy(dpk_hdr->dpk_gs, dpk_info->dpk_gs, 4);
+	memcpy(dpk_hdr->coef, dpk_info->coef, 160);
+
+	return skb;
+}
+
+static struct sk_buff *rtw_lps_pg_info_get(struct ieee80211_hw *hw,
+					   struct ieee80211_vif *vif)
+{
+	struct rtw_dev *rtwdev = hw->priv;
+	struct rtw_chip_info *chip = rtwdev->chip;
+	struct rtw_lps_conf *conf = &rtwdev->lps_conf;
+	struct rtw_lps_pg_info_hdr *pg_info_hdr;
+	struct sk_buff *skb;
+	u32 size;
+
+	size = chip->tx_pkt_desc_sz + sizeof(*pg_info_hdr);
+	skb = alloc_skb(size, GFP_KERNEL);
+	if (!skb)
+		return NULL;
+
+	skb_reserve(skb, chip->tx_pkt_desc_sz);
+	pg_info_hdr = skb_put_zero(skb, sizeof(*pg_info_hdr));
+	pg_info_hdr->tx_bu_page_count = rtwdev->fifo.rsvd_drv_pg_num;
+	pg_info_hdr->macid = find_first_bit(rtwdev->mac_id_map, RTW_MAX_MAC_ID_NUM);
+	pg_info_hdr->sec_cam_count =
+		rtw_sec_cam_pg_backup(rtwdev, pg_info_hdr->sec_cam);
+
+	conf->sec_cam_backup = pg_info_hdr->sec_cam_count != 0;
+
+	return skb;
+}
+
 static struct sk_buff *rtw_get_rsvd_page_skb(struct ieee80211_hw *hw,
 					     struct ieee80211_vif *vif,
 					     enum rtw_rsvd_packet_type type)
@@ -338,6 +542,12 @@ static struct sk_buff *rtw_get_rsvd_page_skb(struct ieee80211_hw *hw,
 #else
 		skb_new = ieee80211_nullfunc_get(hw, vif);
 #endif
+		break;
+	case RSVD_LPS_PG_DPK:
+		skb_new = rtw_lps_pg_dpk_get(hw);
+		break;
+	case RSVD_LPS_PG_INFO:
+		skb_new = rtw_lps_pg_info_get(hw, vif);
 		break;
 	default:
 		return NULL;

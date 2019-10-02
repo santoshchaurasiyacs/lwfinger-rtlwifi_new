@@ -24,6 +24,7 @@ EXTRA_CFLAGS += -O2
 
 obj-m	+= rtw88.o
 rtw88-objs += main.o \
+	   coex.o \
 	   mac80211.o \
 	   util.o \
 	   debug.o \

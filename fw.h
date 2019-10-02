@@ -1,5 +1,5 @@
-/* SPDX-License-Identifier: GPL-2.0 */
-/* Copyright(c) 2018  Realtek Corporation.
+/* SPDX-License-Identifier: GPL-2.0 OR BSD-3-Clause */
+/* Copyright(c) 2018-2019  Realtek Corporation
  */
 
 #ifndef __RTW_FW_H_
@@ -35,7 +35,9 @@
 
 enum rtw_c2h_cmd_id {
 	C2H_BT_INFO = 0x09,
+	C2H_BT_MP_INFO = 0x0b,
 	C2H_HW_FEATURE_REPORT = 0x19,
+	C2H_WLAN_INFO = 0x27,
 	C2H_HW_FEATURE_DUMP = 0xfd,
 	C2H_HALMAC = 0xff,
 };
@@ -56,6 +58,8 @@ enum rtw_rsvd_packet_type {
 	RSVD_PROBE_RESP,
 	RSVD_NULL,
 	RSVD_QOS_NULL,
+	RSVD_LPS_PG_DPK,
+	RSVD_LPS_PG_INFO,
 };
 
 enum rtw_fw_rf_type {
@@ -71,10 +75,37 @@ enum rtw_fw_rf_type {
 	FW_RF_MAX_TYPE = 0xF,
 };
 
+struct rtw_coex_info_req {
+	u8 seq;
+	u8 op_code;
+	u8 para1;
+	u8 para2;
+	u8 para3;
+};
+
 struct rtw_iqk_para {
 	u8 clear;
 	u8 segment_iqk;
 };
+
+struct rtw_lps_pg_dpk_hdr {
+	u16 dpk_path_ok;
+	u8 dpk_txagc[2];
+	u16 dpk_gs[2];
+	u32 coef[2][20];
+	u8 dpk_ch;
+} __packed;
+
+struct rtw_lps_pg_info_hdr {
+	u8 macid;
+	u8 mbssid;
+	u8 pattern_count;
+	u8 mu_tab_group_id;
+	u8 sec_cam_count;
+	u8 tx_bu_page_count;
+	u16 rsvd;
+	u8 sec_cam[MAX_PG_CAM_BACKUP_NUM];
+} __packed;
 
 struct rtw_rsvd_page {
 	struct list_head list;
@@ -136,8 +167,17 @@ static inline void rtw_h2c_pkt_set_header(u8 *h2c_pkt, u8 sub_id)
 #define H2C_CMD_RSVD_PAGE		0x0
 #define H2C_CMD_MEDIA_STATUS_RPT	0x01
 #define H2C_CMD_SET_PWR_MODE		0x20
+#define H2C_CMD_LPS_PG_INFO		0x2b
 #define H2C_CMD_RA_INFO			0x40
 #define H2C_CMD_RSSI_MONITOR		0x42
+
+#define H2C_CMD_COEX_TDMA_TYPE		0x60
+#define H2C_CMD_QUERY_BT_INFO		0x61
+#define H2C_CMD_FORCE_BT_TX_POWER	0x62
+#define H2C_CMD_IGNORE_WLAN_ACTION	0x63
+#define H2C_CMD_WL_CH_INFO		0x66
+#define H2C_CMD_QUERY_BT_MP_INFO	0x67
+#define H2C_CMD_BT_WIFI_CONTROL		0x69
 
 #define SET_H2C_CMD_ID_CLASS(h2c_pkt, value)				       \
 	le32p_replace_bits((__le32 *)(h2c_pkt) + 0x00, value, GENMASK(7, 0))
@@ -159,6 +199,12 @@ static inline void rtw_h2c_pkt_set_header(u8 *h2c_pkt, u8 sub_id)
 	le32p_replace_bits((__le32 *)(h2c_pkt) + 0x01, value, GENMASK(7, 5))
 #define SET_PWR_MODE_SET_PWR_STATE(h2c_pkt, value)                             \
 	le32p_replace_bits((__le32 *)(h2c_pkt) + 0x01, value, GENMASK(15, 8))
+#define LPS_PG_INFO_LOC(h2c_pkt, value)                                        \
+	le32p_replace_bits((__le32 *)(h2c_pkt) + 0x00, value, GENMASK(23, 16))
+#define LPS_PG_DPK_LOC(h2c_pkt, value)                                         \
+	le32p_replace_bits((__le32 *)(h2c_pkt) + 0x00, value, GENMASK(31, 24))
+#define LPS_PG_SEC_CAM_EN(h2c_pkt, value)                                      \
+	le32p_replace_bits((__le32 *)(h2c_pkt) + 0x00, value, BIT(8))
 #define SET_RSSI_INFO_MACID(h2c_pkt, value)                                    \
 	le32p_replace_bits((__le32 *)(h2c_pkt) + 0x00, value, GENMASK(15, 8))
 #define SET_RSSI_INFO_RSSI(h2c_pkt, value)                                     \
@@ -191,6 +237,50 @@ static inline void rtw_h2c_pkt_set_header(u8 *h2c_pkt, u8 sub_id)
 	le32p_replace_bits((__le32 *)(h2c_pkt) + 0x01, value, GENMASK(23, 16))
 #define SET_RA_INFO_RA_MASK3(h2c_pkt, value)                                   \
 	le32p_replace_bits((__le32 *)(h2c_pkt) + 0x01, value, GENMASK(31, 24))
+#define SET_QUERY_BT_INFO(h2c_pkt, value)                                      \
+	le32p_replace_bits((__le32 *)(h2c_pkt) + 0x00, value, BIT(8))
+#define SET_WL_CH_INFO_LINK(h2c_pkt, value)                                    \
+	le32p_replace_bits((__le32 *)(h2c_pkt) + 0x00, value, GENMASK(15, 8))
+#define SET_WL_CH_INFO_CHNL(h2c_pkt, value)                                    \
+	le32p_replace_bits((__le32 *)(h2c_pkt) + 0x00, value, GENMASK(23, 16))
+#define SET_WL_CH_INFO_BW(h2c_pkt, value)                                      \
+	le32p_replace_bits((__le32 *)(h2c_pkt) + 0x00, value, GENMASK(31, 24))
+#define SET_BT_MP_INFO_SEQ(h2c_pkt, value)                                     \
+	le32p_replace_bits((__le32 *)(h2c_pkt) + 0x00, value, GENMASK(15, 12))
+#define SET_BT_MP_INFO_OP_CODE(h2c_pkt, value)                                 \
+	le32p_replace_bits((__le32 *)(h2c_pkt) + 0x00, value, GENMASK(23, 16))
+#define SET_BT_MP_INFO_PARA1(h2c_pkt, value)                                   \
+	le32p_replace_bits((__le32 *)(h2c_pkt) + 0x00, value, GENMASK(31, 24))
+#define SET_BT_MP_INFO_PARA2(h2c_pkt, value)                                   \
+	le32p_replace_bits((__le32 *)(h2c_pkt) + 0x01, value, GENMASK(7, 0))
+#define SET_BT_MP_INFO_PARA3(h2c_pkt, value)                                   \
+	le32p_replace_bits((__le32 *)(h2c_pkt) + 0x01, value, GENMASK(15, 8))
+#define SET_BT_TX_POWER_INDEX(h2c_pkt, value)                                  \
+	le32p_replace_bits((__le32 *)(h2c_pkt) + 0x00, value, GENMASK(15, 8))
+#define SET_IGNORE_WLAN_ACTION_EN(h2c_pkt, value)                              \
+	le32p_replace_bits((__le32 *)(h2c_pkt) + 0x00, value, BIT(8))
+#define SET_COEX_TDMA_TYPE_PARA1(h2c_pkt, value)                               \
+	le32p_replace_bits((__le32 *)(h2c_pkt) + 0x00, value, GENMASK(15, 8))
+#define SET_COEX_TDMA_TYPE_PARA2(h2c_pkt, value)                               \
+	le32p_replace_bits((__le32 *)(h2c_pkt) + 0x00, value, GENMASK(23, 16))
+#define SET_COEX_TDMA_TYPE_PARA3(h2c_pkt, value)                               \
+	le32p_replace_bits((__le32 *)(h2c_pkt) + 0x00, value, GENMASK(31, 24))
+#define SET_COEX_TDMA_TYPE_PARA4(h2c_pkt, value)                               \
+	le32p_replace_bits((__le32 *)(h2c_pkt) + 0x01, value, GENMASK(7, 0))
+#define SET_COEX_TDMA_TYPE_PARA5(h2c_pkt, value)                               \
+	le32p_replace_bits((__le32 *)(h2c_pkt) + 0x01, value, GENMASK(15, 8))
+#define SET_BT_WIFI_CONTROL_OP_CODE(h2c_pkt, value)                            \
+	le32p_replace_bits((__le32 *)(h2c_pkt) + 0x00, value, GENMASK(15, 8))
+#define SET_BT_WIFI_CONTROL_DATA1(h2c_pkt, value)                              \
+	le32p_replace_bits((__le32 *)(h2c_pkt) + 0x00, value, GENMASK(23, 16))
+#define SET_BT_WIFI_CONTROL_DATA2(h2c_pkt, value)                              \
+	le32p_replace_bits((__le32 *)(h2c_pkt) + 0x00, value, GENMASK(31, 24))
+#define SET_BT_WIFI_CONTROL_DATA3(h2c_pkt, value)                              \
+	le32p_replace_bits((__le32 *)(h2c_pkt) + 0x01, value, GENMASK(7, 0))
+#define SET_BT_WIFI_CONTROL_DATA4(h2c_pkt, value)                              \
+	le32p_replace_bits((__le32 *)(h2c_pkt) + 0x01, value, GENMASK(15, 8))
+#define SET_BT_WIFI_CONTROL_DATA5(h2c_pkt, value)                              \
+	le32p_replace_bits((__le32 *)(h2c_pkt) + 0x01, value, GENMASK(23, 16))
 
 static inline struct rtw_c2h_cmd *get_c2h_from_skb(struct sk_buff *skb)
 {
@@ -200,12 +290,24 @@ static inline struct rtw_c2h_cmd *get_c2h_from_skb(struct sk_buff *skb)
 	return (struct rtw_c2h_cmd *)(skb->data + pkt_offset);
 }
 
+void rtw_fw_c2h_cmd_rx_irqsafe(struct rtw_dev *rtwdev, u32 pkt_offset,
+			       struct sk_buff *skb);
 void rtw_fw_c2h_cmd_handle(struct rtw_dev *rtwdev, struct sk_buff *skb);
 void rtw_fw_send_general_info(struct rtw_dev *rtwdev);
 void rtw_fw_send_phydm_info(struct rtw_dev *rtwdev);
 
 void rtw_fw_do_iqk(struct rtw_dev *rtwdev, struct rtw_iqk_para *para);
 void rtw_fw_set_pwr_mode(struct rtw_dev *rtwdev);
+void rtw_fw_set_pg_info(struct rtw_dev *rtwdev);
+void rtw_fw_query_bt_info(struct rtw_dev *rtwdev);
+void rtw_fw_wl_ch_info(struct rtw_dev *rtwdev, u8 link, u8 ch, u8 bw);
+void rtw_fw_query_bt_mp_info(struct rtw_dev *rtwdev,
+			     struct rtw_coex_info_req *req);
+void rtw_fw_force_bt_tx_power(struct rtw_dev *rtwdev, u8 bt_pwr_dec_lvl);
+void rtw_fw_bt_ignore_wlan_action(struct rtw_dev *rtwdev, bool enable);
+void rtw_fw_coex_tdma_type(struct rtw_dev *rtwdev,
+			   u8 para1, u8 para2, u8 para3, u8 para4, u8 para5);
+void rtw_fw_bt_wifi_control(struct rtw_dev *rtwdev, u8 op_code, u8 *data);
 void rtw_fw_send_rssi_info(struct rtw_dev *rtwdev, struct rtw_sta_info *si);
 void rtw_fw_send_ra_info(struct rtw_dev *rtwdev, struct rtw_sta_info *si);
 void rtw_fw_media_status_report(struct rtw_dev *rtwdev, u8 mac_id, bool conn);

@@ -1,11 +1,10 @@
-// SPDX-License-Identifier: GPL-2.0
-/* Copyright(c) 2018  Realtek Corporation.
+// SPDX-License-Identifier: GPL-2.0 OR BSD-3-Clause
+/* Copyright(c) 2018-2019  Realtek Corporation
  */
 
 #include "main.h"
 #include "rx.h"
 #include "ps.h"
-#include <linux/version.h>
 
 void rtw_rx_stats(struct rtw_dev *rtwdev, struct ieee80211_vif *vif,
 		  struct sk_buff *skb)
@@ -26,8 +25,6 @@ void rtw_rx_stats(struct rtw_dev *rtwdev, struct ieee80211_vif *vif,
 			rtwvif = (struct rtw_vif *)vif->drv_priv;
 			rtwvif->stats.rx_unicast += skb->len;
 			rtwvif->stats.rx_cnt++;
-			if (rtwvif->stats.rx_cnt > RTW_LPS_THRESHOLD)
-				rtw_leave_lps_irqsafe(rtwdev, rtwvif);
 		}
 	}
 }
@@ -91,6 +88,7 @@ void rtw_rx_fill_rx_status(struct rtw_dev *rtwdev,
 			   u8 *phy_status)
 {
 	struct ieee80211_hw *hw = rtwdev->hw;
+	u8 path;
 
 	memset(rx_status, 0, sizeof(*rx_status));
 	rx_status->freq = hw->conf.chandef.chan->center_freq;
@@ -99,6 +97,7 @@ void rtw_rx_fill_rx_status(struct rtw_dev *rtwdev,
 		rx_status->flag |= RX_FLAG_FAILED_FCS_CRC;
 	if (pkt_stat->decrypted)
 		rx_status->flag |= RX_FLAG_DECRYPTED;
+
 	if (pkt_stat->rate >= DESC_RATEVHT1SS_MCS0)
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 12, 0)
 		rx_status->encoding = RX_ENC_VHT;
@@ -182,6 +181,10 @@ void rtw_rx_fill_rx_status(struct rtw_dev *rtwdev,
 #endif
 
 	rx_status->signal = pkt_stat->signal_power;
+	for (path = 0; path < rtwdev->hal.rf_path_num; path++) {
+		rx_status->chains |= BIT(path);
+		rx_status->chain_signal[path] = pkt_stat->rx_power[path];
+	}
 
 	rtw_rx_addr_match(rtwdev, pkt_stat, hdr);
 }

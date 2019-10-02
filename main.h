@@ -1,5 +1,5 @@
-/* SPDX-License-Identifier: GPL-2.0 */
-/* Copyright(c) 2018  Realtek Corporation.
+/* SPDX-License-Identifier: GPL-2.0 OR BSD-3-Clause */
+/* Copyright(c) 2018-2019  Realtek Corporation
  */
 
 #ifndef __RTK_MAIN_H_
@@ -17,8 +17,6 @@
 #include <linux/firmware.h>
 #include <linux/average.h>
 #include <linux/bitops.h>
-#include <linux/version.h>
-#include <linux/module.h>
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 19, 0)
 #include <linux/bitfield.h>
 #else
@@ -34,8 +32,11 @@
 #define NUM_NL80211_BANDS IEEE80211_NUM_BANDS
 #endif
 
+#include "util.h"
+
 #define RTW_MAX_MAC_ID_NUM		32
 #define RTW_MAX_SEC_CAM_NUM		32
+#define MAX_PG_CAM_BACKUP_NUM		8
 
 #define RTW_WATCH_DOG_DELAY_TIME	round_jiffies_relative(HZ * 2)
 
@@ -47,6 +48,7 @@
 #define RTW_RF_PATH_MAX			4
 #define HW_FEATURE_LEN			13
 
+extern unsigned int rtw_fw_lps_deep_mode;
 extern unsigned int rtw_debug_mask;
 extern const struct ieee80211_ops rtw_ops;
 extern struct rtw_chip_info rtw8822b_hw_spec;
@@ -70,6 +72,7 @@ struct rtw_hci {
 	enum rtw_hci_type type;
 
 	u32 rpwm_addr;
+	u32 cpwm_addr;
 
 	u8 bulkout_num;
 };
@@ -81,6 +84,9 @@ enum rtw_supported_band {
 
 	RTW_BAND_MAX,
 };
+
+/* now, support upto 80M bw */
+#define RTW_MAX_CHANNEL_WIDTH RTW_CHANNEL_WIDTH_80
 
 enum rtw_bandwidth {
 	RTW_CHANNEL_WIDTH_20	= 0,
@@ -306,10 +312,16 @@ enum rtw_trx_desc_rate {
 };
 
 enum rtw_regulatory_domains {
-	RTW_REGD_FCC	= 0,
-	RTW_REGD_MKK	= 1,
-	RTW_REGD_ETSI	= 2,
-	RTW_REGD_WW	= 3,
+	RTW_REGD_FCC		= 0,
+	RTW_REGD_MKK		= 1,
+	RTW_REGD_ETSI		= 2,
+	RTW_REGD_IC		= 3,
+	RTW_REGD_KCC		= 4,
+	RTW_REGD_ACMA		= 5,
+	RTW_REGD_CHILE		= 6,
+	RTW_REGD_UKRAINE	= 7,
+	RTW_REGD_MEXICO		= 8,
+	RTW_REGD_WW,
 
 	RTW_REGD_MAX
 };
@@ -320,7 +332,9 @@ enum rtw_flags {
 	RTW_FLAG_SCANNING,
 	RTW_FLAG_INACTIVE_PS,
 	RTW_FLAG_LEISURE_PS,
+	RTW_FLAG_LEISURE_PS_DEEP,
 	RTW_FLAG_DIG_DISABLE,
+	RTW_FLAG_BUSY_TRAFFIC,
 
 	NUM_OF_RTW_FLAGS,
 };
@@ -433,6 +447,10 @@ struct rtw_channel_params {
 	u8 center_chan;
 	u8 bandwidth;
 	u8 primary_chan_idx;
+	/* center channel by different available bandwidth,
+	 * val of (bw > current bandwidth) is invalid
+	 */
+	u8 cch_by_bw[RTW_MAX_CHANNEL_WIDTH + 1];
 };
 
 struct rtw_hw_reg {
@@ -451,6 +469,7 @@ enum rtw_vif_port_set {
 	PORT_SET_BSSID		= BIT(1),
 	PORT_SET_NET_TYPE	= BIT(2),
 	PORT_SET_AID		= BIT(3),
+	PORT_SET_BCN_CTRL	= BIT(4),
 };
 
 struct rtw_vif_port {
@@ -458,6 +477,7 @@ struct rtw_vif_port {
 	struct rtw_hw_reg bssid;
 	struct rtw_hw_reg net_type;
 	struct rtw_hw_reg aid;
+	struct rtw_hw_reg bcn_ctrl;
 };
 
 struct rtw_tx_pkt_info {
@@ -530,6 +550,12 @@ enum rtw_lps_mode {
 	RTW_MODE_WMM_PS	= 2,
 };
 
+enum rtw_lps_deep_mode {
+	LPS_DEEP_MODE_NONE	= 0,
+	LPS_DEEP_MODE_LCLK	= 1,
+	LPS_DEEP_MODE_PG	= 2,
+};
+
 enum rtw_pwr_state {
 	RTW_RF_OFF	= 0x0,
 	RTW_RF_ON	= 0x4,
@@ -537,14 +563,14 @@ enum rtw_pwr_state {
 };
 
 struct rtw_lps_conf {
-	/* the interface to enter lps */
-	struct rtw_vif *rtwvif;
 	enum rtw_lps_mode mode;
+	enum rtw_lps_deep_mode deep_mode;
 	enum rtw_pwr_state state;
 	u8 awake_interval;
 	u8 rlbm;
 	u8 smart_ps;
 	u8 port_id;
+	bool sec_cam_backup;
 };
 
 enum rtw_hw_key_type {
@@ -611,6 +637,7 @@ struct rtw_vif {
 	u8 mac_addr[ETH_ALEN];
 	u8 bssid[ETH_ALEN];
 	u8 port;
+	u8 bcn_ctrl;
 	const struct rtw_vif_port *conf;
 
 	struct rtw_traffic_stats stats;
@@ -643,7 +670,19 @@ struct rtw_chip_ops {
 			    u8 antenna_rx);
 	void (*cfg_ldo25)(struct rtw_dev *rtwdev, bool enable);
 	void (*false_alarm_statistics)(struct rtw_dev *rtwdev);
-	void (*do_iqk)(struct rtw_dev *rtwdev);
+	void (*phy_calibration)(struct rtw_dev *rtwdev);
+	void (*dpk_track)(struct rtw_dev *rtwdev);
+	void (*cck_pd_set)(struct rtw_dev *rtwdev, u8 level);
+
+	/* for coex */
+	void (*coex_set_init)(struct rtw_dev *rtwdev);
+	void (*coex_set_ant_switch)(struct rtw_dev *rtwdev,
+				    u8 ctrl_type, u8 pos_type);
+	void (*coex_set_gnt_fix)(struct rtw_dev *rtwdev);
+	void (*coex_set_gnt_debug)(struct rtw_dev *rtwdev);
+	void (*coex_set_rfe_type)(struct rtw_dev *rtwdev);
+	void (*coex_set_wl_tx_power)(struct rtw_dev *rtwdev, u8 wl_pwr);
+	void (*coex_set_wl_rx_gain)(struct rtw_dev *rtwdev, bool low_gain);
 };
 
 #define RTW_PWR_POLLING_CNT	20000
@@ -835,6 +874,7 @@ struct rtw_chip_info {
 
 	bool ht_supported;
 	bool vht_supported;
+	u8 lps_deep_mode_supported;
 
 	/* init values */
 	u8 sys_func_en;
@@ -856,12 +896,276 @@ struct rtw_chip_info {
 
 	const struct rtw_rfe_def *rfe_defs;
 	u32 rfe_defs_size;
+
+	bool en_dis_dpd;
+	u16 dpd_ratemask;
+
+	/* coex paras */
+	u32 coex_para_ver;
+	u8 bt_desired_ver;
+	bool scbd_support;
+	bool new_scbd10_def; /* true: fix 2M(8822c) */
+	u8 pstdma_type; /* 0: LPSoff, 1:LPSon */
+	u8 bt_rssi_type;
+	u8 ant_isolation;
+	u8 rssi_tolerance;
+	u8 table_sant_num;
+	u8 table_nsant_num;
+	u8 tdma_sant_num;
+	u8 tdma_nsant_num;
+	u8 bt_afh_span_bw20;
+	u8 bt_afh_span_bw40;
+	u8 afh_5g_num;
+	u8 wl_rf_para_num;
+	const u8 *bt_rssi_step;
+	const u8 *wl_rssi_step;
+	const struct coex_table_para *table_nsant;
+	const struct coex_table_para *table_sant;
+	const struct coex_tdma_para *tdma_sant;
+	const struct coex_tdma_para *tdma_nsant;
+	const struct coex_rf_para *wl_rf_para_tx;
+	const struct coex_rf_para *wl_rf_para_rx;
+	const struct coex_5g_afh_map *afh_5g;
 };
+
+enum rtw_coex_bt_state_cnt {
+	COEX_CNT_BT_RETRY,
+	COEX_CNT_BT_REINIT,
+	COEX_CNT_BT_REENABLE,
+	COEX_CNT_BT_POPEVENT,
+	COEX_CNT_BT_SETUPLINK,
+	COEX_CNT_BT_IGNWLANACT,
+	COEX_CNT_BT_INQ,
+	COEX_CNT_BT_PAGE,
+	COEX_CNT_BT_ROLESWITCH,
+	COEX_CNT_BT_AFHUPDATE,
+	COEX_CNT_BT_INFOUPDATE,
+	COEX_CNT_BT_IQK,
+	COEX_CNT_BT_IQKFAIL,
+
+	COEX_CNT_BT_MAX
+};
+
+enum rtw_coex_wl_state_cnt {
+	COEX_CNT_WL_CONNPKT,
+	COEX_CNT_WL_COEXRUN,
+	COEX_CNT_WL_NOISY0,
+	COEX_CNT_WL_NOISY1,
+	COEX_CNT_WL_NOISY2,
+	COEX_CNT_WL_5MS_NOEXTEND,
+	COEX_CNT_WL_FW_NOTIFY,
+
+	COEX_CNT_WL_MAX
+};
+
+struct rtw_coex_rfe {
+	bool ant_switch_exist;
+	bool ant_switch_diversity;
+	bool ant_switch_with_bt;
+	u8 rfe_module_type;
+	u8 ant_switch_polarity;
+
+	/* true if WLG at BTG, else at WLAG */
+	bool wlg_at_btg;
+};
+
+struct rtw_coex_dm {
+	bool cur_ps_tdma_on;
+	bool cur_wl_rx_low_gain_en;
+
+	u8 reason;
+	u8 bt_rssi_state[4];
+	u8 wl_rssi_state[4];
+	u8 wl_ch_info[3];
+	u8 cur_ps_tdma;
+	u8 cur_table;
+	u8 ps_tdma_para[5];
+	u8 cur_bt_pwr_lvl;
+	u8 cur_bt_lna_lvl;
+	u8 cur_wl_pwr_lvl;
+	u8 bt_status;
+	u32 cur_ant_pos_type;
+	u32 cur_switch_status;
+	u32 setting_tdma;
+};
+
+#define COEX_BTINFO_SRC_WL_FW	0x0
+#define COEX_BTINFO_SRC_BT_RSP	0x1
+#define COEX_BTINFO_SRC_BT_ACT	0x2
+#define COEX_BTINFO_SRC_BT_IQK	0x3
+#define COEX_BTINFO_SRC_BT_SCBD	0x4
+#define COEX_BTINFO_SRC_MAX	0x5
+
+#define COEX_INFO_FTP		BIT(7)
+#define COEX_INFO_A2DP		BIT(6)
+#define COEX_INFO_HID		BIT(5)
+#define COEX_INFO_SCO_BUSY	BIT(4)
+#define COEX_INFO_ACL_BUSY	BIT(3)
+#define COEX_INFO_INQ_PAGE	BIT(2)
+#define COEX_INFO_SCO_ESCO	BIT(1)
+#define COEX_INFO_CONNECTION	BIT(0)
+#define COEX_BTINFO_LENGTH_MAX	10
+
+struct rtw_coex_stat {
+	bool bt_disabled;
+	bool bt_disabled_pre;
+	bool bt_link_exist;
+	bool bt_whck_test;
+	bool bt_inq_page;
+	bool bt_inq;
+	bool bt_page;
+	bool bt_ble_voice;
+	bool bt_ble_exist;
+	bool bt_hfp_exist;
+	bool bt_a2dp_exist;
+	bool bt_hid_exist;
+	bool bt_pan_exist; /* PAN or OPP */
+	bool bt_opp_exist; /* OPP only */
+	bool bt_acl_busy;
+	bool bt_fix_2M;
+	bool bt_setup_link;
+	bool bt_multi_link;
+	bool bt_a2dp_sink;
+	bool bt_a2dp_active;
+	bool bt_reenable;
+	bool bt_ble_scan_en;
+	bool bt_init_scan;
+	bool bt_slave;
+	bool bt_418_hid_exist;
+	bool bt_mailbox_reply;
+
+	bool wl_under_lps;
+	bool wl_under_ips;
+	bool wl_hi_pri_task1;
+	bool wl_hi_pri_task2;
+	bool wl_force_lps_ctrl;
+	bool wl_gl_busy;
+	bool wl_linkscan_proc;
+	bool wl_ps_state_fail;
+	bool wl_tx_limit_en;
+	bool wl_ampdu_limit_en;
+	bool wl_connected;
+	bool wl_slot_extend;
+	bool wl_cck_lock;
+	bool wl_cck_lock_pre;
+	bool wl_cck_lock_ever;
+
+	u32 bt_supported_version;
+	u32 bt_supported_feature;
+	s8 bt_rssi;
+	u8 kt_ver;
+	u8 gnt_workaround_state;
+	u8 tdma_timer_base;
+	u8 bt_profile_num;
+	u8 bt_info_c2h[COEX_BTINFO_SRC_MAX][COEX_BTINFO_LENGTH_MAX];
+	u8 bt_info_lb2;
+	u8 bt_info_lb3;
+	u8 bt_info_hb0;
+	u8 bt_info_hb1;
+	u8 bt_info_hb2;
+	u8 bt_info_hb3;
+	u8 bt_ble_scan_type;
+	u8 bt_hid_pair_num;
+	u8 bt_hid_slot;
+	u8 bt_a2dp_bitpool;
+	u8 bt_iqk_state;
+
+	u8 wl_noisy_level;
+	u8 wl_fw_dbg_info[10];
+	u8 wl_fw_dbg_info_pre[10];
+	u8 wl_coex_mode;
+	u8 ampdu_max_time;
+	u8 wl_tput_dir;
+
+	u16 score_board;
+	u16 retry_limit;
+
+	/* counters to record bt states */
+	u32 cnt_bt[COEX_CNT_BT_MAX];
+
+	/* counters to record wifi states */
+	u32 cnt_wl[COEX_CNT_WL_MAX];
+
+	u32 darfrc;
+	u32 darfrch;
+};
+
+struct rtw_coex {
+	/* protects coex info request section */
+	struct mutex mutex;
+	struct sk_buff_head queue;
+	wait_queue_head_t wait;
+
+	bool under_5g;
+	bool stop_dm;
+	bool freeze;
+	bool freerun;
+	bool wl_rf_off;
+
+	struct rtw_coex_stat stat;
+	struct rtw_coex_dm dm;
+	struct rtw_coex_rfe rfe;
+
+	struct delayed_work bt_relink_work;
+	struct delayed_work bt_reenable_work;
+	struct delayed_work defreeze_work;
+};
+
+#define DPK_RF_REG_NUM 7
+#define DPK_RF_PATH_NUM 2
+#define DPK_BB_REG_NUM 18
+#define DPK_CHANNEL_WIDTH_80 1
+
+DECLARE_EWMA(thermal, 10, 4);
+
+struct rtw_dpk_info {
+	bool is_dpk_pwr_on;
+	bool is_reload;
+
+	DECLARE_BITMAP(dpk_path_ok, DPK_RF_PATH_NUM);
+
+	u8 thermal_dpk[DPK_RF_PATH_NUM];
+	struct ewma_thermal avg_thermal[DPK_RF_PATH_NUM];
+
+	u32 gnt_control;
+	u32 gnt_value;
+
+	u8 result[RTW_RF_PATH_MAX];
+	u8 dpk_txagc[RTW_RF_PATH_MAX];
+	u32 coef[RTW_RF_PATH_MAX][20];
+	u16 dpk_gs[RTW_RF_PATH_MAX];
+	u8 thermal_dpk_delta[RTW_RF_PATH_MAX];
+	u8 pre_pwsf[RTW_RF_PATH_MAX];
+
+	u8 dpk_band;
+	u8 dpk_ch;
+	u8 dpk_bw;
+};
+
+struct rtw_phy_cck_pd_reg {
+	u32 reg_pd;
+	u32 mask_pd;
+	u32 reg_cs;
+	u32 mask_cs;
+};
+
+#define DACK_MSBK_BACKUP_NUM	0xf
+#define DACK_DCK_BACKUP_NUM	0x2
 
 struct rtw_dm_info {
 	u32 cck_fa_cnt;
 	u32 ofdm_fa_cnt;
 	u32 total_fa_cnt;
+
+	u32 cck_ok_cnt;
+	u32 cck_err_cnt;
+	u32 ofdm_ok_cnt;
+	u32 ofdm_err_cnt;
+	u32 ht_ok_cnt;
+	u32 ht_err_cnt;
+	u32 vht_ok_cnt;
+	u32 vht_err_cnt;
+
 	u8 min_rssi;
 	u8 pre_min_rssi;
 	u16 fa_history[4];
@@ -873,6 +1177,17 @@ struct rtw_dm_info {
 
 	u8 cck_gi_u_bnd;
 	u8 cck_gi_l_bnd;
+
+	/* backup dack results for each path and I/Q */
+	u32 dack_adck[RTW_RF_PATH_MAX];
+	u16 dack_msbk[RTW_RF_PATH_MAX][2][DACK_MSBK_BACKUP_NUM];
+	u8 dack_dck[RTW_RF_PATH_MAX][2][DACK_DCK_BACKUP_NUM];
+
+	struct rtw_dpk_info dpk_info;
+
+	/* [bandwidth 0:20M/1:40M][number of path] */
+	u8 cck_pd_lv[2][RTW_RF_PATH_MAX];
+	u32 cck_fa_avg;
 };
 
 struct rtw_efuse {
@@ -884,6 +1199,7 @@ struct rtw_efuse {
 	u8 addr[ETH_ALEN];
 	u8 channel_plan;
 	u8 country_code[2];
+	u8 rf_board_option;
 	u8 rfe_option;
 	u8 thermal_meter;
 	u8 crystal_cap;
@@ -993,6 +1309,12 @@ struct rtw_hal {
 	u8 current_channel;
 	u8 current_band_width;
 	u8 current_band_type;
+
+	/* center channel for different available bandwidth,
+	 * val of (bw > current_band_width) is invalid
+	 */
+	u8 cch_by_bw[RTW_MAX_CHANNEL_WIDTH + 1];
+
 	u8 sec_ch_offset;
 	u8 rf_type;
 	u8 rf_path_num;
@@ -1037,6 +1359,7 @@ struct rtw_dev {
 	struct rtw_regulatory regd;
 
 	struct rtw_dm_info dm_info;
+	struct rtw_coex coex;
 
 	/* ensures exclusive access from mac80211 callbacks */
 	struct mutex mutex;
@@ -1069,7 +1392,7 @@ struct rtw_dev {
 
 	/* lps power state & handler work */
 	struct rtw_lps_conf lps_conf;
-	struct delayed_work lps_work;
+	bool ps_enabled;
 
 	struct dentry *debugfs;
 
@@ -1086,19 +1409,9 @@ struct rtw_dev {
 
 #include "hci.h"
 
-static inline bool rtw_flag_check(struct rtw_dev *rtwdev, enum rtw_flags flag)
+static inline bool rtw_is_assoc(struct rtw_dev *rtwdev)
 {
-	return test_bit(flag, rtwdev->flags);
-}
-
-static inline void rtw_flag_clear(struct rtw_dev *rtwdev, enum rtw_flags flag)
-{
-	clear_bit(flag, rtwdev->flags);
-}
-
-static inline void rtw_flag_set(struct rtw_dev *rtwdev, enum rtw_flags flag)
-{
-	set_bit(flag, rtwdev->flags);
+	return !!rtwdev->sta_cnt;
 }
 
 void rtw_get_channel_params(struct cfg80211_chan_def *chandef,
