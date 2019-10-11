@@ -861,6 +861,9 @@ u64 rtl92de_get_desc(struct ieee80211_hw *hw,
 		case HW_DESC_RXPKT_LEN:
 			ret = GET_RX_DESC_PKT_LEN(pdesc);
 			break;
+		case HW_DESC_RXBUFF_ADDR:
+			ret = GET_RX_DESC_BUFF_ADDR((u8 *)pdesc);
+			break;
 		default:
 			WARN_ONCE(true, "rtl8192de: ERR rxdesc :%d not processed\n",
 				  desc_name);
