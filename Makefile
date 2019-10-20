@@ -142,7 +142,9 @@ endif
 	@depmod -a
 
 	@#copy firmware images to target folder
-	@cp -fr firmware/rtlwifi/ $(FIRMWAREDIR)/
+	@cp -f firmware/rtlwifi/* $(FIRMWAREDIR)/rtlwifi/.
+	@mkdir  -p $(FIRMWAREDIR)/rtw88
+	@mv $(FIRMWAREDIR)/rtlwifi/rtl8822be* $(FIRMWAREDIR)/rtw88/.
 	@echo "Install rtlwifi SUCCESS"
 
 uninstall:
